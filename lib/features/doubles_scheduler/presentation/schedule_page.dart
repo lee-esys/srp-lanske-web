@@ -323,6 +323,7 @@ class _SchedulePageState extends State<SchedulePage> {
           Text('イベント名: ${widget.draft.eventName}'),
           Text('面数: ${widget.draft.courts}'),
           Text('人数: ${widget.draft.players}'),
+          if (_savedEvent != null) Text('共有ID: ${_savedEvent!.event.publicId}'),
         ],
       ),
     );
