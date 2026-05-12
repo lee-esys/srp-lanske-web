@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:srp_lanske/shared/config/app_config.dart';
+import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
 import '../application/generated_schedule_service.dart';
