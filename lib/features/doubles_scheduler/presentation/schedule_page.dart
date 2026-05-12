@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/shared/config/app_config.dart';
+import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
 import '../application/generated_schedule_service.dart';
+import '../domain/saved_event_models.dart';
 import '../infrastructure/generated_schedule_api_client.dart';
 import 'models/event_draft.dart';
 import 'event_list_page.dart';
@@ -26,6 +28,29 @@ class _SchedulePageState extends State<SchedulePage> {
   String? _errorMessage;
   String? _generatedScheduleId;
   Map<String, dynamic>? _scheduleResponse;
+
+  SavedEventAggregate? _savedEvent;
+
+  Future<SavedEventAggregate> _ensureSavedEvent() async {
+    final existing = _savedEvent;
+    if (existing != null) return existing;
+
+    final savedEvent = await appEventRepository.createFromDraft(widget.draft);
+    _savedEvent = savedEvent;
+    return savedEvent;
+  }
+
+  SavedEventAggregate _replaceSavedEvent(
+    SavedEventAggregate aggregate,
+    SavedEvent event,
+  ) {
+    return SavedEventAggregate(
+      event: event,
+      participants: aggregate.participants,
+      share: aggregate.share,
+      importRecord: aggregate.importRecord,
+    );
+  }
 
   @override
   void initState() {
@@ -67,12 +92,29 @@ class _SchedulePageState extends State<SchedulePage> {
     });
 
     try {
+      final savedEvent = await _ensureSavedEvent();
       final response = await _service.generateFromDraft(widget.draft);
       if (!mounted) return;
 
+      final generatedScheduleId = response['generated_schedule_id']?.toString();
+
+      var nextSavedEvent = savedEvent;
+      if (generatedScheduleId != null && generatedScheduleId.isNotEmpty) {
+        final updatedEvent =
+            await appEventRepository.updateCurrentGeneratedScheduleId(
+          eventId: savedEvent.event.id,
+          generatedScheduleId: generatedScheduleId,
+        );
+
+        nextSavedEvent = _replaceSavedEvent(savedEvent, updatedEvent);
+      }
+
+      if (!mounted) return;
+
       setState(() {
+        _savedEvent = nextSavedEvent;
         _scheduleResponse = response;
-        _generatedScheduleId = response['generated_schedule_id']?.toString();
+        _generatedScheduleId = generatedScheduleId;
       });
     } catch (e) {
       if (!mounted) return;
@@ -140,8 +182,21 @@ class _SchedulePageState extends State<SchedulePage> {
     });
 
     try {
+      final savedEvent = await _ensureSavedEvent();
+
       await _service.adopt(generatedScheduleId);
+
+      final updatedEvent =
+          await appEventRepository.updateAdoptedGeneratedScheduleId(
+        eventId: savedEvent.event.id,
+        generatedScheduleId: generatedScheduleId,
+      );
+
       if (!mounted) return;
+
+      setState(() {
+        _savedEvent = _replaceSavedEvent(savedEvent, updatedEvent);
+      });
 
       _showMessage('採用しました');
       await _reloadSchedule();
