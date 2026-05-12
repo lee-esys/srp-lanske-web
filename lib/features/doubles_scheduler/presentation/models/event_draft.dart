@@ -17,7 +17,8 @@ class EventDraft {
 
   int get players => participants.length;
 
-  List<String> get displayNames => participants.map((e) => e.displayName).toList(growable: false);
+  List<String> get displayNames =>
+      participants.map((e) => e.displayName).toList(growable: false);
 
   EventDraft copyWith({
     String? url,
@@ -29,7 +30,8 @@ class EventDraft {
       url: url ?? this.url,
       courts: courts ?? this.courts,
       eventName: eventName ?? this.eventName,
-      participants: participants ?? this.participants.map((e) => e.copyWith()).toList(),
+      participants:
+          participants ?? this.participants.map((e) => e.copyWith()).toList(),
     );
   }
 

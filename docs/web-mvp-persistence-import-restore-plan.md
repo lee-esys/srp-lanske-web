@@ -659,3 +659,41 @@ share は event から独立した保存対象として扱い、有効期限を�
 ログインなしで作成された対戦表では、共有URLの有効期限が切れた場合、作成者本人でも再共有できない可能性がある。
 
 ver0.1 ではこの制約を許容し、共有URLの再発行、期限延長、ログインユーザーとの紐づけは後続で検討する。
+
+## 8. #14 実装時点の保存モデル方針
+
+#14 では、共有URL MVP の土台として、web 側の保存モデルと repository 境界を追加した。
+
+web 側では、入力中の一時モデルである `EventDraft` と、保存済み event を表す `SavedEventAggregate` を分けて扱う。
+
+`SavedEventAggregate` は、以下をまとめて扱う aggregate とする。
+
+* event
+* participant
+* import
+* share
+
+画面側から保存処理を直接扱わないよう、`EventRepository` を経由して保存・取得・更新する。
+
+MVP 初期実装では、永続化先を固定せず、`InMemoryEventRepository` を使用する。これにより、後続で Firestore 等の保存先へ差し替える場合も、画面側の呼び出しを大きく変えずに済むようにする。
+
+web 側は generated schedule 本体を保持しない。core から返された `generated_schedule_id` を参照として保持し、必要に応じて core get API で再取得する。
+
+現時点で event 側に保持する generated schedule 参照は以下。
+
+* `currentGeneratedScheduleId`
+* `adoptedGeneratedScheduleId`
+
+共有URL用の ID は、event の `publicId` として発行する。
+
+URL 上の query parameter は、当面 `sid` を使用する。
+
+例:
+
+```txt
+/?sid=<publicId>
+```
+
+将来的には、共有URLとしてより自然な形式である `/s/<id>` への移行も検討する。
+
+#14 時点では、共有URLの生成とコピーまでを実装対象に含める。一方で、共有URLからの復元処理は #18 で扱う。

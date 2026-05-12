@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:srp_lanske/shared/config/app_config.dart';
+import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
 import '../application/generated_schedule_service.dart';
+import '../domain/saved_event_models.dart';
 import '../infrastructure/generated_schedule_api_client.dart';
 import 'models/event_draft.dart';
 import 'event_list_page.dart';
@@ -27,6 +30,52 @@ class _SchedulePageState extends State<SchedulePage> {
   String? _generatedScheduleId;
   Map<String, dynamic>? _scheduleResponse;
 
+  SavedEventAggregate? _savedEvent;
+
+  Future<SavedEventAggregate> _ensureSavedEvent() async {
+    final existing = _savedEvent;
+    if (existing != null) return existing;
+
+    final savedEvent = await appEventRepository.createFromDraft(widget.draft);
+    _savedEvent = savedEvent;
+    return savedEvent;
+  }
+
+  SavedEventAggregate _replaceSavedEvent(
+    SavedEventAggregate aggregate,
+    SavedEvent event,
+  ) {
+    return SavedEventAggregate(
+      event: event,
+      participants: aggregate.participants,
+      share: aggregate.share,
+      importRecord: aggregate.importRecord,
+    );
+  }
+
+  String? _buildShareUrl() {
+    final publicId = _savedEvent?.event.publicId;
+    if (publicId == null || publicId.isEmpty) return null;
+
+    return Uri.base.replace(
+      queryParameters: {
+        ...Uri.base.queryParameters,
+        'sid': publicId,
+      },
+    ).toString();
+  }
+
+  Future<void> _copyShareUrl() async {
+    final shareUrl = _buildShareUrl();
+    if (shareUrl == null) {
+      _showMessage('共有URLを作成できませんでした');
+      return;
+    }
+
+    await Clipboard.setData(ClipboardData(text: shareUrl));
+    _showMessage('共有URLをコピーしました');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -44,7 +93,8 @@ class _SchedulePageState extends State<SchedulePage> {
 
   Map<String, String> get _playerNameById {
     return {
-      for (final participant in widget.draft.participants) participant.id: participant.displayName,
+      for (final participant in widget.draft.participants)
+        participant.id: participant.displayName,
     };
   }
 
@@ -66,12 +116,29 @@ class _SchedulePageState extends State<SchedulePage> {
     });
 
     try {
+      final savedEvent = await _ensureSavedEvent();
       final response = await _service.generateFromDraft(widget.draft);
       if (!mounted) return;
 
+      final generatedScheduleId = response['generated_schedule_id']?.toString();
+
+      var nextSavedEvent = savedEvent;
+      if (generatedScheduleId != null && generatedScheduleId.isNotEmpty) {
+        final updatedEvent =
+            await appEventRepository.updateCurrentGeneratedScheduleId(
+          eventId: savedEvent.event.id,
+          generatedScheduleId: generatedScheduleId,
+        );
+
+        nextSavedEvent = _replaceSavedEvent(savedEvent, updatedEvent);
+      }
+
+      if (!mounted) return;
+
       setState(() {
+        _savedEvent = nextSavedEvent;
         _scheduleResponse = response;
-        _generatedScheduleId = response['generated_schedule_id']?.toString();
+        _generatedScheduleId = generatedScheduleId;
       });
     } catch (e) {
       if (!mounted) return;
@@ -106,7 +173,8 @@ class _SchedulePageState extends State<SchedulePage> {
 
       setState(() {
         _scheduleResponse = response;
-        _generatedScheduleId = response['generated_schedule_id']?.toString() ?? generatedScheduleId;
+        _generatedScheduleId = response['generated_schedule_id']?.toString() ??
+            generatedScheduleId;
       });
     } catch (e) {
       if (!mounted) return;
@@ -138,8 +206,21 @@ class _SchedulePageState extends State<SchedulePage> {
     });
 
     try {
+      final savedEvent = await _ensureSavedEvent();
+
       await _service.adopt(generatedScheduleId);
+
+      final updatedEvent =
+          await appEventRepository.updateAdoptedGeneratedScheduleId(
+        eventId: savedEvent.event.id,
+        generatedScheduleId: generatedScheduleId,
+      );
+
       if (!mounted) return;
+
+      setState(() {
+        _savedEvent = _replaceSavedEvent(savedEvent, updatedEvent);
+      });
 
       _showMessage('採用しました');
       await _reloadSchedule();
@@ -213,13 +294,17 @@ class _SchedulePageState extends State<SchedulePage> {
     return _playerLabelFromId(playerId);
   }
 
-  String _formatTeamFromSlots(List<int> slots, Map<int, String> slotToPlayerId) {
+  String _formatTeamFromSlots(
+      List<int> slots, Map<int, String> slotToPlayerId) {
     if (slots.isEmpty) return '-';
 
-    return slots.map((slot) => '$slot: ${_playerLabelFromSlot(slot, slotToPlayerId)}').join(' / ');
+    return slots
+        .map((slot) => '$slot: ${_playerLabelFromSlot(slot, slotToPlayerId)}')
+        .join(' / ');
   }
 
-  String _formatRestPlayersBySlots(List<int> slotNumbers, Map<int, String> slotToPlayerId) {
+  String _formatRestPlayersBySlots(
+      List<int> slotNumbers, Map<int, String> slotToPlayerId) {
     if (slotNumbers.isEmpty) return '-';
 
     return slotNumbers
@@ -262,6 +347,13 @@ class _SchedulePageState extends State<SchedulePage> {
           Text('イベント名: ${widget.draft.eventName}'),
           Text('面数: ${widget.draft.courts}'),
           Text('人数: ${widget.draft.players}'),
+          if (_savedEvent != null) Text('共有ID: ${_savedEvent!.event.publicId}'),
+          if (_savedEvent != null)
+            OutlinedButton.icon(
+              onPressed: _copyShareUrl,
+              icon: const Icon(Icons.copy),
+              label: const Text('共有URLをコピー'),
+            ),
         ],
       ),
     );
@@ -296,12 +388,17 @@ class _SchedulePageState extends State<SchedulePage> {
           label: const Text('再生成'),
         ),
         FilledButton.tonalIcon(
-          onPressed: (_isLoading || _generatedScheduleId == null) ? null : _reloadSchedule,
+          onPressed: (_isLoading || _generatedScheduleId == null)
+              ? null
+              : _reloadSchedule,
           icon: const Icon(Icons.download),
           label: const Text('再取得'),
         ),
         FilledButton(
-          onPressed: (_isLoading || _isAdopting || _generatedScheduleId == null || _isAdopted)
+          onPressed: (_isLoading ||
+                  _isAdopting ||
+                  _generatedScheduleId == null ||
+                  _isAdopted)
               ? null
               : _adoptSchedule,
           child: _isAdopting
@@ -376,7 +473,8 @@ class _SchedulePageState extends State<SchedulePage> {
                   );
                 }),
                 const Divider(),
-                Text('休憩: ${_formatRestPlayersBySlots(restSlotNumbers, slotToPlayerId)}'),
+                Text(
+                    '休憩: ${_formatRestPlayersBySlots(restSlotNumbers, slotToPlayerId)}'),
               ],
             ),
           ),
