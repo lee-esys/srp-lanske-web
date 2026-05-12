@@ -60,7 +60,7 @@ class _SchedulePageState extends State<SchedulePage> {
     return Uri.base.replace(
       queryParameters: {
         ...Uri.base.queryParameters,
-        'public_id': publicId,
+        'sid': publicId,
       },
     ).toString();
   }
