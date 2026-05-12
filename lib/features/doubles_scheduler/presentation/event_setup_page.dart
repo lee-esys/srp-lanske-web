@@ -153,8 +153,10 @@ class _EventSetupPageState extends State<EventSetupPage> {
     });
   }
 
-  void _decrementCourts() => _setCourts(_courts - 1, resetPlayersToDefault: true);
-  void _incrementCourts() => _setCourts(_courts + 1, resetPlayersToDefault: true);
+  void _decrementCourts() =>
+      _setCourts(_courts - 1, resetPlayersToDefault: true);
+  void _incrementCourts() =>
+      _setCourts(_courts + 1, resetPlayersToDefault: true);
 
   void _decrementPlayers() {
     final current = int.tryParse(_playersController.text) ?? _minPlayers;
@@ -254,13 +256,15 @@ class _EventSetupPageState extends State<EventSetupPage> {
         _syncCourtsController();
 
         final mockPlayers = mockData['players'] as int;
-        _playersController.text = mockPlayers.clamp(_minPlayers, _maxPlayers).toString();
+        _playersController.text =
+            mockPlayers.clamp(_minPlayers, _maxPlayers).toString();
 
         _syncDisplayNameControllers();
 
         _eventNameController.text = mockData['eventName'] as String;
 
-        final mockNames = (mockData['playerNames'] as List<dynamic>).cast<String>();
+        final mockNames =
+            (mockData['playerNames'] as List<dynamic>).cast<String>();
         for (var i = 0; i < _displayNameControllers.length; i++) {
           final fallback = circledNumber(i + 1);
           final name = i < mockNames.length ? mockNames[i] : fallback;
@@ -447,7 +451,8 @@ class _EventSetupPageState extends State<EventSetupPage> {
               onPressed: _isLoadingEvent ? null : _resetInputs,
               style: FilledButton.styleFrom(
                 minimumSize: Size.zero,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: const Text(
@@ -460,7 +465,8 @@ class _EventSetupPageState extends State<EventSetupPage> {
               onPressed: _isLoadingEvent ? null : _submitForm,
               style: FilledButton.styleFrom(
                 minimumSize: Size.zero,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: const Text(

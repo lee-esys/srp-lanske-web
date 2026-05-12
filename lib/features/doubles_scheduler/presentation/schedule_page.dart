@@ -44,7 +44,8 @@ class _SchedulePageState extends State<SchedulePage> {
 
   Map<String, String> get _playerNameById {
     return {
-      for (final participant in widget.draft.participants) participant.id: participant.displayName,
+      for (final participant in widget.draft.participants)
+        participant.id: participant.displayName,
     };
   }
 
@@ -106,7 +107,8 @@ class _SchedulePageState extends State<SchedulePage> {
 
       setState(() {
         _scheduleResponse = response;
-        _generatedScheduleId = response['generated_schedule_id']?.toString() ?? generatedScheduleId;
+        _generatedScheduleId = response['generated_schedule_id']?.toString() ??
+            generatedScheduleId;
       });
     } catch (e) {
       if (!mounted) return;
@@ -213,13 +215,17 @@ class _SchedulePageState extends State<SchedulePage> {
     return _playerLabelFromId(playerId);
   }
 
-  String _formatTeamFromSlots(List<int> slots, Map<int, String> slotToPlayerId) {
+  String _formatTeamFromSlots(
+      List<int> slots, Map<int, String> slotToPlayerId) {
     if (slots.isEmpty) return '-';
 
-    return slots.map((slot) => '$slot: ${_playerLabelFromSlot(slot, slotToPlayerId)}').join(' / ');
+    return slots
+        .map((slot) => '$slot: ${_playerLabelFromSlot(slot, slotToPlayerId)}')
+        .join(' / ');
   }
 
-  String _formatRestPlayersBySlots(List<int> slotNumbers, Map<int, String> slotToPlayerId) {
+  String _formatRestPlayersBySlots(
+      List<int> slotNumbers, Map<int, String> slotToPlayerId) {
     if (slotNumbers.isEmpty) return '-';
 
     return slotNumbers
@@ -296,12 +302,17 @@ class _SchedulePageState extends State<SchedulePage> {
           label: const Text('再生成'),
         ),
         FilledButton.tonalIcon(
-          onPressed: (_isLoading || _generatedScheduleId == null) ? null : _reloadSchedule,
+          onPressed: (_isLoading || _generatedScheduleId == null)
+              ? null
+              : _reloadSchedule,
           icon: const Icon(Icons.download),
           label: const Text('再取得'),
         ),
         FilledButton(
-          onPressed: (_isLoading || _isAdopting || _generatedScheduleId == null || _isAdopted)
+          onPressed: (_isLoading ||
+                  _isAdopting ||
+                  _generatedScheduleId == null ||
+                  _isAdopted)
               ? null
               : _adoptSchedule,
           child: _isAdopting
@@ -376,7 +387,8 @@ class _SchedulePageState extends State<SchedulePage> {
                   );
                 }),
                 const Divider(),
-                Text('休憩: ${_formatRestPlayersBySlots(restSlotNumbers, slotToPlayerId)}'),
+                Text(
+                    '休憩: ${_formatRestPlayersBySlots(restSlotNumbers, slotToPlayerId)}'),
               ],
             ),
           ),

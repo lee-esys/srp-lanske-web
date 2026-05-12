@@ -92,8 +92,9 @@ class SimpleScheduler {
         restPerRound: players.length - playersPerRound,
       );
 
-      final playingPlayers =
-          players.where((p) => !restPlayers.any((r) => r.eventNumber == p.eventNumber)).toList();
+      final playingPlayers = players
+          .where((p) => !restPlayers.any((r) => r.eventNumber == p.eventNumber))
+          .toList();
 
       final courtGroups = _buildCourtGroups(
         playingPlayers: playingPlayers,
@@ -125,7 +126,8 @@ class SimpleScheduler {
       return const [];
     }
 
-    final sorted = [...players]..sort((a, b) => a.eventNumber.compareTo(b.eventNumber));
+    final sorted = [...players]
+      ..sort((a, b) => a.eventNumber.compareTo(b.eventNumber));
 
     return sorted.reversed.take(restPerRound).toList();
   }
@@ -160,7 +162,8 @@ class SimpleScheduler {
       throw ArgumentError('playersOnCourt must be exactly 4.');
     }
 
-    final sorted = [...playersOnCourt]..sort((a, b) => a.eventNumber.compareTo(b.eventNumber));
+    final sorted = [...playersOnCourt]
+      ..sort((a, b) => a.eventNumber.compareTo(b.eventNumber));
 
     return ScheduledCourt(
       teamA: [sorted[0], sorted[1]],
