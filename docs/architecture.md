@@ -227,6 +227,23 @@ features/
 * Codespacesでの開発を想定
 * 将来的にバックエンド化（Cloud Functions等）
 
+### 10.1 core API URL の環境切り替え
+
+web から接続する core API の base URL は、`AppConfig.coreApiBaseUrl` から参照する。
+
+`AppConfig.coreApiBaseUrl` は Flutter の `String.fromEnvironment` を使い、`LANSKE_CORE_API_BASE_URL` で指定する。
+
+未指定の場合は local 開発用として `http://localhost:8080` を使用する。
+
+この設定値は以下の core API 呼び出しで共通利用する。
+
+- generate
+- get
+- adopt
+
+ver0.1 では、環境別設定ファイルや secret 管理の本格化は行わず、`dart-define` による明示的な切り替えを優先する。
+
+
 ---
 
 ## 11. 設計思想

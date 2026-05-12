@@ -41,6 +41,28 @@ lib/
 └─ shared/             # 共通部品
 ```
 
+### core API URL の指定
+
+web から接続する core API の base URL は、Flutter の `dart-define` で指定する。
+
+未指定の場合は local 開発用として `http://localhost:8080` を使用する。
+
+local core API に接続する場合:
+
+```bash
+flutter run -d web-server --web-hostname 0.0.0.0 --web-port 3000 \
+  --dart-define=LANSKE_CORE_API_BASE_URL=http://localhost:8080
+```
+
+公開用 core API に接続する場合:
+
+```bash
+flutter run -d web-server --web-hostname 0.0.0.0 --web-port 3000 \
+  --dart-define=LANSKE_CORE_API_BASE_URL=https://<core-api-url>
+```
+
+<core-api-url> には Cloud Run などの公開 core API URL を指定する。
+
 ---
 
 ## 📦 実装状況
