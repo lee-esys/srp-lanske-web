@@ -26,7 +26,8 @@ class InMemoryEventRepository implements EventRepository {
       publicId: publicId,
       title: draft.eventName,
       courtCount: draft.courts,
-      sourceType: draft.url.isEmpty ? EventSourceType.manual : EventSourceType.unknown,
+      sourceType:
+          draft.url.isEmpty ? EventSourceType.manual : EventSourceType.unknown,
       sourceUrl: draft.url.isEmpty ? null : draft.url,
       status: SavedEventStatus.draft,
       createdAt: now,

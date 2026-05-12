@@ -72,8 +72,10 @@ class SavedEvent {
       sourceType: sourceType ?? this.sourceType,
       sourceUrl: sourceUrl ?? this.sourceUrl,
       status: status ?? this.status,
-      currentGeneratedScheduleId: currentGeneratedScheduleId ?? this.currentGeneratedScheduleId,
-      adoptedGeneratedScheduleId: adoptedGeneratedScheduleId ?? this.adoptedGeneratedScheduleId,
+      currentGeneratedScheduleId:
+          currentGeneratedScheduleId ?? this.currentGeneratedScheduleId,
+      adoptedGeneratedScheduleId:
+          adoptedGeneratedScheduleId ?? this.adoptedGeneratedScheduleId,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
