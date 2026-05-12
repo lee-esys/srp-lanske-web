@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:srp_lanske/shared/config/app_config.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
@@ -50,6 +51,29 @@ class _SchedulePageState extends State<SchedulePage> {
       share: aggregate.share,
       importRecord: aggregate.importRecord,
     );
+  }
+
+  String? _buildShareUrl() {
+    final publicId = _savedEvent?.event.publicId;
+    if (publicId == null || publicId.isEmpty) return null;
+
+    return Uri.base.replace(
+      queryParameters: {
+        ...Uri.base.queryParameters,
+        'public_id': publicId,
+      },
+    ).toString();
+  }
+
+  Future<void> _copyShareUrl() async {
+    final shareUrl = _buildShareUrl();
+    if (shareUrl == null) {
+      _showMessage('共有URLを作成できませんでした');
+      return;
+    }
+
+    await Clipboard.setData(ClipboardData(text: shareUrl));
+    _showMessage('共有URLをコピーしました');
   }
 
   @override
@@ -324,6 +348,12 @@ class _SchedulePageState extends State<SchedulePage> {
           Text('面数: ${widget.draft.courts}'),
           Text('人数: ${widget.draft.players}'),
           if (_savedEvent != null) Text('共有ID: ${_savedEvent!.event.publicId}'),
+          if (_savedEvent != null)
+            OutlinedButton.icon(
+              onPressed: _copyShareUrl,
+              icon: const Icon(Icons.copy),
+              label: const Text('共有URLをコピー'),
+            ),
         ],
       ),
     );
