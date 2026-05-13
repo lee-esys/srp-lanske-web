@@ -136,11 +136,21 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _sourceDisplayNames.add(defaultName);
 
 focusNode.addListener(() {
-        if (!focusNode.hasFocus) return;
+        if (index >= _displayNameControllers.length) return;
 
+        final controller = _displayNameControllers[index];
         final currentDefault = _defaultDisplayNames[index];
-        if (_displayNameControllers[index].text == currentDefault) {
-          _displayNameControllers[index].clear();
+
+        if (focusNode.hasFocus) {
+          if (controller.text == currentDefault) {
+            controller.clear();
+          }
+          return;
+        }
+
+        if (controller.text.trim().isEmpty) {
+          final fallback = _sourceDisplayNames[index];
+          controller.text = (fallback != null && fallback.isNotEmpty) ? fallback : currentDefault;
         }
       });
 
