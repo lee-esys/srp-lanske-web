@@ -34,6 +34,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
   bool _isLoadingEvent = false;
   bool _loadedFromUrl = false;
   bool _isUrlImportCompleted = false;
+
   String? _importedSourceUrl;
 
   int _courts = 1;
@@ -135,7 +136,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _defaultDisplayNames.add(defaultName);
       _sourceDisplayNames.add(defaultName);
 
-focusNode.addListener(() {
+      focusNode.addListener(() {
         if (index >= _displayNameControllers.length) return;
 
         final controller = _displayNameControllers[index];
@@ -150,7 +151,9 @@ focusNode.addListener(() {
 
         if (controller.text.trim().isEmpty) {
           final fallback = _sourceDisplayNames[index];
-          controller.text = (fallback != null && fallback.isNotEmpty) ? fallback : currentDefault;
+          controller.text = (fallback != null && fallback.isNotEmpty)
+              ? fallback
+              : currentDefault;
         }
       });
 
@@ -305,6 +308,8 @@ focusNode.addListener(() {
 
       setState(() {
         _loadedFromUrl = true;
+        _isUrlImportCompleted = true;
+        _importedSourceUrl = sourceUrl;
 
         if (participantCount > 0) {
           _courts = _inferCourtsForPlayers(participantCount);
@@ -366,21 +371,9 @@ focusNode.addListener(() {
       if (mounted) {
         setState(() {
           _isLoadingEvent = false;
-          _isUrlImportCompleted = true;
-          _importedSourceUrl = sourceUrl;
         });
       }
     }
-  }
-
-  String _formatDateTimeLabel(DateTime dateTime) {
-    final y = dateTime.year.toString().padLeft(4, '0');
-    final m = dateTime.month.toString().padLeft(2, '0');
-    final d = dateTime.day.toString().padLeft(2, '0');
-    final hh = dateTime.hour.toString().padLeft(2, '0');
-    final mm = dateTime.minute.toString().padLeft(2, '0');
-
-    return '$y/$m/$d $hh:$mm';
   }
 
   int _inferCourtsForPlayers(int players) {
@@ -477,6 +470,16 @@ focusNode.addListener(() {
       _importedSourceUrl = null;
       _loadedFromUrl = false;
     });
+  }
+
+  String _formatDateTimeLabel(DateTime dateTime) {
+    final y = dateTime.year.toString().padLeft(4, '0');
+    final m = dateTime.month.toString().padLeft(2, '0');
+    final d = dateTime.day.toString().padLeft(2, '0');
+    final hh = dateTime.hour.toString().padLeft(2, '0');
+    final mm = dateTime.minute.toString().padLeft(2, '0');
+
+    return '$y/$m/$d $hh:$mm';
   }
 
   String _buildEffectiveEventName() {
