@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/shared/utils/number_label_mapper.dart';
 
 import '../domain/participant_draft.dart';
+import '../infrastructure/tennisbear_import_preview_api_client.dart';
 import 'models/event_draft.dart';
 import 'schedule_page.dart';
 
@@ -26,6 +28,8 @@ class _EventSetupPageState extends State<EventSetupPage> {
   final List<String> _defaultDisplayNames = [];
   final List<String?> _sourceDisplayNames = [];
 
+  late final TennisbearImportPreviewApiClient _tennisbearImportPreviewClient;
+
   bool _isLoadingEvent = false;
   bool _loadedFromUrl = false;
 
@@ -37,6 +41,11 @@ class _EventSetupPageState extends State<EventSetupPage> {
   @override
   void initState() {
     super.initState();
+
+    _tennisbearImportPreviewClient = TennisbearImportPreviewApiClient(
+      baseUrl: AppConfig.coreApiBaseUrl,
+    );
+
     _syncPlayersWithinRange(resetToDefault: true);
     _syncDisplayNameControllers();
   }
@@ -221,6 +230,12 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
     FocusScope.of(context).unfocus();
 
+    final sourceUrl = _urlController.text.trim();
+    if (sourceUrl.isEmpty) {
+      _showMessage('URLを入力してください');
+      return;
+    }
+
     setState(() {
       _isLoadingEvent = true;
     });
@@ -228,18 +243,9 @@ class _EventSetupPageState extends State<EventSetupPage> {
     final startedAt = DateTime.now();
 
     try {
-      // TODO: URLからイベント情報を取得するAPI/パーサ処理に置き換える
-      final mockFuture = Future<Map<String, dynamic>>.delayed(
-        const Duration(milliseconds: 150),
-        () => {
-          'eventName': 'らんすけ公園庭球場 ${DateTime.now().toIso8601String()}',
-          'courts': 1,
-          'players': 6,
-          'playerNames': ['らん助', 'すけ太', 'もか', 'ゆき', 'はる', 'あお'],
-        },
+      final preview = await _tennisbearImportPreviewClient.preview(
+        sourceUrl: sourceUrl,
       );
-
-      final mockData = await mockFuture;
 
       final elapsed = DateTime.now().difference(startedAt);
       const minLoading = Duration(milliseconds: 500);
@@ -249,25 +255,38 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
       if (!mounted) return;
 
+      final participantNames = _participantNamesFromPreview(preview);
+      final participantCount = participantNames.isNotEmpty
+          ? participantNames.length
+          : (preview.participantSummary?.currentCount ?? 0);
+
       setState(() {
         _loadedFromUrl = true;
 
-        _courts = (mockData['courts'] as int).clamp(1, 10);
+        if (participantCount > 0) {
+          _courts = _inferCourtsForPlayers(participantCount);
+        }
+
+        final eventCourtCount = preview.eventCandidate?.courtCount ?? 0;
+        if (eventCourtCount > 0) {
+          _courts = eventCourtCount.clamp(1, 10);
+        }
+
         _syncCourtsController();
 
-        final mockPlayers = mockData['players'] as int;
-        _playersController.text =
-            mockPlayers.clamp(_minPlayers, _maxPlayers).toString();
+        if (participantCount > 0) {
+          _playersController.text =
+              participantCount.clamp(_minPlayers, _maxPlayers).toString();
+        }
 
         _syncDisplayNameControllers();
 
-        _eventNameController.text = mockData['eventName'] as String;
+        _eventNameController.text = _eventNameFromPreview(preview);
 
-        final mockNames =
-            (mockData['playerNames'] as List<dynamic>).cast<String>();
         for (var i = 0; i < _displayNameControllers.length; i++) {
           final fallback = circledNumber(i + 1);
-          final name = i < mockNames.length ? mockNames[i] : fallback;
+          final name =
+              i < participantNames.length ? participantNames[i] : fallback;
 
           _sourceDisplayNames[i] = name;
           _defaultDisplayNames[i] = name;
@@ -275,7 +294,21 @@ class _EventSetupPageState extends State<EventSetupPage> {
         }
       });
 
-      _showMessage('イベント情報を取得しました');
+      final warnings = preview.warnings;
+      if (warnings.isEmpty) {
+        _showMessage('イベント情報を取得しました');
+      } else {
+        _showMessage('イベント情報を取得しました（一部情報は取得できませんでした）');
+      }
+    } on TennisbearImportPreviewApiException catch (e) {
+      final elapsed = DateTime.now().difference(startedAt);
+      const minLoading = Duration(milliseconds: 500);
+      if (elapsed < minLoading) {
+        await Future.delayed(minLoading - elapsed);
+      }
+
+      if (!mounted) return;
+      _showMessage(e.message);
     } catch (_) {
       final elapsed = DateTime.now().difference(startedAt);
       const minLoading = Duration(milliseconds: 500);
@@ -285,7 +318,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
       if (!mounted) return;
       // TODO: イベント情報取得失敗時のエラーログを送る仕組みができたら、ここで例外内容も送る。adminにメール送信するのもあり。
-      _showMessage('イベント情報の取得に失敗しました');
+      _showMessage('取得できませんでした。URLを確認して再度お試しください');
     } finally {
       if (mounted) {
         setState(() {
@@ -303,6 +336,38 @@ class _EventSetupPageState extends State<EventSetupPage> {
     final mm = dateTime.minute.toString().padLeft(2, '0');
 
     return '$y/$m/$d $hh:$mm';
+  }
+
+  int _inferCourtsForPlayers(int players) {
+    final eventCourts = _courts;
+
+    if (players >= eventCourts * 4 && players <= (eventCourts * 4) + 10) {
+      return eventCourts;
+    }
+
+    for (var courts = 1; courts <= 10; courts++) {
+      if (players >= courts * 4 && players <= (courts * 4) + 10) {
+        return courts;
+      }
+    }
+
+    return eventCourts;
+  }
+
+  List<String> _participantNamesFromPreview(
+    TennisbearImportPreviewResponse preview,
+  ) {
+    return preview.participantCandidates
+        .map((candidate) => candidate.displayName.trim())
+        .where((name) => name.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  String _eventNameFromPreview(TennisbearImportPreviewResponse preview) {
+    final title = preview.eventCandidate?.title.trim() ?? '';
+    if (title.isNotEmpty) return title;
+
+    return _buildEffectiveEventName();
   }
 
   String _buildEffectiveEventName() {
