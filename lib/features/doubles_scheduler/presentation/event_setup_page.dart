@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/shared/utils/number_label_mapper.dart';
 
@@ -32,11 +33,36 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
   bool _isLoadingEvent = false;
   bool _loadedFromUrl = false;
+  bool _isUrlImportCompleted = false;
+  String? _importedSourceUrl;
 
   int _courts = 1;
 
   int get _minPlayers => _courts * 4;
   int get _maxPlayers => (_courts * 4) + 10;
+
+  bool get _hasUrlInput => _urlController.text.trim().isNotEmpty;
+
+  bool get _isValidTennisbearEventUrl {
+    return _isTennisbearEventUrl(_urlController.text.trim());
+  }
+
+  bool get _canPasteEventUrl {
+    if (_isLoadingEvent) return false;
+    if (_isUrlImportCompleted) return false;
+    return !_isValidTennisbearEventUrl;
+  }
+
+  bool get _canImportEventUrl {
+    if (_isLoadingEvent) return false;
+    if (_isUrlImportCompleted) return false;
+    return _isValidTennisbearEventUrl;
+  }
+
+  bool get _canClearEventUrl {
+    if (_isLoadingEvent) return false;
+    return _hasUrlInput;
+  }
 
   @override
   void initState() {
@@ -109,7 +135,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _defaultDisplayNames.add(defaultName);
       _sourceDisplayNames.add(defaultName);
 
-      focusNode.addListener(() {
+focusNode.addListener(() {
         if (!focusNode.hasFocus) return;
 
         final currentDefault = _defaultDisplayNames[index];
@@ -183,6 +209,8 @@ class _EventSetupPageState extends State<EventSetupPage> {
     setState(() {
       _loadedFromUrl = false;
       _courts = 1;
+      _isUrlImportCompleted = false;
+      _importedSourceUrl = null;
 
       _urlController.clear();
       _eventNameController.clear();
@@ -233,6 +261,11 @@ class _EventSetupPageState extends State<EventSetupPage> {
     final sourceUrl = _urlController.text.trim();
     if (sourceUrl.isEmpty) {
       _showMessage('URLを入力してください');
+      return;
+    }
+
+    if (!_isTennisbearEventUrl(sourceUrl)) {
+      _showMessage('テニスベアのイベントURLを入力してください');
       return;
     }
 
@@ -323,6 +356,8 @@ class _EventSetupPageState extends State<EventSetupPage> {
       if (mounted) {
         setState(() {
           _isLoadingEvent = false;
+          _isUrlImportCompleted = true;
+          _importedSourceUrl = sourceUrl;
         });
       }
     }
@@ -368,6 +403,70 @@ class _EventSetupPageState extends State<EventSetupPage> {
     if (title.isNotEmpty) return title;
 
     return _buildEffectiveEventName();
+  }
+
+  bool _isTennisbearEventUrl(String value) {
+    final uri = Uri.tryParse(value);
+    if (uri == null) return false;
+
+    if (uri.scheme != 'https') return false;
+    if (uri.host != 'www.tennisbear.net' && uri.host != 'tennisbear.net') {
+      return false;
+    }
+
+    final segments = uri.pathSegments;
+    if (segments.length != 3) return false;
+    if (segments[0] != 'event' || segments[2] != 'info') return false;
+
+    return RegExp(r'^\d+$').hasMatch(segments[1]);
+  }
+
+  void _handleUrlChanged(String value) {
+    final current = value.trim();
+
+    setState(() {
+      if (_isUrlImportCompleted && current != _importedSourceUrl) {
+        _isUrlImportCompleted = false;
+        _importedSourceUrl = null;
+        _loadedFromUrl = false;
+      }
+    });
+  }
+
+  Future<void> _pasteEventUrl() async {
+    if (!_canPasteEventUrl) return;
+
+    final data = await Clipboard.getData('text/plain');
+    final text = data?.text?.trim() ?? '';
+
+    if (text.isEmpty) {
+      _showMessage('クリップボードにURLがありません');
+      return;
+    }
+
+    setState(() {
+      _isUrlImportCompleted = false;
+      _importedSourceUrl = null;
+      _loadedFromUrl = false;
+
+      _urlController.text = text;
+      _urlController.selection = TextSelection.collapsed(offset: text.length);
+    });
+
+    if (!_isTennisbearEventUrl(text)) {
+      _showMessage('テニスベアのイベントURLを貼り付けてください');
+    }
+  }
+
+  void _clearEventUrl() {
+    if (!_canClearEventUrl) return;
+
+    setState(() {
+      _urlController.clear();
+      _isUrlImportCompleted = false;
+      _importedSourceUrl = null;
+      _loadedFromUrl = false;
+    });
   }
 
   String _buildEffectiveEventName() {
@@ -432,28 +531,46 @@ class _EventSetupPageState extends State<EventSetupPage> {
   }
 
   Widget _buildUrlSection() {
+    final urlText = _urlController.text.trim();
+    final showUrlError = urlText.isNotEmpty && !_isValidTennisbearEventUrl;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextFormField(
           controller: _urlController,
           enabled: !_isLoadingEvent,
-          decoration: const InputDecoration(
-            labelText: 'テニスベア / テニスオフ のイベントURL',
-            border: OutlineInputBorder(),
+          onChanged: _handleUrlChanged,
+          decoration: InputDecoration(
+            labelText: 'テニスベアのイベントURL',
+            helperText: '例: https://www.tennisbear.net/event/1156506/info',
+            errorText: showUrlError ? 'テニスベアのイベントURLを入力してください' : null,
+            border: const OutlineInputBorder(),
+            suffixIcon: _hasUrlInput
+                ? IconButton(
+                    tooltip: 'URLをクリア',
+                    onPressed: _canClearEventUrl ? _clearEventUrl : null,
+                    icon: const Icon(Icons.cancel_outlined),
+                  )
+                : null,
           ),
         ),
         const SizedBox(height: 12),
-        Center(
-          child: FilledButton.tonal(
-            onPressed: _fetchEventInfo,
-            style: FilledButton.styleFrom(
-              minimumSize: Size.zero,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            OutlinedButton.icon(
+              onPressed: _canPasteEventUrl ? _pasteEventUrl : null,
+              icon: const Icon(Icons.content_paste),
+              label: const Text('貼り付け'),
             ),
-            child: const Text('イベント情報を取得する'),
-          ),
+            FilledButton.icon(
+              onPressed: _canImportEventUrl ? _fetchEventInfo : null,
+              icon: const Icon(Icons.download),
+              label: const Text('取り込み'),
+            ),
+          ],
         ),
       ],
     );
