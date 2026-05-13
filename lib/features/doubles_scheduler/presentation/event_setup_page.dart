@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/shared/utils/number_label_mapper.dart';
 
 import '../domain/participant_draft.dart';
+import '../infrastructure/tennisbear_import_preview_api_client.dart';
 import 'models/event_draft.dart';
 import 'schedule_page.dart';
 
@@ -26,17 +29,50 @@ class _EventSetupPageState extends State<EventSetupPage> {
   final List<String> _defaultDisplayNames = [];
   final List<String?> _sourceDisplayNames = [];
 
+  late final TennisbearImportPreviewApiClient _tennisbearImportPreviewClient;
+
   bool _isLoadingEvent = false;
   bool _loadedFromUrl = false;
+  bool _isUrlImportCompleted = false;
+
+  String? _importedSourceUrl;
 
   int _courts = 1;
 
   int get _minPlayers => _courts * 4;
   int get _maxPlayers => (_courts * 4) + 10;
 
+  bool get _hasUrlInput => _urlController.text.trim().isNotEmpty;
+
+  bool get _isValidTennisbearEventUrl {
+    return _isTennisbearEventUrl(_urlController.text.trim());
+  }
+
+  bool get _canPasteEventUrl {
+    if (_isLoadingEvent) return false;
+    if (_isUrlImportCompleted) return false;
+    return !_isValidTennisbearEventUrl;
+  }
+
+  bool get _canImportEventUrl {
+    if (_isLoadingEvent) return false;
+    if (_isUrlImportCompleted) return false;
+    return _isValidTennisbearEventUrl;
+  }
+
+  bool get _canClearEventUrl {
+    if (_isLoadingEvent) return false;
+    return _hasUrlInput;
+  }
+
   @override
   void initState() {
     super.initState();
+
+    _tennisbearImportPreviewClient = TennisbearImportPreviewApiClient(
+      baseUrl: AppConfig.coreApiBaseUrl,
+    );
+
     _syncPlayersWithinRange(resetToDefault: true);
     _syncDisplayNameControllers();
   }
@@ -101,11 +137,23 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _sourceDisplayNames.add(defaultName);
 
       focusNode.addListener(() {
-        if (!focusNode.hasFocus) return;
+        if (index >= _displayNameControllers.length) return;
 
+        final controller = _displayNameControllers[index];
         final currentDefault = _defaultDisplayNames[index];
-        if (_displayNameControllers[index].text == currentDefault) {
-          _displayNameControllers[index].clear();
+
+        if (focusNode.hasFocus) {
+          if (controller.text == currentDefault) {
+            controller.clear();
+          }
+          return;
+        }
+
+        if (controller.text.trim().isEmpty) {
+          final fallback = _sourceDisplayNames[index];
+          controller.text = (fallback != null && fallback.isNotEmpty)
+              ? fallback
+              : currentDefault;
         }
       });
 
@@ -174,6 +222,8 @@ class _EventSetupPageState extends State<EventSetupPage> {
     setState(() {
       _loadedFromUrl = false;
       _courts = 1;
+      _isUrlImportCompleted = false;
+      _importedSourceUrl = null;
 
       _urlController.clear();
       _eventNameController.clear();
@@ -221,6 +271,17 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
     FocusScope.of(context).unfocus();
 
+    final sourceUrl = _urlController.text.trim();
+    if (sourceUrl.isEmpty) {
+      _showMessage('URLを入力してください');
+      return;
+    }
+
+    if (!_isTennisbearEventUrl(sourceUrl)) {
+      _showMessage('テニスベアのイベントURLを入力してください');
+      return;
+    }
+
     setState(() {
       _isLoadingEvent = true;
     });
@@ -228,18 +289,9 @@ class _EventSetupPageState extends State<EventSetupPage> {
     final startedAt = DateTime.now();
 
     try {
-      // TODO: URLからイベント情報を取得するAPI/パーサ処理に置き換える
-      final mockFuture = Future<Map<String, dynamic>>.delayed(
-        const Duration(milliseconds: 150),
-        () => {
-          'eventName': 'らんすけ公園庭球場 ${DateTime.now().toIso8601String()}',
-          'courts': 1,
-          'players': 6,
-          'playerNames': ['らん助', 'すけ太', 'もか', 'ゆき', 'はる', 'あお'],
-        },
+      final preview = await _tennisbearImportPreviewClient.preview(
+        sourceUrl: sourceUrl,
       );
-
-      final mockData = await mockFuture;
 
       final elapsed = DateTime.now().difference(startedAt);
       const minLoading = Duration(milliseconds: 500);
@@ -249,25 +301,40 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
       if (!mounted) return;
 
+      final participantNames = _participantNamesFromPreview(preview);
+      final participantCount = participantNames.isNotEmpty
+          ? participantNames.length
+          : (preview.participantSummary?.currentCount ?? 0);
+
       setState(() {
         _loadedFromUrl = true;
+        _isUrlImportCompleted = true;
+        _importedSourceUrl = sourceUrl;
 
-        _courts = (mockData['courts'] as int).clamp(1, 10);
+        if (participantCount > 0) {
+          _courts = _inferCourtsForPlayers(participantCount);
+        }
+
+        final eventCourtCount = preview.eventCandidate?.courtCount ?? 0;
+        if (eventCourtCount > 0) {
+          _courts = eventCourtCount.clamp(1, 10);
+        }
+
         _syncCourtsController();
 
-        final mockPlayers = mockData['players'] as int;
-        _playersController.text =
-            mockPlayers.clamp(_minPlayers, _maxPlayers).toString();
+        if (participantCount > 0) {
+          _playersController.text =
+              participantCount.clamp(_minPlayers, _maxPlayers).toString();
+        }
 
         _syncDisplayNameControllers();
 
-        _eventNameController.text = mockData['eventName'] as String;
+        _eventNameController.text = _eventNameFromPreview(preview);
 
-        final mockNames =
-            (mockData['playerNames'] as List<dynamic>).cast<String>();
         for (var i = 0; i < _displayNameControllers.length; i++) {
           final fallback = circledNumber(i + 1);
-          final name = i < mockNames.length ? mockNames[i] : fallback;
+          final name =
+              i < participantNames.length ? participantNames[i] : fallback;
 
           _sourceDisplayNames[i] = name;
           _defaultDisplayNames[i] = name;
@@ -275,7 +342,21 @@ class _EventSetupPageState extends State<EventSetupPage> {
         }
       });
 
-      _showMessage('イベント情報を取得しました');
+      final warnings = preview.warnings;
+      if (warnings.isEmpty) {
+        _showMessage('イベント情報を取得しました');
+      } else {
+        _showMessage('イベント情報を取得しました（一部情報は取得できませんでした）');
+      }
+    } on TennisbearImportPreviewApiException catch (e) {
+      final elapsed = DateTime.now().difference(startedAt);
+      const minLoading = Duration(milliseconds: 500);
+      if (elapsed < minLoading) {
+        await Future.delayed(minLoading - elapsed);
+      }
+
+      if (!mounted) return;
+      _showMessage(e.message);
     } catch (_) {
       final elapsed = DateTime.now().difference(startedAt);
       const minLoading = Duration(milliseconds: 500);
@@ -285,7 +366,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
       if (!mounted) return;
       // TODO: イベント情報取得失敗時のエラーログを送る仕組みができたら、ここで例外内容も送る。adminにメール送信するのもあり。
-      _showMessage('イベント情報の取得に失敗しました');
+      _showMessage('取得できませんでした。URLを確認して再度お試しください');
     } finally {
       if (mounted) {
         setState(() {
@@ -293,6 +374,102 @@ class _EventSetupPageState extends State<EventSetupPage> {
         });
       }
     }
+  }
+
+  int _inferCourtsForPlayers(int players) {
+    final eventCourts = _courts;
+
+    if (players >= eventCourts * 4 && players <= (eventCourts * 4) + 10) {
+      return eventCourts;
+    }
+
+    for (var courts = 1; courts <= 10; courts++) {
+      if (players >= courts * 4 && players <= (courts * 4) + 10) {
+        return courts;
+      }
+    }
+
+    return eventCourts;
+  }
+
+  List<String> _participantNamesFromPreview(
+    TennisbearImportPreviewResponse preview,
+  ) {
+    return preview.participantCandidates
+        .map((candidate) => candidate.displayName.trim())
+        .where((name) => name.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  String _eventNameFromPreview(TennisbearImportPreviewResponse preview) {
+    final title = preview.eventCandidate?.title.trim() ?? '';
+    if (title.isNotEmpty) return title;
+
+    return _buildEffectiveEventName();
+  }
+
+  bool _isTennisbearEventUrl(String value) {
+    final uri = Uri.tryParse(value);
+    if (uri == null) return false;
+
+    if (uri.scheme != 'https') return false;
+    if (uri.host != 'www.tennisbear.net' && uri.host != 'tennisbear.net') {
+      return false;
+    }
+
+    final segments = uri.pathSegments;
+    if (segments.length != 3) return false;
+    if (segments[0] != 'event' || segments[2] != 'info') return false;
+
+    return RegExp(r'^\d+$').hasMatch(segments[1]);
+  }
+
+  void _handleUrlChanged(String value) {
+    final current = value.trim();
+
+    setState(() {
+      if (_isUrlImportCompleted && current != _importedSourceUrl) {
+        _isUrlImportCompleted = false;
+        _importedSourceUrl = null;
+        _loadedFromUrl = false;
+      }
+    });
+  }
+
+  Future<void> _pasteEventUrl() async {
+    if (!_canPasteEventUrl) return;
+
+    final data = await Clipboard.getData('text/plain');
+    final text = data?.text?.trim() ?? '';
+
+    if (text.isEmpty) {
+      _showMessage('クリップボードにURLがありません');
+      return;
+    }
+
+    setState(() {
+      _isUrlImportCompleted = false;
+      _importedSourceUrl = null;
+      _loadedFromUrl = false;
+
+      _urlController.text = text;
+      _urlController.selection = TextSelection.collapsed(offset: text.length);
+    });
+
+    if (!_isTennisbearEventUrl(text)) {
+      _showMessage('テニスベアのイベントURLを貼り付けてください');
+    }
+  }
+
+  void _clearEventUrl() {
+    if (!_canClearEventUrl) return;
+
+    setState(() {
+      _urlController.clear();
+      _isUrlImportCompleted = false;
+      _importedSourceUrl = null;
+      _loadedFromUrl = false;
+    });
   }
 
   String _formatDateTimeLabel(DateTime dateTime) {
@@ -367,28 +544,46 @@ class _EventSetupPageState extends State<EventSetupPage> {
   }
 
   Widget _buildUrlSection() {
+    final urlText = _urlController.text.trim();
+    final showUrlError = urlText.isNotEmpty && !_isValidTennisbearEventUrl;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextFormField(
           controller: _urlController,
           enabled: !_isLoadingEvent,
-          decoration: const InputDecoration(
-            labelText: 'テニスベア / テニスオフ のイベントURL',
-            border: OutlineInputBorder(),
+          onChanged: _handleUrlChanged,
+          decoration: InputDecoration(
+            labelText: 'テニスベアのイベントURL',
+            helperText: '例: https://www.tennisbear.net/event/1156506/info',
+            errorText: showUrlError ? 'テニスベアのイベントURLを入力してください' : null,
+            border: const OutlineInputBorder(),
+            suffixIcon: _hasUrlInput
+                ? IconButton(
+                    tooltip: 'URLをクリア',
+                    onPressed: _canClearEventUrl ? _clearEventUrl : null,
+                    icon: const Icon(Icons.cancel_outlined),
+                  )
+                : null,
           ),
         ),
         const SizedBox(height: 12),
-        Center(
-          child: FilledButton.tonal(
-            onPressed: _fetchEventInfo,
-            style: FilledButton.styleFrom(
-              minimumSize: Size.zero,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            OutlinedButton.icon(
+              onPressed: _canPasteEventUrl ? _pasteEventUrl : null,
+              icon: const Icon(Icons.content_paste),
+              label: const Text('貼り付け'),
             ),
-            child: const Text('イベント情報を取得する'),
-          ),
+            FilledButton.icon(
+              onPressed: _canImportEventUrl ? _fetchEventInfo : null,
+              icon: const Icon(Icons.download),
+              label: const Text('取り込み'),
+            ),
+          ],
         ),
       ],
     );
