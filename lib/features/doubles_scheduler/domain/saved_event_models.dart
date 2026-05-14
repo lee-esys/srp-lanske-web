@@ -1,3 +1,5 @@
+const savedEventAggregateSchemaVersion = 1;
+
 enum EventSourceType {
   tennisbear,
   tennisoff,
@@ -51,8 +53,7 @@ class SavedEvent {
   }
 
   bool get hasAdoptedSchedule {
-    return status == SavedEventStatus.adopted ||
-        adoptedGeneratedScheduleId != null;
+    return status == SavedEventStatus.adopted || adoptedGeneratedScheduleId != null;
   }
 
   SavedEvent copyWith({
@@ -81,12 +82,50 @@ class SavedEvent {
       sourceType: sourceType ?? this.sourceType,
       sourceUrl: sourceUrl ?? this.sourceUrl,
       status: status ?? this.status,
-      currentGeneratedScheduleId:
-          currentGeneratedScheduleId ?? this.currentGeneratedScheduleId,
-      adoptedGeneratedScheduleId:
-          adoptedGeneratedScheduleId ?? this.adoptedGeneratedScheduleId,
+      currentGeneratedScheduleId: currentGeneratedScheduleId ?? this.currentGeneratedScheduleId,
+      adoptedGeneratedScheduleId: adoptedGeneratedScheduleId ?? this.adoptedGeneratedScheduleId,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'publicId': publicId,
+      'title': title,
+      'eventDate': _nullableDateTimeToJson(eventDate),
+      'startTime': startTime,
+      'endTime': endTime,
+      'location': location,
+      'courtCount': courtCount,
+      'sourceType': sourceType.name,
+      'sourceUrl': sourceUrl,
+      'status': status.name,
+      'currentGeneratedScheduleId': currentGeneratedScheduleId,
+      'adoptedGeneratedScheduleId': adoptedGeneratedScheduleId,
+      'createdAt': _dateTimeToJson(createdAt),
+      'updatedAt': _dateTimeToJson(updatedAt),
+    };
+  }
+
+  factory SavedEvent.fromJson(Map<String, dynamic> json) {
+    return SavedEvent(
+      id: json['id'].toString(),
+      publicId: json['publicId'].toString(),
+      title: json['title'].toString(),
+      eventDate: _nullableDateTimeFromJson(json['eventDate']),
+      startTime: json['startTime']?.toString(),
+      endTime: json['endTime']?.toString(),
+      location: json['location']?.toString(),
+      courtCount: _intFromJson(json['courtCount']),
+      sourceType: _eventSourceTypeFromJson(json['sourceType']),
+      sourceUrl: json['sourceUrl']?.toString(),
+      status: _savedEventStatusFromJson(json['status']),
+      currentGeneratedScheduleId: json['currentGeneratedScheduleId']?.toString(),
+      adoptedGeneratedScheduleId: json['adoptedGeneratedScheduleId']?.toString(),
+      createdAt: _dateTimeFromJson(json['createdAt']),
+      updatedAt: _dateTimeFromJson(json['updatedAt']),
     );
   }
 }
@@ -111,6 +150,32 @@ class SavedEventParticipant {
   final String? sourceText;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'eventId': eventId,
+      'displayName': displayName,
+      'orderNo': orderNo,
+      'status': status,
+      'sourceText': sourceText,
+      'createdAt': _dateTimeToJson(createdAt),
+      'updatedAt': _dateTimeToJson(updatedAt),
+    };
+  }
+
+  factory SavedEventParticipant.fromJson(Map<String, dynamic> json) {
+    return SavedEventParticipant(
+      id: json['id'].toString(),
+      eventId: json['eventId'].toString(),
+      displayName: json['displayName'].toString(),
+      orderNo: _intFromJson(json['orderNo']),
+      status: json['status']?.toString() ?? 'active',
+      sourceText: json['sourceText']?.toString(),
+      createdAt: _dateTimeFromJson(json['createdAt']),
+      updatedAt: _dateTimeFromJson(json['updatedAt']),
+    );
+  }
 }
 
 class SavedEventImport {
@@ -135,6 +200,34 @@ class SavedEventImport {
   final List<Map<String, dynamic>>? parsedParticipantsJson;
   final DateTime? confirmedAt;
   final DateTime createdAt;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'eventId': eventId,
+      'sourceType': sourceType.name,
+      'sourceUrl': sourceUrl,
+      'pastedText': pastedText,
+      'parsedEventJson': parsedEventJson,
+      'parsedParticipantsJson': parsedParticipantsJson,
+      'confirmedAt': _nullableDateTimeToJson(confirmedAt),
+      'createdAt': _dateTimeToJson(createdAt),
+    };
+  }
+
+  factory SavedEventImport.fromJson(Map<String, dynamic> json) {
+    return SavedEventImport(
+      id: json['id'].toString(),
+      eventId: json['eventId'].toString(),
+      sourceType: _eventSourceTypeFromJson(json['sourceType']),
+      sourceUrl: json['sourceUrl']?.toString(),
+      pastedText: json['pastedText']?.toString(),
+      parsedEventJson: _nullableMapFromJson(json['parsedEventJson']),
+      parsedParticipantsJson: _nullableMapListFromJson(json['parsedParticipantsJson']),
+      confirmedAt: _nullableDateTimeFromJson(json['confirmedAt']),
+      createdAt: _dateTimeFromJson(json['createdAt']),
+    );
+  }
 }
 
 class SavedEventShare {
@@ -149,6 +242,24 @@ class SavedEventShare {
   final String eventId;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'publicId': publicId,
+      'eventId': eventId,
+      'createdAt': _dateTimeToJson(createdAt),
+      'updatedAt': _dateTimeToJson(updatedAt),
+    };
+  }
+
+  factory SavedEventShare.fromJson(Map<String, dynamic> json) {
+    return SavedEventShare(
+      publicId: json['publicId'].toString(),
+      eventId: json['eventId'].toString(),
+      createdAt: _dateTimeFromJson(json['createdAt']),
+      updatedAt: _dateTimeFromJson(json['updatedAt']),
+    );
+  }
 }
 
 class SavedEventAggregate {
@@ -163,4 +274,127 @@ class SavedEventAggregate {
   final List<SavedEventParticipant> participants;
   final SavedEventShare share;
   final SavedEventImport? importRecord;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'schemaVersion': savedEventAggregateSchemaVersion,
+      'event': event.toJson(),
+      'participants': participants.map((participant) {
+        return participant.toJson();
+      }).toList(growable: false),
+      'share': share.toJson(),
+      'importRecord': importRecord?.toJson(),
+    };
+  }
+
+  factory SavedEventAggregate.fromJson(Map<String, dynamic> json) {
+    final eventJson = _nullableMapFromJson(json['event']);
+    final shareJson = _nullableMapFromJson(json['share']);
+
+    if (eventJson == null) {
+      throw const FormatException('event is required');
+    }
+
+    if (shareJson == null) {
+      throw const FormatException('share is required');
+    }
+
+    final participantsValue = json['participants'];
+    if (participantsValue is! List) {
+      throw const FormatException('participants is required');
+    }
+
+    final importRecordJson = _nullableMapFromJson(json['importRecord']);
+
+    return SavedEventAggregate(
+      event: SavedEvent.fromJson(eventJson),
+      participants: participantsValue.map((item) {
+        if (item is! Map) {
+          throw FormatException('invalid participant item: $item');
+        }
+
+        return SavedEventParticipant.fromJson(
+          item.map((key, value) => MapEntry(key.toString(), value)),
+        );
+      }).toList(growable: false),
+      share: SavedEventShare.fromJson(shareJson),
+      importRecord: importRecordJson == null ? null : SavedEventImport.fromJson(importRecordJson),
+    );
+  }
+}
+
+DateTime _dateTimeFromJson(Object? value) {
+  if (value == null) {
+    throw const FormatException('DateTime value is required');
+  }
+
+  return DateTime.parse(value.toString());
+}
+
+DateTime? _nullableDateTimeFromJson(Object? value) {
+  if (value == null) return null;
+  return DateTime.parse(value.toString());
+}
+
+String _dateTimeToJson(DateTime value) {
+  return value.toUtc().toIso8601String();
+}
+
+String? _nullableDateTimeToJson(DateTime? value) {
+  if (value == null) return null;
+  return value.toUtc().toIso8601String();
+}
+
+int _intFromJson(Object? value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+
+  final parsed = int.tryParse(value.toString());
+  if (parsed == null) {
+    throw FormatException('invalid int value: $value');
+  }
+
+  return parsed;
+}
+
+Map<String, dynamic>? _nullableMapFromJson(Object? value) {
+  if (value == null) return null;
+  if (value is! Map) {
+    throw FormatException('invalid map value: $value');
+  }
+
+  return value.map(
+    (key, value) => MapEntry(key.toString(), value),
+  );
+}
+
+List<Map<String, dynamic>>? _nullableMapListFromJson(Object? value) {
+  if (value == null) return null;
+  if (value is! List) {
+    throw FormatException('invalid map list value: $value');
+  }
+
+  return value.map((item) {
+    if (item is! Map) {
+      throw FormatException('invalid map list item: $item');
+    }
+
+    return item.map(
+      (key, value) => MapEntry(key.toString(), value),
+    );
+  }).toList(growable: false);
+}
+
+EventSourceType _eventSourceTypeFromJson(Object? value) {
+  return EventSourceType.values.firstWhere(
+    (type) => type.name == value,
+    orElse: () => EventSourceType.unknown,
+  );
+}
+
+SavedEventStatus _savedEventStatusFromJson(Object? value) {
+  return SavedEventStatus.values.firstWhere(
+    (status) => status.name == value,
+    orElse: () => SavedEventStatus.draft,
+  );
 }
