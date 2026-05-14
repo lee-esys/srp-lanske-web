@@ -46,6 +46,15 @@ class SavedEvent {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  String? get displayGeneratedScheduleId {
+    return adoptedGeneratedScheduleId ?? currentGeneratedScheduleId;
+  }
+
+  bool get hasAdoptedSchedule {
+    return status == SavedEventStatus.adopted ||
+        adoptedGeneratedScheduleId != null;
+  }
+
   SavedEvent copyWith({
     String? title,
     DateTime? eventDate,

@@ -26,6 +26,10 @@ class _SchedulePageState extends State<SchedulePage> {
   bool _isLoading = true;
   bool _isAdopting = false;
 
+  bool get _hasAdoptedSchedule {
+    return _isAdopted || (_savedEvent?.event.hasAdoptedSchedule ?? false);
+  }
+
   String? _errorMessage;
   String? _generatedScheduleId;
   Map<String, dynamic>? _scheduleResponse;
@@ -383,7 +387,8 @@ class _SchedulePageState extends State<SchedulePage> {
       runSpacing: 12,
       children: [
         FilledButton.icon(
-          onPressed: _isLoading ? null : _generateSchedule,
+          onPressed:
+              (_isLoading || _hasAdoptedSchedule) ? null : _generateSchedule,
           icon: const Icon(Icons.refresh),
           label: const Text('再生成'),
         ),
@@ -398,7 +403,7 @@ class _SchedulePageState extends State<SchedulePage> {
           onPressed: (_isLoading ||
                   _isAdopting ||
                   _generatedScheduleId == null ||
-                  _isAdopted)
+                  _hasAdoptedSchedule)
               ? null
               : _adoptSchedule,
           child: _isAdopting
