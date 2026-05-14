@@ -102,5 +102,93 @@ void main() {
       final found = await repository.findByPublicId(created.event.publicId);
       expect(found!.event.adoptedGeneratedScheduleId, 'generated-1');
     });
+
+    test('creates public id with eight uppercase alphanumeric chars', () async {
+      final repository = InMemoryEventRepository();
+
+      final aggregate = await repository.createFromDraft(buildDraft());
+
+      expect(aggregate.event.publicId, hasLength(8));
+      expect(
+        RegExp(r'^[0-9A-Z]{8}$').hasMatch(aggregate.event.publicId),
+        isTrue,
+      );
+      expect(aggregate.share.publicId, aggregate.event.publicId);
+    });
+
+    test('retries when generated public id collides', () async {
+      final candidates = ['AAAAAAAA', 'AAAAAAAA', 'BBBBBBBB'];
+      var index = 0;
+
+      final repository = InMemoryEventRepository(
+        publicIdGenerator: () => candidates[index++],
+      );
+
+      final first = await repository.createFromDraft(buildDraft());
+      final second = await repository.createFromDraft(buildDraft());
+
+      expect(first.event.publicId, 'AAAAAAAA');
+      expect(second.event.publicId, 'BBBBBBBB');
+      expect(index, 3);
+    });
+
+    test('throws when public id generation keeps colliding', () async {
+      final repository = InMemoryEventRepository(
+        publicIdGenerator: () => 'AAAAAAAA',
+      );
+
+      await repository.createFromDraft(buildDraft());
+
+      expect(
+        () => repository.createFromDraft(buildDraft()),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('overwrites current generated schedule id when regenerated', () async {
+      final repository = InMemoryEventRepository();
+
+      final created = await repository.createFromDraft(buildDraft());
+
+      await repository.updateCurrentGeneratedScheduleId(
+        eventId: created.event.id,
+        generatedScheduleId: 'generated-1',
+      );
+
+      final updated = await repository.updateCurrentGeneratedScheduleId(
+        eventId: created.event.id,
+        generatedScheduleId: 'generated-2',
+      );
+
+      expect(updated.currentGeneratedScheduleId, 'generated-2');
+      expect(updated.adoptedGeneratedScheduleId, isNull);
+      expect(updated.displayGeneratedScheduleId, 'generated-2');
+      expect(updated.status, SavedEventStatus.generated);
+    });
+
+    test('uses adopted generated schedule id as display target', () async {
+      final repository = InMemoryEventRepository();
+
+      final created = await repository.createFromDraft(buildDraft());
+
+      final generated = await repository.updateCurrentGeneratedScheduleId(
+        eventId: created.event.id,
+        generatedScheduleId: 'generated-1',
+      );
+
+      expect(generated.displayGeneratedScheduleId, 'generated-1');
+      expect(generated.hasAdoptedSchedule, isFalse);
+
+      final adopted = await repository.updateAdoptedGeneratedScheduleId(
+        eventId: created.event.id,
+        generatedScheduleId: 'generated-1',
+      );
+
+      expect(adopted.currentGeneratedScheduleId, 'generated-1');
+      expect(adopted.adoptedGeneratedScheduleId, 'generated-1');
+      expect(adopted.displayGeneratedScheduleId, 'generated-1');
+      expect(adopted.hasAdoptedSchedule, isTrue);
+      expect(adopted.status, SavedEventStatus.adopted);
+    });
   });
 }

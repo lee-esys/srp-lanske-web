@@ -1,13 +1,17 @@
 import 'package:uuid/uuid.dart';
 
 import '../application/event_repository.dart';
+import '../domain/public_id.dart';
 import '../domain/saved_event_models.dart';
 import '../presentation/models/event_draft.dart';
 
 class InMemoryEventRepository implements EventRepository {
-  InMemoryEventRepository();
+  InMemoryEventRepository({
+    String Function()? publicIdGenerator,
+  }) : _publicIdGenerator = publicIdGenerator ?? generatePublicId;
 
   final _uuid = const Uuid();
+  final String Function() _publicIdGenerator;
 
   final Map<String, SavedEvent> _eventsById = {};
   final Map<String, String> _eventIdByPublicId = {};
@@ -19,7 +23,7 @@ class InMemoryEventRepository implements EventRepository {
   Future<SavedEventAggregate> createFromDraft(EventDraft draft) async {
     final now = DateTime.now();
     final eventId = _uuid.v4();
-    final publicId = _uuid.v4();
+    final publicId = _generateUniquePublicId();
 
     final event = SavedEvent(
       id: eventId,
@@ -143,5 +147,21 @@ class InMemoryEventRepository implements EventRepository {
 
     _eventsById[eventId] = updated;
     return updated;
+  }
+
+  String _generateUniquePublicId() {
+    for (var attempt = 0; attempt < 10; attempt += 1) {
+      final candidate = _publicIdGenerator();
+
+      if (!isValidPublicId(candidate)) {
+        throw StateError('invalid public_id generated: $candidate');
+      }
+
+      if (!_eventIdByPublicId.containsKey(candidate)) {
+        return candidate;
+      }
+    }
+
+    throw StateError('failed to generate unique public_id');
   }
 }
