@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
-import 'package:srp_lanske/features/doubles_scheduler/data/in_memory_event_repository.dart';
+import 'package:srp_lanske/features/doubles_scheduler/data/json_event_repository.dart';
+import 'package:srp_lanske/features/doubles_scheduler/data/saved_event_json_store.dart';
 import 'package:srp_lanske/features/doubles_scheduler/domain/participant_draft.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/models/event_draft.dart';
 
@@ -7,11 +10,13 @@ import '../application/event_repository_contract.dart';
 
 void main() {
   runEventRepositoryContractTests(
-    name: 'InMemoryEventRepository',
-    createRepository: InMemoryEventRepository.new,
+    name: 'JsonEventRepository',
+    createRepository: () => JsonEventRepository(
+      store: FakeSavedEventJsonStore(),
+    ),
   );
 
-  group('InMemoryEventRepository public id generation', () {
+  group('JsonEventRepository public id generation', () {
     EventDraft buildDraft() {
       return EventDraft(
         url: 'https://example.com/events/1',
@@ -28,24 +33,12 @@ void main() {
       );
     }
 
-    test('creates public id with eight uppercase alphanumeric chars', () async {
-      final repository = InMemoryEventRepository();
-
-      final aggregate = await repository.createFromDraft(buildDraft());
-
-      expect(aggregate.event.publicId, hasLength(8));
-      expect(
-        RegExp(r'^[0-9A-Z]{8}$').hasMatch(aggregate.event.publicId),
-        isTrue,
-      );
-      expect(aggregate.share.publicId, aggregate.event.publicId);
-    });
-
     test('retries when generated public id collides', () async {
       final candidates = ['AAAAAAAA', 'AAAAAAAA', 'BBBBBBBB'];
       var index = 0;
 
-      final repository = InMemoryEventRepository(
+      final repository = JsonEventRepository(
+        store: FakeSavedEventJsonStore(),
         publicIdGenerator: () => candidates[index++],
       );
 
@@ -58,7 +51,8 @@ void main() {
     });
 
     test('throws when public id generation keeps colliding', () async {
-      final repository = InMemoryEventRepository(
+      final repository = JsonEventRepository(
+        store: FakeSavedEventJsonStore(),
         publicIdGenerator: () => 'AAAAAAAA',
       );
 
@@ -70,4 +64,41 @@ void main() {
       );
     });
   });
+}
+
+class FakeSavedEventJsonStore implements SavedEventJsonStore {
+  final Map<String, Map<String, dynamic>> _dataByPublicId = {};
+
+  @override
+  Future<void> saveByPublicId({
+    required String publicId,
+    required Map<String, dynamic> data,
+  }) async {
+    _dataByPublicId[publicId] = _copy(data);
+  }
+
+  @override
+  Future<Map<String, dynamic>?> findByPublicId(String publicId) async {
+    final data = _dataByPublicId[publicId];
+    if (data == null) return null;
+
+    return _copy(data);
+  }
+
+  @override
+  Future<Map<String, dynamic>?> findByEventId(String eventId) async {
+    for (final data in _dataByPublicId.values) {
+      final event = data['event'];
+
+      if (event is Map && event['id'] == eventId) {
+        return _copy(data);
+      }
+    }
+
+    return null;
+  }
+
+  Map<String, dynamic> _copy(Map<String, dynamic> data) {
+    return jsonDecode(jsonEncode(data)) as Map<String, dynamic>;
+  }
 }

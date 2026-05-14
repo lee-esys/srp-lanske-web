@@ -697,3 +697,72 @@ URL 上の query parameter は、当面 `sid` を使用する。
 将来的には、共有URLとしてより自然な形式である `/s/<id>` への移行も検討する。
 
 #14 時点では、共有URLの生成とコピーまでを実装対象に含める。一方で、共有URLからの復元処理は #18 で扱う。
+
+
+## 9. #37 実装メモ: event 永続化基盤
+
+#37 では、#18 の共有URL / リロード復元の前提として、web 側の event aggregate を永続化できるようにした。
+
+### 保存方針
+
+web 側では、共有URLから再表示するために必要な event aggregate を保存する。
+
+保存対象は以下。
+
+- event 情報
+- participant 表示情報
+- share / public_id
+- import 情報
+- `currentGeneratedScheduleId`
+- `adoptedGeneratedScheduleId`
+
+generated_schedule 本体は web 側に保存しない。
+
+web 側では generated_schedule_id の参照のみを保持し、対戦表本体は core get API から再取得する。
+
+### Repository 方針
+
+`EventRepository` interface は維持し、保存先を差し替えられる形にする。
+
+実装として以下を追加した。
+
+- `SavedEventAggregate` 系 model の JSON 変換
+- `SavedEventJsonStore`
+- `JsonEventRepository`
+- `FirestoreSavedEventJsonStore`
+- `FirestoreEventRepository`
+
+repository の振る舞いは contract test で確認する。
+
+### repository mode
+
+開発中に既存導線を壊さないため、repository mode を切り替えられるようにする。
+
+- default: `memory`
+- firestore 確認時: `firestore`
+
+指定例:
+
+```bash
+flutter run \
+  --dart-define=LANSKE_EVENT_REPOSITORY=firestore \
+  --dart-define=LANSKE_CORE_API_BASE_URL=<core api base url>
+````
+
+### Firebase / Firestore
+
+#37 では、Firestore を使った最小保存確認までを扱う。
+
+開発用 Firebase project として `srp-lanske-web-dev` を作成し、Firestore Database を作成した。
+
+詳細な Firestore rules、本番アクセス制御、環境別 Firebase project 整理は、フェーズ4 ver0.1 リリース準備で扱う。
+
+### #18 への引き渡し
+
+#18 では、以下を利用して共有URL / リロード復元を実装する。
+
+* `public_id` から event aggregate を取得する
+* participant 表示名を復元する
+* `adoptedGeneratedScheduleId` があればそれを優先する
+* なければ `currentGeneratedScheduleId` を表示対象にする
+* generated_schedule_id を使って core get API から対戦表本体を取得する

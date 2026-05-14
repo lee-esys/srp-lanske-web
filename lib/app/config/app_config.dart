@@ -5,4 +5,13 @@ class AppConfig {
     'LANSKE_CORE_API_BASE_URL',
     defaultValue: 'http://localhost:8080',
   );
+
+  static const String eventRepositoryMode = String.fromEnvironment(
+    'LANSKE_EVENT_REPOSITORY',
+    defaultValue: 'memory',
+  );
+
+  static bool get usesFirestoreEventRepository {
+    return eventRepositoryMode == 'firestore';
+  }
 }
