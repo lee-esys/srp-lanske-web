@@ -392,7 +392,7 @@ class _SchedulePageState extends State<SchedulePage> {
           latestEvent.event.currentGeneratedScheduleId;
 
       if (latestCurrentGeneratedScheduleId != displayedGeneratedScheduleId) {
-        _showMessage('対戦表が更新されています。最新の対戦表を再取得します');
+        _showMessage('対戦表が更新されています。最新の情報に更新します');
         await _reloadSchedule();
         return;
       }
@@ -411,7 +411,7 @@ class _SchedulePageState extends State<SchedulePage> {
         _savedEvent = _replaceSavedEvent(latestEvent, updatedEvent);
       });
 
-      _showMessage('採用しました');
+      _showMessage('この対戦表を採用しました');
       await _reloadSchedule();
     } catch (e) {
       if (!mounted) return;

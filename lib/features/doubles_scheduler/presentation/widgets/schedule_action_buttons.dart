@@ -38,8 +38,8 @@ class ScheduleActionButtons extends StatelessWidget {
           ),
           FilledButton.tonalIcon(
             onPressed: isLoading ? null : onReload,
-            icon: const Icon(Icons.download),
-            label: const Text('再取得'),
+            icon: const Icon(Icons.sync),
+            label: const Text('最新の情報に更新'),
           ),
         ],
       );
@@ -56,18 +56,19 @@ class ScheduleActionButtons extends StatelessWidget {
         ),
         FilledButton.tonalIcon(
           onPressed: (isLoading || !canReload) ? null : onReload,
-          icon: const Icon(Icons.download),
-          label: const Text('再取得'),
+          icon: const Icon(Icons.sync),
+          label: const Text('最新の情報に更新'),
         ),
-        FilledButton(
+        FilledButton.icon(
           onPressed: (isLoading || isAdopting || !canAdopt) ? null : onAdopt,
-          child: isAdopting
+          icon: isAdopting
               ? const SizedBox(
                   width: 18,
                   height: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('採用'),
+              : const Icon(Icons.check),
+          label: Text(isAdopting ? '採用中' : 'この対戦表を採用'),
         ),
       ],
     );
