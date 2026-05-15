@@ -447,32 +447,33 @@ class _SchedulePageState extends State<SchedulePage> {
       padding: const EdgeInsets.all(16),
       children: [
         ScheduleEventSummaryCard(
-          eventName: widget.draft.eventName,
           courtCount: widget.draft.courts,
           participantCount: widget.draft.players,
-          publicId: _savedEvent?.event.publicId,
           statusLabel: _eventStatusLabel,
           onCopyShareUrl: _savedEvent == null ? null : _copyShareUrl,
+          onRefresh: _reloadSchedule,
+          canRefresh: _generatedScheduleId != null,
         ),
         const SizedBox(height: 12),
         ScheduleParticipantsCard(
           participants: _participantViewModels,
         ),
         const SizedBox(height: 12),
-        ScheduleSectionCard(
-          title: '操作',
-          child: ScheduleActionButtons(
-            hasAdoptedSchedule: _hasAdoptedSchedule,
-            isLoading: _isLoading,
-            isAdopting: _isAdopting,
-            generateButtonLabel: _generateButtonLabel,
-            canReload: _generatedScheduleId != null,
-            canAdopt: _generatedScheduleId != null && _scheduleResponse != null,
-            onGenerate: _requestGenerateSchedule,
-            onReload: _reloadSchedule,
-            onAdopt: _adoptSchedule,
+        if (!_hasAdoptedSchedule) ...[
+          const SizedBox(height: 12),
+          ScheduleSectionCard(
+            title: '操作',
+            child: ScheduleActionButtons(
+              isLoading: _isLoading,
+              isAdopting: _isAdopting,
+              generateButtonLabel: _generateButtonLabel,
+              canAdopt:
+                  _generatedScheduleId != null && _scheduleResponse != null,
+              onGenerate: _requestGenerateSchedule,
+              onAdopt: _adoptSchedule,
+            ),
           ),
-        ),
+        ],
         const SizedBox(height: 12),
         ScheduleSectionCard(
           title: '対戦表',
