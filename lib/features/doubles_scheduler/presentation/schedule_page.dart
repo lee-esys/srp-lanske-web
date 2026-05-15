@@ -91,6 +91,13 @@ class _SchedulePageState extends State<SchedulePage> {
         : '再生成';
   }
 
+  bool get _hasGeneratedSchedule {
+    final generatedScheduleId =
+        _savedEvent?.event.displayGeneratedScheduleId ?? _generatedScheduleId;
+
+    return generatedScheduleId != null && generatedScheduleId.isNotEmpty;
+  }
+
   Map<String, String> get _playerNameById {
     return {
       for (final participant in widget.draft.participants)
@@ -105,6 +112,40 @@ class _SchedulePageState extends State<SchedulePage> {
         displayName: entry.value.displayName,
       );
     }).toList(growable: false);
+  }
+
+  Future<void> _requestGenerateSchedule() async {
+    if (!_hasGeneratedSchedule) {
+      await _generateSchedule();
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('再生成しますか？'),
+          content: const Text(
+            '現在表示している対戦表を新しい対戦表に差し替えます。\n'
+            '共有URLから表示される未採用の対戦表も、再生成後の内容に更新されます。',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('キャンセル'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('再生成する'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (!mounted || confirmed != true) return;
+
+    await _generateSchedule();
   }
 
   Future<SavedEventAggregate> _ensureSavedEvent() async {
@@ -360,7 +401,7 @@ class _SchedulePageState extends State<SchedulePage> {
             generateButtonLabel: _generateButtonLabel,
             canReload: _generatedScheduleId != null,
             canAdopt: _generatedScheduleId != null && _scheduleResponse != null,
-            onGenerate: _generateSchedule,
+            onGenerate: _requestGenerateSchedule,
             onReload: _reloadSchedule,
             onAdopt: _adoptSchedule,
           ),
