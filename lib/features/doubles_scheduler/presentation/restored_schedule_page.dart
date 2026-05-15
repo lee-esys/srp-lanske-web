@@ -219,15 +219,59 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   }
 
   Future<void> _reloadSchedule() async {
-    final generatedScheduleId =
-        _generatedScheduleId ?? _savedEvent?.event.displayGeneratedScheduleId;
+    final publicId =
+        (_savedEvent?.event.publicId ?? widget.publicId).trim().toUpperCase();
+
+    if (!isValidPublicId(publicId)) {
+      _showMessage('共有URLが正しくありません');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final aggregate = await appEventRepository.findByPublicId(publicId);
+      if (!mounted) return;
+
+      if (aggregate == null) {
+        setState(() {
+          _savedEvent = null;
+          _scheduleResponse = null;
+          _generatedScheduleId = null;
+          _errorMessage = '対戦表が見つかりません';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final generatedScheduleId = aggregate.event.displayGeneratedScheduleId;
+
+      setState(() {
+        _savedEvent = aggregate;
+        _generatedScheduleId = generatedScheduleId;
+      });
 
       if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
-      _showMessage('再取得する generated_schedule_id がありません');
+        setState(() {
+          _scheduleResponse = null;
+          _errorMessage = 'まだ対戦表が生成されていません';
+          _isLoading = false;
+        });
         return;
       }
 
       await _fetchSchedule(generatedScheduleId);
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _errorMessage = '共有情報を再取得できませんでした: $e';
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _generateSchedule() async {

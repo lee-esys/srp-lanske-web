@@ -214,18 +214,41 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _reloadSchedule() async {
-    final generatedScheduleId = _generatedScheduleId;
-    if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
-      _showMessage('再取得する generated_schedule_id がありません');
-      return;
-    }
-
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
+      var generatedScheduleId = _generatedScheduleId;
+
+      final savedEvent = _savedEvent;
+      if (savedEvent != null) {
+        final aggregate =
+            await appEventRepository.findByPublicId(savedEvent.event.publicId);
+        if (!mounted) return;
+
+        if (aggregate != null) {
+          generatedScheduleId = aggregate.event.displayGeneratedScheduleId;
+
+          setState(() {
+            _savedEvent = aggregate;
+            _generatedScheduleId = generatedScheduleId;
+          });
+        }
+      }
+
+      if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
+        if (!mounted) return;
+
+        setState(() {
+          _scheduleResponse = null;
+          _errorMessage = '再取得する generated_schedule_id がありません';
+          _isLoading = false;
+        });
+        return;
+      }
+
       final response = await _service.getById(generatedScheduleId);
       if (!mounted) return;
 
@@ -238,7 +261,7 @@ class _SchedulePageState extends State<SchedulePage> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = e.toString();
+        _errorMessage = '対戦表を取得できませんでした: $e';
       });
     } finally {
       if (mounted) {
