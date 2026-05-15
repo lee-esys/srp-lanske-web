@@ -104,7 +104,12 @@ class JsonEventRepository implements EventRepository {
       throw StateError('event not found: $eventId');
     }
 
-    final updatedEvent = aggregate.event.copyWith(
+    final event = aggregate.event;
+    if (event.hasAdoptedSchedule) {
+      throw StateError('event already adopted: $eventId');
+    }
+
+    final updatedEvent = event.copyWith(
       status: SavedEventStatus.generated,
       currentGeneratedScheduleId: generatedScheduleId,
       updatedAt: DateTime.now(),

@@ -53,7 +53,8 @@ class SavedEvent {
   }
 
   bool get hasAdoptedSchedule {
-    return status == SavedEventStatus.adopted || adoptedGeneratedScheduleId != null;
+    return status == SavedEventStatus.adopted ||
+        adoptedGeneratedScheduleId != null;
   }
 
   SavedEvent copyWith({
@@ -82,8 +83,10 @@ class SavedEvent {
       sourceType: sourceType ?? this.sourceType,
       sourceUrl: sourceUrl ?? this.sourceUrl,
       status: status ?? this.status,
-      currentGeneratedScheduleId: currentGeneratedScheduleId ?? this.currentGeneratedScheduleId,
-      adoptedGeneratedScheduleId: adoptedGeneratedScheduleId ?? this.adoptedGeneratedScheduleId,
+      currentGeneratedScheduleId:
+          currentGeneratedScheduleId ?? this.currentGeneratedScheduleId,
+      adoptedGeneratedScheduleId:
+          adoptedGeneratedScheduleId ?? this.adoptedGeneratedScheduleId,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -122,8 +125,10 @@ class SavedEvent {
       sourceType: _eventSourceTypeFromJson(json['sourceType']),
       sourceUrl: json['sourceUrl']?.toString(),
       status: _savedEventStatusFromJson(json['status']),
-      currentGeneratedScheduleId: json['currentGeneratedScheduleId']?.toString(),
-      adoptedGeneratedScheduleId: json['adoptedGeneratedScheduleId']?.toString(),
+      currentGeneratedScheduleId:
+          json['currentGeneratedScheduleId']?.toString(),
+      adoptedGeneratedScheduleId:
+          json['adoptedGeneratedScheduleId']?.toString(),
       createdAt: _dateTimeFromJson(json['createdAt']),
       updatedAt: _dateTimeFromJson(json['updatedAt']),
     );
@@ -223,7 +228,8 @@ class SavedEventImport {
       sourceUrl: json['sourceUrl']?.toString(),
       pastedText: json['pastedText']?.toString(),
       parsedEventJson: _nullableMapFromJson(json['parsedEventJson']),
-      parsedParticipantsJson: _nullableMapListFromJson(json['parsedParticipantsJson']),
+      parsedParticipantsJson:
+          _nullableMapListFromJson(json['parsedParticipantsJson']),
       confirmedAt: _nullableDateTimeFromJson(json['confirmedAt']),
       createdAt: _dateTimeFromJson(json['createdAt']),
     );
@@ -318,7 +324,9 @@ class SavedEventAggregate {
         );
       }).toList(growable: false),
       share: SavedEventShare.fromJson(shareJson),
-      importRecord: importRecordJson == null ? null : SavedEventImport.fromJson(importRecordJson),
+      importRecord: importRecordJson == null
+          ? null
+          : SavedEventImport.fromJson(importRecordJson),
     );
   }
 }

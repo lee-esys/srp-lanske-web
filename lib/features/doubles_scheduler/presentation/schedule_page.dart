@@ -115,6 +115,15 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _requestGenerateSchedule() async {
+    final latestEvent = await _refreshSavedEventForAction();
+    if (!mounted) return;
+
+    if (latestEvent?.event.hasAdoptedSchedule == true) {
+      _showMessage('採用済みのため再生成できません');
+      await _reloadSchedule();
+      return;
+    }
+
     if (!_hasGeneratedSchedule) {
       await _generateSchedule();
       return;
@@ -145,7 +154,42 @@ class _SchedulePageState extends State<SchedulePage> {
 
     if (!mounted || confirmed != true) return;
 
+    final latestBeforeGenerate = await _refreshSavedEventForAction();
+    if (!mounted) return;
+
+    if (latestBeforeGenerate?.event.hasAdoptedSchedule == true) {
+      _showMessage('採用済みのため再生成できません');
+      await _reloadSchedule();
+      return;
+    }
+
     await _generateSchedule();
+  }
+
+  Future<SavedEventAggregate?> _refreshSavedEventForAction() async {
+    final savedEvent = _savedEvent;
+    if (savedEvent == null) return null;
+
+    final aggregate =
+        await appEventRepository.findByPublicId(savedEvent.event.publicId);
+    if (!mounted) return null;
+
+    if (aggregate == null) {
+      setState(() {
+        _savedEvent = null;
+        _scheduleResponse = null;
+        _generatedScheduleId = null;
+        _errorMessage = '対戦表が見つかりません';
+      });
+      return null;
+    }
+
+    setState(() {
+      _savedEvent = aggregate;
+      _generatedScheduleId = aggregate.event.displayGeneratedScheduleId;
+    });
+
+    return aggregate;
   }
 
   Future<SavedEventAggregate> _ensureSavedEvent() async {
@@ -314,9 +358,32 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _adoptSchedule() async {
+    final latestEvent = await _refreshSavedEventForAction();
+    if (!mounted) return;
+
+    if (latestEvent == null) {
+      _showMessage('採用するイベント情報がありません');
+      return;
+    }
+
+    if (latestEvent.event.hasAdoptedSchedule) {
+      _showMessage('すでに採用済みです');
+      await _reloadSchedule();
+      return;
+    }
+
+    final latestCurrentGeneratedScheduleId =
+        latestEvent.event.currentGeneratedScheduleId;
+
+    if (latestCurrentGeneratedScheduleId != _generatedScheduleId) {
+      _showMessage('対戦表が更新されています。最新の対戦表を再取得します');
+      await _reloadSchedule();
+      return;
+    }
+
     final generatedScheduleId = _generatedScheduleId;
     if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
-      _showMessage('採用する generated_schedule_id がありません');
+      _showMessage('採用するイベント情報がありません');
       return;
     }
 
