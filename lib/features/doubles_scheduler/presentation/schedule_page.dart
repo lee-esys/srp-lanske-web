@@ -358,32 +358,11 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _adoptSchedule() async {
-    final latestEvent = await _refreshSavedEventForAction();
-    if (!mounted) return;
+    final displayedGeneratedScheduleId = _generatedScheduleId;
 
-    if (latestEvent == null) {
-      _showMessage('採用するイベント情報がありません');
-      return;
-    }
-
-    if (latestEvent.event.hasAdoptedSchedule) {
-      _showMessage('すでに採用済みです');
-      await _reloadSchedule();
-      return;
-    }
-
-    final latestCurrentGeneratedScheduleId =
-        latestEvent.event.currentGeneratedScheduleId;
-
-    if (latestCurrentGeneratedScheduleId != _generatedScheduleId) {
-      _showMessage('対戦表が更新されています。最新の対戦表を再取得します');
-      await _reloadSchedule();
-      return;
-    }
-
-    final generatedScheduleId = _generatedScheduleId;
-    if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
-      _showMessage('採用するイベント情報がありません');
+    if (displayedGeneratedScheduleId == null ||
+        displayedGeneratedScheduleId.isEmpty) {
+      _showMessage('採用する generated_schedule_id がありません');
       return;
     }
 
@@ -395,20 +374,41 @@ class _SchedulePageState extends State<SchedulePage> {
     });
 
     try {
-      final savedEvent = await _ensureSavedEvent();
+      final latestEvent = await _refreshSavedEventForAction();
+      if (!mounted) return;
 
-      await _service.adopt(generatedScheduleId);
+      if (latestEvent == null) {
+        _showMessage('採用するイベント情報がありません');
+        return;
+      }
+
+      if (latestEvent.event.hasAdoptedSchedule) {
+        _showMessage('すでに採用済みです');
+        await _reloadSchedule();
+        return;
+      }
+
+      final latestCurrentGeneratedScheduleId =
+          latestEvent.event.currentGeneratedScheduleId;
+
+      if (latestCurrentGeneratedScheduleId != displayedGeneratedScheduleId) {
+        _showMessage('対戦表が更新されています。最新の対戦表を再取得します');
+        await _reloadSchedule();
+        return;
+      }
+
+      await _service.adopt(displayedGeneratedScheduleId);
 
       final updatedEvent =
           await appEventRepository.updateAdoptedGeneratedScheduleId(
-        eventId: savedEvent.event.id,
-        generatedScheduleId: generatedScheduleId,
+        eventId: latestEvent.event.id,
+        generatedScheduleId: displayedGeneratedScheduleId,
       );
 
       if (!mounted) return;
 
       setState(() {
-        _savedEvent = _replaceSavedEvent(savedEvent, updatedEvent);
+        _savedEvent = _replaceSavedEvent(latestEvent, updatedEvent);
       });
 
       _showMessage('採用しました');
