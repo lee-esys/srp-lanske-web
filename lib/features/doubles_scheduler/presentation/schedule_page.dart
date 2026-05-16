@@ -110,6 +110,7 @@ class _SchedulePageState extends State<SchedulePage> {
       return ScheduleParticipantViewModel(
         orderNo: entry.key + 1,
         displayName: entry.value.displayName,
+        participantId: entry.value.id,
       );
     }).toList(growable: false);
   }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'schedule_player_chip.dart';
+
 class ScheduleRoundsView extends StatefulWidget {
   const ScheduleRoundsView({
     super.key,
@@ -63,35 +65,38 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       child: Padding(
         padding: const EdgeInsets.all(4),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: 36,
-              child: Column(
-                children: [
-                  Text(
-                    'R $roundNumber',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: SizedBox(
+                width: 36,
+                child: Column(
+                  children: [
+                    Text(
+                      'R $roundNumber',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  _RestToggleButton(
-                    restCount: restSlotNumbers.length,
-                    isExpanded: isRestExpanded,
-                    onTap: () {
-                      setState(() {
-                        if (isRestExpanded) {
-                          _expandedRestRoundNumbers.remove(roundNumber);
-                        } else {
-                          _expandedRestRoundNumbers.add(roundNumber);
-                        }
-                      });
-                    },
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    _RestToggleButton(
+                      restCount: restSlotNumbers.length,
+                      isExpanded: isRestExpanded,
+                      onTap: () {
+                        setState(() {
+                          if (isRestExpanded) {
+                            _expandedRestRoundNumbers.remove(roundNumber);
+                          } else {
+                            _expandedRestRoundNumbers.add(roundNumber);
+                          }
+                        });
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -115,6 +120,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
                           return _buildPlayerChip(
                             slotNumber: slotNumber,
                             slotToPlayerId: slotToPlayerId,
+                            size: SchedulePlayerChipSize.compact,
                           );
                         }),
                       ],
@@ -193,6 +199,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   Widget _buildPlayerChip({
     required int slotNumber,
     required Map<int, String> slotToPlayerId,
+    SchedulePlayerChipSize size = SchedulePlayerChipSize.normal,
   }) {
     final playerId = slotToPlayerId[slotNumber];
     final displayName = playerId == null
@@ -203,6 +210,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       slotNumber: slotNumber,
       playerId: playerId,
       displayName: displayName,
+      size: size,
     );
   }
 
@@ -243,59 +251,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     }
 
     return slotToPlayerId;
-  }
-}
-
-class SchedulePlayerChip extends StatelessWidget {
-  const SchedulePlayerChip({
-    super.key,
-    required this.slotNumber,
-    required this.displayName,
-    this.playerId,
-    this.isHighlighted = false,
-    this.onTap,
-  });
-
-  final int slotNumber;
-  final String displayName;
-  final String? playerId;
-  final bool isHighlighted;
-  final ValueChanged<String>? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final playerId = this.playerId;
-
-    final label = SizedBox(
-      width: 64,
-      child: Text(
-        '$slotNumber: $displayName',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 12),
-      ),
-    );
-
-    if (onTap == null || playerId == null) {
-      return Chip(
-        label: label,
-        visualDensity: VisualDensity.compact,
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        backgroundColor: isHighlighted
-            ? Theme.of(context).colorScheme.primaryContainer
-            : null,
-      );
-    }
-
-    return ActionChip(
-      label: label,
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      backgroundColor:
-          isHighlighted ? Theme.of(context).colorScheme.primaryContainer : null,
-      onPressed: () => onTap!(playerId),
-    );
   }
 }
 

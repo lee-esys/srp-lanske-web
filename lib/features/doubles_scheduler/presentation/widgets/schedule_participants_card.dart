@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 
+import 'schedule_player_chip.dart';
 import 'schedule_section_card.dart';
 
 class ScheduleParticipantViewModel {
   const ScheduleParticipantViewModel({
     required this.orderNo,
     required this.displayName,
+    required this.participantId,
   });
 
   final int orderNo;
   final String displayName;
+  final String participantId;
 }
 
 class ScheduleParticipantsCard extends StatefulWidget {
@@ -78,7 +81,7 @@ class _ScheduleParticipantsCardState extends State<ScheduleParticipantsCard> {
     return ScheduleSectionCard(
       title: widget.title,
       child: SizedBox(
-        height: 44,
+        height: 64,
         child: Stack(
           children: [
             SingleChildScrollView(
@@ -88,11 +91,10 @@ class _ScheduleParticipantsCardState extends State<ScheduleParticipantsCard> {
                 children: widget.participants.map((participant) {
                   return Padding(
                     padding: const EdgeInsets.only(right: 6),
-                    child: Chip(
-                      label: Text(
-                        '${participant.orderNo}: ${participant.displayName}',
-                      ),
-                      visualDensity: VisualDensity.compact,
+                    child: SchedulePlayerChip(
+                      slotNumber: participant.orderNo,
+                      playerId: participant.participantId,
+                      displayName: participant.displayName,
                     ),
                   );
                 }).toList(growable: false),
