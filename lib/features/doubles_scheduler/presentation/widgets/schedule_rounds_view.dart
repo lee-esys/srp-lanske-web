@@ -28,8 +28,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
     final rounds = _asObjectList(scheduleResponse['rounds']);
     final slotToPlayerId = _buildSlotToPlayerId(scheduleResponse);
-    // final courtCount = scheduleResponse?['courts']?.length ?? 0;
-    final courtCount = 2;
 
     if (rounds.isEmpty) {
       return const Text('対戦表データがありません');
@@ -37,7 +35,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
     return Column(
       children: rounds.map((round) {
-        return _buildRoundCard(round, slotToPlayerId, courtCount);
+        return _buildRoundCard(round, slotToPlayerId);
       }).toList(growable: false),
     );
   }
@@ -45,7 +43,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   Widget _buildRoundCard(
     Map<String, dynamic> round,
     Map<int, String> slotToPlayerId,
-    int courtCount,
   ) {
     final roundNumber = round['round_number']?.toString() ?? '-';
     final roundNumberValue = int.tryParse(roundNumber);

@@ -458,7 +458,6 @@ class _SchedulePageState extends State<SchedulePage> {
               '面数: ${widget.draft.courts}　　参加者: ${widget.draft.participants.length}人',
           participants: _participantViewModels,
         ),
-        const SizedBox(height: 12),
         if (!_hasAdoptedSchedule) ...[
           const SizedBox(height: 12),
           ScheduleSectionCard(

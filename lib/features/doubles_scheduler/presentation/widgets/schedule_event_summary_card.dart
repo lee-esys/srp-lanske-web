@@ -24,10 +24,10 @@ class ScheduleEventSummaryCard extends StatelessWidget {
           runSpacing: 4,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            // Chip(
-            //   label: Text(statusLabel, style: TextStyle(fontSize: 14)),
-            //   visualDensity: VisualDensity.compact,
-            // ),
+            Chip(
+              label: Text(statusLabel, style: TextStyle(fontSize: 14)),
+              visualDensity: VisualDensity.compact,
+            ),
             if (onCopyShareUrl != null)
               OutlinedButton.icon(
                 onPressed: onCopyShareUrl,
