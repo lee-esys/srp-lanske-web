@@ -28,7 +28,8 @@ class ScheduleEventSummaryCard extends StatelessWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Chip(
-                  label: Text(statusLabel, style: const TextStyle(fontSize: 14)),
+                  label:
+                      Text(statusLabel, style: const TextStyle(fontSize: 14)),
                   visualDensity: VisualDensity.compact,
                 ),
                 if (onCopyShareUrl != null)

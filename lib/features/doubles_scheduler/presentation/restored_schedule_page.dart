@@ -124,6 +124,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       return ScheduleParticipantViewModel(
         orderNo: participant.orderNo,
         displayName: participant.displayName,
+        participantId: participant.id,
       );
     }).toList(growable: false);
   }
