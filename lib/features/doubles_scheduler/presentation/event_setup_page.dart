@@ -39,8 +39,13 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
   int _courts = 1;
 
+  static const _minCourts = 1;
+  static const _maxCourts = 2;
+
   int get _minPlayers => _courts * 4;
-  int get _maxPlayers => (_courts * 4) + 10;
+  int get _maxPlayers => _maxPlayersForCourts(_courts);
+
+  int _maxPlayersForCourts(int courts) => courts * 8 - 1;
 
   bool get _hasUrlInput => _urlController.text.trim().isNotEmpty;
 
@@ -184,7 +189,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
   }
 
   void _setCourts(int value, {bool resetPlayersToDefault = false}) {
-    final clamped = value.clamp(1, 10);
+    final clamped = value.clamp(_minCourts, _maxCourts);
     setState(() {
       _courts = clamped;
       _syncCourtsController();
@@ -317,7 +322,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
         final eventCourtCount = preview.eventCandidate?.courtCount ?? 0;
         if (eventCourtCount > 0) {
-          _courts = eventCourtCount.clamp(1, 10);
+          _courts = eventCourtCount.clamp(_minCourts, _maxCourts);
         }
 
         _syncCourtsController();
@@ -379,12 +384,15 @@ class _EventSetupPageState extends State<EventSetupPage> {
   int _inferCourtsForPlayers(int players) {
     final eventCourts = _courts;
 
-    if (players >= eventCourts * 4 && players <= (eventCourts * 4) + 10) {
+    if (players >= _minPlayers && players <= _maxPlayers) {
       return eventCourts;
     }
 
-    for (var courts = 1; courts <= 10; courts++) {
-      if (players >= courts * 4 && players <= (courts * 4) + 10) {
+    for (var courts = _minCourts; courts <= _maxCourts; courts++) {
+      final minPlayers = courts * 4;
+      final maxPlayers = _maxPlayersForCourts(courts);
+
+      if (players >= minPlayers && players <= maxPlayers) {
         return courts;
       }
     }
@@ -679,7 +687,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('テニス乱数表ジェネレーター'),
+        title: const Text('ダブルス乱数表 ver0.1'),
         actions: [
           IconButton(
             tooltip: '対戦表一覧',
@@ -708,7 +716,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        '面数は1〜10まで対応しています。',
+                        'ver0.1では、1面4〜7人 / 2面8〜15人に対応しています。',
                         style: TextStyle(fontSize: 12, color: Colors.black54),
                       ),
                       const SizedBox(height: 16),
