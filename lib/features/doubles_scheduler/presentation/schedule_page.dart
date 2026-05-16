@@ -461,7 +461,6 @@ class _SchedulePageState extends State<SchedulePage> {
         if (!_hasAdoptedSchedule) ...[
           const SizedBox(height: 12),
           ScheduleSectionCard(
-            title: '操作',
             child: ScheduleActionButtons(
               isLoading: _isLoading,
               isAdopting: _isAdopting,
