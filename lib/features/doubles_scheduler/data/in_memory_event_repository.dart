@@ -118,6 +118,10 @@ class InMemoryEventRepository implements EventRepository {
       throw StateError('event not found: $eventId');
     }
 
+    if (event.hasAdoptedSchedule) {
+      throw StateError('event already adopted: $eventId');
+    }
+
     final updated = event.copyWith(
       status: SavedEventStatus.generated,
       currentGeneratedScheduleId: generatedScheduleId,

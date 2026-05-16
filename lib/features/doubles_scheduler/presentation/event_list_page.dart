@@ -19,7 +19,7 @@ class EventListPage extends StatelessWidget {
               child: Text('まだ保存された対戦表はありません'),
             )
           : ListView.separated(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(4),
               itemCount: items.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
