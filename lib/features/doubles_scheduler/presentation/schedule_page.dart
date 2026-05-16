@@ -444,11 +444,9 @@ class _SchedulePageState extends State<SchedulePage> {
 
   Widget _buildScheduleBody() {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(4),
       children: [
         ScheduleEventSummaryCard(
-          courtCount: widget.draft.courts,
-          participantCount: widget.draft.players,
           statusLabel: _eventStatusLabel,
           onCopyShareUrl: _savedEvent == null ? null : _copyShareUrl,
           onRefresh: _reloadSchedule,
@@ -456,6 +454,8 @@ class _SchedulePageState extends State<SchedulePage> {
         ),
         const SizedBox(height: 12),
         ScheduleParticipantsCard(
+          title:
+              '面数: ${widget.draft.courts}　　参加者: ${widget.draft.participants.length}人',
           participants: _participantViewModels,
         ),
         const SizedBox(height: 12),
@@ -480,13 +480,14 @@ class _SchedulePageState extends State<SchedulePage> {
           child: _isLoading
               ? const Center(
                   child: Padding(
-                    padding: EdgeInsets.all(16),
+                    padding: EdgeInsets.all(4),
                     child: CircularProgressIndicator(),
                   ),
                 )
               : ScheduleRoundsView(
                   scheduleResponse: _scheduleResponse,
                   playerNameById: _playerNameById,
+                  courtCount: widget.draft.courts,
                 ),
         ),
         if (_errorMessage != null) ...[

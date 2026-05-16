@@ -546,7 +546,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     final savedEvent = _savedEvent;
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(4),
       children: [
         if (savedEvent == null)
           ScheduleSectionCard(
@@ -555,8 +555,6 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           )
         else ...[
           ScheduleEventSummaryCard(
-            courtCount: savedEvent.event.courtCount,
-            participantCount: savedEvent.participants.length,
             statusLabel: _eventStatusLabel,
             onCopyShareUrl: _copyShareUrl,
             onRefresh: _reloadSchedule,
@@ -564,6 +562,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           ),
           const SizedBox(height: 12),
           ScheduleParticipantsCard(
+            title:
+                '面数: ${savedEvent.event.courtCount}　　参加者: ${savedEvent.participants.length}人',
             participants: _participantViewModels,
           ),
           if (!_hasAdoptedSchedule) ...[
@@ -587,13 +587,14 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
             child: _isLoading
                 ? const Center(
                     child: Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: EdgeInsets.all(4),
                       child: CircularProgressIndicator(),
                     ),
                   )
                 : ScheduleRoundsView(
                     scheduleResponse: _scheduleResponse,
                     playerNameById: _playerNameById,
+                    courtCount: savedEvent.event.courtCount,
                   ),
           ),
         ],

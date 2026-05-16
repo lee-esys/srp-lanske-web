@@ -700,7 +700,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
                 child: Opacity(
                   opacity: _isLoadingEvent ? 0.5 : 1,
                   child: ListView(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(4),
                     children: [
                       const Text(
                         'URLを貼るか、手動で面数・人数を入力してください。',

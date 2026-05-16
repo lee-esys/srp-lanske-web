@@ -15,9 +15,11 @@ class ScheduleParticipantViewModel {
 class ScheduleParticipantsCard extends StatefulWidget {
   const ScheduleParticipantsCard({
     super.key,
+    required this.title,
     required this.participants,
   });
 
+  final String title;
   final List<ScheduleParticipantViewModel> participants;
 
   @override
@@ -74,7 +76,7 @@ class _ScheduleParticipantsCardState extends State<ScheduleParticipantsCard> {
     }
 
     return ScheduleSectionCard(
-      title: '参加者',
+      title: widget.title,
       child: SizedBox(
         height: 44,
         child: Stack(
@@ -103,13 +105,24 @@ class _ScheduleParticipantsCardState extends State<ScheduleParticipantsCard> {
                 bottom: 0,
                 child: IgnorePointer(
                   child: Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    width: 36,
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 8),
                     decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surface
-                          .withValues(alpha: 0.88),
+                      gradient: LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withValues(alpha: 0.0),
+                          Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withValues(alpha: 0.92),
+                        ],
+                      ),
                     ),
                     child: const Text('>>'),
                   ),

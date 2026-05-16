@@ -5,10 +5,12 @@ class ScheduleRoundsView extends StatefulWidget {
     super.key,
     required this.scheduleResponse,
     required this.playerNameById,
+    required this.courtCount,
   });
 
   final Map<String, dynamic>? scheduleResponse;
   final Map<String, String> playerNameById;
+  final int courtCount;
 
   @override
   State<ScheduleRoundsView> createState() => _ScheduleRoundsViewState();
@@ -26,6 +28,8 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
     final rounds = _asObjectList(scheduleResponse['rounds']);
     final slotToPlayerId = _buildSlotToPlayerId(scheduleResponse);
+    // final courtCount = scheduleResponse?['courts']?.length ?? 0;
+    final courtCount = 2;
 
     if (rounds.isEmpty) {
       return const Text('対戦表データがありません');
@@ -33,7 +37,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
     return Column(
       children: rounds.map((round) {
-        return _buildRoundCard(round, slotToPlayerId);
+        return _buildRoundCard(round, slotToPlayerId, courtCount);
       }).toList(growable: false),
     );
   }
@@ -41,31 +45,56 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   Widget _buildRoundCard(
     Map<String, dynamic> round,
     Map<int, String> slotToPlayerId,
+    int courtCount,
   ) {
     final roundNumber = round['round_number']?.toString() ?? '-';
+    final roundNumberValue = int.tryParse(roundNumber);
+    final isEvenRound = roundNumberValue != null && roundNumberValue.isEven;
+
+    final colorScheme = Theme.of(context).colorScheme;
+    final roundCardColor = isEvenRound
+        ? colorScheme.surface.withValues(alpha: 0.92)
+        : colorScheme.primaryContainer.withValues(alpha: 0.92);
+
     final restSlotNumbers = _asIntList(round['rest_slot_numbers']);
     final courts = _asObjectList(round['courts']);
     final isRestExpanded = _expandedRestRoundNumbers.contains(roundNumber);
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      color: roundCardColor,
+      margin: const EdgeInsets.only(bottom: 4),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(4),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(
-              width: 34,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  roundNumber,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
+              width: 36,
+              child: Column(
+                children: [
+                  Text(
+                    'R $roundNumber',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  _RestToggleButton(
+                    restCount: restSlotNumbers.length,
+                    isExpanded: isRestExpanded,
+                    onTap: () {
+                      setState(() {
+                        if (isRestExpanded) {
+                          _expandedRestRoundNumbers.remove(roundNumber);
+                        } else {
+                          _expandedRestRoundNumbers.add(roundNumber);
+                        }
+                      });
+                    },
+                  ),
+                ],
               ),
             ),
             const SizedBox(width: 8),
@@ -74,7 +103,8 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ...courts.map((court) {
-                    return _buildCourtRow(court, slotToPlayerId);
+                    return _buildCourtRow(court, slotToPlayerId,
+                        showCourtNumber: widget.courtCount >= 2);
                   }),
                   if (isRestExpanded) ...[
                     const Divider(),
@@ -96,20 +126,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            _RestToggleButton(
-              restCount: restSlotNumbers.length,
-              isExpanded: isRestExpanded,
-              onTap: () {
-                setState(() {
-                  if (isRestExpanded) {
-                    _expandedRestRoundNumbers.remove(roundNumber);
-                  } else {
-                    _expandedRestRoundNumbers.add(roundNumber);
-                  }
-                });
-              },
-            ),
           ],
         ),
       ),
@@ -117,30 +133,32 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   }
 
   Widget _buildCourtRow(
-    Map<String, dynamic> court,
-    Map<int, String> slotToPlayerId,
-  ) {
+      Map<String, dynamic> court, Map<int, String> slotToPlayerId,
+      {required bool showCourtNumber}) {
     final courtNumber = court['court_number']?.toString() ?? '-';
     final team1Slots = _asIntList(court['team1_player_slots']);
     final team2Slots = _asIntList(court['team2_player_slots']);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Wrap(
-        spacing: 6,
-        runSpacing: 6,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          Text(
-            'コート: $courtNumber',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          ..._buildTeamChips(team1Slots, slotToPlayerId),
-          const Text('vs'),
-          ..._buildTeamChips(team2Slots, slotToPlayerId),
-        ],
-      ),
-    );
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Wrap(
+          spacing: 4,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            if (showCourtNumber)
+              Text(
+                courtNumber,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            _buildTeamGroup(team1Slots, slotToPlayerId),
+            const Text('vs'),
+            _buildTeamGroup(team2Slots, slotToPlayerId),
+          ],
+        ));
   }
 
   List<Widget> _buildTeamChips(
@@ -151,21 +169,28 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       return const [Text('-')];
     }
 
-    final chips = <Widget>[];
-    for (var i = 0; i < slotNumbers.length; i += 1) {
-      if (i > 0) {
-        chips.add(const Text('/'));
-      }
-
-      chips.add(
-        _buildPlayerChip(
-          slotNumber: slotNumbers[i],
-          slotToPlayerId: slotToPlayerId,
-        ),
+    return slotNumbers.map((slotNumber) {
+      return _buildPlayerChip(
+        slotNumber: slotNumber,
+        slotToPlayerId: slotToPlayerId,
       );
+    }).toList(growable: false);
+  }
+
+  Widget _buildTeamGroup(
+    List<int> slotNumbers,
+    Map<int, String> slotToPlayerId,
+  ) {
+    if (slotNumbers.isEmpty) {
+      return const Text('-');
     }
 
-    return chips;
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: _buildTeamChips(slotNumbers, slotToPlayerId),
+    );
   }
 
   Widget _buildPlayerChip({
@@ -243,12 +268,23 @@ class SchedulePlayerChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final playerId = this.playerId;
-    final label = Text('$slotNumber: $displayName');
+
+    final label = SizedBox(
+      width: 64,
+      child: Text(
+        '$slotNumber: $displayName',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontSize: 12),
+      ),
+    );
 
     if (onTap == null || playerId == null) {
       return Chip(
         label: label,
         visualDensity: VisualDensity.compact,
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         backgroundColor: isHighlighted
             ? Theme.of(context).colorScheme.primaryContainer
             : null,
@@ -258,6 +294,7 @@ class SchedulePlayerChip extends StatelessWidget {
     return ActionChip(
       label: label,
       visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       backgroundColor:
           isHighlighted ? Theme.of(context).colorScheme.primaryContainer : null,
       onPressed: () => onTap!(playerId),
@@ -282,7 +319,7 @@ class _RestToggleButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       onTap: onTap,
       child: Container(
-        width: 52,
+        width: 40,
         padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
           border: Border.all(
@@ -293,17 +330,13 @@ class _RestToggleButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              '休憩',
-              style: TextStyle(fontSize: 12),
-            ),
             Text(
-              '$restCount人',
-              style: const TextStyle(fontSize: 12),
+              '休憩: $restCount',
+              style: TextStyle(fontSize: 10),
             ),
             Icon(
               isExpanded ? Icons.expand_less : Icons.expand_more,
-              size: 18,
+              size: 16,
             ),
           ],
         ),
