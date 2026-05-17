@@ -20,10 +20,14 @@ class ScheduleParticipantsCard extends StatefulWidget {
     super.key,
     required this.title,
     required this.participants,
+    this.selectedParticipantId,
+    this.onParticipantSelected,
   });
 
   final String title;
   final List<ScheduleParticipantViewModel> participants;
+  final String? selectedParticipantId;
+  final ValueChanged<String>? onParticipantSelected;
 
   @override
   State<ScheduleParticipantsCard> createState() =>
@@ -95,6 +99,9 @@ class _ScheduleParticipantsCardState extends State<ScheduleParticipantsCard> {
                       slotNumber: participant.orderNo,
                       playerId: participant.participantId,
                       displayName: participant.displayName,
+                      isHighlighted: widget.selectedParticipantId ==
+                          participant.participantId,
+                      onTap: widget.onParticipantSelected,
                     ),
                   );
                 }).toList(growable: false),
