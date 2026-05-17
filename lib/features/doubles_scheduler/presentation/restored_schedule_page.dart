@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
+import 'package:srp_lanske/features/doubles_scheduler/presentation/event_setup_page.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
+import 'package:srp_lanske/shared/utils/browser_url.dart';
 
 import '../application/generated_schedule_service.dart';
 import '../data/local_schedule_history_item.dart';
@@ -527,7 +529,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   void _handleMenu(_ScheduleMenuAction action) {
     switch (action) {
       case _ScheduleMenuAction.top:
-        Navigator.popUntil(context, (route) => route.isFirst);
+        _goTop();
         break;
       case _ScheduleMenuAction.list:
         Navigator.push(
@@ -536,6 +538,18 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         );
         break;
     }
+  }
+
+  void _goTop() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const EventSetupPage()),
+      (_) => false,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      replaceUrl('/');
+    });
   }
 
   EventDraft _buildDraft(SavedEventAggregate aggregate) {

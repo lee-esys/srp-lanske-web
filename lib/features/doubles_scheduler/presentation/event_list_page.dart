@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/shared/utils/browser_url.dart';
 
 import '../data/local_schedule_history_item.dart';
 import '../data/local_schedule_history_store.dart';
@@ -36,6 +37,19 @@ class _EventListPageState extends State<EventListPage> {
       MaterialPageRoute(
         builder: (_) => RestoredSchedulePage(publicId: item.publicId),
       ),
+    );
+
+    _replaceBrowserUrlWithPublicId(item.publicId);
+  }
+
+  void _replaceBrowserUrlWithPublicId(String publicId) {
+    replaceUrl(
+      Uri.base.replace(
+        queryParameters: {
+          ...Uri.base.queryParameters,
+          'sid': publicId,
+        },
+      ).toString(),
     );
   }
 

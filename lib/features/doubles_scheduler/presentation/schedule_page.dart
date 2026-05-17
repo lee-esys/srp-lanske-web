@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
+import 'package:srp_lanske/shared/utils/browser_url.dart';
 
 import '../application/generated_schedule_service.dart';
 import '../data/local_schedule_history_item.dart';
@@ -9,6 +10,7 @@ import '../data/local_schedule_history_store.dart';
 import '../domain/saved_event_models.dart';
 import '../infrastructure/generated_schedule_api_client.dart';
 import 'event_list_page.dart';
+import 'event_setup_page.dart';
 import 'models/event_draft.dart';
 import 'widgets/schedule_action_buttons.dart';
 import 'widgets/schedule_event_summary_card.dart';
@@ -216,6 +218,17 @@ class _SchedulePageState extends State<SchedulePage> {
     );
   }
 
+  void _replaceBrowserUrlWithPublicId(String publicId) {
+    replaceUrl(
+      Uri.base.replace(
+        queryParameters: {
+          ...Uri.base.queryParameters,
+          'sid': publicId,
+        },
+      ).toString(),
+    );
+  }
+
   String? _buildShareUrl() {
     final publicId = _savedEvent?.event.publicId;
     if (publicId == null || publicId.isEmpty) return null;
@@ -287,6 +300,7 @@ class _SchedulePageState extends State<SchedulePage> {
         _generatedScheduleId = generatedScheduleId;
       });
 
+      _replaceBrowserUrlWithPublicId(nextSavedEvent.event.publicId);
       await _saveScheduleHistory(nextSavedEvent);
     } catch (e) {
       if (!mounted) return;
@@ -451,7 +465,7 @@ class _SchedulePageState extends State<SchedulePage> {
   void _handleMenu(_ScheduleMenuAction action) {
     switch (action) {
       case _ScheduleMenuAction.top:
-        Navigator.popUntil(context, (route) => route.isFirst);
+        _goTop();
         break;
       case _ScheduleMenuAction.list:
         Navigator.push(
@@ -460,6 +474,18 @@ class _SchedulePageState extends State<SchedulePage> {
         );
         break;
     }
+  }
+
+  void _goTop() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const EventSetupPage()),
+      (_) => false,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      replaceUrl('/');
+    });
   }
 
   Widget _buildScheduleBody() {
