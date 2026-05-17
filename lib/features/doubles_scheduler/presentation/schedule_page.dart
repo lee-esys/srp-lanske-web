@@ -4,6 +4,8 @@ import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
 import '../application/generated_schedule_service.dart';
+import '../data/local_schedule_history_item.dart';
+import '../data/local_schedule_history_store.dart';
 import '../domain/saved_event_models.dart';
 import '../infrastructure/generated_schedule_api_client.dart';
 import 'event_list_page.dart';
@@ -284,6 +286,8 @@ class _SchedulePageState extends State<SchedulePage> {
         _scheduleResponse = response;
         _generatedScheduleId = generatedScheduleId;
       });
+
+      await _saveScheduleHistory(nextSavedEvent);
     } catch (e) {
       if (!mounted) return;
 
@@ -408,9 +412,11 @@ class _SchedulePageState extends State<SchedulePage> {
 
       if (!mounted) return;
 
+      final nextSavedEvent = _replaceSavedEvent(latestEvent, updatedEvent);
       setState(() {
-        _savedEvent = _replaceSavedEvent(latestEvent, updatedEvent);
+        _savedEvent = nextSavedEvent;
       });
+      await _saveScheduleHistory(nextSavedEvent);
 
       _showMessage('この対戦表を採用しました');
       await _reloadSchedule();
@@ -427,6 +433,19 @@ class _SchedulePageState extends State<SchedulePage> {
         });
       }
     }
+  }
+
+  Future<void> _saveScheduleHistory(SavedEventAggregate aggregate) async {
+    await LocalScheduleHistoryStore().upsert(
+      LocalScheduleHistoryItem(
+        publicId: aggregate.event.publicId,
+        title: aggregate.event.title,
+        courtCount: aggregate.event.courtCount,
+        participantCount: aggregate.participants.length,
+        firstSavedAt: DateTime.now(),
+        lastOpenedAt: DateTime.now(),
+      ),
+    );
   }
 
   void _handleMenu(_ScheduleMenuAction action) {

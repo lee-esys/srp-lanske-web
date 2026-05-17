@@ -5,6 +5,7 @@ import 'package:srp_lanske/shared/utils/number_label_mapper.dart';
 
 import '../domain/participant_draft.dart';
 import '../infrastructure/tennisbear_import_preview_api_client.dart';
+import 'event_list_page.dart';
 import 'models/event_draft.dart';
 import 'schedule_page.dart';
 
@@ -15,6 +16,8 @@ class EventSetupPage extends StatefulWidget {
   @override
   State<EventSetupPage> createState() => _EventSetupPageState();
 }
+
+enum _EventSetupMenuAction { list }
 
 class _EventSetupPageState extends State<EventSetupPage> {
   final _formKey = GlobalKey<FormState>();
@@ -97,6 +100,17 @@ class _EventSetupPageState extends State<EventSetupPage> {
     }
 
     super.dispose();
+  }
+
+  void _handleMenu(_EventSetupMenuAction action) {
+    switch (action) {
+      case _EventSetupMenuAction.list:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const EventListPage()),
+        );
+        break;
+    }
   }
 
   void _showMessage(String message) {
@@ -691,6 +705,17 @@ class _EventSetupPageState extends State<EventSetupPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('ダブルス乱数表 ver0.1'),
+        actions: [
+          PopupMenuButton<_EventSetupMenuAction>(
+            onSelected: _handleMenu,
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: _EventSetupMenuAction.list,
+                child: Text('対戦表一覧'),
+              ),
+            ],
+          ),
+        ],
       ),
       body: SafeArea(
         child: Stack(

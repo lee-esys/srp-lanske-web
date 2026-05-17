@@ -4,10 +4,13 @@ import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
 import '../application/generated_schedule_service.dart';
+import '../data/local_schedule_history_item.dart';
+import '../data/local_schedule_history_store.dart';
 import '../domain/participant_draft.dart';
 import '../domain/public_id.dart';
 import '../domain/saved_event_models.dart';
 import '../infrastructure/generated_schedule_api_client.dart';
+import 'event_list_page.dart';
 import 'models/event_draft.dart';
 import 'widgets/schedule_action_buttons.dart';
 import 'widgets/schedule_event_summary_card.dart';
@@ -26,6 +29,8 @@ class RestoredSchedulePage extends StatefulWidget {
   @override
   State<RestoredSchedulePage> createState() => _RestoredSchedulePageState();
 }
+
+enum _ScheduleMenuAction { top, list }
 
 class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   late final GeneratedScheduleService _service;
@@ -305,6 +310,11 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
             generatedScheduleId;
         _isLoading = false;
       });
+
+      final aggregate = _savedEvent;
+      if (aggregate != null) {
+        await _saveScheduleHistory(aggregate);
+      }
     } catch (e) {
       if (!mounted) return;
 
@@ -416,6 +426,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _generatedScheduleId = generatedScheduleId;
         _isLoading = false;
       });
+
+      await _saveScheduleHistory(nextSavedEvent);
     } catch (e) {
       if (!mounted) return;
 
@@ -476,9 +488,11 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
       if (!mounted) return;
 
+      final nextSavedEvent = _replaceSavedEvent(latestEvent, updatedEvent);
       setState(() {
-        _savedEvent = _replaceSavedEvent(latestEvent, updatedEvent);
+        _savedEvent = nextSavedEvent;
       });
+      await _saveScheduleHistory(nextSavedEvent);
 
       _showMessage('この対戦表を採用しました');
       await _reloadSchedule();
@@ -494,6 +508,33 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           _isAdopting = false;
         });
       }
+    }
+  }
+
+  Future<void> _saveScheduleHistory(SavedEventAggregate aggregate) async {
+    await LocalScheduleHistoryStore().upsert(
+      LocalScheduleHistoryItem(
+        publicId: aggregate.event.publicId,
+        title: aggregate.event.title,
+        courtCount: aggregate.event.courtCount,
+        participantCount: aggregate.participants.length,
+        firstSavedAt: DateTime.now(),
+        lastOpenedAt: DateTime.now(),
+      ),
+    );
+  }
+
+  void _handleMenu(_ScheduleMenuAction action) {
+    switch (action) {
+      case _ScheduleMenuAction.top:
+        Navigator.popUntil(context, (route) => route.isFirst);
+        break;
+      case _ScheduleMenuAction.list:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const EventListPage()),
+        );
+        break;
     }
   }
 
@@ -627,7 +668,26 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_pageTitle),
+        automaticallyImplyLeading: false,
+        title: Text(
+          _pageTitle,
+          overflow: TextOverflow.ellipsis,
+        ),
+        actions: [
+          PopupMenuButton<_ScheduleMenuAction>(
+            onSelected: _handleMenu,
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: _ScheduleMenuAction.top,
+                child: Text('TOPへ'),
+              ),
+              PopupMenuItem(
+                value: _ScheduleMenuAction.list,
+                child: Text('対戦表一覧'),
+              ),
+            ],
+          ),
+        ],
       ),
       body: SafeArea(
         child: showInitialLoading
