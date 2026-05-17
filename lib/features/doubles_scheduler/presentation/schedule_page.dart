@@ -23,7 +23,7 @@ class SchedulePage extends StatefulWidget {
   State<SchedulePage> createState() => _SchedulePageState();
 }
 
-enum _ScheduleMenuAction { edit, list }
+enum _ScheduleMenuAction { top, list }
 
 class _SchedulePageState extends State<SchedulePage> {
   late final GeneratedScheduleService _service;
@@ -57,16 +57,8 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   String get _eventStatusLabel {
-    if (_hasAdoptedSchedule) {
-      return '採用済み';
-    }
-
     if (_isLoading && _scheduleResponse == null) {
       return '生成中';
-    }
-
-    if (_errorMessage != null && _scheduleResponse == null) {
-      return '生成失敗';
     }
 
     final generatedScheduleId =
@@ -76,7 +68,7 @@ class _SchedulePageState extends State<SchedulePage> {
       return '未生成';
     }
 
-    if (_isLoading) {
+    if (_isLoading || _isAdopting) {
       return '処理中';
     }
 
@@ -439,8 +431,8 @@ class _SchedulePageState extends State<SchedulePage> {
 
   void _handleMenu(_ScheduleMenuAction action) {
     switch (action) {
-      case _ScheduleMenuAction.edit:
-        Navigator.pop(context);
+      case _ScheduleMenuAction.top:
+        Navigator.popUntil(context, (route) => route.isFirst);
         break;
       case _ScheduleMenuAction.list:
         Navigator.push(
@@ -456,7 +448,6 @@ class _SchedulePageState extends State<SchedulePage> {
       padding: const EdgeInsets.all(4),
       children: [
         ScheduleEventSummaryCard(
-          statusLabel: _eventStatusLabel,
           onCopyShareUrl: _savedEvent == null ? null : _copyShareUrl,
           onRefresh: _reloadSchedule,
           canRefresh: _generatedScheduleId != null,
@@ -473,6 +464,7 @@ class _SchedulePageState extends State<SchedulePage> {
           const SizedBox(height: 12),
           ScheduleSectionCard(
             child: ScheduleActionButtons(
+              statusLabel: _eventStatusLabel,
               isLoading: _isLoading,
               isAdopting: _isAdopting,
               generateButtonLabel: _generateButtonLabel,
@@ -519,14 +511,15 @@ class _SchedulePageState extends State<SchedulePage> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(widget.draft.eventName),
         actions: [
           PopupMenuButton<_ScheduleMenuAction>(
             onSelected: _handleMenu,
             itemBuilder: (context) => const [
               PopupMenuItem(
-                value: _ScheduleMenuAction.edit,
-                child: Text('このイベントを編集'),
+                value: _ScheduleMenuAction.top,
+                child: Text('TOPへ'),
               ),
               PopupMenuItem(
                 value: _ScheduleMenuAction.list,

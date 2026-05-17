@@ -63,29 +63,19 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   }
 
   String get _eventStatusLabel {
-    final event = _savedEvent?.event;
-    if (event == null) return '-';
-
-    if (_hasAdoptedSchedule) {
-      return '採用済み';
-    }
-
-    final generatedScheduleId = event.displayGeneratedScheduleId;
-    if (_isLoading &&
-        (generatedScheduleId == null || generatedScheduleId.isEmpty)) {
+    if (_isLoading && _scheduleResponse == null) {
       return '生成中';
     }
 
-    if (_isLoading) {
-      return '処理中';
-    }
+    final generatedScheduleId =
+        _savedEvent?.event.displayGeneratedScheduleId ?? _generatedScheduleId;
 
     if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
       return '未生成';
     }
 
-    if (_scheduleResponse == null && _errorMessage != null) {
-      return '取得失敗';
+    if (_isLoading || _isAdopting) {
+      return '処理中';
     }
 
     return '生成済み';
@@ -281,7 +271,10 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       }
 
       await _fetchSchedule(generatedScheduleId);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('Failed to restore schedule: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
       if (!mounted) return;
 
       setState(() {
@@ -289,7 +282,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _scheduleResponse = null;
         _generatedScheduleId = null;
         _selectedParticipantId = null;
-        _errorMessage = '共有情報を取得できませんでした: $e';
+        _errorMessage = '対戦表を取得できませんでした。\n'
+            '通信状態を確認して、再読み込みしてください。';
         _isLoading = false;
       });
     }
@@ -569,7 +563,6 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           )
         else ...[
           ScheduleEventSummaryCard(
-            statusLabel: _eventStatusLabel,
             onCopyShareUrl: _copyShareUrl,
             onRefresh: _reloadSchedule,
             canRefresh: _generatedScheduleId != null,
@@ -586,6 +579,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
             const SizedBox(height: 12),
             ScheduleSectionCard(
               child: ScheduleActionButtons(
+                statusLabel: _eventStatusLabel,
                 isLoading: _isLoading,
                 isAdopting: _isAdopting,
                 generateButtonLabel: _generateButtonLabel,
