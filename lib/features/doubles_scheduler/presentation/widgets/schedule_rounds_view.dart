@@ -73,40 +73,38 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       child: Padding(
         padding: const EdgeInsets.all(4),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: SizedBox(
-                width: 40,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      'R $roundNumber',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+            SizedBox(
+              width: 40,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'R $roundNumber',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
-                    const SizedBox(height: 8),
-                    _RestToggleButton(
-                      restCount: restSlotNumbers.length,
-                      isExpanded: isRestExpanded,
-                      isHighlighted: hasSelectedRestPlayer,
-                      onTap: () {
-                        setState(() {
-                          if (isRestExpanded) {
-                            _expandedRestRoundNumbers.remove(roundNumber);
-                          } else {
-                            _expandedRestRoundNumbers.add(roundNumber);
-                          }
-                        });
-                      },
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 8),
+                  _RestToggleButton(
+                    restCount: restSlotNumbers.length,
+                    isExpanded: isRestExpanded,
+                    isHighlighted: hasSelectedRestPlayer,
+                    onTap: () {
+                      setState(() {
+                        if (isRestExpanded) {
+                          _expandedRestRoundNumbers.remove(roundNumber);
+                        } else {
+                          _expandedRestRoundNumbers.add(roundNumber);
+                        }
+                      });
+                    },
+                  ),
+                ],
               ),
             ),
             const SizedBox(width: 8),
