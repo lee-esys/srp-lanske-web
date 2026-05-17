@@ -8,11 +8,15 @@ class ScheduleRoundsView extends StatefulWidget {
     required this.scheduleResponse,
     required this.playerNameById,
     required this.courtCount,
+    this.selectedParticipantId,
+    this.onParticipantSelected,
   });
 
   final Map<String, dynamic>? scheduleResponse;
   final Map<String, String> playerNameById;
   final int courtCount;
+  final String? selectedParticipantId;
+  final ValueChanged<String>? onParticipantSelected;
 
   @override
   State<ScheduleRoundsView> createState() => _ScheduleRoundsViewState();
@@ -56,6 +60,10 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
         : colorScheme.primaryContainer.withValues(alpha: 0.92);
 
     final restSlotNumbers = _asIntList(round['rest_slot_numbers']);
+    final hasSelectedRestPlayer = _hasSelectedRestPlayer(
+      restSlotNumbers,
+      slotToPlayerId,
+    );
     final courts = _asObjectList(round['courts']);
     final isRestExpanded = _expandedRestRoundNumbers.contains(roundNumber);
 
@@ -63,40 +71,40 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       color: roundCardColor,
       margin: const EdgeInsets.only(bottom: 4),
       child: Padding(
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: SizedBox(
-                width: 36,
-                child: Column(
-                  children: [
-                    Text(
-                      'R $roundNumber',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+            SizedBox(
+              width: 40,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'R $roundNumber',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
-                    const SizedBox(height: 8),
-                    _RestToggleButton(
-                      restCount: restSlotNumbers.length,
-                      isExpanded: isRestExpanded,
-                      onTap: () {
-                        setState(() {
-                          if (isRestExpanded) {
-                            _expandedRestRoundNumbers.remove(roundNumber);
-                          } else {
-                            _expandedRestRoundNumbers.add(roundNumber);
-                          }
-                        });
-                      },
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 8),
+                  _RestToggleButton(
+                    restCount: restSlotNumbers.length,
+                    isExpanded: isRestExpanded,
+                    isHighlighted: hasSelectedRestPlayer,
+                    onTap: () {
+                      setState(() {
+                        if (isRestExpanded) {
+                          _expandedRestRoundNumbers.remove(roundNumber);
+                        } else {
+                          _expandedRestRoundNumbers.add(roundNumber);
+                        }
+                      });
+                    },
+                  ),
+                ],
               ),
             ),
             const SizedBox(width: 8),
@@ -121,6 +129,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
                             slotNumber: slotNumber,
                             slotToPlayerId: slotToPlayerId,
                             size: SchedulePlayerChipSize.compact,
+                            highlightEnabled: false,
                           );
                         }),
                       ],
@@ -200,6 +209,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     required int slotNumber,
     required Map<int, String> slotToPlayerId,
     SchedulePlayerChipSize size = SchedulePlayerChipSize.normal,
+    bool highlightEnabled = true,
   }) {
     final playerId = slotToPlayerId[slotNumber];
     final displayName = playerId == null
@@ -211,7 +221,22 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       playerId: playerId,
       displayName: displayName,
       size: size,
+      isHighlighted:
+          highlightEnabled && widget.selectedParticipantId == playerId,
+      onTap: widget.onParticipantSelected,
     );
+  }
+
+  bool _hasSelectedRestPlayer(
+    List<int> restSlotNumbers,
+    Map<int, String> slotToPlayerId,
+  ) {
+    final selectedParticipantId = widget.selectedParticipantId;
+    if (selectedParticipantId == null) return false;
+
+    return restSlotNumbers.any((slotNumber) {
+      return slotToPlayerId[slotNumber] == selectedParticipantId;
+    });
   }
 
   List<Map<String, dynamic>> _asObjectList(Object? value) {
@@ -259,38 +284,72 @@ class _RestToggleButton extends StatelessWidget {
     required this.restCount,
     required this.isExpanded,
     required this.onTap,
+    this.isHighlighted = false,
   });
 
   final int restCount;
   final bool isExpanded;
   final VoidCallback onTap;
+  final bool isHighlighted;
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final backgroundColor =
+        isHighlighted ? colorScheme.tertiaryContainer : Colors.transparent;
+    final borderColor =
+        isHighlighted ? colorScheme.tertiary : colorScheme.outlineVariant;
+    final textColor = isHighlighted ? colorScheme.onTertiaryContainer : null;
+
     return InkWell(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       onTap: onTap,
       child: Container(
         width: 40,
-        padding: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 5),
         decoration: BoxDecoration(
+          color: backgroundColor,
           border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
+            color: borderColor,
+            width: isHighlighted ? 2.0 : 1.0,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '休憩: $restCount',
-              style: TextStyle(fontSize: 10),
-            ),
-            Icon(
-              isExpanded ? Icons.expand_less : Icons.expand_more,
-              size: 16,
-            ),
-          ],
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                '休憩',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10,
+                  height: 1.0,
+                  fontWeight:
+                      isHighlighted ? FontWeight.w700 : FontWeight.normal,
+                  color: textColor,
+                ),
+              ),
+              Text(
+                '$restCount人',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10,
+                  height: 1.0,
+                  fontWeight:
+                      isHighlighted ? FontWeight.w700 : FontWeight.normal,
+                  color: textColor,
+                ),
+              ),
+              Icon(
+                isExpanded ? Icons.expand_less : Icons.expand_more,
+                size: 14,
+                color: textColor,
+              ),
+            ],
+          ),
         ),
       ),
     );

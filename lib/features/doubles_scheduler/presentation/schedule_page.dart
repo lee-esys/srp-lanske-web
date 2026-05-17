@@ -32,6 +32,7 @@ class _SchedulePageState extends State<SchedulePage> {
   bool _isAdopting = false;
   String? _errorMessage;
   String? _generatedScheduleId;
+  String? _selectedParticipantId;
   Map<String, dynamic>? _scheduleResponse;
 
   SavedEventAggregate? _savedEvent;
@@ -113,6 +114,13 @@ class _SchedulePageState extends State<SchedulePage> {
         participantId: entry.value.id,
       );
     }).toList(growable: false);
+  }
+
+  void _toggleSelectedParticipant(String participantId) {
+    setState(() {
+      _selectedParticipantId =
+          _selectedParticipantId == participantId ? null : participantId;
+    });
   }
 
   Future<void> _requestGenerateSchedule() async {
@@ -458,6 +466,8 @@ class _SchedulePageState extends State<SchedulePage> {
           title:
               '面数: ${widget.draft.courts}　　参加者: ${widget.draft.participants.length}人',
           participants: _participantViewModels,
+          selectedParticipantId: _selectedParticipantId,
+          onParticipantSelected: _toggleSelectedParticipant,
         ),
         if (!_hasAdoptedSchedule) ...[
           const SizedBox(height: 12),
@@ -487,6 +497,8 @@ class _SchedulePageState extends State<SchedulePage> {
                   scheduleResponse: _scheduleResponse,
                   playerNameById: _playerNameById,
                   courtCount: widget.draft.courts,
+                  selectedParticipantId: _selectedParticipantId,
+                  onParticipantSelected: _toggleSelectedParticipant,
                 ),
         ),
         if (_errorMessage != null) ...[

@@ -65,37 +65,44 @@ class SchedulePlayerChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final playerId = this.playerId;
     final colorScheme = Theme.of(context).colorScheme;
-    final borderRadius = BorderRadius.circular(8);
+    final borderRadius = BorderRadius.circular(20);
+    final backgroundColor =
+        isHighlighted ? colorScheme.tertiaryContainer : colorScheme.surface;
+    final borderColor =
+        isHighlighted ? colorScheme.tertiary : colorScheme.outlineVariant;
+    final borderWidth = isHighlighted ? 2.0 : 1.0;
 
     final chipContent = SizedBox(
       width: _chipWidth,
       height: _chipHeight,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ScheduleSlotIcon(
-            slotNumber: slotNumber,
-            playerId: playerId,
-            displayName: displayName,
-            size: _iconSize,
-          ),
-          const SizedBox(height: 1),
-          Text(
-            displayName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: _nameFontSize,
-              height: 1.1,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ScheduleSlotIcon(
+              slotNumber: slotNumber,
+              playerId: playerId,
+              displayName: displayName,
+              size: _iconSize,
             ),
-          ),
-        ],
+            const SizedBox(height: 1),
+            Text(
+              displayName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: _nameFontSize,
+                height: 1.1,
+                fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.normal,
+                color: isHighlighted ? colorScheme.onTertiaryContainer : null,
+              ),
+            ),
+          ],
+        ),
       ),
     );
-
-    final backgroundColor =
-        isHighlighted ? colorScheme.primaryContainer : colorScheme.surface;
 
     if (onTap == null || playerId == null) {
       return Container(
@@ -103,7 +110,7 @@ class SchedulePlayerChip extends StatelessWidget {
         height: _chipHeight,
         decoration: BoxDecoration(
           color: backgroundColor,
-          border: Border.all(color: colorScheme.outlineVariant),
+          border: Border.all(color: borderColor, width: borderWidth),
           borderRadius: borderRadius,
         ),
         child: chipContent,
@@ -113,7 +120,7 @@ class SchedulePlayerChip extends StatelessWidget {
     return Material(
       color: backgroundColor,
       shape: RoundedRectangleBorder(
-        side: BorderSide(color: colorScheme.outlineVariant),
+        side: BorderSide(color: borderColor, width: borderWidth),
         borderRadius: borderRadius,
       ),
       child: InkWell(
