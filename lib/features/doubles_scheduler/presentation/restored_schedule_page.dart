@@ -36,6 +36,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
   SavedEventAggregate? _savedEvent;
   String? _generatedScheduleId;
+  String? _selectedParticipantId;
   Map<String, dynamic>? _scheduleResponse;
 
   @override
@@ -129,6 +130,13 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     }).toList(growable: false);
   }
 
+  void _toggleSelectedParticipant(String participantId) {
+    setState(() {
+      _selectedParticipantId =
+          _selectedParticipantId == participantId ? null : participantId;
+    });
+  }
+
   Future<void> _requestGenerateSchedule() async {
     final latestEvent = await _refreshSavedEventForAction();
     if (!mounted) return;
@@ -200,6 +208,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _savedEvent = null;
         _scheduleResponse = null;
         _generatedScheduleId = null;
+        _selectedParticipantId = null;
         _errorMessage = '対戦表が見つかりません';
       });
       return null;
@@ -240,6 +249,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           _savedEvent = null;
           _scheduleResponse = null;
           _generatedScheduleId = null;
+          _selectedParticipantId = null;
           _errorMessage = '対戦表が見つかりません';
           _isLoading = false;
         });
@@ -255,6 +265,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
       if (aggregate.participants.isEmpty) {
         setState(() {
+          _selectedParticipantId = null;
           _errorMessage = '参加者情報がありません';
           _isLoading = false;
         });
@@ -277,6 +288,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _savedEvent = null;
         _scheduleResponse = null;
         _generatedScheduleId = null;
+        _selectedParticipantId = null;
         _errorMessage = '共有情報を取得できませんでした: $e';
         _isLoading = false;
       });
@@ -333,6 +345,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           _savedEvent = null;
           _scheduleResponse = null;
           _generatedScheduleId = null;
+          _selectedParticipantId = null;
           _errorMessage = '対戦表が見つかりません';
           _isLoading = false;
         });
@@ -566,6 +579,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
             title:
                 '面数: ${savedEvent.event.courtCount}　　参加者: ${savedEvent.participants.length}人',
             participants: _participantViewModels,
+            selectedParticipantId: _selectedParticipantId,
+            onParticipantSelected: _toggleSelectedParticipant,
           ),
           if (!_hasAdoptedSchedule) ...[
             const SizedBox(height: 12),
@@ -595,6 +610,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
                     scheduleResponse: _scheduleResponse,
                     playerNameById: _playerNameById,
                     courtCount: savedEvent.event.courtCount,
+                    selectedParticipantId: _selectedParticipantId,
+                    onParticipantSelected: _toggleSelectedParticipant,
                   ),
           ),
         ],
