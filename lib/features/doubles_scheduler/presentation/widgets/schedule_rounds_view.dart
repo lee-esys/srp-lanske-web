@@ -8,11 +8,15 @@ class ScheduleRoundsView extends StatefulWidget {
     required this.scheduleResponse,
     required this.playerNameById,
     required this.courtCount,
+    this.selectedParticipantId,
+    this.onParticipantSelected,
   });
 
   final Map<String, dynamic>? scheduleResponse;
   final Map<String, String> playerNameById;
   final int courtCount;
+  final String? selectedParticipantId;
+  final ValueChanged<String>? onParticipantSelected;
 
   @override
   State<ScheduleRoundsView> createState() => _ScheduleRoundsViewState();
@@ -56,6 +60,10 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
         : colorScheme.primaryContainer.withValues(alpha: 0.92);
 
     final restSlotNumbers = _asIntList(round['rest_slot_numbers']);
+    final hasSelectedRestPlayer = _hasSelectedRestPlayer(
+      restSlotNumbers,
+      slotToPlayerId,
+    );
     final courts = _asObjectList(round['courts']);
     final isRestExpanded = _expandedRestRoundNumbers.contains(roundNumber);
 
@@ -85,6 +93,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
                     _RestToggleButton(
                       restCount: restSlotNumbers.length,
                       isExpanded: isRestExpanded,
+                      isHighlighted: hasSelectedRestPlayer,
                       onTap: () {
                         setState(() {
                           if (isRestExpanded) {
@@ -121,6 +130,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
                             slotNumber: slotNumber,
                             slotToPlayerId: slotToPlayerId,
                             size: SchedulePlayerChipSize.compact,
+                            highlightEnabled: false,
                           );
                         }),
                       ],
@@ -200,6 +210,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     required int slotNumber,
     required Map<int, String> slotToPlayerId,
     SchedulePlayerChipSize size = SchedulePlayerChipSize.normal,
+    bool highlightEnabled = true,
   }) {
     final playerId = slotToPlayerId[slotNumber];
     final displayName = playerId == null
@@ -211,7 +222,22 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       playerId: playerId,
       displayName: displayName,
       size: size,
+      isHighlighted:
+          highlightEnabled && widget.selectedParticipantId == playerId,
+      onTap: widget.onParticipantSelected,
     );
+  }
+
+  bool _hasSelectedRestPlayer(
+    List<int> restSlotNumbers,
+    Map<int, String> slotToPlayerId,
+  ) {
+    final selectedParticipantId = widget.selectedParticipantId;
+    if (selectedParticipantId == null) return false;
+
+    return restSlotNumbers.any((slotNumber) {
+      return slotToPlayerId[slotNumber] == selectedParticipantId;
+    });
   }
 
   List<Map<String, dynamic>> _asObjectList(Object? value) {
@@ -259,36 +285,52 @@ class _RestToggleButton extends StatelessWidget {
     required this.restCount,
     required this.isExpanded,
     required this.onTap,
+    this.isHighlighted = false,
   });
 
   final int restCount;
   final bool isExpanded;
   final VoidCallback onTap;
+  final bool isHighlighted;
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final backgroundColor =
+        isHighlighted ? colorScheme.tertiaryContainer : Colors.transparent;
+    final borderColor =
+        isHighlighted ? colorScheme.tertiary : colorScheme.outlineVariant;
+    final textColor = isHighlighted ? colorScheme.onTertiaryContainer : null;
+
     return InkWell(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       onTap: onTap,
       child: Container(
         width: 40,
         padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
+          color: backgroundColor,
           border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
+            color: borderColor,
+            width: isHighlighted ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               '休憩: $restCount',
-              style: TextStyle(fontSize: 10),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.normal,
+                color: textColor,
+              ),
             ),
             Icon(
               isExpanded ? Icons.expand_less : Icons.expand_more,
               size: 16,
+              color: textColor,
             ),
           ],
         ),
