@@ -71,7 +71,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       color: roundCardColor,
       margin: const EdgeInsets.only(bottom: 4),
       child: Padding(
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
