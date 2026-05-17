@@ -78,8 +78,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: SizedBox(
-                width: 36,
+                width: 40,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       'R $roundNumber',
@@ -303,36 +304,54 @@ class _RestToggleButton extends StatelessWidget {
     final textColor = isHighlighted ? colorScheme.onTertiaryContainer : null;
 
     return InkWell(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(16),
       onTap: onTap,
       child: Container(
         width: 40,
-        padding: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 5),
         decoration: BoxDecoration(
           color: backgroundColor,
           border: Border.all(
             color: borderColor,
             width: isHighlighted ? 2.0 : 1.0,
           ),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '休憩: $restCount',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.normal,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                '休憩',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10,
+                  height: 1.0,
+                  fontWeight:
+                      isHighlighted ? FontWeight.w700 : FontWeight.normal,
+                  color: textColor,
+                ),
+              ),
+              Text(
+                '$restCount人',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10,
+                  height: 1.0,
+                  fontWeight:
+                      isHighlighted ? FontWeight.w700 : FontWeight.normal,
+                  color: textColor,
+                ),
+              ),
+              Icon(
+                isExpanded ? Icons.expand_less : Icons.expand_more,
+                size: 14,
                 color: textColor,
               ),
-            ),
-            Icon(
-              isExpanded ? Icons.expand_less : Icons.expand_more,
-              size: 16,
-              color: textColor,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
