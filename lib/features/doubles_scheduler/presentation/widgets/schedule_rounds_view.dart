@@ -312,7 +312,7 @@ class _RestToggleButton extends StatelessWidget {
           color: backgroundColor,
           border: Border.all(
             color: borderColor,
-            width: isHighlighted ? 2 : 1,
+            width: isHighlighted ? 2.0 : 1.0,
           ),
           borderRadius: BorderRadius.circular(14),
         ),
