@@ -5,6 +5,7 @@ import 'package:srp_lanske/shared/utils/number_label_mapper.dart';
 
 import '../domain/participant_draft.dart';
 import '../infrastructure/tennisbear_import_preview_api_client.dart';
+import 'event_list_page.dart';
 import 'models/event_draft.dart';
 import 'schedule_page.dart';
 
@@ -15,6 +16,8 @@ class EventSetupPage extends StatefulWidget {
   @override
   State<EventSetupPage> createState() => _EventSetupPageState();
 }
+
+enum _EventSetupMenuAction { list }
 
 class _EventSetupPageState extends State<EventSetupPage> {
   final _formKey = GlobalKey<FormState>();
@@ -97,6 +100,17 @@ class _EventSetupPageState extends State<EventSetupPage> {
     }
 
     super.dispose();
+  }
+
+  void _handleMenu(_EventSetupMenuAction action) {
+    switch (action) {
+      case _EventSetupMenuAction.list:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const EventListPage()),
+        );
+        break;
+    }
   }
 
   void _showMessage(String message) {
@@ -577,21 +591,24 @@ class _EventSetupPageState extends State<EventSetupPage> {
           ),
         ),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            OutlinedButton.icon(
-              onPressed: _canPasteEventUrl ? _pasteEventUrl : null,
-              icon: const Icon(Icons.content_paste),
-              label: const Text('貼り付け'),
-            ),
-            FilledButton.icon(
-              onPressed: _canImportEventUrl ? _fetchEventInfo : null,
-              icon: const Icon(Icons.download),
-              label: const Text('取り込み'),
-            ),
-          ],
+        Center(
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: [
+              OutlinedButton.icon(
+                onPressed: _canPasteEventUrl ? _pasteEventUrl : null,
+                icon: const Icon(Icons.content_paste),
+                label: const Text('貼り付け'),
+              ),
+              FilledButton.icon(
+                onPressed: _canImportEventUrl ? _fetchEventInfo : null,
+                icon: const Icon(Icons.download),
+                label: const Text('取り込み'),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -689,12 +706,14 @@ class _EventSetupPageState extends State<EventSetupPage> {
       appBar: AppBar(
         title: const Text('ダブルス乱数表 ver0.1'),
         actions: [
-          IconButton(
-            tooltip: '対戦表一覧',
-            onPressed: () {
-              // TODO: 対戦表一覧ページへ遷移
-            },
-            icon: const Icon(Icons.history),
+          PopupMenuButton<_EventSetupMenuAction>(
+            onSelected: _handleMenu,
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: _EventSetupMenuAction.list,
+                child: Text('対戦表一覧'),
+              ),
+            ],
           ),
         ],
       ),
@@ -751,6 +770,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
                       ),
                       const SizedBox(height: 24),
                       _buildDetailSection(),
+                      const SizedBox(height: 80),
                     ],
                   ),
                 ),

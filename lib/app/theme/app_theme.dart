@@ -6,7 +6,8 @@ final ThemeData _baseTheme = ThemeData(
   useMaterial3: true,
 );
 
-final TextTheme _textTheme = GoogleFonts.notoSansJpTextTheme(_baseTheme.textTheme);
+final TextTheme _textTheme =
+    GoogleFonts.notoSansJpTextTheme(_baseTheme.textTheme);
 
 final ThemeData appTheme = _baseTheme.copyWith(
   textTheme: _textTheme,

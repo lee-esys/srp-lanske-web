@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
+import 'package:srp_lanske/features/doubles_scheduler/presentation/event_setup_page.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
+import 'package:srp_lanske/shared/utils/browser_url.dart';
 
 import '../application/generated_schedule_service.dart';
+import '../data/local_schedule_history_item.dart';
+import '../data/local_schedule_history_store.dart';
 import '../domain/participant_draft.dart';
 import '../domain/public_id.dart';
 import '../domain/saved_event_models.dart';
 import '../infrastructure/generated_schedule_api_client.dart';
+import 'event_list_page.dart';
 import 'models/event_draft.dart';
 import 'widgets/schedule_action_buttons.dart';
 import 'widgets/schedule_event_summary_card.dart';
@@ -26,6 +31,8 @@ class RestoredSchedulePage extends StatefulWidget {
   @override
   State<RestoredSchedulePage> createState() => _RestoredSchedulePageState();
 }
+
+enum _ScheduleMenuAction { top, list }
 
 class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   late final GeneratedScheduleService _service;
@@ -63,29 +70,19 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   }
 
   String get _eventStatusLabel {
-    final event = _savedEvent?.event;
-    if (event == null) return '-';
-
-    if (_hasAdoptedSchedule) {
-      return '採用済み';
-    }
-
-    final generatedScheduleId = event.displayGeneratedScheduleId;
-    if (_isLoading &&
-        (generatedScheduleId == null || generatedScheduleId.isEmpty)) {
+    if (_isLoading && _scheduleResponse == null) {
       return '生成中';
     }
 
-    if (_isLoading) {
-      return '処理中';
-    }
+    final generatedScheduleId =
+        _savedEvent?.event.displayGeneratedScheduleId ?? _generatedScheduleId;
 
     if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
       return '未生成';
     }
 
-    if (_scheduleResponse == null && _errorMessage != null) {
-      return '取得失敗';
+    if (_isLoading || _isAdopting) {
+      return '処理中';
     }
 
     return '生成済み';
@@ -281,7 +278,10 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       }
 
       await _fetchSchedule(generatedScheduleId);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('Failed to restore schedule: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
       if (!mounted) return;
 
       setState(() {
@@ -289,7 +289,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _scheduleResponse = null;
         _generatedScheduleId = null;
         _selectedParticipantId = null;
-        _errorMessage = '共有情報を取得できませんでした: $e';
+        _errorMessage = '対戦表を取得できませんでした。\n'
+            '通信状態を確認して、再読み込みしてください。';
         _isLoading = false;
       });
     }
@@ -311,6 +312,11 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
             generatedScheduleId;
         _isLoading = false;
       });
+
+      final aggregate = _savedEvent;
+      if (aggregate != null) {
+        await _saveScheduleHistory(aggregate);
+      }
     } catch (e) {
       if (!mounted) return;
 
@@ -422,6 +428,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _generatedScheduleId = generatedScheduleId;
         _isLoading = false;
       });
+
+      await _saveScheduleHistory(nextSavedEvent);
     } catch (e) {
       if (!mounted) return;
 
@@ -482,9 +490,11 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
       if (!mounted) return;
 
+      final nextSavedEvent = _replaceSavedEvent(latestEvent, updatedEvent);
       setState(() {
-        _savedEvent = _replaceSavedEvent(latestEvent, updatedEvent);
+        _savedEvent = nextSavedEvent;
       });
+      await _saveScheduleHistory(nextSavedEvent);
 
       _showMessage('この対戦表を採用しました');
       await _reloadSchedule();
@@ -501,6 +511,45 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         });
       }
     }
+  }
+
+  Future<void> _saveScheduleHistory(SavedEventAggregate aggregate) async {
+    await LocalScheduleHistoryStore().upsert(
+      LocalScheduleHistoryItem(
+        publicId: aggregate.event.publicId,
+        title: aggregate.event.title,
+        courtCount: aggregate.event.courtCount,
+        participantCount: aggregate.participants.length,
+        firstSavedAt: DateTime.now(),
+        lastOpenedAt: DateTime.now(),
+      ),
+    );
+  }
+
+  void _handleMenu(_ScheduleMenuAction action) {
+    switch (action) {
+      case _ScheduleMenuAction.top:
+        _goTop();
+        break;
+      case _ScheduleMenuAction.list:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const EventListPage()),
+        );
+        break;
+    }
+  }
+
+  void _goTop() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const EventSetupPage()),
+      (_) => false,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      replaceUrl('/');
+    });
   }
 
   EventDraft _buildDraft(SavedEventAggregate aggregate) {
@@ -569,7 +618,6 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           )
         else ...[
           ScheduleEventSummaryCard(
-            statusLabel: _eventStatusLabel,
             onCopyShareUrl: _copyShareUrl,
             onRefresh: _reloadSchedule,
             canRefresh: _generatedScheduleId != null,
@@ -586,6 +634,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
             const SizedBox(height: 12),
             ScheduleSectionCard(
               child: ScheduleActionButtons(
+                statusLabel: _eventStatusLabel,
                 isLoading: _isLoading,
                 isAdopting: _isAdopting,
                 generateButtonLabel: _generateButtonLabel,
@@ -633,7 +682,26 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_pageTitle),
+        automaticallyImplyLeading: false,
+        title: Text(
+          _pageTitle,
+          overflow: TextOverflow.ellipsis,
+        ),
+        actions: [
+          PopupMenuButton<_ScheduleMenuAction>(
+            onSelected: _handleMenu,
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: _ScheduleMenuAction.top,
+                child: Text('TOPへ'),
+              ),
+              PopupMenuItem(
+                value: _ScheduleMenuAction.list,
+                child: Text('対戦表一覧'),
+              ),
+            ],
+          ),
+        ],
       ),
       body: SafeArea(
         child: showInitialLoading

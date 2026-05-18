@@ -55,9 +55,9 @@ class SchedulePlayerChip extends StatelessWidget {
   double get _nameFontSize {
     switch (size) {
       case SchedulePlayerChipSize.normal:
-        return 9;
-      case SchedulePlayerChipSize.compact:
         return 8;
+      case SchedulePlayerChipSize.compact:
+        return 7;
     }
   }
 
