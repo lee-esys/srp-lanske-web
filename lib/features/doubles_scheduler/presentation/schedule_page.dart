@@ -244,12 +244,12 @@ class _SchedulePageState extends State<SchedulePage> {
   Future<void> _copyShareUrl() async {
     final shareUrl = _buildShareUrl();
     if (shareUrl == null) {
-      _showMessage('共有URLを作成できませんでした');
+      _showMessage('URLを作成できませんでした');
       return;
     }
 
     await Clipboard.setData(ClipboardData(text: shareUrl));
-    _showMessage('共有URLをコピーしました');
+    _showMessage('URLをコピーしました');
   }
 
   void _showMessage(String message) {

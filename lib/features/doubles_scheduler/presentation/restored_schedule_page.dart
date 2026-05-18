@@ -192,7 +192,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
     if (!isValidPublicId(publicId)) {
       setState(() {
-        _errorMessage = '共有URLが正しくありません';
+        _errorMessage = '共有IDが正しくありません';
       });
       return null;
     }
@@ -232,7 +232,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
       setState(() {
         _isLoading = false;
-        _errorMessage = '共有URLが正しくありません';
+        _errorMessage = '共有IDが正しくありません';
       });
       return;
     }
@@ -333,7 +333,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         (_savedEvent?.event.publicId ?? widget.publicId).trim().toUpperCase();
 
     if (!isValidPublicId(publicId)) {
-      _showMessage('共有URLが正しくありません');
+      _showMessage('共有IDが正しくありません');
       return;
     }
 
@@ -591,7 +591,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
   Future<void> _copyShareUrl() async {
     await Clipboard.setData(ClipboardData(text: _buildShareUrl()));
-    _showMessage('共有URLをコピーしました');
+    _showMessage('URLをコピーしました');
   }
 
   void _showMessage(String message) {
