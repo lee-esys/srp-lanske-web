@@ -23,7 +23,7 @@ class ScheduleActionButtons extends StatelessWidget {
     final buttons = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        FilledButton.icon(
+        FilledButton.tonalIcon(
           onPressed: isLoading ? null : onGenerate,
           icon: const Icon(Icons.refresh),
           label: Text(generateButtonLabel),
