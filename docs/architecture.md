@@ -21,7 +21,7 @@
 [ Repository Interface ]
         ↓
 [ Algorithm Core（別リポジトリ） ]
-````
+```
 
 ---
 

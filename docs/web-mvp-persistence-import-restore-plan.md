@@ -747,7 +747,7 @@ repository の振る舞いは contract test で確認する。
 flutter run \
   --dart-define=LANSKE_EVENT_REPOSITORY=firestore \
   --dart-define=LANSKE_CORE_API_BASE_URL=<core api base url>
-````
+```
 
 ### Firebase / Firestore
 
