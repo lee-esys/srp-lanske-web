@@ -69,25 +69,6 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     return _savedEvent?.event.title ?? '共有対戦表';
   }
 
-  String get _eventStatusLabel {
-    if (_isLoading && _scheduleResponse == null) {
-      return '生成中';
-    }
-
-    final generatedScheduleId =
-        _savedEvent?.event.displayGeneratedScheduleId ?? _generatedScheduleId;
-
-    if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
-      return '未生成';
-    }
-
-    if (_isLoading || _isAdopting) {
-      return '処理中';
-    }
-
-    return '生成済み';
-  }
-
   String get _generateButtonLabel {
     final generatedScheduleId = _savedEvent?.event.displayGeneratedScheduleId;
     return generatedScheduleId == null || generatedScheduleId.isEmpty
@@ -192,7 +173,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
     if (!isValidPublicId(publicId)) {
       setState(() {
-        _errorMessage = '共有URLが正しくありません';
+        _errorMessage = '共有IDが正しくありません';
       });
       return null;
     }
@@ -232,7 +213,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
       setState(() {
         _isLoading = false;
-        _errorMessage = '共有URLが正しくありません';
+        _errorMessage = '共有IDが正しくありません';
       });
       return;
     }
@@ -333,7 +314,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         (_savedEvent?.event.publicId ?? widget.publicId).trim().toUpperCase();
 
     if (!isValidPublicId(publicId)) {
-      _showMessage('共有URLが正しくありません');
+      _showMessage('共有IDが正しくありません');
       return;
     }
 
@@ -591,7 +572,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
   Future<void> _copyShareUrl() async {
     await Clipboard.setData(ClipboardData(text: _buildShareUrl()));
-    _showMessage('共有URLをコピーしました');
+    _showMessage('URLをコピーしました');
   }
 
   void _showMessage(String message) {
@@ -634,7 +615,6 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
             const SizedBox(height: 12),
             ScheduleSectionCard(
               child: ScheduleActionButtons(
-                statusLabel: _eventStatusLabel,
                 isLoading: _isLoading,
                 isAdopting: _isAdopting,
                 generateButtonLabel: _generateButtonLabel,

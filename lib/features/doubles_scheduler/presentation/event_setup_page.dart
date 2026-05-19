@@ -290,7 +290,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
     FocusScope.of(context).unfocus();
 
-    final sourceUrl = _urlController.text.trim();
+    final sourceUrl = _normalizeTennisbearEventUrl(_urlController.text);
     if (sourceUrl.isEmpty) {
       _showMessage('URLを入力してください');
       return;
@@ -431,7 +431,8 @@ class _EventSetupPageState extends State<EventSetupPage> {
   }
 
   bool _isTennisbearEventUrl(String value) {
-    final uri = Uri.tryParse(value);
+    final normalized = _normalizeTennisbearEventUrl(value);
+    final uri = Uri.tryParse(normalized);
     if (uri == null) return false;
 
     if (uri.scheme != 'https') return false;
@@ -462,7 +463,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
     if (!_canPasteEventUrl) return;
 
     final data = await Clipboard.getData('text/plain');
-    final text = data?.text?.trim() ?? '';
+    final text = _normalizeTennisbearEventUrl(data?.text?.trim() ?? '');
 
     if (text.isEmpty) {
       _showMessage('クリップボードにURLがありません');
@@ -481,6 +482,10 @@ class _EventSetupPageState extends State<EventSetupPage> {
     if (!_isTennisbearEventUrl(text)) {
       _showMessage('テニスベアのイベントURLを貼り付けてください');
     }
+  }
+
+  String _normalizeTennisbearEventUrl(String value) {
+    return value.trim().replaceFirst(RegExp(r'/+$'), '');
   }
 
   void _clearEventUrl() {

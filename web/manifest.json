@@ -1,11 +1,11 @@
 {
-    "name": "srp_lanske",
-    "short_name": "srp_lanske",
+    "name": "Lanske - ダブルス対戦表ジェネレーター",
+    "short_name": "Lanske",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "ダブルスの対戦表を作成・共有できるツールです。",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 class ScheduleActionButtons extends StatelessWidget {
   const ScheduleActionButtons({
     super.key,
-    required this.statusLabel,
     required this.isLoading,
     required this.isAdopting,
     required this.generateButtonLabel,
@@ -12,7 +11,6 @@ class ScheduleActionButtons extends StatelessWidget {
     required this.onAdopt,
   });
 
-  final String statusLabel;
   final bool isLoading;
   final bool isAdopting;
   final String generateButtonLabel;
@@ -25,7 +23,7 @@ class ScheduleActionButtons extends StatelessWidget {
     final buttons = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        FilledButton.icon(
+        FilledButton.tonalIcon(
           onPressed: isLoading ? null : onGenerate,
           icon: const Icon(Icons.refresh),
           label: Text(generateButtonLabel),
@@ -51,10 +49,6 @@ class ScheduleActionButtons extends StatelessWidget {
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         buttons,
-        Chip(
-          label: Text(statusLabel, style: const TextStyle(fontSize: 14)),
-          visualDensity: VisualDensity.compact,
-        ),
       ],
     );
   }

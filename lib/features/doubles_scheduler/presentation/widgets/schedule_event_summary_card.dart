@@ -29,7 +29,7 @@ class ScheduleEventSummaryCard extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: onCopyShareUrl,
                     icon: const Icon(Icons.copy),
-                    label: const Text('共有URLをコピー'),
+                    label: const Text('URLをコピー'),
                   ),
                 if (onRefresh != null)
                   FilledButton.tonalIcon(
