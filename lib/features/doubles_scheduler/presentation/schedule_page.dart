@@ -16,7 +16,7 @@ import 'event_setup_page.dart';
 import 'models/event_draft.dart';
 import 'widgets/schedule_action_buttons.dart';
 import 'widgets/schedule_event_summary_card.dart';
-import 'widgets/schedule_participants_card.dart';
+import 'widgets/schedule_players_card.dart';
 import 'widgets/schedule_rounds_view.dart';
 import 'widgets/schedule_section_card.dart';
 
@@ -38,7 +38,7 @@ class _SchedulePageState extends State<SchedulePage> {
   bool _isAdopting = false;
   String? _errorMessage;
   String? _generatedScheduleId;
-  String? _selectedParticipantId;
+  String? _selectedPlayerId;
   Map<String, dynamic>? _scheduleResponse;
 
   SavedEventAggregate? _savedEvent;
@@ -80,25 +80,23 @@ class _SchedulePageState extends State<SchedulePage> {
 
   Map<String, String> get _playerNameById {
     return {
-      for (final participant in widget.draft.participants)
-        participant.id: participant.displayName,
+      for (final player in widget.draft.players) player.id: player.displayName,
     };
   }
 
-  List<ScheduleParticipantViewModel> get _participantViewModels {
-    return widget.draft.participants.asMap().entries.map((entry) {
-      return ScheduleParticipantViewModel(
+  List<SchedulePlayerViewModel> get _playerViewModels {
+    return widget.draft.players.asMap().entries.map((entry) {
+      return SchedulePlayerViewModel(
         orderNo: entry.key + 1,
         displayName: entry.value.displayName,
-        participantId: entry.value.id,
+        playerId: entry.value.id,
       );
     }).toList(growable: false);
   }
 
-  void _toggleSelectedParticipant(String participantId) {
+  void _toggleSelectedPlayer(String playerId) {
     setState(() {
-      _selectedParticipantId =
-          _selectedParticipantId == participantId ? null : participantId;
+      _selectedPlayerId = _selectedPlayerId == playerId ? null : playerId;
     });
   }
 
@@ -456,12 +454,12 @@ class _SchedulePageState extends State<SchedulePage> {
           canRefresh: _generatedScheduleId != null,
         ),
         const SizedBox(height: 12),
-        ScheduleParticipantsCard(
+        SchedulePlayersCard(
           title:
-              '面数: ${widget.draft.courts}　　参加者: ${widget.draft.participants.length}人',
-          participants: _participantViewModels,
-          selectedParticipantId: _selectedParticipantId,
-          onParticipantSelected: _toggleSelectedParticipant,
+              '面数: ${widget.draft.courts}　　参加者: ${widget.draft.playerCount}人',
+          players: _playerViewModels,
+          selectedPlayerId: _selectedPlayerId,
+          onPlayerSelected: _toggleSelectedPlayer,
         ),
         if (!_hasAdoptedSchedule) ...[
           const SizedBox(height: 12),
@@ -491,8 +489,8 @@ class _SchedulePageState extends State<SchedulePage> {
                   scheduleResponse: _scheduleResponse,
                   playerNameById: _playerNameById,
                   courtCount: widget.draft.courts,
-                  selectedParticipantId: _selectedParticipantId,
-                  onParticipantSelected: _toggleSelectedParticipant,
+                  selectedParticipantId: _selectedPlayerId,
+                  onParticipantSelected: _toggleSelectedPlayer,
                 ),
         ),
         if (_errorMessage != null) ...[
