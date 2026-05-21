@@ -3,7 +3,7 @@ class LocalScheduleHistoryItem {
     required this.publicId,
     required this.title,
     required this.courtCount,
-    required this.participantCount,
+    required this.playerCount,
     required this.firstSavedAt,
     required this.lastOpenedAt,
   });
@@ -11,7 +11,7 @@ class LocalScheduleHistoryItem {
   final String publicId;
   final String title;
   final int courtCount;
-  final int participantCount;
+  final int playerCount;
   final DateTime firstSavedAt;
   final DateTime lastOpenedAt;
 
@@ -20,7 +20,7 @@ class LocalScheduleHistoryItem {
       'public_id': publicId,
       'title': title,
       'court_count': courtCount,
-      'participant_count': participantCount,
+      'player_count': playerCount,
       'first_saved_at': firstSavedAt.toIso8601String(),
       'last_opened_at': lastOpenedAt.toIso8601String(),
     };
@@ -31,7 +31,9 @@ class LocalScheduleHistoryItem {
       publicId: json['public_id'] as String? ?? '',
       title: json['title'] as String? ?? '無題の対戦表',
       courtCount: json['court_count'] as int? ?? 0,
-      participantCount: json['participant_count'] as int? ?? 0,
+      playerCount: json['player_count'] as int? ??
+          json['participant_count'] as int? ??
+          0,
       firstSavedAt:
           DateTime.tryParse(json['first_saved_at'] as String? ?? '') ??
               DateTime.now(),
