@@ -28,7 +28,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
   final _urlController = TextEditingController();
   final _courtsController = TextEditingController(text: '1');
-  final _playersController = TextEditingController(text: '6');
+  final _playerCountController = TextEditingController(text: '6');
   final _eventNameController = TextEditingController();
 
   final List<TextEditingController> _displayNameControllers = [];
@@ -49,10 +49,10 @@ class _EventSetupPageState extends State<EventSetupPage> {
   static const _minCourts = 1;
   static const _maxCourts = 2;
 
-  int get _minPlayers => _courts * 4;
-  int get _maxPlayers => _maxPlayersForCourts(_courts);
+  int get _minPlayerCount => _courts * 4;
+  int get _maxPlayerCount => _maxPlayerCountForCourts(_courts);
 
-  int _maxPlayersForCourts(int courts) => courts * 8 - 1;
+  int _maxPlayerCountForCourts(int courts) => courts * 8 - 1;
 
   bool get _hasUrlInput => _urlController.text.trim().isNotEmpty;
 
@@ -89,7 +89,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       baseUrl: AppConfig.coreApiBaseUrl,
     );
 
-    _syncPlayersWithinRange(resetToDefault: true);
+    _syncPlayerCountWithinRange(resetToDefault: true);
     _syncDisplayNameControllers();
   }
 
@@ -97,7 +97,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
   void dispose() {
     _urlController.dispose();
     _courtsController.dispose();
-    _playersController.dispose();
+    _playerCountController.dispose();
     _eventNameController.dispose();
 
     for (final controller in _displayNameControllers) {
@@ -136,24 +136,26 @@ class _EventSetupPageState extends State<EventSetupPage> {
     _courtsController.text = _courts.toString();
   }
 
-  void _syncPlayersWithinRange({bool resetToDefault = false}) {
-    final defaultPlayers = (_courts * 4) + 2;
-    final current = int.tryParse(_playersController.text);
+  void _syncPlayerCountWithinRange({bool resetToDefault = false}) {
+    final defaultPlayerCount = (_courts * 4) + 2;
+    final currentPlayerCount = int.tryParse(_playerCountController.text);
 
-    int nextPlayers;
-    if (resetToDefault || current == null) {
-      nextPlayers = defaultPlayers;
+    int nextPlayerCount;
+    if (resetToDefault || currentPlayerCount == null) {
+      nextPlayerCount = defaultPlayerCount;
     } else {
-      nextPlayers = current.clamp(_minPlayers, _maxPlayers);
+      nextPlayerCount =
+          currentPlayerCount.clamp(_minPlayerCount, _maxPlayerCount);
     }
 
-    _playersController.text = nextPlayers.toString();
+    _playerCountController.text = nextPlayerCount.toString();
   }
 
   void _syncDisplayNameControllers() {
-    final players = int.tryParse(_playersController.text) ?? _minPlayers;
+    final playerCount =
+        int.tryParse(_playerCountController.text) ?? _minPlayerCount;
 
-    while (_displayNameControllers.length < players) {
+    while (_displayNameControllers.length < playerCount) {
       final index = _displayNameControllers.length;
       final defaultName = circledNumber(index + 1);
 
@@ -188,7 +190,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _displayNameFocusNodes.add(focusNode);
     }
 
-    while (_displayNameControllers.length > players) {
+    while (_displayNameControllers.length > playerCount) {
       _displayNameControllers.removeLast().dispose();
       _displayNameFocusNodes.removeLast().dispose();
       _defaultDisplayNames.removeLast();
@@ -210,37 +212,39 @@ class _EventSetupPageState extends State<EventSetupPage> {
     }
   }
 
-  void _setCourts(int value, {bool resetPlayersToDefault = false}) {
+  void _setCourts(int value, {bool resetPlayerCountToDefault = false}) {
     final clamped = value.clamp(_minCourts, _maxCourts);
     setState(() {
       _courts = clamped;
       _syncCourtsController();
-      _syncPlayersWithinRange(resetToDefault: resetPlayersToDefault);
+      _syncPlayerCountWithinRange(resetToDefault: resetPlayerCountToDefault);
       _syncDisplayNameControllers();
     });
   }
 
-  void _setPlayers(int value) {
-    final clamped = value.clamp(_minPlayers, _maxPlayers);
+  void _setPlayerCount(int value) {
+    final clamped = value.clamp(_minPlayerCount, _maxPlayerCount);
     setState(() {
-      _playersController.text = clamped.toString();
+      _playerCountController.text = clamped.toString();
       _syncDisplayNameControllers();
     });
   }
 
   void _decrementCourts() =>
-      _setCourts(_courts - 1, resetPlayersToDefault: true);
+      _setCourts(_courts - 1, resetPlayerCountToDefault: true);
   void _incrementCourts() =>
-      _setCourts(_courts + 1, resetPlayersToDefault: true);
+      _setCourts(_courts + 1, resetPlayerCountToDefault: true);
 
-  void _decrementPlayers() {
-    final current = int.tryParse(_playersController.text) ?? _minPlayers;
-    _setPlayers(current - 1);
+  void _decrementPlayerCount() {
+    final currentPlayerCount =
+        int.tryParse(_playerCountController.text) ?? _minPlayerCount;
+    _setPlayerCount(currentPlayerCount - 1);
   }
 
-  void _incrementPlayers() {
-    final current = int.tryParse(_playersController.text) ?? _minPlayers;
-    _setPlayers(current + 1);
+  void _incrementPlayerCount() {
+    final currentPlayerCount =
+        int.tryParse(_playerCountController.text) ?? _minPlayerCount;
+    _setPlayerCount(currentPlayerCount + 1);
   }
 
   void _resetInputs() {
@@ -256,7 +260,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _eventNameController.clear();
 
       _syncCourtsController();
-      _syncPlayersWithinRange(resetToDefault: true);
+      _syncPlayerCountWithinRange(resetToDefault: true);
       _syncDisplayNameControllers();
 
       for (var i = 0; i < _displayNameControllers.length; i++) {
@@ -330,7 +334,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       if (!mounted) return;
 
       final participantNames = _participantNamesFromPreview(preview);
-      final participantCount = participantNames.isNotEmpty
+      final playerCount = participantNames.isNotEmpty
           ? participantNames.length
           : (preview.participantSummary?.currentCount ?? 0);
 
@@ -339,8 +343,8 @@ class _EventSetupPageState extends State<EventSetupPage> {
         _isUrlImportCompleted = true;
         _importedSourceUrl = originalUrl;
 
-        if (participantCount > 0) {
-          _courts = _inferCourtsForPlayers(participantCount);
+        if (playerCount > 0) {
+          _courts = _inferCourtsForPlayerCount(playerCount);
         }
 
         final eventCourtCount = preview.eventCandidate?.courtCount ?? 0;
@@ -350,9 +354,9 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
         _syncCourtsController();
 
-        if (participantCount > 0) {
-          _playersController.text =
-              participantCount.clamp(_minPlayers, _maxPlayers).toString();
+        if (playerCount > 0) {
+          _playerCountController.text =
+              playerCount.clamp(_minPlayerCount, _maxPlayerCount).toString();
         }
 
         _syncDisplayNameControllers();
@@ -404,18 +408,18 @@ class _EventSetupPageState extends State<EventSetupPage> {
     }
   }
 
-  int _inferCourtsForPlayers(int players) {
+  int _inferCourtsForPlayerCount(int playerCount) {
     final eventCourts = _courts;
 
-    if (players >= _minPlayers && players <= _maxPlayers) {
+    if (playerCount >= _minPlayerCount && playerCount <= _maxPlayerCount) {
       return eventCourts;
     }
 
     for (var courts = _minCourts; courts <= _maxCourts; courts++) {
-      final minPlayers = courts * 4;
-      final maxPlayers = _maxPlayersForCourts(courts);
+      final minPlayerCount = courts * 4;
+      final maxPlayerCount = _maxPlayerCountForCourts(courts);
 
-      if (players >= minPlayers && players <= maxPlayers) {
+      if (playerCount >= minPlayerCount && playerCount <= maxPlayerCount) {
         return courts;
       }
     }
@@ -586,10 +590,10 @@ class _EventSetupPageState extends State<EventSetupPage> {
                           const SizedBox(width: 12),
                           EventSetupStepperField(
                             label: '人数',
-                            controller: _playersController,
+                            controller: _playerCountController,
                             isLoadingEvent: _isLoadingEvent,
-                            onDecrement: _decrementPlayers,
-                            onIncrement: _incrementPlayers,
+                            onDecrement: _decrementPlayerCount,
+                            onIncrement: _incrementPlayerCount,
                             tooltipDecrement: '人数を減らす',
                             tooltipIncrement: '人数を増やす',
                           ),
@@ -597,7 +601,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '人数は $_minPlayers 人以上、$_maxPlayers 人以下で入力してください。',
+                        '人数は $_minPlayerCount 人以上、$_maxPlayerCount 人以下で入力してください。',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(height: 24),
