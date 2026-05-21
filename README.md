@@ -164,6 +164,7 @@ flutter run -d web-server --web-hostname 0.0.0.0 --web-port 3000 \
 
 - [ver0.1 使い方](docs/usage-ver0.1.md)
 - [ver0.1 既知の制限事項](docs/known-limitations-ver0.1.md)
+- [Support docs](docs/support/README.md)
 
 主な開発者向けドキュメント:
 
