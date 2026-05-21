@@ -15,7 +15,7 @@ class EventDraft {
   final String eventName;
   final List<ParticipantDraft> participants;
 
-  int get players => participants.length;
+  int get playerCount => participants.length;
 
   List<String> get displayNames =>
       participants.map((e) => e.displayName).toList(growable: false);
@@ -40,7 +40,7 @@ class EventDraft {
       'url': url,
       'courts': courts,
       'eventName': eventName,
-      'players': players,
+      'playerCount': playerCount,
       'participants': participants.map((e) => e.toJson()).toList(),
     };
   }
