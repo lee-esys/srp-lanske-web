@@ -156,11 +156,20 @@ flutter run -d web-server --web-hostname 0.0.0.0 --web-port 3000 \
 
 ## 📚 ドキュメント
 
-* [Architecture](docs/architecture.md)
-* [Contributing Guide](docs/contributing.md)
-* [ver0.1 リリース前チェックリスト](docs/release-checklist-ver0.1.md)
-* [ver0.1 使い方](docs/usage-ver0.1.md)
-* [ver0.1 既知の制限事項](docs/known-limitations-ver0.1.md)
+ドキュメント全体の入口は以下です。
+
+- [Docs index](docs/README.md)
+
+主な公開ユーザー向けドキュメント:
+
+- [ver0.1 使い方](docs/usage-ver0.1.md)
+- [ver0.1 既知の制限事項](docs/known-limitations-ver0.1.md)
+
+主な開発者向けドキュメント:
+
+- [Architecture](docs/architecture.md)
+- [Contributing Guide](docs/contributing.md)
+- [ver0.1 リリース前チェックリスト](docs/release-checklist-ver0.1.md)
 
 ---
 
