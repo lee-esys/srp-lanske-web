@@ -9,7 +9,7 @@ import '../infrastructure/tennisbear_import_preview_api_client.dart';
 import 'event_list_page.dart';
 import 'models/event_draft.dart';
 import 'schedule_page.dart';
-import 'widgets/event_setup_display_name_grid.dart';
+import 'widgets/event_setup_detail_section.dart';
 import 'widgets/event_setup_stepper_field.dart';
 import 'widgets/event_setup_url_section.dart';
 
@@ -515,68 +515,6 @@ class _EventSetupPageState extends State<EventSetupPage> {
     });
   }
 
-  Widget _buildDetailSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Divider(height: 32),
-        TextFormField(
-          controller: _eventNameController,
-          enabled: !_isLoadingEvent,
-          decoration: const InputDecoration(
-            labelText: 'イベント名',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          '参加者表示名',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        EventSetupDisplayNameGrid(
-          controllers: _displayNameControllers,
-          focusNodes: _displayNameFocusNodes,
-          sourceDisplayNames: _sourceDisplayNames,
-          isLoadingEvent: _isLoadingEvent,
-        ),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FilledButton.tonal(
-              onPressed: _isLoadingEvent ? null : _resetInputs,
-              style: FilledButton.styleFrom(
-                minimumSize: Size.zero,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text(
-                '入力項目のリセット',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-            const SizedBox(width: 12),
-            FilledButton(
-              onPressed: _isLoadingEvent ? null : _submitForm,
-              style: FilledButton.styleFrom(
-                minimumSize: Size.zero,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text(
-                '対戦表の生成',
-                style: TextStyle(fontSize: 22),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final urlText = _urlController.text.trim();
@@ -663,7 +601,15 @@ class _EventSetupPageState extends State<EventSetupPage> {
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(height: 24),
-                      _buildDetailSection(),
+                      EventSetupDetailSection(
+                        eventNameController: _eventNameController,
+                        displayNameControllers: _displayNameControllers,
+                        displayNameFocusNodes: _displayNameFocusNodes,
+                        sourceDisplayNames: _sourceDisplayNames,
+                        isLoadingEvent: _isLoadingEvent,
+                        onReset: _resetInputs,
+                        onSubmit: _submitForm,
+                      ),
                       const SizedBox(height: 80),
                     ],
                   ),
