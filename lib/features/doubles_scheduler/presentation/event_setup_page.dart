@@ -9,6 +9,9 @@ import '../infrastructure/tennisbear_import_preview_api_client.dart';
 import 'event_list_page.dart';
 import 'models/event_draft.dart';
 import 'schedule_page.dart';
+import 'widgets/event_setup_display_name_grid.dart';
+import 'widgets/event_setup_stepper_field.dart';
+import 'widgets/event_setup_url_section.dart';
 
 class EventSetupPage extends StatefulWidget {
   // TODO: 編集時の initialDraft 対応
@@ -512,127 +515,6 @@ class _EventSetupPageState extends State<EventSetupPage> {
     });
   }
 
-  // TODO: 分離・共通化できそうなUI部品は切り出す
-  Widget _buildStepperField({
-    required String label,
-    required TextEditingController controller,
-    required VoidCallback onDecrement,
-    required VoidCallback onIncrement,
-    required String tooltipDecrement,
-    required String tooltipIncrement,
-  }) {
-    return Expanded(
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: _isLoadingEvent ? null : onDecrement,
-            tooltip: tooltipDecrement,
-            icon: const Icon(Icons.remove_circle_outline),
-          ),
-          Expanded(
-            child: SizedBox(
-              width: 84,
-              child: TextFormField(
-                controller: controller,
-                readOnly: true,
-                enabled: !_isLoadingEvent,
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(
-                  labelText: label,
-                  border: const OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: _isLoadingEvent ? null : onIncrement,
-            tooltip: tooltipIncrement,
-            icon: const Icon(Icons.add_circle_outline),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUrlSection() {
-    final urlText = _urlController.text.trim();
-    final showUrlError = urlText.isNotEmpty && !_isValidTennisbearEventUrl;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextFormField(
-          controller: _urlController,
-          enabled: !_isLoadingEvent,
-          onChanged: _handleUrlChanged,
-          decoration: InputDecoration(
-            labelText: 'テニスベアのイベントURL',
-            helperText: '例: https://www.tennisbear.net/event/1156506/info',
-            errorText: showUrlError ? 'テニスベアのイベントURLを入力してください' : null,
-            border: const OutlineInputBorder(),
-            suffixIcon: _hasUrlInput
-                ? IconButton(
-                    tooltip: 'URLをクリア',
-                    onPressed: _canClearEventUrl ? _clearEventUrl : null,
-                    icon: const Icon(Icons.cancel_outlined),
-                  )
-                : null,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Center(
-          child: Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            alignment: WrapAlignment.center,
-            children: [
-              OutlinedButton.icon(
-                onPressed: _canPasteEventUrl ? _pasteEventUrl : null,
-                icon: const Icon(Icons.content_paste),
-                label: const Text('貼り付け'),
-              ),
-              FilledButton.icon(
-                onPressed: _canImportEventUrl ? _fetchEventInfo : null,
-                icon: const Icon(Icons.download),
-                label: const Text('取り込み'),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDisplayNameGrid() {
-    final items = List.generate(_displayNameControllers.length, (index) {
-      final sourceName = _sourceDisplayNames[index] ?? circledNumber(index + 1);
-      final labelSuffix = '：$sourceName';
-
-      return TextFormField(
-        controller: _displayNameControllers[index],
-        focusNode: _displayNameFocusNodes[index],
-        enabled: !_isLoadingEvent,
-        decoration: InputDecoration(
-          labelText: '参加者${participantLabelNumber(index)}$labelSuffix',
-          border: const OutlineInputBorder(),
-          isDense: true,
-        ),
-      );
-    });
-
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: List.generate(items.length, (index) {
-        return SizedBox(
-          width: 140,
-          child: items[index],
-        );
-      }),
-    );
-  }
-
   Widget _buildDetailSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -652,7 +534,12 @@ class _EventSetupPageState extends State<EventSetupPage> {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        _buildDisplayNameGrid(),
+        EventSetupDisplayNameGrid(
+          controllers: _displayNameControllers,
+          focusNodes: _displayNameFocusNodes,
+          sourceDisplayNames: _sourceDisplayNames,
+          isLoadingEvent: _isLoadingEvent,
+        ),
         const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -692,6 +579,9 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
   @override
   Widget build(BuildContext context) {
+    final urlText = _urlController.text.trim();
+    final showUrlError = urlText.isNotEmpty && !_isValidTennisbearEventUrl;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('ダブルス乱数表 ver0.1'),
@@ -729,23 +619,37 @@ class _EventSetupPageState extends State<EventSetupPage> {
                         style: TextStyle(fontSize: 12, color: Colors.black54),
                       ),
                       const SizedBox(height: 16),
-                      _buildUrlSection(),
+                      EventSetupUrlSection(
+                        controller: _urlController,
+                        isLoadingEvent: _isLoadingEvent,
+                        hasUrlInput: _hasUrlInput,
+                        showUrlError: showUrlError,
+                        canClearEventUrl: _canClearEventUrl,
+                        canPasteEventUrl: _canPasteEventUrl,
+                        canImportEventUrl: _canImportEventUrl,
+                        onChanged: _handleUrlChanged,
+                        onClear: _clearEventUrl,
+                        onPaste: _pasteEventUrl,
+                        onImport: _fetchEventInfo,
+                      ),
                       const SizedBox(height: 16),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildStepperField(
+                          EventSetupStepperField(
                             label: '面数',
                             controller: _courtsController,
+                            isLoadingEvent: _isLoadingEvent,
                             onDecrement: _decrementCourts,
                             onIncrement: _incrementCourts,
                             tooltipDecrement: '面数を減らす',
                             tooltipIncrement: '面数を増やす',
                           ),
                           const SizedBox(width: 12),
-                          _buildStepperField(
+                          EventSetupStepperField(
                             label: '人数',
                             controller: _playersController,
+                            isLoadingEvent: _isLoadingEvent,
                             onDecrement: _decrementPlayers,
                             onIncrement: _incrementPlayers,
                             tooltipDecrement: '人数を減らす',
