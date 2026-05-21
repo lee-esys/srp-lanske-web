@@ -15,7 +15,7 @@ class InMemoryEventRepository implements EventRepository {
 
   final Map<String, SavedEvent> _eventsById = {};
   final Map<String, String> _eventIdByPublicId = {};
-  final Map<String, List<SavedEventParticipant>> _participantsByEventId = {};
+  final Map<String, List<SavedEventPlayer>> _playersByEventId = {};
   final Map<String, SavedEventShare> _sharesByPublicId = {};
   final Map<String, SavedEventImport> _importsByEventId = {};
 
@@ -38,14 +38,14 @@ class InMemoryEventRepository implements EventRepository {
       updatedAt: now,
     );
 
-    final participants = draft.participants.asMap().entries.map((entry) {
+    final players = draft.players.asMap().entries.map((entry) {
       final index = entry.key;
-      final participant = entry.value;
+      final player = entry.value;
 
-      return SavedEventParticipant(
-        id: participant.id,
+      return SavedEventPlayer(
+        id: player.id,
         eventId: eventId,
-        displayName: participant.displayName,
+        displayName: player.displayName,
         orderNo: index + 1,
         status: 'active',
         createdAt: now,
@@ -72,7 +72,7 @@ class InMemoryEventRepository implements EventRepository {
 
     _eventsById[eventId] = event;
     _eventIdByPublicId[publicId] = eventId;
-    _participantsByEventId[eventId] = participants;
+    _playersByEventId[eventId] = players;
     _sharesByPublicId[publicId] = share;
     if (importRecord != null) {
       _importsByEventId[eventId] = importRecord;
@@ -80,7 +80,7 @@ class InMemoryEventRepository implements EventRepository {
 
     return SavedEventAggregate(
       event: event,
-      participants: participants,
+      players: players,
       share: share,
       importRecord: importRecord,
     );
@@ -97,15 +97,15 @@ class InMemoryEventRepository implements EventRepository {
 
     return SavedEventAggregate(
       event: event,
-      participants: _participantsByEventId[eventId] ?? const [],
+      players: _playersByEventId[eventId] ?? const [],
       share: share,
       importRecord: _importsByEventId[eventId],
     );
   }
 
   @override
-  Future<List<SavedEventParticipant>> listParticipants(String eventId) async {
-    return List.unmodifiable(_participantsByEventId[eventId] ?? const []);
+  Future<List<SavedEventPlayer>> listPlayers(String eventId) async {
+    return List.unmodifiable(_playersByEventId[eventId] ?? const []);
   }
 
   @override

@@ -10,10 +10,10 @@ class GeneratedScheduleService {
     final request = <String, dynamic>{
       'schedule_type': 'doubles',
       'courts': draft.courts,
-      'players': draft.participants
+      'players': draft.players
           .map(
-            (participant) => <String, dynamic>{
-              'player_id': participant.id,
+            (player) => <String, dynamic>{
+              'player_id': player.id,
               // TODO: core の OpenAPI に合わせて必要項目があればここへ追加
               // 例: display_name, level, gender など
             },

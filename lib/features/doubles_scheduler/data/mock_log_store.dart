@@ -1,4 +1,4 @@
-import 'package:srp_lanske/features/doubles_scheduler/domain/participant_draft.dart';
+import 'package:srp_lanske/features/doubles_scheduler/domain/player_draft.dart';
 
 import '../presentation/models/event_draft.dart';
 
@@ -17,7 +17,7 @@ class MockLogStore {
 
   static void save(EventDraft draft) {
     final copiedDraft = draft.copyWith(
-      participants: List<ParticipantDraft>.from(draft.participants),
+      players: List<PlayerDraft>.from(draft.players),
     );
 
     _items.add(

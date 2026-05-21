@@ -8,15 +8,15 @@ class ScheduleRoundsView extends StatefulWidget {
     required this.scheduleResponse,
     required this.playerNameById,
     required this.courtCount,
-    this.selectedParticipantId,
-    this.onParticipantSelected,
+    this.selectedPlayerId,
+    this.onPlayerSelected,
   });
 
   final Map<String, dynamic>? scheduleResponse;
   final Map<String, String> playerNameById;
   final int courtCount;
-  final String? selectedParticipantId;
-  final ValueChanged<String>? onParticipantSelected;
+  final String? selectedPlayerId;
+  final ValueChanged<String>? onPlayerSelected;
 
   @override
   State<ScheduleRoundsView> createState() => _ScheduleRoundsViewState();
@@ -221,9 +221,8 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       playerId: playerId,
       displayName: displayName,
       size: size,
-      isHighlighted:
-          highlightEnabled && widget.selectedParticipantId == playerId,
-      onTap: widget.onParticipantSelected,
+      isHighlighted: highlightEnabled && widget.selectedPlayerId == playerId,
+      onTap: widget.onPlayerSelected,
     );
   }
 
@@ -231,11 +230,11 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     List<int> restSlotNumbers,
     Map<int, String> slotToPlayerId,
   ) {
-    final selectedParticipantId = widget.selectedParticipantId;
-    if (selectedParticipantId == null) return false;
+    final selectedPlayerId = widget.selectedPlayerId;
+    if (selectedPlayerId == null) return false;
 
     return restSlotNumbers.any((slotNumber) {
-      return slotToPlayerId[slotNumber] == selectedParticipantId;
+      return slotToPlayerId[slotNumber] == selectedPlayerId;
     });
   }
 

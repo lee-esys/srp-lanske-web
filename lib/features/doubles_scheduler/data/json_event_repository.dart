@@ -36,14 +36,14 @@ class JsonEventRepository implements EventRepository {
       updatedAt: now,
     );
 
-    final participants = draft.participants.asMap().entries.map((entry) {
+    final players = draft.players.asMap().entries.map((entry) {
       final index = entry.key;
-      final participant = entry.value;
+      final player = entry.value;
 
-      return SavedEventParticipant(
-        id: participant.id,
+      return SavedEventPlayer(
+        id: player.id,
         eventId: eventId,
-        displayName: participant.displayName,
+        displayName: player.displayName,
         orderNo: index + 1,
         status: 'active',
         createdAt: now,
@@ -70,7 +70,7 @@ class JsonEventRepository implements EventRepository {
 
     final aggregate = SavedEventAggregate(
       event: event,
-      participants: participants,
+      players: players,
       share: share,
       importRecord: importRecord,
     );
@@ -89,9 +89,9 @@ class JsonEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<SavedEventParticipant>> listParticipants(String eventId) async {
+  Future<List<SavedEventPlayer>> listPlayers(String eventId) async {
     final aggregate = await _findByEventId(eventId);
-    return List.unmodifiable(aggregate?.participants ?? const []);
+    return List.unmodifiable(aggregate?.players ?? const []);
   }
 
   @override
@@ -162,7 +162,7 @@ class JsonEventRepository implements EventRepository {
   ) {
     return SavedEventAggregate(
       event: event,
-      participants: aggregate.participants,
+      players: aggregate.players,
       share: aggregate.share,
       importRecord: aggregate.importRecord,
     );

@@ -100,7 +100,7 @@ class _EventListPageState extends State<EventListPage> {
                 child: ListTile(
                   title: Text(item.title),
                   subtitle: Text(
-                    '面数: ${item.courtCount} / 人数: ${item.participantCount}\n'
+                    '面数: ${item.courtCount} / 人数: ${item.playerCount}\n'
                     '最終表示: ${_formatDateTime(item.lastOpenedAt)}',
                   ),
                   isThreeLine: true,

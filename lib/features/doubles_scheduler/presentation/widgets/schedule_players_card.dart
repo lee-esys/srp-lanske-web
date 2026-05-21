@@ -3,38 +3,37 @@ import 'package:flutter/material.dart';
 import 'schedule_player_chip.dart';
 import 'schedule_section_card.dart';
 
-class ScheduleParticipantViewModel {
-  const ScheduleParticipantViewModel({
+class SchedulePlayerViewModel {
+  const SchedulePlayerViewModel({
     required this.orderNo,
     required this.displayName,
-    required this.participantId,
+    required this.playerId,
   });
 
   final int orderNo;
   final String displayName;
-  final String participantId;
+  final String playerId;
 }
 
-class ScheduleParticipantsCard extends StatefulWidget {
-  const ScheduleParticipantsCard({
+class SchedulePlayersCard extends StatefulWidget {
+  const SchedulePlayersCard({
     super.key,
     required this.title,
-    required this.participants,
-    this.selectedParticipantId,
-    this.onParticipantSelected,
+    required this.players,
+    this.selectedPlayerId,
+    this.onPlayerSelected,
   });
 
   final String title;
-  final List<ScheduleParticipantViewModel> participants;
-  final String? selectedParticipantId;
-  final ValueChanged<String>? onParticipantSelected;
+  final List<SchedulePlayerViewModel> players;
+  final String? selectedPlayerId;
+  final ValueChanged<String>? onPlayerSelected;
 
   @override
-  State<ScheduleParticipantsCard> createState() =>
-      _ScheduleParticipantsCardState();
+  State<SchedulePlayersCard> createState() => _SchedulePlayersCardState();
 }
 
-class _ScheduleParticipantsCardState extends State<ScheduleParticipantsCard> {
+class _SchedulePlayersCardState extends State<SchedulePlayersCard> {
   final _scrollController = ScrollController();
   bool _showScrollHint = false;
 
@@ -47,7 +46,7 @@ class _ScheduleParticipantsCardState extends State<ScheduleParticipantsCard> {
   }
 
   @override
-  void didUpdateWidget(ScheduleParticipantsCard oldWidget) {
+  void didUpdateWidget(SchedulePlayersCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     WidgetsBinding.instance.addPostFrameCallback((_) => _updateScrollHint());
   }
@@ -75,7 +74,7 @@ class _ScheduleParticipantsCardState extends State<ScheduleParticipantsCard> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.participants.isEmpty) {
+    if (widget.players.isEmpty) {
       return const ScheduleSectionCard(
         title: '参加者',
         child: Text('参加者情報がありません'),
@@ -92,16 +91,15 @@ class _ScheduleParticipantsCardState extends State<ScheduleParticipantsCard> {
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: widget.participants.map((participant) {
+                children: widget.players.map((player) {
                   return Padding(
                     padding: const EdgeInsets.only(right: 6),
                     child: SchedulePlayerChip(
-                      slotNumber: participant.orderNo,
-                      playerId: participant.participantId,
-                      displayName: participant.displayName,
-                      isHighlighted: widget.selectedParticipantId ==
-                          participant.participantId,
-                      onTap: widget.onParticipantSelected,
+                      slotNumber: player.orderNo,
+                      playerId: player.playerId,
+                      displayName: player.displayName,
+                      isHighlighted: widget.selectedPlayerId == player.playerId,
+                      onTap: widget.onPlayerSelected,
                     ),
                   );
                 }).toList(growable: false),

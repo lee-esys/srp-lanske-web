@@ -4,16 +4,16 @@ import 'package:uuid/uuid.dart';
 
 final _uuid = Uuid();
 
-class ParticipantDraft {
-  ParticipantDraft({
+class PlayerDraft {
+  PlayerDraft({
     required this.id,
     required this.displayName,
   });
 
-  factory ParticipantDraft.create({
+  factory PlayerDraft.create({
     required String displayName,
   }) {
-    return ParticipantDraft(
+    return PlayerDraft(
       id: _uuid.v4(),
       displayName: displayName,
     );
@@ -22,11 +22,11 @@ class ParticipantDraft {
   final String id;
   final String displayName;
 
-  ParticipantDraft copyWith({
+  PlayerDraft copyWith({
     String? id,
     String? displayName,
   }) {
-    return ParticipantDraft(
+    return PlayerDraft(
       id: id ?? this.id,
       displayName: displayName ?? this.displayName,
     );

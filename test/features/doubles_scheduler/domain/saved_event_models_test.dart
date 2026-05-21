@@ -30,9 +30,9 @@ void main() {
         updatedAt: updatedAt,
       );
 
-      final participants = [
-        SavedEventParticipant(
-          id: 'participant-1',
+      final players = [
+        SavedEventPlayer(
+          id: 'player-1',
           eventId: event.id,
           displayName: '参加者1',
           orderNo: 1,
@@ -41,8 +41,8 @@ void main() {
           createdAt: createdAt,
           updatedAt: updatedAt,
         ),
-        SavedEventParticipant(
-          id: 'participant-2',
+        SavedEventPlayer(
+          id: 'player-2',
           eventId: event.id,
           displayName: '参加者2',
           orderNo: 2,
@@ -61,7 +61,7 @@ void main() {
 
       return SavedEventAggregate(
         event: event,
-        participants: participants,
+        players: players,
         share: share,
         importRecord: importRecord ??
             SavedEventImport(
@@ -74,7 +74,7 @@ void main() {
                 'title': '取り込みイベント',
                 'courtCount': 2,
               },
-              parsedParticipantsJson: [
+              parsedPlayersJson: [
                 {'displayName': '参加者1'},
                 {'displayName': '参加者2'},
               ],
@@ -106,18 +106,18 @@ void main() {
       expect(restored.event.createdAt, createdAt);
       expect(restored.event.updatedAt, updatedAt);
 
-      expect(restored.participants, hasLength(2));
-      expect(restored.participants[0].id, 'participant-1');
-      expect(restored.participants[0].eventId, 'event-1');
-      expect(restored.participants[0].displayName, '参加者1');
-      expect(restored.participants[0].orderNo, 1);
-      expect(restored.participants[0].status, 'active');
-      expect(restored.participants[0].sourceText, '参加者1 Lv5');
+      expect(restored.players, hasLength(2));
+      expect(restored.players[0].id, 'player-1');
+      expect(restored.players[0].eventId, 'event-1');
+      expect(restored.players[0].displayName, '参加者1');
+      expect(restored.players[0].orderNo, 1);
+      expect(restored.players[0].status, 'active');
+      expect(restored.players[0].sourceText, '参加者1 Lv5');
 
-      expect(restored.participants[1].id, 'participant-2');
-      expect(restored.participants[1].displayName, '参加者2');
-      expect(restored.participants[1].orderNo, 2);
-      expect(restored.participants[1].sourceText, isNull);
+      expect(restored.players[1].id, 'player-2');
+      expect(restored.players[1].displayName, '参加者2');
+      expect(restored.players[1].orderNo, 2);
+      expect(restored.players[1].sourceText, isNull);
 
       expect(restored.share.publicId, 'ABCD1234');
       expect(restored.share.eventId, 'event-1');
@@ -132,13 +132,29 @@ void main() {
       expect(restored.importRecord!.pastedText, '貼り付けテキスト');
       expect(restored.importRecord!.parsedEventJson?['title'], '取り込みイベント');
       expect(restored.importRecord!.parsedEventJson?['courtCount'], 2);
-      expect(restored.importRecord!.parsedParticipantsJson, hasLength(2));
+      expect(restored.importRecord!.parsedPlayersJson, hasLength(2));
       expect(
-        restored.importRecord!.parsedParticipantsJson?[0]['displayName'],
+        restored.importRecord!.parsedPlayersJson?[0]['displayName'],
         '参加者1',
       );
       expect(restored.importRecord!.confirmedAt, updatedAt);
       expect(restored.importRecord!.createdAt, createdAt);
+    });
+
+    test('restores legacy participant keys through JSON', () {
+      final aggregate = buildAggregate();
+      final json = aggregate.toJson();
+
+      json['participants'] = json.remove('players');
+      final importRecord = json['importRecord'] as Map<String, dynamic>;
+      importRecord['parsedParticipantsJson'] =
+          importRecord.remove('parsedPlayersJson');
+
+      final restored = SavedEventAggregate.fromJson(json);
+
+      expect(restored.players, hasLength(2));
+      expect(restored.players[0].displayName, '参加者1');
+      expect(restored.importRecord!.parsedPlayersJson, hasLength(2));
     });
 
     test('round trips generated schedule refs through JSON', () {
@@ -182,7 +198,7 @@ void main() {
       final restored = SavedEventAggregate.fromJson(json);
 
       expect(restored.event.id, 'event-1');
-      expect(restored.participants, hasLength(2));
+      expect(restored.players, hasLength(2));
       expect(restored.share.publicId, 'ABCD1234');
       expect(restored.importRecord, isNull);
     });
@@ -192,7 +208,7 @@ void main() {
       expect(
         () => SavedEventAggregate.fromJson({
           'schemaVersion': savedEventAggregateSchemaVersion,
-          'participants': const [],
+          'players': const [],
           'share': {
             'publicId': 'ABCD1234',
             'eventId': 'event-1',
