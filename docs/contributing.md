@@ -37,14 +37,14 @@ docs 全体の入口は [Docs index](README.md) です。
 例:
 
 ```text
-feature/1-project-structure
-feature/2-page-skeleton
-feature/3-mock-generation-flow
+feat/1-project-structure
+feat/2-page-skeleton
+feat/3-mock-generation-flow
 docs/5-reorganize-docs
 refactor/63-split-event-setup-ui
 ```
 
-実装作業は `feature/`、docs 整理は `docs/`、リファクタリングは `refactor/` など、作業内容に合わせて選ぶ。
+実装作業は `feat/`、docs 整理は `docs/`、リファクタリングは `refactor/` など、作業内容に合わせて選ぶ。
 
 ---
 
@@ -200,7 +200,7 @@ docs のみの変更では、実装に影響しないことを確認したうえ
 - knockout
 - score
 
-feature単位で拡張していく
+機能単位で拡張していく
 
 ---
 
