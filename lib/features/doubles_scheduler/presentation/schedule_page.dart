@@ -489,8 +489,8 @@ class _SchedulePageState extends State<SchedulePage> {
                   scheduleResponse: _scheduleResponse,
                   playerNameById: _playerNameById,
                   courtCount: widget.draft.courts,
-                  selectedParticipantId: _selectedPlayerId,
-                  onParticipantSelected: _toggleSelectedPlayer,
+                  selectedPlayerId: _selectedPlayerId,
+                  onPlayerSelected: _toggleSelectedPlayer,
                 ),
         ),
         if (_errorMessage != null) ...[
