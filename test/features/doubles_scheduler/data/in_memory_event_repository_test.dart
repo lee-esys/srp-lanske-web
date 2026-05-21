@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:srp_lanske/features/doubles_scheduler/data/in_memory_event_repository.dart';
-import 'package:srp_lanske/features/doubles_scheduler/domain/participant_draft.dart';
+import 'package:srp_lanske/features/doubles_scheduler/domain/player_draft.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/models/event_draft.dart';
 
 import '../application/event_repository_contract.dart';
@@ -17,13 +17,13 @@ void main() {
         url: 'https://example.com/events/1',
         courts: 1,
         eventName: 'テストイベント',
-        participants: [
-          ParticipantDraft.create(displayName: '参加者1'),
-          ParticipantDraft.create(displayName: '参加者2'),
-          ParticipantDraft.create(displayName: '参加者3'),
-          ParticipantDraft.create(displayName: '参加者4'),
-          ParticipantDraft.create(displayName: '参加者5'),
-          ParticipantDraft.create(displayName: '参加者6'),
+        players: [
+          PlayerDraft.create(displayName: '参加者1'),
+          PlayerDraft.create(displayName: '参加者2'),
+          PlayerDraft.create(displayName: '参加者3'),
+          PlayerDraft.create(displayName: '参加者4'),
+          PlayerDraft.create(displayName: '参加者5'),
+          PlayerDraft.create(displayName: '参加者6'),
         ],
       );
     }
