@@ -1,6 +1,10 @@
 # 🤝 Contributing Guide
 
-このプロジェクトの開発ルール・運用方針をまとめる。
+このドキュメントは、Lanske web repository の開発ルール・運用方針の入口です。
+
+詳細な設計方針は [Architecture](architecture.md)、リリース前確認は [ver0.1 リリース前チェックリスト](release-checklist-ver0.1.md) を参照します。
+
+docs 全体の入口は [Docs index](README.md) です。
 
 ---
 
@@ -10,6 +14,7 @@
 - 構造を守る
 - アルゴリズムとアプリを分離する
 - 再現性のある実装を意識する
+- 公開ユーザー向け docs と開発者向け docs を混ぜすぎない
 
 ---
 
@@ -23,21 +28,23 @@
 
 ---
 
-### feature/*
+### 作業ブランチ
 
-- 作業用ブランチ
 - 1ブランチ = 1目的
-- Issue単位で作成する
+- Issue 単位で作成する
+- 作業内容が分かる prefix を使う
 
-例：
+例:
 
-```
-
+```text
 feature/1-project-structure
 feature/2-page-skeleton
 feature/3-mock-generation-flow
-
+docs/5-reorganize-docs
+refactor/63-split-event-setup-ui
 ```
+
+実装作業は `feature/`、docs 整理は `docs/`、リファクタリングは `refactor/` など、作業内容に合わせて選ぶ。
 
 ---
 
@@ -47,21 +54,17 @@ feature/3-mock-generation-flow
 - 子Issue / 関連Issue（小タスク単位）は、該当コミットで `closes #issue` としてよい
 - 作業途中のコミットでは `refs #issue` を使用する
 
-例：
+例:
 
-```
-
+```text
 🔌 feat: add scheduler controller closes #7 refs #3
 🖼️ feat: add result view refs #3
-
 ```
 
-最終マージ時：
+最終マージ時:
 
-```
-
+```text
 🔌 feat: add mock schedule generation flow closes #3
-
 ```
 
 ---
@@ -69,8 +72,8 @@ feature/3-mock-generation-flow
 ## 🔀 開発フロー
 
 1. `main` を最新化
-2. `feature/*` を作成
-3. 実装
+2. 作業ブランチを作成
+3. 実装または docs 更新
 4. コミット
 5. Push
 6. Pull Request 作成
@@ -84,33 +87,27 @@ feature/3-mock-generation-flow
 
 ### フォーマット
 
-```
-
+```text
 <emoji> <type>: <summary> [refs #issue]
-
 ```
 
 または
 
-```
-
+```text
 <emoji> <type>: <summary> closes #issue
-
 ```
 
 ---
 
 ### 例
 
-```
-
+```text
 🏗️ chore: initialize project structure refs #1
 🖼️ feat: add doubles scheduler page skeleton refs #2
 🔌 feat: add mock schedule generation flow refs #3
 ♻️ refactor: split scheduler form widget refs #5
 🐛 fix: handle invalid player count input refs #8
 📝 docs: update architecture for core separation refs #10
-
 ```
 
 ---
@@ -129,8 +126,7 @@ feature/3-mock-generation-flow
 
 ### 絵文字一覧
 
-```
-
+```text
 🏗️ chore:
 ✨ feat:
 🖼️ feat:
@@ -142,7 +138,6 @@ feature/3-mock-generation-flow
 🔥 remove:
 🚚 chore:
 🔒 chore:
-
 ```
 
 ---
@@ -152,6 +147,8 @@ feature/3-mock-generation-flow
 - presentation / application / domain / infrastructure を分離
 - UIとロジックを分離
 - アルゴリズムは core 側へ切り出す
+
+詳しくは [Architecture](architecture.md) を参照する。
 
 ---
 
@@ -172,11 +169,28 @@ feature/3-mock-generation-flow
 
 ---
 
+## ✅ PR 前確認
+
+web 側の実装・docs 更新後は、必要に応じて以下を確認する。
+
+```bash
+dart format lib/
+flutter analyze
+flutter test
+```
+
+docs のみの変更では、実装に影響しないことを確認したうえで、実行不要と判断してよい。
+その場合も、PR 本文や作業メモで「docs のみの変更のため未実行」と明記する。
+
+---
+
 ## 📌 注意事項
 
 - 機密情報を含めない
 - `.env` や認証情報はコミットしない
 - `.gitignore` を遵守する
+- 公開ユーザー向け docs に、内部運用や未確定の詳細を混ぜすぎない
+- 一時的な詳細検討メモは、必要に応じて worklog 側に置く
 
 ---
 
@@ -192,6 +206,6 @@ feature単位で拡張していく
 
 ## 💡 判断基準
 
-実装に迷った場合は、以下の観点を優先する：
+実装に迷った場合は、以下の観点を優先する:
 
 > ランダムではなく、納得できる組み合わせを
