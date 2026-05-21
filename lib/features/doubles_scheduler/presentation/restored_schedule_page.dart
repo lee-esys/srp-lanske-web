@@ -10,7 +10,7 @@ import '../application/local_schedule_history_mapper.dart';
 import '../application/saved_event_aggregate_helpers.dart';
 import '../application/schedule_share_url.dart';
 import '../data/local_schedule_history_store.dart';
-import '../domain/participant_draft.dart';
+import '../domain/player_draft.dart';
 import '../domain/public_id.dart';
 import '../domain/saved_event_models.dart';
 import '../infrastructure/generated_schedule_api_client.dart';
@@ -18,7 +18,7 @@ import 'event_list_page.dart';
 import 'models/event_draft.dart';
 import 'widgets/schedule_action_buttons.dart';
 import 'widgets/schedule_event_summary_card.dart';
-import 'widgets/schedule_participants_card.dart';
+import 'widgets/schedule_players_card.dart';
 import 'widgets/schedule_rounds_view.dart';
 import 'widgets/schedule_section_card.dart';
 
@@ -45,7 +45,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
   SavedEventAggregate? _savedEvent;
   String? _generatedScheduleId;
-  String? _selectedParticipantId;
+  String? _selectedPlayerId;
   Map<String, dynamic>? _scheduleResponse;
 
   @override
@@ -85,35 +85,32 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     return generatedScheduleId != null && generatedScheduleId.isNotEmpty;
   }
 
-  List<SavedEventParticipant> get _orderedParticipants {
-    final participants = _savedEvent?.participants.toList() ?? const [];
-    if (participants.isEmpty) return const [];
+  List<SavedEventPlayer> get _orderedPlayers {
+    final players = _savedEvent?.players.toList() ?? const [];
+    if (players.isEmpty) return const [];
 
-    return participants.toList()
-      ..sort((a, b) => a.orderNo.compareTo(b.orderNo));
+    return players.toList()..sort((a, b) => a.orderNo.compareTo(b.orderNo));
   }
 
   Map<String, String> get _playerNameById {
     return {
-      for (final participant in _orderedParticipants)
-        participant.id: participant.displayName,
+      for (final player in _orderedPlayers) player.id: player.displayName,
     };
   }
 
-  List<ScheduleParticipantViewModel> get _participantViewModels {
-    return _orderedParticipants.map((participant) {
-      return ScheduleParticipantViewModel(
-        orderNo: participant.orderNo,
-        displayName: participant.displayName,
-        participantId: participant.id,
+  List<SchedulePlayerViewModel> get _playerViewModels {
+    return _orderedPlayers.map((player) {
+      return SchedulePlayerViewModel(
+        orderNo: player.orderNo,
+        displayName: player.displayName,
+        playerId: player.id,
       );
     }).toList(growable: false);
   }
 
-  void _toggleSelectedParticipant(String participantId) {
+  void _toggleSelectedPlayer(String playerId) {
     setState(() {
-      _selectedParticipantId =
-          _selectedParticipantId == participantId ? null : participantId;
+      _selectedPlayerId = _selectedPlayerId == playerId ? null : playerId;
     });
   }
 
@@ -188,7 +185,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _savedEvent = null;
         _scheduleResponse = null;
         _generatedScheduleId = null;
-        _selectedParticipantId = null;
+        _selectedPlayerId = null;
         _errorMessage = '対戦表が見つかりません';
       });
       return null;
@@ -229,7 +226,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           _savedEvent = null;
           _scheduleResponse = null;
           _generatedScheduleId = null;
-          _selectedParticipantId = null;
+          _selectedPlayerId = null;
           _errorMessage = '対戦表が見つかりません';
           _isLoading = false;
         });
@@ -243,9 +240,9 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _generatedScheduleId = generatedScheduleId;
       });
 
-      if (aggregate.participants.isEmpty) {
+      if (aggregate.players.isEmpty) {
         setState(() {
-          _selectedParticipantId = null;
+          _selectedPlayerId = null;
           _errorMessage = '参加者情報がありません';
           _isLoading = false;
         });
@@ -271,7 +268,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _savedEvent = null;
         _scheduleResponse = null;
         _generatedScheduleId = null;
-        _selectedParticipantId = null;
+        _selectedPlayerId = null;
         _errorMessage = '対戦表を取得できませんでした。\n'
             '通信状態を確認して、再読み込みしてください。';
         _isLoading = false;
@@ -334,7 +331,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           _savedEvent = null;
           _scheduleResponse = null;
           _generatedScheduleId = null;
-          _selectedParticipantId = null;
+          _selectedPlayerId = null;
           _errorMessage = '対戦表が見つかりません';
           _isLoading = false;
         });
@@ -539,10 +536,10 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       url: aggregate.event.sourceUrl ?? '',
       courts: aggregate.event.courtCount,
       eventName: aggregate.event.title,
-      participants: _orderedParticipants.map((participant) {
-        return ParticipantDraft(
-          id: participant.id,
-          displayName: participant.displayName,
+      players: _orderedPlayers.map((player) {
+        return PlayerDraft(
+          id: player.id,
+          displayName: player.displayName,
         );
       }).toList(growable: false),
     );
@@ -588,12 +585,12 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
             canRefresh: _generatedScheduleId != null,
           ),
           const SizedBox(height: 12),
-          ScheduleParticipantsCard(
+          SchedulePlayersCard(
             title:
-                '面数: ${savedEvent.event.courtCount}　　参加者: ${savedEvent.participants.length}人',
-            participants: _participantViewModels,
-            selectedParticipantId: _selectedParticipantId,
-            onParticipantSelected: _toggleSelectedParticipant,
+                '面数: ${savedEvent.event.courtCount}　　参加者: ${savedEvent.players.length}人',
+            players: _playerViewModels,
+            selectedPlayerId: _selectedPlayerId,
+            onPlayerSelected: _toggleSelectedPlayer,
           ),
           if (!_hasAdoptedSchedule) ...[
             const SizedBox(height: 12),
@@ -623,8 +620,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
                     scheduleResponse: _scheduleResponse,
                     playerNameById: _playerNameById,
                     courtCount: savedEvent.event.courtCount,
-                    selectedParticipantId: _selectedParticipantId,
-                    onParticipantSelected: _toggleSelectedParticipant,
+                    selectedParticipantId: _selectedPlayerId,
+                    onParticipantSelected: _toggleSelectedPlayer,
                   ),
           ),
         ],
