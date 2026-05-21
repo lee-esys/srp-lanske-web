@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:srp_lanske/features/doubles_scheduler/application/event_repository.dart';
-import 'package:srp_lanske/features/doubles_scheduler/domain/participant_draft.dart';
+import 'package:srp_lanske/features/doubles_scheduler/domain/player_draft.dart';
 import 'package:srp_lanske/features/doubles_scheduler/domain/saved_event_models.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/models/event_draft.dart';
 
@@ -20,13 +20,13 @@ void runEventRepositoryContractTests({
         url: url,
         courts: courts,
         eventName: eventName,
-        participants: [
-          ParticipantDraft.create(displayName: '参加者1'),
-          ParticipantDraft.create(displayName: '参加者2'),
-          ParticipantDraft.create(displayName: '参加者3'),
-          ParticipantDraft.create(displayName: '参加者4'),
-          ParticipantDraft.create(displayName: '参加者5'),
-          ParticipantDraft.create(displayName: '参加者6'),
+        players: [
+          PlayerDraft.create(displayName: '参加者1'),
+          PlayerDraft.create(displayName: '参加者2'),
+          PlayerDraft.create(displayName: '参加者3'),
+          PlayerDraft.create(displayName: '参加者4'),
+          PlayerDraft.create(displayName: '参加者5'),
+          PlayerDraft.create(displayName: '参加者6'),
         ],
       );
     }
@@ -45,11 +45,11 @@ void runEventRepositoryContractTests({
       expect(aggregate.event.currentGeneratedScheduleId, isNull);
       expect(aggregate.event.adoptedGeneratedScheduleId, isNull);
 
-      expect(aggregate.participants, hasLength(6));
-      expect(aggregate.participants[0].displayName, '参加者1');
-      expect(aggregate.participants[0].orderNo, 1);
-      expect(aggregate.participants[5].displayName, '参加者6');
-      expect(aggregate.participants[5].orderNo, 6);
+      expect(aggregate.players, hasLength(6));
+      expect(aggregate.players[0].displayName, '参加者1');
+      expect(aggregate.players[0].orderNo, 1);
+      expect(aggregate.players[5].displayName, '参加者6');
+      expect(aggregate.players[5].orderNo, 6);
 
       expect(aggregate.share.publicId, aggregate.event.publicId);
       expect(aggregate.share.eventId, aggregate.event.id);
@@ -81,9 +81,9 @@ void runEventRepositoryContractTests({
       expect(found.event.publicId, created.event.publicId);
       expect(found.event.title, created.event.title);
 
-      expect(found.participants, hasLength(6));
-      expect(found.participants[0].displayName, '参加者1');
-      expect(found.participants[5].displayName, '参加者6');
+      expect(found.players, hasLength(6));
+      expect(found.players[0].displayName, '参加者1');
+      expect(found.players[5].displayName, '参加者6');
 
       expect(found.share.publicId, created.share.publicId);
       expect(found.share.eventId, created.event.id);
@@ -99,26 +99,26 @@ void runEventRepositoryContractTests({
       expect(found, isNull);
     });
 
-    test('lists participants by event id', () async {
+    test('lists players by event id', () async {
       final repository = createRepository();
 
       final created = await repository.createFromDraft(buildDraft());
-      final participants = await repository.listParticipants(created.event.id);
+      final players = await repository.listPlayers(created.event.id);
 
-      expect(participants, hasLength(6));
-      expect(participants[0].eventId, created.event.id);
-      expect(participants[0].displayName, '参加者1');
-      expect(participants[0].orderNo, 1);
-      expect(participants[5].displayName, '参加者6');
-      expect(participants[5].orderNo, 6);
+      expect(players, hasLength(6));
+      expect(players[0].eventId, created.event.id);
+      expect(players[0].displayName, '参加者1');
+      expect(players[0].orderNo, 1);
+      expect(players[5].displayName, '参加者6');
+      expect(players[5].orderNo, 6);
     });
 
-    test('returns empty participants when event id does not exist', () async {
+    test('returns empty players when event id does not exist', () async {
       final repository = createRepository();
 
-      final participants = await repository.listParticipants('missing-event');
+      final players = await repository.listPlayers('missing-event');
 
-      expect(participants, isEmpty);
+      expect(players, isEmpty);
     });
 
     test('updates and persists current generated schedule id', () async {
