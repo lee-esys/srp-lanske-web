@@ -27,6 +27,7 @@ class LocalScheduleHistoryItem {
   }
 
   static LocalScheduleHistoryItem fromJson(Map<String, dynamic> json) {
+    // TODO(ver0.2): Remove the legacy participant_count fallback.
     final rawPlayerCount = json['player_count'] ?? json['participant_count'];
 
     return LocalScheduleHistoryItem(
