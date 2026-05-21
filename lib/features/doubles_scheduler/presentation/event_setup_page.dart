@@ -4,7 +4,7 @@ import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/shared/utils/number_label_mapper.dart';
 
 import '../application/tennisbear_event_url.dart';
-import '../domain/participant_draft.dart';
+import '../domain/player_draft.dart';
 import '../infrastructure/tennisbear_import_preview_api_client.dart';
 import 'event_list_page.dart';
 import 'models/event_draft.dart';
@@ -278,15 +278,15 @@ class _EventSetupPageState extends State<EventSetupPage> {
     final eventName = _buildEffectiveEventName();
     final displayNames = _buildEffectiveDisplayNames();
 
-    final participants = displayNames
-        .map((name) => ParticipantDraft.create(displayName: name))
+    final players = displayNames
+        .map((name) => PlayerDraft.create(displayName: name))
         .toList(growable: false);
 
     final draft = EventDraft(
       url: _urlController.text.trim(),
       courts: _courts,
       eventName: eventName,
-      participants: participants,
+      players: players,
     );
 
     Navigator.push(
@@ -333,9 +333,9 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
       if (!mounted) return;
 
-      final participantNames = _participantNamesFromPreview(preview);
-      final playerCount = participantNames.isNotEmpty
-          ? participantNames.length
+      final playerDisplayNames = _playerDisplayNamesFromPreview(preview);
+      final playerCount = playerDisplayNames.isNotEmpty
+          ? playerDisplayNames.length
           : (preview.participantSummary?.currentCount ?? 0);
 
       setState(() {
@@ -366,7 +366,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
         for (var i = 0; i < _displayNameControllers.length; i++) {
           final fallback = circledNumber(i + 1);
           final name =
-              i < participantNames.length ? participantNames[i] : fallback;
+              i < playerDisplayNames.length ? playerDisplayNames[i] : fallback;
 
           _sourceDisplayNames[i] = name;
           _defaultDisplayNames[i] = name;
@@ -427,7 +427,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
     return eventCourts;
   }
 
-  List<String> _participantNamesFromPreview(
+  List<String> _playerDisplayNamesFromPreview(
     TennisbearImportPreviewResponse preview,
   ) {
     return preview.participantCandidates
