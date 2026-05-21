@@ -21,7 +21,8 @@ class EventSetupDisplayNameGrid extends StatelessWidget {
       spacing: 12,
       runSpacing: 12,
       children: List.generate(controllers.length, (index) {
-        final sourceName = sourceDisplayNames[index] ?? circledNumber(index + 1);
+        final sourceName =
+            sourceDisplayNames[index] ?? circledNumber(index + 1);
         final labelSuffix = '：$sourceName';
 
         return SizedBox(
