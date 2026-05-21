@@ -229,6 +229,7 @@ class SavedEventImport {
       pastedText: json['pastedText']?.toString(),
       parsedEventJson: _nullableMapFromJson(json['parsedEventJson']),
       parsedPlayersJson: _nullableMapListFromJson(
+        // TODO(ver0.2): Remove the legacy parsedParticipantsJson fallback.
         json['parsedPlayersJson'] ?? json['parsedParticipantsJson'],
       ),
       confirmedAt: _nullableDateTimeFromJson(json['confirmedAt']),
@@ -306,6 +307,7 @@ class SavedEventAggregate {
       throw const FormatException('share is required');
     }
 
+    // TODO(ver0.2): Remove the legacy participants fallback.
     final playersValue = json['players'] ?? json['participants'];
     if (playersValue is! List) {
       throw const FormatException('players is required');
