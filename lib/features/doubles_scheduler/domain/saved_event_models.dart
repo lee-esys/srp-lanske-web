@@ -135,8 +135,8 @@ class SavedEvent {
   }
 }
 
-class SavedEventParticipant {
-  SavedEventParticipant({
+class SavedEventPlayer {
+  SavedEventPlayer({
     required this.id,
     required this.eventId,
     required this.displayName,
@@ -169,8 +169,8 @@ class SavedEventParticipant {
     };
   }
 
-  factory SavedEventParticipant.fromJson(Map<String, dynamic> json) {
-    return SavedEventParticipant(
+  factory SavedEventPlayer.fromJson(Map<String, dynamic> json) {
+    return SavedEventPlayer(
       id: json['id'].toString(),
       eventId: json['eventId'].toString(),
       displayName: json['displayName'].toString(),
@@ -192,7 +192,7 @@ class SavedEventImport {
     this.sourceUrl,
     this.pastedText,
     this.parsedEventJson,
-    this.parsedParticipantsJson,
+    this.parsedPlayersJson,
     this.confirmedAt,
   });
 
@@ -202,7 +202,7 @@ class SavedEventImport {
   final String? sourceUrl;
   final String? pastedText;
   final Map<String, dynamic>? parsedEventJson;
-  final List<Map<String, dynamic>>? parsedParticipantsJson;
+  final List<Map<String, dynamic>>? parsedPlayersJson;
   final DateTime? confirmedAt;
   final DateTime createdAt;
 
@@ -214,7 +214,7 @@ class SavedEventImport {
       'sourceUrl': sourceUrl,
       'pastedText': pastedText,
       'parsedEventJson': parsedEventJson,
-      'parsedParticipantsJson': parsedParticipantsJson,
+      'parsedPlayersJson': parsedPlayersJson,
       'confirmedAt': _nullableDateTimeToJson(confirmedAt),
       'createdAt': _dateTimeToJson(createdAt),
     };
@@ -228,8 +228,9 @@ class SavedEventImport {
       sourceUrl: json['sourceUrl']?.toString(),
       pastedText: json['pastedText']?.toString(),
       parsedEventJson: _nullableMapFromJson(json['parsedEventJson']),
-      parsedParticipantsJson:
-          _nullableMapListFromJson(json['parsedParticipantsJson']),
+      parsedPlayersJson: _nullableMapListFromJson(
+        json['parsedPlayersJson'] ?? json['parsedParticipantsJson'],
+      ),
       confirmedAt: _nullableDateTimeFromJson(json['confirmedAt']),
       createdAt: _dateTimeFromJson(json['createdAt']),
     );
@@ -271,13 +272,13 @@ class SavedEventShare {
 class SavedEventAggregate {
   SavedEventAggregate({
     required this.event,
-    required this.participants,
+    required this.players,
     required this.share,
     this.importRecord,
   });
 
   final SavedEvent event;
-  final List<SavedEventParticipant> participants;
+  final List<SavedEventPlayer> players;
   final SavedEventShare share;
   final SavedEventImport? importRecord;
 
@@ -285,8 +286,8 @@ class SavedEventAggregate {
     return {
       'schemaVersion': savedEventAggregateSchemaVersion,
       'event': event.toJson(),
-      'participants': participants.map((participant) {
-        return participant.toJson();
+      'players': players.map((player) {
+        return player.toJson();
       }).toList(growable: false),
       'share': share.toJson(),
       'importRecord': importRecord?.toJson(),
@@ -305,21 +306,21 @@ class SavedEventAggregate {
       throw const FormatException('share is required');
     }
 
-    final participantsValue = json['participants'];
-    if (participantsValue is! List) {
-      throw const FormatException('participants is required');
+    final playersValue = json['players'] ?? json['participants'];
+    if (playersValue is! List) {
+      throw const FormatException('players is required');
     }
 
     final importRecordJson = _nullableMapFromJson(json['importRecord']);
 
     return SavedEventAggregate(
       event: SavedEvent.fromJson(eventJson),
-      participants: participantsValue.map((item) {
+      players: playersValue.map((item) {
         if (item is! Map) {
-          throw FormatException('invalid participant item: $item');
+          throw FormatException('invalid player item: $item');
         }
 
-        return SavedEventParticipant.fromJson(
+        return SavedEventPlayer.fromJson(
           item.map((key, value) => MapEntry(key.toString(), value)),
         );
       }).toList(growable: false),
