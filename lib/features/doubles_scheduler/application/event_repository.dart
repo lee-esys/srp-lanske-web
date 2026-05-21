@@ -6,7 +6,7 @@ abstract class EventRepository {
 
   Future<SavedEventAggregate?> findByPublicId(String publicId);
 
-  Future<List<SavedEventParticipant>> listParticipants(String eventId);
+  Future<List<SavedEventPlayer>> listPlayers(String eventId);
 
   Future<SavedEvent> updateCurrentGeneratedScheduleId({
     required String eventId,
