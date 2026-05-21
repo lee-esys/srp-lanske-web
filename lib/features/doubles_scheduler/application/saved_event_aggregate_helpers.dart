@@ -6,7 +6,7 @@ SavedEventAggregate replaceSavedEventInAggregate(
 ) {
   return SavedEventAggregate(
     event: event,
-    participants: aggregate.participants,
+    players: aggregate.players,
     share: aggregate.share,
     importRecord: aggregate.importRecord,
   );
