@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/shared/utils/number_label_mapper.dart';
 
+import '../application/tennisbear_event_url.dart';
 import '../domain/participant_draft.dart';
 import '../infrastructure/tennisbear_import_preview_api_client.dart';
 import 'event_list_page.dart';
@@ -52,8 +53,12 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
   bool get _hasUrlInput => _urlController.text.trim().isNotEmpty;
 
+  TennisbearEventUrl? get _parsedTennisbearEventUrl {
+    return parseTennisbearEventUrl(_urlController.text);
+  }
+
   bool get _isValidTennisbearEventUrl {
-    return _isTennisbearEventUrl(_urlController.text.trim());
+    return _parsedTennisbearEventUrl != null;
   }
 
   bool get _canPasteEventUrl {
@@ -290,13 +295,14 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
     FocusScope.of(context).unfocus();
 
-    final sourceUrl = _normalizeTennisbearEventUrl(_urlController.text);
-    if (sourceUrl.isEmpty) {
+    final originalUrl = _urlController.text.trim();
+    final parsedUrl = parseTennisbearEventUrl(originalUrl);
+    if (originalUrl.isEmpty) {
       _showMessage('URLを入力してください');
       return;
     }
 
-    if (!_isTennisbearEventUrl(sourceUrl)) {
+    if (parsedUrl == null) {
       _showMessage('テニスベアのイベントURLを入力してください');
       return;
     }
@@ -309,7 +315,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
     try {
       final preview = await _tennisbearImportPreviewClient.preview(
-        sourceUrl: sourceUrl,
+        sourceUrl: parsedUrl.canonicalUrl,
       );
 
       final elapsed = DateTime.now().difference(startedAt);
@@ -328,7 +334,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       setState(() {
         _loadedFromUrl = true;
         _isUrlImportCompleted = true;
-        _importedSourceUrl = sourceUrl;
+        _importedSourceUrl = originalUrl;
 
         if (participantCount > 0) {
           _courts = _inferCourtsForPlayers(participantCount);
@@ -430,23 +436,6 @@ class _EventSetupPageState extends State<EventSetupPage> {
     return _buildEffectiveEventName();
   }
 
-  bool _isTennisbearEventUrl(String value) {
-    final normalized = _normalizeTennisbearEventUrl(value);
-    final uri = Uri.tryParse(normalized);
-    if (uri == null) return false;
-
-    if (uri.scheme != 'https') return false;
-    if (uri.host != 'www.tennisbear.net' && uri.host != 'tennisbear.net') {
-      return false;
-    }
-
-    final segments = uri.pathSegments;
-    if (segments.length != 3) return false;
-    if (segments[0] != 'event' || segments[2] != 'info') return false;
-
-    return RegExp(r'^\d+$').hasMatch(segments[1]);
-  }
-
   void _handleUrlChanged(String value) {
     final current = value.trim();
 
@@ -463,7 +452,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
     if (!_canPasteEventUrl) return;
 
     final data = await Clipboard.getData('text/plain');
-    final text = _normalizeTennisbearEventUrl(data?.text?.trim() ?? '');
+    final text = data?.text?.trim() ?? '';
 
     if (text.isEmpty) {
       _showMessage('クリップボードにURLがありません');
@@ -479,13 +468,9 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _urlController.selection = TextSelection.collapsed(offset: text.length);
     });
 
-    if (!_isTennisbearEventUrl(text)) {
+    if (parseTennisbearEventUrl(text) == null) {
       _showMessage('テニスベアのイベントURLを貼り付けてください');
     }
-  }
-
-  String _normalizeTennisbearEventUrl(String value) {
-    return value.trim().replaceFirst(RegExp(r'/+$'), '');
   }
 
   void _clearEventUrl() {
