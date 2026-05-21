@@ -27,13 +27,13 @@ class LocalScheduleHistoryItem {
   }
 
   static LocalScheduleHistoryItem fromJson(Map<String, dynamic> json) {
+    final rawPlayerCount = json['player_count'] ?? json['participant_count'];
+
     return LocalScheduleHistoryItem(
       publicId: json['public_id'] as String? ?? '',
       title: json['title'] as String? ?? '無題の対戦表',
       courtCount: json['court_count'] as int? ?? 0,
-      playerCount: json['player_count'] as int? ??
-          json['participant_count'] as int? ??
-          0,
+      playerCount: rawPlayerCount as int? ?? 0,
       firstSavedAt:
           DateTime.tryParse(json['first_saved_at'] as String? ?? '') ??
               DateTime.now(),
