@@ -1,37 +1,36 @@
 import 'dart:convert';
 
-import '../../domain/participant_draft.dart';
+import '../../domain/player_draft.dart';
 
 class EventDraft {
   EventDraft({
     required this.url,
     required this.courts,
     required this.eventName,
-    required this.participants,
+    required this.players,
   });
 
   final String url;
   final int courts;
   final String eventName;
-  final List<ParticipantDraft> participants;
+  final List<PlayerDraft> players;
 
-  int get playerCount => participants.length;
+  int get playerCount => players.length;
 
   List<String> get displayNames =>
-      participants.map((e) => e.displayName).toList(growable: false);
+      players.map((e) => e.displayName).toList(growable: false);
 
   EventDraft copyWith({
     String? url,
     int? courts,
     String? eventName,
-    List<ParticipantDraft>? participants,
+    List<PlayerDraft>? players,
   }) {
     return EventDraft(
       url: url ?? this.url,
       courts: courts ?? this.courts,
       eventName: eventName ?? this.eventName,
-      participants:
-          participants ?? this.participants.map((e) => e.copyWith()).toList(),
+      players: players ?? this.players.map((e) => e.copyWith()).toList(),
     );
   }
 
@@ -41,7 +40,7 @@ class EventDraft {
       'courts': courts,
       'eventName': eventName,
       'playerCount': playerCount,
-      'participants': participants.map((e) => e.toJson()).toList(),
+      'players': players.map((e) => e.toJson()).toList(),
     };
   }
 
