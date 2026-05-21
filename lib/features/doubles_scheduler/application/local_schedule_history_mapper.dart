@@ -9,7 +9,7 @@ LocalScheduleHistoryItem buildLocalScheduleHistoryItem(
     publicId: aggregate.event.publicId,
     title: aggregate.event.title,
     courtCount: aggregate.event.courtCount,
-    playerCount: aggregate.participants.length,
+    playerCount: aggregate.players.length,
     firstSavedAt: now,
     lastOpenedAt: now,
   );
