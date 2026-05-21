@@ -3,11 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/shared/utils/number_label_mapper.dart';
 
+import '../application/tennisbear_event_url.dart';
 import '../domain/participant_draft.dart';
 import '../infrastructure/tennisbear_import_preview_api_client.dart';
 import 'event_list_page.dart';
 import 'models/event_draft.dart';
 import 'schedule_page.dart';
+import 'widgets/event_setup_detail_section.dart';
+import 'widgets/event_setup_stepper_field.dart';
+import 'widgets/event_setup_url_section.dart';
 
 class EventSetupPage extends StatefulWidget {
   // TODO: 編集時の initialDraft 対応
@@ -52,8 +56,12 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
   bool get _hasUrlInput => _urlController.text.trim().isNotEmpty;
 
+  TennisbearEventUrl? get _parsedTennisbearEventUrl {
+    return parseTennisbearEventUrl(_urlController.text);
+  }
+
   bool get _isValidTennisbearEventUrl {
-    return _isTennisbearEventUrl(_urlController.text.trim());
+    return _parsedTennisbearEventUrl != null;
   }
 
   bool get _canPasteEventUrl {
@@ -290,13 +298,14 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
     FocusScope.of(context).unfocus();
 
-    final sourceUrl = _normalizeTennisbearEventUrl(_urlController.text);
-    if (sourceUrl.isEmpty) {
+    final originalUrl = _urlController.text.trim();
+    final parsedUrl = parseTennisbearEventUrl(originalUrl);
+    if (originalUrl.isEmpty) {
       _showMessage('URLを入力してください');
       return;
     }
 
-    if (!_isTennisbearEventUrl(sourceUrl)) {
+    if (parsedUrl == null) {
       _showMessage('テニスベアのイベントURLを入力してください');
       return;
     }
@@ -309,7 +318,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
     try {
       final preview = await _tennisbearImportPreviewClient.preview(
-        sourceUrl: sourceUrl,
+        sourceUrl: parsedUrl.canonicalUrl,
       );
 
       final elapsed = DateTime.now().difference(startedAt);
@@ -328,7 +337,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       setState(() {
         _loadedFromUrl = true;
         _isUrlImportCompleted = true;
-        _importedSourceUrl = sourceUrl;
+        _importedSourceUrl = originalUrl;
 
         if (participantCount > 0) {
           _courts = _inferCourtsForPlayers(participantCount);
@@ -430,23 +439,6 @@ class _EventSetupPageState extends State<EventSetupPage> {
     return _buildEffectiveEventName();
   }
 
-  bool _isTennisbearEventUrl(String value) {
-    final normalized = _normalizeTennisbearEventUrl(value);
-    final uri = Uri.tryParse(normalized);
-    if (uri == null) return false;
-
-    if (uri.scheme != 'https') return false;
-    if (uri.host != 'www.tennisbear.net' && uri.host != 'tennisbear.net') {
-      return false;
-    }
-
-    final segments = uri.pathSegments;
-    if (segments.length != 3) return false;
-    if (segments[0] != 'event' || segments[2] != 'info') return false;
-
-    return RegExp(r'^\d+$').hasMatch(segments[1]);
-  }
-
   void _handleUrlChanged(String value) {
     final current = value.trim();
 
@@ -463,7 +455,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
     if (!_canPasteEventUrl) return;
 
     final data = await Clipboard.getData('text/plain');
-    final text = _normalizeTennisbearEventUrl(data?.text?.trim() ?? '');
+    final text = data?.text?.trim() ?? '';
 
     if (text.isEmpty) {
       _showMessage('クリップボードにURLがありません');
@@ -479,13 +471,9 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _urlController.selection = TextSelection.collapsed(offset: text.length);
     });
 
-    if (!_isTennisbearEventUrl(text)) {
+    if (parseTennisbearEventUrl(text) == null) {
       _showMessage('テニスベアのイベントURLを貼り付けてください');
     }
-  }
-
-  String _normalizeTennisbearEventUrl(String value) {
-    return value.trim().replaceFirst(RegExp(r'/+$'), '');
   }
 
   void _clearEventUrl() {
@@ -527,186 +515,11 @@ class _EventSetupPageState extends State<EventSetupPage> {
     });
   }
 
-  // TODO: 分離・共通化できそうなUI部品は切り出す
-  Widget _buildStepperField({
-    required String label,
-    required TextEditingController controller,
-    required VoidCallback onDecrement,
-    required VoidCallback onIncrement,
-    required String tooltipDecrement,
-    required String tooltipIncrement,
-  }) {
-    return Expanded(
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: _isLoadingEvent ? null : onDecrement,
-            tooltip: tooltipDecrement,
-            icon: const Icon(Icons.remove_circle_outline),
-          ),
-          Expanded(
-            child: SizedBox(
-              width: 84,
-              child: TextFormField(
-                controller: controller,
-                readOnly: true,
-                enabled: !_isLoadingEvent,
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(
-                  labelText: label,
-                  border: const OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: _isLoadingEvent ? null : onIncrement,
-            tooltip: tooltipIncrement,
-            icon: const Icon(Icons.add_circle_outline),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUrlSection() {
+  @override
+  Widget build(BuildContext context) {
     final urlText = _urlController.text.trim();
     final showUrlError = urlText.isNotEmpty && !_isValidTennisbearEventUrl;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextFormField(
-          controller: _urlController,
-          enabled: !_isLoadingEvent,
-          onChanged: _handleUrlChanged,
-          decoration: InputDecoration(
-            labelText: 'テニスベアのイベントURL',
-            helperText: '例: https://www.tennisbear.net/event/1156506/info',
-            errorText: showUrlError ? 'テニスベアのイベントURLを入力してください' : null,
-            border: const OutlineInputBorder(),
-            suffixIcon: _hasUrlInput
-                ? IconButton(
-                    tooltip: 'URLをクリア',
-                    onPressed: _canClearEventUrl ? _clearEventUrl : null,
-                    icon: const Icon(Icons.cancel_outlined),
-                  )
-                : null,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Center(
-          child: Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            alignment: WrapAlignment.center,
-            children: [
-              OutlinedButton.icon(
-                onPressed: _canPasteEventUrl ? _pasteEventUrl : null,
-                icon: const Icon(Icons.content_paste),
-                label: const Text('貼り付け'),
-              ),
-              FilledButton.icon(
-                onPressed: _canImportEventUrl ? _fetchEventInfo : null,
-                icon: const Icon(Icons.download),
-                label: const Text('取り込み'),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDisplayNameGrid() {
-    final items = List.generate(_displayNameControllers.length, (index) {
-      final sourceName = _sourceDisplayNames[index] ?? circledNumber(index + 1);
-      final labelSuffix = '：$sourceName';
-
-      return TextFormField(
-        controller: _displayNameControllers[index],
-        focusNode: _displayNameFocusNodes[index],
-        enabled: !_isLoadingEvent,
-        decoration: InputDecoration(
-          labelText: '参加者${participantLabelNumber(index)}$labelSuffix',
-          border: const OutlineInputBorder(),
-          isDense: true,
-        ),
-      );
-    });
-
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: List.generate(items.length, (index) {
-        return SizedBox(
-          width: 140,
-          child: items[index],
-        );
-      }),
-    );
-  }
-
-  Widget _buildDetailSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Divider(height: 32),
-        TextFormField(
-          controller: _eventNameController,
-          enabled: !_isLoadingEvent,
-          decoration: const InputDecoration(
-            labelText: 'イベント名',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          '参加者表示名',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        _buildDisplayNameGrid(),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FilledButton.tonal(
-              onPressed: _isLoadingEvent ? null : _resetInputs,
-              style: FilledButton.styleFrom(
-                minimumSize: Size.zero,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text(
-                '入力項目のリセット',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-            const SizedBox(width: 12),
-            FilledButton(
-              onPressed: _isLoadingEvent ? null : _submitForm,
-              style: FilledButton.styleFrom(
-                minimumSize: Size.zero,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text(
-                '対戦表の生成',
-                style: TextStyle(fontSize: 22),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('ダブルス乱数表 ver0.1'),
@@ -744,23 +557,37 @@ class _EventSetupPageState extends State<EventSetupPage> {
                         style: TextStyle(fontSize: 12, color: Colors.black54),
                       ),
                       const SizedBox(height: 16),
-                      _buildUrlSection(),
+                      EventSetupUrlSection(
+                        controller: _urlController,
+                        isLoadingEvent: _isLoadingEvent,
+                        hasUrlInput: _hasUrlInput,
+                        showUrlError: showUrlError,
+                        canClearEventUrl: _canClearEventUrl,
+                        canPasteEventUrl: _canPasteEventUrl,
+                        canImportEventUrl: _canImportEventUrl,
+                        onChanged: _handleUrlChanged,
+                        onClear: _clearEventUrl,
+                        onPaste: _pasteEventUrl,
+                        onImport: _fetchEventInfo,
+                      ),
                       const SizedBox(height: 16),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildStepperField(
+                          EventSetupStepperField(
                             label: '面数',
                             controller: _courtsController,
+                            isLoadingEvent: _isLoadingEvent,
                             onDecrement: _decrementCourts,
                             onIncrement: _incrementCourts,
                             tooltipDecrement: '面数を減らす',
                             tooltipIncrement: '面数を増やす',
                           ),
                           const SizedBox(width: 12),
-                          _buildStepperField(
+                          EventSetupStepperField(
                             label: '人数',
                             controller: _playersController,
+                            isLoadingEvent: _isLoadingEvent,
                             onDecrement: _decrementPlayers,
                             onIncrement: _incrementPlayers,
                             tooltipDecrement: '人数を減らす',
@@ -774,7 +601,15 @@ class _EventSetupPageState extends State<EventSetupPage> {
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(height: 24),
-                      _buildDetailSection(),
+                      EventSetupDetailSection(
+                        eventNameController: _eventNameController,
+                        displayNameControllers: _displayNameControllers,
+                        displayNameFocusNodes: _displayNameFocusNodes,
+                        sourceDisplayNames: _sourceDisplayNames,
+                        isLoadingEvent: _isLoadingEvent,
+                        onReset: _resetInputs,
+                        onSubmit: _submitForm,
+                      ),
                       const SizedBox(height: 80),
                     ],
                   ),

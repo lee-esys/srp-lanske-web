@@ -187,7 +187,8 @@ void main() {
       expect(restored.importRecord, isNull);
     });
 
-    test('throws FormatException when required aggregate fields are missing', () {
+    test('throws FormatException when required aggregate fields are missing',
+        () {
       expect(
         () => SavedEventAggregate.fromJson({
           'schemaVersion': savedEventAggregateSchemaVersion,

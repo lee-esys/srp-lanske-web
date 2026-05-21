@@ -5,7 +5,9 @@ import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 import 'package:srp_lanske/shared/utils/browser_url.dart';
 
 import '../application/generated_schedule_service.dart';
-import '../data/local_schedule_history_item.dart';
+import '../application/local_schedule_history_mapper.dart';
+import '../application/saved_event_aggregate_helpers.dart';
+import '../application/schedule_share_url.dart';
 import '../data/local_schedule_history_store.dart';
 import '../domain/saved_event_models.dart';
 import '../infrastructure/generated_schedule_api_client.dart';
@@ -187,39 +189,15 @@ class _SchedulePageState extends State<SchedulePage> {
     return savedEvent;
   }
 
-  SavedEventAggregate _replaceSavedEvent(
-    SavedEventAggregate aggregate,
-    SavedEvent event,
-  ) {
-    return SavedEventAggregate(
-      event: event,
-      participants: aggregate.participants,
-      share: aggregate.share,
-      importRecord: aggregate.importRecord,
-    );
-  }
-
   void _replaceBrowserUrlWithPublicId(String publicId) {
-    replaceUrl(
-      Uri.base.replace(
-        queryParameters: {
-          ...Uri.base.queryParameters,
-          'sid': publicId,
-        },
-      ).toString(),
-    );
+    replaceUrl(buildScheduleShareUrl(baseUri: Uri.base, publicId: publicId));
   }
 
   String? _buildShareUrl() {
     final publicId = _savedEvent?.event.publicId;
     if (publicId == null || publicId.isEmpty) return null;
 
-    return Uri.base.replace(
-      queryParameters: {
-        ...Uri.base.queryParameters,
-        'sid': publicId,
-      },
-    ).toString();
+    return buildScheduleShareUrl(baseUri: Uri.base, publicId: publicId);
   }
 
   Future<void> _copyShareUrl() async {
@@ -270,7 +248,7 @@ class _SchedulePageState extends State<SchedulePage> {
           generatedScheduleId: generatedScheduleId,
         );
 
-        nextSavedEvent = _replaceSavedEvent(savedEvent, updatedEvent);
+        nextSavedEvent = replaceSavedEventInAggregate(savedEvent, updatedEvent);
       }
 
       if (!mounted) return;
@@ -407,7 +385,10 @@ class _SchedulePageState extends State<SchedulePage> {
 
       if (!mounted) return;
 
-      final nextSavedEvent = _replaceSavedEvent(latestEvent, updatedEvent);
+      final nextSavedEvent = replaceSavedEventInAggregate(
+        latestEvent,
+        updatedEvent,
+      );
       setState(() {
         _savedEvent = nextSavedEvent;
       });
@@ -432,13 +413,9 @@ class _SchedulePageState extends State<SchedulePage> {
 
   Future<void> _saveScheduleHistory(SavedEventAggregate aggregate) async {
     await LocalScheduleHistoryStore().upsert(
-      LocalScheduleHistoryItem(
-        publicId: aggregate.event.publicId,
-        title: aggregate.event.title,
-        courtCount: aggregate.event.courtCount,
-        participantCount: aggregate.participants.length,
-        firstSavedAt: DateTime.now(),
-        lastOpenedAt: DateTime.now(),
+      buildLocalScheduleHistoryItem(
+        aggregate,
+        now: DateTime.now(),
       ),
     );
   }
