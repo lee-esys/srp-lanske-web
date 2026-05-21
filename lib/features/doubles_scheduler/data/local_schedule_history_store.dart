@@ -36,7 +36,7 @@ class LocalScheduleHistoryStore {
       publicId: item.publicId,
       title: item.title,
       courtCount: item.courtCount,
-      participantCount: item.participantCount,
+      playerCount: item.playerCount,
       firstSavedAt: previous?.firstSavedAt ?? item.firstSavedAt,
       lastOpenedAt: item.lastOpenedAt,
     );
