@@ -228,4 +228,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String restCountLabel(int restCount) {
     return '$restCount rest';
   }
+
+  @override
+  String lastOpenedAtLabel(String lastOpenedAt) {
+    return 'Last opened: $lastOpenedAt';
+  }
 }

@@ -103,7 +103,7 @@ class _EventListPageState extends State<EventListPage> {
                   title: Text(item.title),
                   subtitle: Text(
                     '${l10n.schedulePlayersTitle(item.courtCount, item.playerCount)}\n'
-                    '${_formatDateTime(item.lastOpenedAt)}',
+                    '${l10n.lastOpenedAtLabel(_formatDateTime(item.lastOpenedAt))}',
                   ),
                   isThreeLine: true,
                   trailing: const Icon(Icons.chevron_right),

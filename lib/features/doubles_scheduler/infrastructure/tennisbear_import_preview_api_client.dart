@@ -47,7 +47,8 @@ class TennisbearImportPreviewApiClient {
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw TennisbearImportPreviewApiException(
         statusCode: response.statusCode,
-        message: decoded['message']?.toString() ?? 'イベント情報の取得に失敗しました',
+        message: decoded['message']?.toString() ??
+            'Failed to load event information.',
         body: decoded,
       );
     }

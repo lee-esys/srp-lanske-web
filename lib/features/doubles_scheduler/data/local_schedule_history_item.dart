@@ -32,7 +32,7 @@ class LocalScheduleHistoryItem {
 
     return LocalScheduleHistoryItem(
       publicId: json['public_id'] as String? ?? '',
-      title: json['title'] as String? ?? '無題の対戦表',
+      title: json['title'] as String? ?? 'Untitled match table',
       courtCount: json['court_count'] as int? ?? 0,
       playerCount: rawPlayerCount as int? ?? 0,
       firstSavedAt:

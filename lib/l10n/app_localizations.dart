@@ -487,6 +487,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{restCount}人'**
   String restCountLabel(int restCount);
+
+  /// Label showing when a saved schedule was last opened.
+  ///
+  /// In ja, this message translates to:
+  /// **'最終表示: {lastOpenedAt}'**
+  String lastOpenedAtLabel(String lastOpenedAt);
 }
 
 class _AppLocalizationsDelegate

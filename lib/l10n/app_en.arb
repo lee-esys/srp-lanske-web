@@ -52,8 +52,14 @@
   "@playerCountRangeHelp": {
     "description": "Help text that shows the valid player count range.",
     "placeholders": {
-      "minPlayerCount": {"type": "int", "example": "4"},
-      "maxPlayerCount": {"type": "int", "example": "7"}
+      "minPlayerCount": {
+        "type": "int",
+        "example": "4"
+      },
+      "maxPlayerCount": {
+        "type": "int",
+        "example": "7"
+      }
     }
   },
   "loadingEventInfo": "Loading event info...",
@@ -124,8 +130,14 @@
   "@playerDisplayNameInputLabel": {
     "description": "Input label for each player display name field.",
     "placeholders": {
-      "playerNumber": {"type": "int", "example": "1"},
-      "sourceName": {"type": "String", "example": "1"}
+      "playerNumber": {
+        "type": "int",
+        "example": "1"
+      },
+      "sourceName": {
+        "type": "String",
+        "example": "1"
+      }
     }
   },
   "resetInputsButton": "Reset inputs",
@@ -187,7 +199,12 @@
   "generateScheduleFailedMessage": "Could not generate the match table: {error}",
   "@generateScheduleFailedMessage": {
     "description": "Error message shown when schedule generation failed.",
-    "placeholders": {"error": {"type": "String", "example": "network error"}}
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
   },
   "reloadScheduleMissingIdMessage": "No generated_schedule_id is available for reload.",
   "@reloadScheduleMissingIdMessage": {
@@ -196,7 +213,12 @@
   "reloadScheduleFailedMessage": "Could not load the match table: {error}",
   "@reloadScheduleFailedMessage": {
     "description": "Error message shown when reloading a schedule failed.",
-    "placeholders": {"error": {"type": "String", "example": "network error"}}
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
   },
   "adoptScheduleMissingIdMessage": "No generated_schedule_id is available for adoption.",
   "@adoptScheduleMissingIdMessage": {
@@ -221,14 +243,25 @@
   "adoptScheduleFailedMessage": "Could not adopt the match table: {error}",
   "@adoptScheduleFailedMessage": {
     "description": "Error message shown when schedule adoption failed.",
-    "placeholders": {"error": {"type": "String", "example": "network error"}}
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
   },
   "schedulePlayersTitle": "Courts: {courtCount}    Players: {playerCount}",
   "@schedulePlayersTitle": {
     "description": "Title for player list showing court count and player count.",
     "placeholders": {
-      "courtCount": {"type": "int", "example": "1"},
-      "playerCount": {"type": "int", "example": "6"}
+      "courtCount": {
+        "type": "int",
+        "example": "1"
+      },
+      "playerCount": {
+        "type": "int",
+        "example": "6"
+      }
     }
   },
   "matchTableTitle": "Match table",
@@ -274,6 +307,21 @@
   "restCountLabel": "{restCount} rest",
   "@restCountLabel": {
     "description": "Short label showing the number of resting players.",
-    "placeholders": {"restCount": {"type": "int", "example": "2"}}
+    "placeholders": {
+      "restCount": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "lastOpenedAtLabel": "Last opened: {lastOpenedAt}",
+  "@lastOpenedAtLabel": {
+    "description": "Label showing when a saved schedule was last opened.",
+    "placeholders": {
+      "lastOpenedAt": {
+        "type": "String",
+        "example": "2026/05/22 23:10"
+      }
+    }
   }
 }

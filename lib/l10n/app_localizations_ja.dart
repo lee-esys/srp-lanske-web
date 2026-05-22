@@ -221,4 +221,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String restCountLabel(int restCount) {
     return '$restCount人';
   }
+
+  @override
+  String lastOpenedAtLabel(String lastOpenedAt) {
+    return '最終表示: $lastOpenedAt';
+  }
 }

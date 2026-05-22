@@ -52,8 +52,14 @@
   "@playerCountRangeHelp": {
     "description": "Help text that shows the valid player count range.",
     "placeholders": {
-      "minPlayerCount": {"type": "int", "example": "4"},
-      "maxPlayerCount": {"type": "int", "example": "7"}
+      "minPlayerCount": {
+        "type": "int",
+        "example": "4"
+      },
+      "maxPlayerCount": {
+        "type": "int",
+        "example": "7"
+      }
     }
   },
   "loadingEventInfo": "イベント情報を取得中...",
@@ -124,8 +130,14 @@
   "@playerDisplayNameInputLabel": {
     "description": "Input label for each player display name field.",
     "placeholders": {
-      "playerNumber": {"type": "int", "example": "1"},
-      "sourceName": {"type": "String", "example": "①"}
+      "playerNumber": {
+        "type": "int",
+        "example": "1"
+      },
+      "sourceName": {
+        "type": "String",
+        "example": "①"
+      }
     }
   },
   "resetInputsButton": "入力項目のリセット",
@@ -187,7 +199,12 @@
   "generateScheduleFailedMessage": "対戦表を生成できませんでした: {error}",
   "@generateScheduleFailedMessage": {
     "description": "Error message shown when schedule generation failed.",
-    "placeholders": {"error": {"type": "String", "example": "network error"}}
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
   },
   "reloadScheduleMissingIdMessage": "再取得する generated_schedule_id がありません",
   "@reloadScheduleMissingIdMessage": {
@@ -196,7 +213,12 @@
   "reloadScheduleFailedMessage": "対戦表を取得できませんでした: {error}",
   "@reloadScheduleFailedMessage": {
     "description": "Error message shown when reloading a schedule failed.",
-    "placeholders": {"error": {"type": "String", "example": "network error"}}
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
   },
   "adoptScheduleMissingIdMessage": "採用する generated_schedule_id がありません",
   "@adoptScheduleMissingIdMessage": {
@@ -221,14 +243,25 @@
   "adoptScheduleFailedMessage": "対戦表を採用できませんでした: {error}",
   "@adoptScheduleFailedMessage": {
     "description": "Error message shown when schedule adoption failed.",
-    "placeholders": {"error": {"type": "String", "example": "network error"}}
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
   },
   "schedulePlayersTitle": "面数: {courtCount}　　参加者: {playerCount}人",
   "@schedulePlayersTitle": {
     "description": "Title for player list showing court count and player count.",
     "placeholders": {
-      "courtCount": {"type": "int", "example": "1"},
-      "playerCount": {"type": "int", "example": "6"}
+      "courtCount": {
+        "type": "int",
+        "example": "1"
+      },
+      "playerCount": {
+        "type": "int",
+        "example": "6"
+      }
     }
   },
   "matchTableTitle": "対戦表",
@@ -274,6 +307,21 @@
   "restCountLabel": "{restCount}人",
   "@restCountLabel": {
     "description": "Short label showing the number of resting players.",
-    "placeholders": {"restCount": {"type": "int", "example": "2"}}
+    "placeholders": {
+      "restCount": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "lastOpenedAtLabel": "最終表示: {lastOpenedAt}",
+  "@lastOpenedAtLabel": {
+    "description": "Label showing when a saved schedule was last opened.",
+    "placeholders": {
+      "lastOpenedAt": {
+        "type": "String",
+        "example": "2026/05/22 23:10"
+      }
+    }
   }
 }
