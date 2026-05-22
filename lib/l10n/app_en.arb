@@ -323,5 +323,13 @@
         "example": "2026/05/22 23:10"
       }
     }
+  },
+  "removePlayerTooltip": "Remove this player",
+  "@removePlayerTooltip": {
+    "description": "Tooltip for removing a player input field."
+  },
+  "cannotRemovePlayerTooltip": "Cannot remove because the minimum player count has been reached.",
+  "@cannotRemovePlayerTooltip": {
+    "description": "Tooltip shown when a player input field cannot be removed because the minimum player count has been reached."
   }
 }

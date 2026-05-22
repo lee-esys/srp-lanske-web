@@ -493,6 +493,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'最終表示: {lastOpenedAt}'**
   String lastOpenedAtLabel(String lastOpenedAt);
+
+  /// Tooltip for removing a player input field.
+  ///
+  /// In ja, this message translates to:
+  /// **'この参加者を削除'**
+  String get removePlayerTooltip;
+
+  /// Tooltip shown when a player input field cannot be removed because the minimum player count has been reached.
+  ///
+  /// In ja, this message translates to:
+  /// **'最低人数のため削除できません'**
+  String get cannotRemovePlayerTooltip;
 }
 
 class _AppLocalizationsDelegate

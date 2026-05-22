@@ -82,6 +82,8 @@ class _EventSetupPageState extends State<EventSetupPage> {
     return _hasUrlInput;
   }
 
+  bool get _canRemovePlayer => _displayNameControllers.length > _minPlayerCount;
+
   @override
   void initState() {
     super.initState();
@@ -167,10 +169,12 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _sourceDisplayNames.add(defaultName);
 
       focusNode.addListener(() {
-        if (index >= _displayNameControllers.length) return;
+        final currentIndex = _displayNameFocusNodes.indexOf(focusNode);
+        if (currentIndex < 0) return;
+        if (currentIndex >= _displayNameControllers.length) return;
 
-        final controller = _displayNameControllers[index];
-        final currentDefault = _defaultDisplayNames[index];
+        final controller = _displayNameControllers[currentIndex];
+        final currentDefault = _defaultDisplayNames[currentIndex];
 
         if (focusNode.hasFocus) {
           if (controller.text == currentDefault) {
@@ -180,7 +184,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
         }
 
         if (controller.text.trim().isEmpty) {
-          final fallback = _sourceDisplayNames[index];
+          final fallback = _sourceDisplayNames[currentIndex];
           controller.text = (fallback != null && fallback.isNotEmpty)
               ? fallback
               : currentDefault;
@@ -198,19 +202,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _sourceDisplayNames.removeLast();
     }
 
-    if (!_loadedFromUrl) {
-      for (var i = 0; i < _displayNameControllers.length; i++) {
-        final defaultName = circledNumber(i + 1);
-        final currentText = _displayNameControllers[i].text.trim();
-
-        _defaultDisplayNames[i] = defaultName;
-        _sourceDisplayNames[i] = defaultName;
-
-        if (currentText.isEmpty || currentText == _defaultDisplayNames[i]) {
-          _displayNameControllers[i].text = defaultName;
-        }
-      }
-    }
+    _refreshManualDisplayNameDefaults();
   }
 
   void _setCourts(int value, {bool resetPlayerCountToDefault = false}) {
@@ -228,7 +220,89 @@ class _EventSetupPageState extends State<EventSetupPage> {
     setState(() {
       _playerCountController.text = clamped.toString();
       _syncDisplayNameControllers();
+
+      if (_loadedFromUrl) {
+        _refreshAutoNumberDisplayNames();
+      }
     });
+  }
+
+  void _removePlayerAt(int index) {
+    if (!_canRemovePlayer) return;
+    if (index < 0 || index >= _displayNameControllers.length) return;
+
+    FocusScope.of(context).unfocus();
+
+    setState(() {
+      _displayNameControllers.removeAt(index).dispose();
+      _displayNameFocusNodes.removeAt(index).dispose();
+      _defaultDisplayNames.removeAt(index);
+      _sourceDisplayNames.removeAt(index);
+
+      _playerCountController.text = _displayNameControllers.length.toString();
+
+      if (_loadedFromUrl) {
+        _refreshAutoNumberDisplayNames();
+      } else {
+        _refreshManualDisplayNameDefaults();
+      }
+    });
+  }
+
+  void _refreshManualDisplayNameDefaults() {
+    if (_loadedFromUrl) return;
+
+    for (var i = 0; i < _displayNameControllers.length; i++) {
+      final previousDefault = _defaultDisplayNames[i];
+      final previousSource = _sourceDisplayNames[i];
+      final currentText = _displayNameControllers[i].text.trim();
+      final nextDefault = circledNumber(i + 1);
+
+      _defaultDisplayNames[i] = nextDefault;
+      _sourceDisplayNames[i] = nextDefault;
+
+      if (currentText.isEmpty ||
+          currentText == previousDefault ||
+          currentText == previousSource) {
+        _displayNameControllers[i].text = nextDefault;
+      }
+    }
+  }
+
+  bool _isAutoNumberDisplayName(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return true;
+
+    for (var i = 1; i <= _maxPlayerCountForCourts(_maxCourts); i++) {
+      if (text == circledNumber(i)) return true;
+    }
+
+    return false;
+  }
+
+  void _refreshAutoNumberDisplayNames() {
+    for (var i = 0; i < _displayNameControllers.length; i++) {
+      final expectedName = circledNumber(i + 1);
+      final currentDefault = _defaultDisplayNames[i];
+      final currentSource = _sourceDisplayNames[i];
+      final currentText = _displayNameControllers[i].text.trim();
+
+      final defaultIsAutoNumber = _isAutoNumberDisplayName(currentDefault);
+      final sourceIsAutoNumber = _isAutoNumberDisplayName(currentSource);
+      final textIsAutoNumberOrEmpty =
+          currentText.isEmpty || _isAutoNumberDisplayName(currentText);
+
+      if (!defaultIsAutoNumber || !sourceIsAutoNumber) {
+        continue;
+      }
+
+      _defaultDisplayNames[i] = expectedName;
+      _sourceDisplayNames[i] = expectedName;
+
+      if (textIsAutoNumberOrEmpty) {
+        _displayNameControllers[i].text = expectedName;
+      }
+    }
   }
 
   void _decrementCourts() =>
@@ -625,6 +699,8 @@ class _EventSetupPageState extends State<EventSetupPage> {
                         isLoadingEvent: _isLoadingEvent,
                         onReset: _resetInputs,
                         onSubmit: _submitForm,
+                        canRemovePlayer: _canRemovePlayer,
+                        onRemovePlayer: _removePlayerAt,
                       ),
                       const SizedBox(height: 80),
                     ],

@@ -14,6 +14,8 @@ class EventSetupDetailSection extends StatelessWidget {
     required this.isLoadingEvent,
     required this.onReset,
     required this.onSubmit,
+    required this.canRemovePlayer,
+    required this.onRemovePlayer,
   });
 
   final TextEditingController eventNameController;
@@ -23,6 +25,8 @@ class EventSetupDetailSection extends StatelessWidget {
   final bool isLoadingEvent;
   final VoidCallback onReset;
   final VoidCallback onSubmit;
+  final bool canRemovePlayer;
+  final ValueChanged<int> onRemovePlayer;
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +55,8 @@ class EventSetupDetailSection extends StatelessWidget {
           focusNodes: displayNameFocusNodes,
           sourceDisplayNames: sourceDisplayNames,
           isLoadingEvent: isLoadingEvent,
+          canRemovePlayer: canRemovePlayer,
+          onRemovePlayer: onRemovePlayer,
         ),
         const SizedBox(height: 20),
         EventSetupActionButtons(

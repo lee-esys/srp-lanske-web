@@ -9,12 +9,16 @@ class EventSetupDisplayNameGrid extends StatelessWidget {
     required this.focusNodes,
     required this.sourceDisplayNames,
     required this.isLoadingEvent,
+    required this.canRemovePlayer,
+    required this.onRemovePlayer,
   });
 
   final List<TextEditingController> controllers;
   final List<FocusNode> focusNodes;
   final List<String?> sourceDisplayNames;
   final bool isLoadingEvent;
+  final bool canRemovePlayer;
+  final ValueChanged<int> onRemovePlayer;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +32,7 @@ class EventSetupDisplayNameGrid extends StatelessWidget {
             sourceDisplayNames[index] ?? circledNumber(index + 1);
 
         return SizedBox(
-          width: 140,
+          width: 160,
           child: TextFormField(
             controller: controllers[index],
             focusNode: focusNodes[index],
@@ -40,6 +44,21 @@ class EventSetupDisplayNameGrid extends StatelessWidget {
               ),
               border: const OutlineInputBorder(),
               isDense: true,
+              suffixIcon: IconButton(
+                tooltip: canRemovePlayer
+                    ? l10n.removePlayerTooltip
+                    : l10n.cannotRemovePlayerTooltip,
+                onPressed: isLoadingEvent || !canRemovePlayer
+                    ? null
+                    : () => onRemovePlayer(index),
+                icon: const Icon(Icons.remove_circle_outline),
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+              ),
+              suffixIconConstraints: const BoxConstraints(
+                minWidth: 36,
+                minHeight: 36,
+              ),
             ),
           ),
         );
