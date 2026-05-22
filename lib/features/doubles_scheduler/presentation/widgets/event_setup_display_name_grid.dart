@@ -9,12 +9,16 @@ class EventSetupDisplayNameGrid extends StatelessWidget {
     required this.focusNodes,
     required this.sourceDisplayNames,
     required this.isLoadingEvent,
+    required this.canRemovePlayer,
+    required this.onRemovePlayer,
   });
 
   final List<TextEditingController> controllers;
   final List<FocusNode> focusNodes;
   final List<String?> sourceDisplayNames;
   final bool isLoadingEvent;
+  final bool canRemovePlayer;
+  final ValueChanged<int> onRemovePlayer;
 
   @override
   Widget build(BuildContext context) {
@@ -28,19 +32,37 @@ class EventSetupDisplayNameGrid extends StatelessWidget {
             sourceDisplayNames[index] ?? circledNumber(index + 1);
 
         return SizedBox(
-          width: 140,
-          child: TextFormField(
-            controller: controllers[index],
-            focusNode: focusNodes[index],
-            enabled: !isLoadingEvent,
-            decoration: InputDecoration(
-              labelText: l10n.playerDisplayNameInputLabel(
-                index + 1,
-                sourceName,
+          width: 200,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: controllers[index],
+                  focusNode: focusNodes[index],
+                  enabled: !isLoadingEvent,
+                  decoration: InputDecoration(
+                    labelText: l10n.playerDisplayNameInputLabel(
+                      index + 1,
+                      sourceName,
+                    ),
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
               ),
-              border: const OutlineInputBorder(),
-              isDense: true,
-            ),
+              const SizedBox(width: 4),
+              IconButton(
+                tooltip: canRemovePlayer
+                    ? l10n.removePlayerTooltip
+                    : l10n.cannotRemovePlayerTooltip,
+                onPressed: isLoadingEvent || !canRemovePlayer
+                    ? null
+                    : () => onRemovePlayer(index),
+                icon: const Icon(Icons.remove_circle_outline),
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
           ),
         );
       }),

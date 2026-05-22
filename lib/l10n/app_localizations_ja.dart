@@ -226,4 +226,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String lastOpenedAtLabel(String lastOpenedAt) {
     return '最終表示: $lastOpenedAt';
   }
+
+  @override
+  String get removePlayerTooltip => 'この参加者を削除';
+
+  @override
+  String get cannotRemovePlayerTooltip => '最低人数のため削除できません';
 }

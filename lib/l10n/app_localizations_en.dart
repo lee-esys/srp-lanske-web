@@ -233,4 +233,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String lastOpenedAtLabel(String lastOpenedAt) {
     return 'Last opened: $lastOpenedAt';
   }
+
+  @override
+  String get removePlayerTooltip => 'Remove this player';
+
+  @override
+  String get cannotRemovePlayerTooltip =>
+      'Cannot remove because the minimum player count has been reached.';
 }
