@@ -54,7 +54,11 @@ class _SchedulePageState extends State<SchedulePage> {
       ),
     );
 
-    _generateSchedule();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _generateSchedule();
+      }
+    });
   }
 
   bool get _isAdopted => _scheduleResponse?['adopted'] == true;
