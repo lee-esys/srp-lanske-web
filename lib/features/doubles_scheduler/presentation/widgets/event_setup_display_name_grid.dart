@@ -32,27 +32,19 @@ class EventSetupDisplayNameGrid extends StatelessWidget {
             sourceDisplayNames[index] ?? circledNumber(index + 1);
 
         return SizedBox(
-          width: 200,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: controllers[index],
-                  focusNode: focusNodes[index],
-                  enabled: !isLoadingEvent,
-                  decoration: InputDecoration(
-                    labelText: l10n.playerDisplayNameInputLabel(
-                      index + 1,
-                      sourceName,
-                    ),
-                    border: const OutlineInputBorder(),
-                    isDense: true,
-                  ),
-                ),
+          width: 160,
+          child: TextFormField(
+            controller: controllers[index],
+            focusNode: focusNodes[index],
+            enabled: !isLoadingEvent,
+            decoration: InputDecoration(
+              labelText: l10n.playerDisplayNameInputLabel(
+                index + 1,
+                sourceName,
               ),
-              const SizedBox(width: 4),
-              IconButton(
+              border: const OutlineInputBorder(),
+              isDense: true,
+              suffixIcon: IconButton(
                 tooltip: canRemovePlayer
                     ? l10n.removePlayerTooltip
                     : l10n.cannotRemovePlayerTooltip,
@@ -61,8 +53,13 @@ class EventSetupDisplayNameGrid extends StatelessWidget {
                     : () => onRemovePlayer(index),
                 icon: const Icon(Icons.remove_circle_outline),
                 visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
               ),
-            ],
+              suffixIconConstraints: const BoxConstraints(
+                minWidth: 36,
+                minHeight: 36,
+              ),
+            ),
           ),
         );
       }),

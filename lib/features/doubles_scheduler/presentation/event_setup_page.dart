@@ -220,6 +220,10 @@ class _EventSetupPageState extends State<EventSetupPage> {
     setState(() {
       _playerCountController.text = clamped.toString();
       _syncDisplayNameControllers();
+
+      if (_loadedFromUrl) {
+        _refreshAutoNumberDisplayNames();
+      }
     });
   }
 
@@ -236,7 +240,12 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _sourceDisplayNames.removeAt(index);
 
       _playerCountController.text = _displayNameControllers.length.toString();
-      _refreshManualDisplayNameDefaults();
+
+      if (_loadedFromUrl) {
+        _refreshAutoNumberDisplayNames();
+      } else {
+        _refreshManualDisplayNameDefaults();
+      }
     });
   }
 
@@ -256,6 +265,42 @@ class _EventSetupPageState extends State<EventSetupPage> {
           currentText == previousDefault ||
           currentText == previousSource) {
         _displayNameControllers[i].text = nextDefault;
+      }
+    }
+  }
+
+  bool _isAutoNumberDisplayName(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return true;
+
+    for (var i = 1; i <= _maxPlayerCountForCourts(_maxCourts); i++) {
+      if (text == circledNumber(i)) return true;
+    }
+
+    return false;
+  }
+
+  void _refreshAutoNumberDisplayNames() {
+    for (var i = 0; i < _displayNameControllers.length; i++) {
+      final expectedName = circledNumber(i + 1);
+      final currentDefault = _defaultDisplayNames[i];
+      final currentSource = _sourceDisplayNames[i];
+      final currentText = _displayNameControllers[i].text.trim();
+
+      final defaultIsAutoNumber = _isAutoNumberDisplayName(currentDefault);
+      final sourceIsAutoNumber = _isAutoNumberDisplayName(currentSource);
+      final textIsAutoNumberOrEmpty =
+          currentText.isEmpty || _isAutoNumberDisplayName(currentText);
+
+      if (!defaultIsAutoNumber || !sourceIsAutoNumber) {
+        continue;
+      }
+
+      _defaultDisplayNames[i] = expectedName;
+      _sourceDisplayNames[i] = expectedName;
+
+      if (textIsAutoNumberOrEmpty) {
+        _displayNameControllers[i].text = expectedName;
       }
     }
   }
