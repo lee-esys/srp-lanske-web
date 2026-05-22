@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 
 import 'schedule_player_chip.dart';
 import 'schedule_section_card.dart';
@@ -74,10 +75,12 @@ class _SchedulePlayersCardState extends State<SchedulePlayersCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     if (widget.players.isEmpty) {
-      return const ScheduleSectionCard(
-        title: '参加者',
-        child: Text('参加者情報がありません'),
+      return ScheduleSectionCard(
+        title: l10n.playersTitle,
+        child: Text(l10n.noPlayersMessage),
       );
     }
 

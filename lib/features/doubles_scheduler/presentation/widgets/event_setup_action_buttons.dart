@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 
 class EventSetupActionButtons extends StatelessWidget {
   const EventSetupActionButtons({
@@ -14,6 +15,8 @@ class EventSetupActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -24,9 +27,9 @@ class EventSetupActionButtons extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
-          child: const Text(
-            '入力項目のリセット',
-            style: TextStyle(fontSize: 16),
+          child: Text(
+            l10n.resetInputsButton,
+            style: const TextStyle(fontSize: 16),
           ),
         ),
         const SizedBox(width: 12),
@@ -37,9 +40,9 @@ class EventSetupActionButtons extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
-          child: const Text(
-            '対戦表の生成',
-            style: TextStyle(fontSize: 22),
+          child: Text(
+            l10n.generateScheduleButton,
+            style: const TextStyle(fontSize: 22),
           ),
         ),
       ],

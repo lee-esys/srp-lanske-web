@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/event_setup_page.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 import 'package:srp_lanske/shared/utils/browser_url.dart';
 
@@ -58,7 +59,11 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       ),
     );
 
-    _restore();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _restore();
+      }
+    });
   }
 
   bool get _isAdopted => _scheduleResponse?['adopted'] == true;
@@ -67,15 +72,15 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     return _isAdopted || (_savedEvent?.event.hasAdoptedSchedule ?? false);
   }
 
-  String get _pageTitle {
-    return _savedEvent?.event.title ?? '共有対戦表';
+  String _pageTitle(AppLocalizations l10n) {
+    return _savedEvent?.event.title ?? l10n.matchTableTitle;
   }
 
-  String get _generateButtonLabel {
+  String _generateButtonLabel(AppLocalizations l10n) {
     final generatedScheduleId = _savedEvent?.event.displayGeneratedScheduleId;
     return generatedScheduleId == null || generatedScheduleId.isEmpty
-        ? '生成'
-        : '再生成';
+        ? l10n.generateButton
+        : l10n.regenerateButton;
   }
 
   bool get _hasGeneratedSchedule {
@@ -115,11 +120,12 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   }
 
   Future<void> _requestGenerateSchedule() async {
+    final l10n = AppLocalizations.of(context);
     final latestEvent = await _refreshSavedEventForAction();
     if (!mounted) return;
 
     if (latestEvent?.event.hasAdoptedSchedule == true) {
-      _showMessage('採用済みのため再生成できません');
+      _showMessage(l10n.cannotRegenerateAdoptedScheduleMessage);
       await _reloadSchedule();
       return;
     }
@@ -133,19 +139,16 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('再生成しますか？'),
-          content: const Text(
-            '現在表示している対戦表を新しい対戦表に差し替えます。\n'
-            '共有URLから表示される未採用の対戦表も、再生成後の内容に更新されます。',
-          ),
+          title: Text(l10n.regenerateConfirmTitle),
+          content: Text(l10n.regenerateConfirmBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('キャンセル'),
+              child: Text(l10n.cancelButton),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('再生成する'),
+              child: Text(l10n.regenerateActionButton),
             ),
           ],
         );
@@ -158,7 +161,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     if (!mounted) return;
 
     if (latestBeforeGenerate?.event.hasAdoptedSchedule == true) {
-      _showMessage('採用済みのため再生成できません');
+      _showMessage(l10n.cannotRegenerateAdoptedScheduleMessage);
       await _reloadSchedule();
       return;
     }
@@ -167,12 +170,13 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   }
 
   Future<SavedEventAggregate?> _refreshSavedEventForAction() async {
+    final l10n = AppLocalizations.of(context);
     final publicId =
         (_savedEvent?.event.publicId ?? widget.publicId).trim().toUpperCase();
 
     if (!isValidPublicId(publicId)) {
       setState(() {
-        _errorMessage = '共有IDが正しくありません';
+        _errorMessage = l10n.scheduleNotFoundMessage;
       });
       return null;
     }
@@ -186,7 +190,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _scheduleResponse = null;
         _generatedScheduleId = null;
         _selectedPlayerId = null;
-        _errorMessage = '対戦表が見つかりません';
+        _errorMessage = l10n.scheduleNotFoundMessage;
       });
       return null;
     }
@@ -200,6 +204,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   }
 
   Future<void> _restore() async {
+    final l10n = AppLocalizations.of(context);
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -212,7 +218,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
       setState(() {
         _isLoading = false;
-        _errorMessage = '共有IDが正しくありません';
+        _errorMessage = l10n.scheduleNotFoundMessage;
       });
       return;
     }
@@ -227,7 +233,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           _scheduleResponse = null;
           _generatedScheduleId = null;
           _selectedPlayerId = null;
-          _errorMessage = '対戦表が見つかりません';
+          _errorMessage = l10n.scheduleNotFoundMessage;
           _isLoading = false;
         });
         return;
@@ -243,7 +249,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       if (aggregate.players.isEmpty) {
         setState(() {
           _selectedPlayerId = null;
-          _errorMessage = '参加者情報がありません';
+          _errorMessage = l10n.noPlayersMessage;
           _isLoading = false;
         });
         return;
@@ -251,7 +257,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
       if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
         setState(() {
-          _errorMessage = 'まだ対戦表が生成されていません';
+          _errorMessage = l10n.scheduleNotLoadedMessage;
           _isLoading = false;
         });
         return;
@@ -269,14 +275,15 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _scheduleResponse = null;
         _generatedScheduleId = null;
         _selectedPlayerId = null;
-        _errorMessage = '対戦表を取得できませんでした。\n'
-            '通信状態を確認して、再読み込みしてください。';
+        _errorMessage = l10n.reloadScheduleFailedMessage(e.toString());
         _isLoading = false;
       });
     }
   }
 
   Future<void> _fetchSchedule(String generatedScheduleId) async {
+    final l10n = AppLocalizations.of(context);
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -302,18 +309,19 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
       setState(() {
         _scheduleResponse = null;
-        _errorMessage = '対戦表を取得できませんでした: $e';
+        _errorMessage = l10n.reloadScheduleFailedMessage(e.toString());
         _isLoading = false;
       });
     }
   }
 
   Future<void> _reloadSchedule() async {
+    final l10n = AppLocalizations.of(context);
     final publicId =
         (_savedEvent?.event.publicId ?? widget.publicId).trim().toUpperCase();
 
     if (!isValidPublicId(publicId)) {
-      _showMessage('共有IDが正しくありません');
+      _showMessage(l10n.scheduleNotFoundMessage);
       return;
     }
 
@@ -332,7 +340,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           _scheduleResponse = null;
           _generatedScheduleId = null;
           _selectedPlayerId = null;
-          _errorMessage = '対戦表が見つかりません';
+          _errorMessage = l10n.scheduleNotFoundMessage;
           _isLoading = false;
         });
         return;
@@ -348,7 +356,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
         setState(() {
           _scheduleResponse = null;
-          _errorMessage = 'まだ対戦表が生成されていません';
+          _errorMessage = l10n.scheduleNotLoadedMessage;
           _isLoading = false;
         });
         return;
@@ -359,21 +367,22 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = '共有情報を再取得できませんでした: $e';
+        _errorMessage = l10n.reloadScheduleFailedMessage(e.toString());
         _isLoading = false;
       });
     }
   }
 
   Future<void> _generateSchedule() async {
+    final l10n = AppLocalizations.of(context);
     final savedEvent = _savedEvent;
     if (savedEvent == null) {
-      _showMessage('再生成するイベント情報がありません');
+      _showMessage(l10n.adoptEventMissingMessage);
       return;
     }
 
     if (_hasAdoptedSchedule) {
-      _showMessage('採用済みのため再生成できません');
+      _showMessage(l10n.cannotRegenerateAdoptedScheduleMessage);
       return;
     }
 
@@ -414,18 +423,19 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = '対戦表を生成できませんでした: $e';
+        _errorMessage = l10n.generateScheduleFailedMessage(e.toString());
         _isLoading = false;
       });
     }
   }
 
   Future<void> _adoptSchedule() async {
+    final l10n = AppLocalizations.of(context);
     final displayedGeneratedScheduleId = _generatedScheduleId;
 
     if (displayedGeneratedScheduleId == null ||
         displayedGeneratedScheduleId.isEmpty) {
-      _showMessage('採用する generated_schedule_id がありません');
+      _showMessage(l10n.adoptScheduleMissingIdMessage);
       return;
     }
 
@@ -441,12 +451,12 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       if (!mounted) return;
 
       if (latestEvent == null) {
-        _showMessage('採用するイベント情報がありません');
+        _showMessage(l10n.adoptEventMissingMessage);
         return;
       }
 
       if (latestEvent.event.hasAdoptedSchedule) {
-        _showMessage('すでに採用済みです');
+        _showMessage(l10n.alreadyAdoptedScheduleMessage);
         await _reloadSchedule();
         return;
       }
@@ -455,7 +465,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           latestEvent.event.currentGeneratedScheduleId;
 
       if (latestCurrentGeneratedScheduleId != displayedGeneratedScheduleId) {
-        _showMessage('対戦表が更新されています。最新の情報に更新します');
+        _showMessage(l10n.scheduleUpdatedReloadMessage);
         await _reloadSchedule();
         return;
       }
@@ -479,13 +489,13 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       });
       await _saveScheduleHistory(nextSavedEvent);
 
-      _showMessage('この対戦表を採用しました');
+      _showMessage(l10n.adoptScheduleCompletedMessage);
       await _reloadSchedule();
     } catch (e) {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = '対戦表を採用できませんでした: $e';
+        _errorMessage = l10n.adoptScheduleFailedMessage(e.toString());
       });
     } finally {
       if (mounted) {
@@ -552,8 +562,9 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   }
 
   Future<void> _copyShareUrl() async {
+    final l10n = AppLocalizations.of(context);
     await Clipboard.setData(ClipboardData(text: _buildShareUrl()));
-    _showMessage('URLをコピーしました');
+    _showMessage(l10n.shareUrlCopiedMessage);
   }
 
   void _showMessage(String message) {
@@ -568,6 +579,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   }
 
   Widget _buildScheduleBody() {
+    final l10n = AppLocalizations.of(context);
     final savedEvent = _savedEvent;
 
     return ListView(
@@ -575,8 +587,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       children: [
         if (savedEvent == null)
           ScheduleSectionCard(
-            title: '共有URL',
-            child: Text('共有ID: ${widget.publicId}'),
+            title: 'URL',
+            child: Text('ID: ${widget.publicId}'),
           )
         else ...[
           ScheduleEventSummaryCard(
@@ -586,8 +598,10 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           ),
           const SizedBox(height: 12),
           SchedulePlayersCard(
-            title:
-                '面数: ${savedEvent.event.courtCount}　　参加者: ${savedEvent.players.length}人',
+            title: l10n.schedulePlayersTitle(
+              savedEvent.event.courtCount,
+              savedEvent.players.length,
+            ),
             players: _playerViewModels,
             selectedPlayerId: _selectedPlayerId,
             onPlayerSelected: _toggleSelectedPlayer,
@@ -598,7 +612,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
               child: ScheduleActionButtons(
                 isLoading: _isLoading,
                 isAdopting: _isAdopting,
-                generateButtonLabel: _generateButtonLabel,
+                generateButtonLabel: _generateButtonLabel(l10n),
                 canAdopt:
                     _generatedScheduleId != null && _scheduleResponse != null,
                 onGenerate: _requestGenerateSchedule,
@@ -608,7 +622,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           ],
           const SizedBox(height: 12),
           ScheduleSectionCard(
-            title: '対戦表',
+            title: l10n.matchTableTitle,
             child: _isLoading
                 ? const Center(
                     child: Padding(
@@ -628,7 +642,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         if (_errorMessage != null) ...[
           const SizedBox(height: 12),
           ScheduleSectionCard(
-            title: 'エラー',
+            title: l10n.errorTitle,
             child: Text(_errorMessage!),
           ),
         ],
@@ -639,26 +653,27 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final showInitialLoading = _isLoading && _savedEvent == null;
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Text(
-          _pageTitle,
+          _pageTitle(l10n),
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
           PopupMenuButton<_ScheduleMenuAction>(
             onSelected: _handleMenu,
-            itemBuilder: (context) => const [
+            itemBuilder: (context) => [
               PopupMenuItem(
                 value: _ScheduleMenuAction.top,
-                child: Text('TOPへ'),
+                child: Text(l10n.topPageMenu),
               ),
               PopupMenuItem(
                 value: _ScheduleMenuAction.list,
-                child: Text('対戦表一覧'),
+                child: Text(l10n.matchTableList),
               ),
             ],
           ),

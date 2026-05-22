@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 
 class ScheduleEventSummaryCard extends StatelessWidget {
   const ScheduleEventSummaryCard({
@@ -14,6 +15,8 @@ class ScheduleEventSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(4),
@@ -29,19 +32,19 @@ class ScheduleEventSummaryCard extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: onCopyShareUrl,
                     icon: const Icon(Icons.copy),
-                    label: const Text('URLをコピー'),
+                    label: Text(l10n.copyUrlButton),
                   ),
                 if (onRefresh != null)
                   FilledButton.tonalIcon(
                     onPressed: canRefresh ? onRefresh : null,
                     icon: const Icon(Icons.sync),
-                    label: const Text('最新の情報に更新'),
+                    label: Text(l10n.refreshLatestButton),
                   ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
-              'URLを共有して対戦表をみんなで確認しましょう٩( ᐛ )و',
+              l10n.shareUrlDescription,
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],

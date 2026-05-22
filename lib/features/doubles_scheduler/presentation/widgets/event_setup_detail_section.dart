@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 
 import 'event_setup_action_buttons.dart';
 import 'event_setup_display_name_grid.dart';
@@ -25,6 +26,8 @@ class EventSetupDetailSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -32,15 +35,15 @@ class EventSetupDetailSection extends StatelessWidget {
         TextFormField(
           controller: eventNameController,
           enabled: !isLoadingEvent,
-          decoration: const InputDecoration(
-            labelText: 'イベント名',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: l10n.eventNameLabel,
+            border: const OutlineInputBorder(),
           ),
         ),
         const SizedBox(height: 16),
-        const Text(
-          '参加者表示名',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        Text(
+          l10n.playerDisplayNameSectionTitle,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         EventSetupDisplayNameGrid(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 
 class ScheduleActionButtons extends StatelessWidget {
   const ScheduleActionButtons({
@@ -20,6 +21,8 @@ class ScheduleActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     final buttons = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -38,7 +41,9 @@ class ScheduleActionButtons extends StatelessWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.check),
-          label: Text(isAdopting ? '採用中' : 'この対戦表を採用'),
+          label: Text(
+            isAdopting ? l10n.adoptingScheduleButton : l10n.adoptScheduleButton,
+          ),
         ),
       ],
     );

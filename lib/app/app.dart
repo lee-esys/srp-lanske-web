@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 
 import '../features/doubles_scheduler/presentation/event_setup_page.dart';
 import '../features/doubles_scheduler/presentation/restored_schedule_page.dart';
@@ -18,6 +19,9 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: 'Lanske',
       debugShowCheckedModeBanner: true,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('ja'),
       theme: appTheme,
       home: home,
     );

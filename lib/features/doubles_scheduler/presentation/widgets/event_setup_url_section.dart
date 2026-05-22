@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 
 class EventSetupUrlSection extends StatelessWidget {
   const EventSetupUrlSection({
@@ -30,6 +31,8 @@ class EventSetupUrlSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -38,13 +41,13 @@ class EventSetupUrlSection extends StatelessWidget {
           enabled: !isLoadingEvent,
           onChanged: onChanged,
           decoration: InputDecoration(
-            labelText: 'テニスベアのイベントURL',
-            helperText: '例: https://www.tennisbear.net/event/1156506/info',
-            errorText: showUrlError ? 'テニスベアのイベントURLを入力してください' : null,
+            labelText: l10n.tennisbearEventUrlLabel,
+            helperText: l10n.tennisbearEventUrlHelper,
+            errorText: showUrlError ? l10n.tennisbearEventUrlError : null,
             border: const OutlineInputBorder(),
             suffixIcon: hasUrlInput
                 ? IconButton(
-                    tooltip: 'URLをクリア',
+                    tooltip: l10n.clearUrlTooltip,
                     onPressed: canClearEventUrl ? onClear : null,
                     icon: const Icon(Icons.cancel_outlined),
                   )
@@ -61,12 +64,12 @@ class EventSetupUrlSection extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: canPasteEventUrl ? onPaste : null,
                 icon: const Icon(Icons.content_paste),
-                label: const Text('貼り付け'),
+                label: Text(l10n.pasteButton),
               ),
               FilledButton.icon(
                 onPressed: canImportEventUrl ? onImport : null,
                 icon: const Icon(Icons.download),
-                label: const Text('取り込み'),
+                label: Text(l10n.importButton),
               ),
             ],
           ),
