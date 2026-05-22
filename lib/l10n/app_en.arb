@@ -8,6 +8,10 @@
   "@eventSetupTitle": {
     "description": "Title shown on the event setup page."
   },
+  "topPageMenu": "Top",
+  "@topPageMenu": {
+    "description": "Menu item label for returning to the top page."
+  },
   "matchTableList": "Match table list",
   "@matchTableList": {
     "description": "Menu item label for the saved/generated match table list."
@@ -48,14 +52,8 @@
   "@playerCountRangeHelp": {
     "description": "Help text that shows the valid player count range.",
     "placeholders": {
-      "minPlayerCount": {
-        "type": "int",
-        "example": "4"
-      },
-      "maxPlayerCount": {
-        "type": "int",
-        "example": "7"
-      }
+      "minPlayerCount": {"type": "int", "example": "4"},
+      "maxPlayerCount": {"type": "int", "example": "7"}
     }
   },
   "loadingEventInfo": "Loading event info...",
@@ -129,5 +127,145 @@
   "generateScheduleButton": "Generate match table",
   "@generateScheduleButton": {
     "description": "Button label for generating a match table."
+  },
+  "generateButton": "Generate",
+  "@generateButton": {
+    "description": "Short button label for generating a schedule."
+  },
+  "regenerateButton": "Regenerate",
+  "@regenerateButton": {
+    "description": "Short button label for regenerating a schedule."
+  },
+  "adoptingScheduleButton": "Adopting",
+  "@adoptingScheduleButton": {
+    "description": "Button label shown while adopting a schedule."
+  },
+  "adoptScheduleButton": "Use this table",
+  "@adoptScheduleButton": {
+    "description": "Button label for adopting the currently displayed schedule."
+  },
+  "cannotRegenerateAdoptedScheduleMessage": "This table has already been adopted and cannot be regenerated.",
+  "@cannotRegenerateAdoptedScheduleMessage": {
+    "description": "Message shown when regeneration is blocked because the schedule was adopted."
+  },
+  "regenerateConfirmTitle": "Regenerate?",
+  "@regenerateConfirmTitle": {
+    "description": "Dialog title for confirming schedule regeneration."
+  },
+  "regenerateConfirmBody": "The currently displayed match table will be replaced.\nUnadopted tables shown from the share URL will also be updated.",
+  "@regenerateConfirmBody": {
+    "description": "Dialog body for confirming schedule regeneration."
+  },
+  "cancelButton": "Cancel",
+  "@cancelButton": {
+    "description": "Generic cancel button label."
+  },
+  "regenerateActionButton": "Regenerate",
+  "@regenerateActionButton": {
+    "description": "Dialog action button label for regenerating a schedule."
+  },
+  "scheduleNotFoundMessage": "Match table not found.",
+  "@scheduleNotFoundMessage": {
+    "description": "Message shown when the saved schedule cannot be found."
+  },
+  "shareUrlCreateFailedMessage": "Could not create the URL.",
+  "@shareUrlCreateFailedMessage": {
+    "description": "Message shown when a share URL cannot be created."
+  },
+  "shareUrlCopiedMessage": "URL copied.",
+  "@shareUrlCopiedMessage": {
+    "description": "Message shown when the share URL was copied."
+  },
+  "generateScheduleFailedMessage": "Could not generate the match table: {error}",
+  "@generateScheduleFailedMessage": {
+    "description": "Error message shown when schedule generation failed.",
+    "placeholders": {"error": {"type": "String", "example": "network error"}}
+  },
+  "reloadScheduleMissingIdMessage": "No generated_schedule_id is available for reload.",
+  "@reloadScheduleMissingIdMessage": {
+    "description": "Error message shown when no generated schedule id is available for reload."
+  },
+  "reloadScheduleFailedMessage": "Could not load the match table: {error}",
+  "@reloadScheduleFailedMessage": {
+    "description": "Error message shown when reloading a schedule failed.",
+    "placeholders": {"error": {"type": "String", "example": "network error"}}
+  },
+  "adoptScheduleMissingIdMessage": "No generated_schedule_id is available for adoption.",
+  "@adoptScheduleMissingIdMessage": {
+    "description": "Message shown when no generated schedule id is available for adoption."
+  },
+  "adoptEventMissingMessage": "No event information is available for adoption.",
+  "@adoptEventMissingMessage": {
+    "description": "Message shown when event information for adoption is missing."
+  },
+  "alreadyAdoptedScheduleMessage": "This table has already been adopted.",
+  "@alreadyAdoptedScheduleMessage": {
+    "description": "Message shown when the schedule has already been adopted."
+  },
+  "scheduleUpdatedReloadMessage": "The match table has been updated. Loading the latest information.",
+  "@scheduleUpdatedReloadMessage": {
+    "description": "Message shown when the displayed schedule is outdated."
+  },
+  "adoptScheduleCompletedMessage": "This match table was adopted.",
+  "@adoptScheduleCompletedMessage": {
+    "description": "Message shown when schedule adoption completed."
+  },
+  "adoptScheduleFailedMessage": "Could not adopt the match table: {error}",
+  "@adoptScheduleFailedMessage": {
+    "description": "Error message shown when schedule adoption failed.",
+    "placeholders": {"error": {"type": "String", "example": "network error"}}
+  },
+  "schedulePlayersTitle": "Courts: {courtCount}    Players: {playerCount}",
+  "@schedulePlayersTitle": {
+    "description": "Title for player list showing court count and player count.",
+    "placeholders": {
+      "courtCount": {"type": "int", "example": "1"},
+      "playerCount": {"type": "int", "example": "6"}
+    }
+  },
+  "matchTableTitle": "Match table",
+  "@matchTableTitle": {
+    "description": "Section title for the match table."
+  },
+  "errorTitle": "Error",
+  "@errorTitle": {
+    "description": "Generic error section title."
+  },
+  "copyUrlButton": "Copy URL",
+  "@copyUrlButton": {
+    "description": "Button label for copying a share URL."
+  },
+  "refreshLatestButton": "Refresh",
+  "@refreshLatestButton": {
+    "description": "Button label for refreshing the latest schedule information."
+  },
+  "shareUrlDescription": "Share the URL so everyone can check the match table.",
+  "@shareUrlDescription": {
+    "description": "Short description encouraging users to share the schedule URL."
+  },
+  "playersTitle": "Players",
+  "@playersTitle": {
+    "description": "Section title for player information."
+  },
+  "noPlayersMessage": "No player information is available.",
+  "@noPlayersMessage": {
+    "description": "Message shown when no player information is available."
+  },
+  "scheduleNotLoadedMessage": "The match table has not been loaded.",
+  "@scheduleNotLoadedMessage": {
+    "description": "Message shown when no schedule response is loaded."
+  },
+  "scheduleDataEmptyMessage": "No match table data is available.",
+  "@scheduleDataEmptyMessage": {
+    "description": "Message shown when the schedule response contains no rounds."
+  },
+  "restLabel": "Rest",
+  "@restLabel": {
+    "description": "Label for resting players."
+  },
+  "restCountLabel": "{restCount} rest",
+  "@restCountLabel": {
+    "description": "Short label showing the number of resting players.",
+    "placeholders": {"restCount": {"type": "int", "example": "2"}}
   }
 }
