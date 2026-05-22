@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/utils/browser_url.dart';
 
 import '../data/local_schedule_history_item.dart';
@@ -55,9 +56,11 @@ class _EventListPageState extends State<EventListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('対戦表一覧'),
+        title: Text(l10n.matchTableList),
       ),
       body: FutureBuilder<List<LocalScheduleHistoryItem>>(
         future: _itemsFuture,
@@ -73,8 +76,7 @@ class _EventListPageState extends State<EventListPage> {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  '対戦表一覧を取得できませんでした。\n'
-                  '${snapshot.error}',
+                  l10n.reloadScheduleFailedMessage(snapshot.error.toString()),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -84,8 +86,8 @@ class _EventListPageState extends State<EventListPage> {
           final items = snapshot.data ?? const [];
 
           if (items.isEmpty) {
-            return const Center(
-              child: Text('まだ開いた対戦表はありません'),
+            return Center(
+              child: Text(l10n.scheduleNotFoundMessage),
             );
           }
 
@@ -100,8 +102,8 @@ class _EventListPageState extends State<EventListPage> {
                 child: ListTile(
                   title: Text(item.title),
                   subtitle: Text(
-                    '面数: ${item.courtCount} / 人数: ${item.playerCount}\n'
-                    '最終表示: ${_formatDateTime(item.lastOpenedAt)}',
+                    '${l10n.schedulePlayersTitle(item.courtCount, item.playerCount)}\n'
+                    '${_formatDateTime(item.lastOpenedAt)}',
                   ),
                   isThreeLine: true,
                   trailing: const Icon(Icons.chevron_right),
