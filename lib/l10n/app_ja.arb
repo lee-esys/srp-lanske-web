@@ -1,0 +1,133 @@
+{
+  "@@locale": "ja",
+  "appTitle": "Lanske",
+  "@appTitle": {
+    "description": "Application title."
+  },
+  "eventSetupTitle": "ダブルス乱数表 ver0.1",
+  "@eventSetupTitle": {
+    "description": "Title shown on the event setup page."
+  },
+  "matchTableList": "対戦表一覧",
+  "@matchTableList": {
+    "description": "Menu item label for the saved/generated match table list."
+  },
+  "eventSetupInstruction": "URLを貼るか、手動で面数・人数を入力してください。",
+  "@eventSetupInstruction": {
+    "description": "Instruction text on the event setup page."
+  },
+  "eventSetupSupportedConditions": "ver0.1では、1面4〜7人 / 2面8〜15人に対応しています。",
+  "@eventSetupSupportedConditions": {
+    "description": "Short note about supported court and player count conditions."
+  },
+  "courtCountLabel": "面数",
+  "@courtCountLabel": {
+    "description": "Label for court count input."
+  },
+  "playerCountLabel": "人数",
+  "@playerCountLabel": {
+    "description": "Label for player count input."
+  },
+  "decrementCourtCountTooltip": "面数を減らす",
+  "@decrementCourtCountTooltip": {
+    "description": "Tooltip for decreasing court count."
+  },
+  "incrementCourtCountTooltip": "面数を増やす",
+  "@incrementCourtCountTooltip": {
+    "description": "Tooltip for increasing court count."
+  },
+  "decrementPlayerCountTooltip": "人数を減らす",
+  "@decrementPlayerCountTooltip": {
+    "description": "Tooltip for decreasing player count."
+  },
+  "incrementPlayerCountTooltip": "人数を増やす",
+  "@incrementPlayerCountTooltip": {
+    "description": "Tooltip for increasing player count."
+  },
+  "playerCountRangeHelp": "人数は {minPlayerCount} 人以上、{maxPlayerCount} 人以下で入力してください。",
+  "@playerCountRangeHelp": {
+    "description": "Help text that shows the valid player count range.",
+    "placeholders": {
+      "minPlayerCount": {
+        "type": "int",
+        "example": "4"
+      },
+      "maxPlayerCount": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "loadingEventInfo": "イベント情報を取得中...",
+  "@loadingEventInfo": {
+    "description": "Loading message shown while importing event information."
+  },
+  "enterUrlMessage": "URLを入力してください",
+  "@enterUrlMessage": {
+    "description": "Snack bar message shown when URL input is empty."
+  },
+  "enterTennisbearEventUrlMessage": "テニスベアのイベントURLを入力してください",
+  "@enterTennisbearEventUrlMessage": {
+    "description": "Snack bar message shown when the URL is not a TennisBear event URL."
+  },
+  "eventInfoLoadedMessage": "イベント情報を取得しました",
+  "@eventInfoLoadedMessage": {
+    "description": "Snack bar message shown when event information was imported successfully."
+  },
+  "eventInfoPartiallyLoadedMessage": "イベント情報を取得しました（一部情報は取得できませんでした）",
+  "@eventInfoPartiallyLoadedMessage": {
+    "description": "Snack bar message shown when event information was imported with warnings."
+  },
+  "eventInfoLoadFailedMessage": "取得できませんでした。URLを確認して再度お試しください",
+  "@eventInfoLoadFailedMessage": {
+    "description": "Snack bar message shown when event information import failed."
+  },
+  "clipboardUrlNotFoundMessage": "クリップボードにURLがありません",
+  "@clipboardUrlNotFoundMessage": {
+    "description": "Snack bar message shown when clipboard has no URL."
+  },
+  "pasteTennisbearEventUrlMessage": "テニスベアのイベントURLを貼り付けてください",
+  "@pasteTennisbearEventUrlMessage": {
+    "description": "Snack bar message shown when pasted text is not a TennisBear event URL."
+  },
+  "tennisbearEventUrlLabel": "テニスベアのイベントURL",
+  "@tennisbearEventUrlLabel": {
+    "description": "Input label for TennisBear event URL."
+  },
+  "tennisbearEventUrlHelper": "例: テニスベアのイベント詳細URL",
+  "@tennisbearEventUrlHelper": {
+    "description": "Helper text example for TennisBear event URL input."
+  },
+  "tennisbearEventUrlError": "テニスベアのイベントURLを入力してください",
+  "@tennisbearEventUrlError": {
+    "description": "Validation error for TennisBear event URL input."
+  },
+  "clearUrlTooltip": "URLをクリア",
+  "@clearUrlTooltip": {
+    "description": "Tooltip for clearing the URL input."
+  },
+  "pasteButton": "貼り付け",
+  "@pasteButton": {
+    "description": "Button label for pasting text from clipboard."
+  },
+  "importButton": "取り込み",
+  "@importButton": {
+    "description": "Button label for importing event information."
+  },
+  "eventNameLabel": "イベント名",
+  "@eventNameLabel": {
+    "description": "Input label for event name."
+  },
+  "playerDisplayNameSectionTitle": "参加者表示名",
+  "@playerDisplayNameSectionTitle": {
+    "description": "Section title for player display name inputs."
+  },
+  "resetInputsButton": "入力項目のリセット",
+  "@resetInputsButton": {
+    "description": "Button label for resetting input fields."
+  },
+  "generateScheduleButton": "対戦表の生成",
+  "@generateScheduleButton": {
+    "description": "Button label for generating a match table."
+  }
+}
