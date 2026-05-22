@@ -100,6 +100,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get playerDisplayNameSectionTitle => '参加者表示名';
 
   @override
+  String playerDisplayNameInputLabel(int playerNumber, String sourceName) {
+    return '参加者$playerNumber：$sourceName';
+  }
+
+  @override
   String get resetInputsButton => '入力項目のリセット';
 
   @override

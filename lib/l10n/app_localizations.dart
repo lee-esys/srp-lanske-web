@@ -272,6 +272,12 @@ abstract class AppLocalizations {
   /// **'参加者表示名'**
   String get playerDisplayNameSectionTitle;
 
+  /// Input label for each player display name field.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加者{playerNumber}：{sourceName}'**
+  String playerDisplayNameInputLabel(int playerNumber, String sourceName);
+
   /// Button label for resetting input fields.
   ///
   /// In ja, this message translates to:

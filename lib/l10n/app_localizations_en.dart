@@ -102,6 +102,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playerDisplayNameSectionTitle => 'Player display names';
 
   @override
+  String playerDisplayNameInputLabel(int playerNumber, String sourceName) {
+    return 'Player $playerNumber: $sourceName';
+  }
+
+  @override
   String get resetInputsButton => 'Reset inputs';
 
   @override
