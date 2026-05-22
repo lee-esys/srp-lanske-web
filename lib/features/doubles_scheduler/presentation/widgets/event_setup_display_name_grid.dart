@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/utils/number_label_mapper.dart';
 
 class EventSetupDisplayNameGrid extends StatelessWidget {
@@ -17,13 +18,14 @@ class EventSetupDisplayNameGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Wrap(
       spacing: 12,
       runSpacing: 12,
       children: List.generate(controllers.length, (index) {
         final sourceName =
             sourceDisplayNames[index] ?? circledNumber(index + 1);
-        final labelSuffix = '：$sourceName';
 
         return SizedBox(
           width: 140,
@@ -32,7 +34,10 @@ class EventSetupDisplayNameGrid extends StatelessWidget {
             focusNode: focusNodes[index],
             enabled: !isLoadingEvent,
             decoration: InputDecoration(
-              labelText: '参加者${participantLabelNumber(index)}$labelSuffix',
+              labelText: l10n.playerDisplayNameInputLabel(
+                index + 1,
+                sourceName,
+              ),
               border: const OutlineInputBorder(),
               isDense: true,
             ),

@@ -120,6 +120,14 @@
   "@playerDisplayNameSectionTitle": {
     "description": "Section title for player display name inputs."
   },
+  "playerDisplayNameInputLabel": "Player {playerNumber}: {sourceName}",
+  "@playerDisplayNameInputLabel": {
+    "description": "Input label for each player display name field.",
+    "placeholders": {
+      "playerNumber": {"type": "int", "example": "1"},
+      "sourceName": {"type": "String", "example": "1"}
+    }
+  },
   "resetInputsButton": "Reset inputs",
   "@resetInputsButton": {
     "description": "Button label for resetting input fields."
