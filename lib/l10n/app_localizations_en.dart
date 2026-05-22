@@ -15,6 +15,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eventSetupTitle => 'Doubles Match Table ver0.1';
 
   @override
+  String get topPageMenu => 'Top';
+
+  @override
   String get matchTableList => 'Match table list';
 
   @override
@@ -103,4 +106,121 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get generateScheduleButton => 'Generate match table';
+
+  @override
+  String get generateButton => 'Generate';
+
+  @override
+  String get regenerateButton => 'Regenerate';
+
+  @override
+  String get adoptingScheduleButton => 'Adopting';
+
+  @override
+  String get adoptScheduleButton => 'Use this table';
+
+  @override
+  String get cannotRegenerateAdoptedScheduleMessage =>
+      'This table has already been adopted and cannot be regenerated.';
+
+  @override
+  String get regenerateConfirmTitle => 'Regenerate?';
+
+  @override
+  String get regenerateConfirmBody =>
+      'The currently displayed match table will be replaced.\nUnadopted tables shown from the share URL will also be updated.';
+
+  @override
+  String get cancelButton => 'Cancel';
+
+  @override
+  String get regenerateActionButton => 'Regenerate';
+
+  @override
+  String get scheduleNotFoundMessage => 'Match table not found.';
+
+  @override
+  String get shareUrlCreateFailedMessage => 'Could not create the URL.';
+
+  @override
+  String get shareUrlCopiedMessage => 'URL copied.';
+
+  @override
+  String generateScheduleFailedMessage(String error) {
+    return 'Could not generate the match table: $error';
+  }
+
+  @override
+  String get reloadScheduleMissingIdMessage =>
+      'No generated_schedule_id is available for reload.';
+
+  @override
+  String reloadScheduleFailedMessage(String error) {
+    return 'Could not load the match table: $error';
+  }
+
+  @override
+  String get adoptScheduleMissingIdMessage =>
+      'No generated_schedule_id is available for adoption.';
+
+  @override
+  String get adoptEventMissingMessage =>
+      'No event information is available for adoption.';
+
+  @override
+  String get alreadyAdoptedScheduleMessage =>
+      'This table has already been adopted.';
+
+  @override
+  String get scheduleUpdatedReloadMessage =>
+      'The match table has been updated. Loading the latest information.';
+
+  @override
+  String get adoptScheduleCompletedMessage => 'This match table was adopted.';
+
+  @override
+  String adoptScheduleFailedMessage(String error) {
+    return 'Could not adopt the match table: $error';
+  }
+
+  @override
+  String schedulePlayersTitle(int courtCount, int playerCount) {
+    return 'Courts: $courtCount    Players: $playerCount';
+  }
+
+  @override
+  String get matchTableTitle => 'Match table';
+
+  @override
+  String get errorTitle => 'Error';
+
+  @override
+  String get copyUrlButton => 'Copy URL';
+
+  @override
+  String get refreshLatestButton => 'Refresh';
+
+  @override
+  String get shareUrlDescription =>
+      'Share the URL so everyone can check the match table.';
+
+  @override
+  String get playersTitle => 'Players';
+
+  @override
+  String get noPlayersMessage => 'No player information is available.';
+
+  @override
+  String get scheduleNotLoadedMessage => 'The match table has not been loaded.';
+
+  @override
+  String get scheduleDataEmptyMessage => 'No match table data is available.';
+
+  @override
+  String get restLabel => 'Rest';
+
+  @override
+  String restCountLabel(int restCount) {
+    return '$restCount rest';
+  }
 }

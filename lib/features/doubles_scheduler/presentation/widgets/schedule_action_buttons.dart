@@ -42,9 +42,7 @@ class ScheduleActionButtons extends StatelessWidget {
                 )
               : const Icon(Icons.check),
           label: Text(
-            isAdopting
-                ? l10n.adoptingScheduleButton
-                : l10n.adoptScheduleButton,
+            isAdopting ? l10n.adoptingScheduleButton : l10n.adoptScheduleButton,
           ),
         ),
       ],

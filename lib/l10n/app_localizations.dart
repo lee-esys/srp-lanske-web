@@ -110,6 +110,12 @@ abstract class AppLocalizations {
   /// **'ダブルス乱数表 ver0.1'**
   String get eventSetupTitle;
 
+  /// Menu item label for returning to the top page.
+  ///
+  /// In ja, this message translates to:
+  /// **'TOPへ'**
+  String get topPageMenu;
+
   /// Menu item label for the saved/generated match table list.
   ///
   /// In ja, this message translates to:
@@ -277,6 +283,204 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'対戦表の生成'**
   String get generateScheduleButton;
+
+  /// Short button label for generating a schedule.
+  ///
+  /// In ja, this message translates to:
+  /// **'生成'**
+  String get generateButton;
+
+  /// Short button label for regenerating a schedule.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生成'**
+  String get regenerateButton;
+
+  /// Button label shown while adopting a schedule.
+  ///
+  /// In ja, this message translates to:
+  /// **'採用中'**
+  String get adoptingScheduleButton;
+
+  /// Button label for adopting the currently displayed schedule.
+  ///
+  /// In ja, this message translates to:
+  /// **'この対戦表を採用'**
+  String get adoptScheduleButton;
+
+  /// Message shown when regeneration is blocked because the schedule was adopted.
+  ///
+  /// In ja, this message translates to:
+  /// **'採用済みのため再生成できません'**
+  String get cannotRegenerateAdoptedScheduleMessage;
+
+  /// Dialog title for confirming schedule regeneration.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生成しますか？'**
+  String get regenerateConfirmTitle;
+
+  /// Dialog body for confirming schedule regeneration.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在表示している対戦表を新しい対戦表に差し替えます。\n共有URLから表示される未採用の対戦表も、再生成後の内容に更新されます。'**
+  String get regenerateConfirmBody;
+
+  /// Generic cancel button label.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンセル'**
+  String get cancelButton;
+
+  /// Dialog action button label for regenerating a schedule.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生成する'**
+  String get regenerateActionButton;
+
+  /// Message shown when the saved schedule cannot be found.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表が見つかりません'**
+  String get scheduleNotFoundMessage;
+
+  /// Message shown when a share URL cannot be created.
+  ///
+  /// In ja, this message translates to:
+  /// **'URLを作成できませんでした'**
+  String get shareUrlCreateFailedMessage;
+
+  /// Message shown when the share URL was copied.
+  ///
+  /// In ja, this message translates to:
+  /// **'URLをコピーしました'**
+  String get shareUrlCopiedMessage;
+
+  /// Error message shown when schedule generation failed.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表を生成できませんでした: {error}'**
+  String generateScheduleFailedMessage(String error);
+
+  /// Error message shown when no generated schedule id is available for reload.
+  ///
+  /// In ja, this message translates to:
+  /// **'再取得する generated_schedule_id がありません'**
+  String get reloadScheduleMissingIdMessage;
+
+  /// Error message shown when reloading a schedule failed.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表を取得できませんでした: {error}'**
+  String reloadScheduleFailedMessage(String error);
+
+  /// Message shown when no generated schedule id is available for adoption.
+  ///
+  /// In ja, this message translates to:
+  /// **'採用する generated_schedule_id がありません'**
+  String get adoptScheduleMissingIdMessage;
+
+  /// Message shown when event information for adoption is missing.
+  ///
+  /// In ja, this message translates to:
+  /// **'採用するイベント情報がありません'**
+  String get adoptEventMissingMessage;
+
+  /// Message shown when the schedule has already been adopted.
+  ///
+  /// In ja, this message translates to:
+  /// **'すでに採用済みです'**
+  String get alreadyAdoptedScheduleMessage;
+
+  /// Message shown when the displayed schedule is outdated.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表が更新されています。最新の情報に更新します'**
+  String get scheduleUpdatedReloadMessage;
+
+  /// Message shown when schedule adoption completed.
+  ///
+  /// In ja, this message translates to:
+  /// **'この対戦表を採用しました'**
+  String get adoptScheduleCompletedMessage;
+
+  /// Error message shown when schedule adoption failed.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表を採用できませんでした: {error}'**
+  String adoptScheduleFailedMessage(String error);
+
+  /// Title for player list showing court count and player count.
+  ///
+  /// In ja, this message translates to:
+  /// **'面数: {courtCount}　　参加者: {playerCount}人'**
+  String schedulePlayersTitle(int courtCount, int playerCount);
+
+  /// Section title for the match table.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表'**
+  String get matchTableTitle;
+
+  /// Generic error section title.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラー'**
+  String get errorTitle;
+
+  /// Button label for copying a share URL.
+  ///
+  /// In ja, this message translates to:
+  /// **'URLをコピー'**
+  String get copyUrlButton;
+
+  /// Button label for refreshing the latest schedule information.
+  ///
+  /// In ja, this message translates to:
+  /// **'最新の情報に更新'**
+  String get refreshLatestButton;
+
+  /// Short description encouraging users to share the schedule URL.
+  ///
+  /// In ja, this message translates to:
+  /// **'URLを共有して対戦表をみんなで確認しましょう٩( ᐛ )و'**
+  String get shareUrlDescription;
+
+  /// Section title for player information.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加者'**
+  String get playersTitle;
+
+  /// Message shown when no player information is available.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加者情報がありません'**
+  String get noPlayersMessage;
+
+  /// Message shown when no schedule response is loaded.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表を取得できていません'**
+  String get scheduleNotLoadedMessage;
+
+  /// Message shown when the schedule response contains no rounds.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表データがありません'**
+  String get scheduleDataEmptyMessage;
+
+  /// Label for resting players.
+  ///
+  /// In ja, this message translates to:
+  /// **'休憩'**
+  String get restLabel;
+
+  /// Short label showing the number of resting players.
+  ///
+  /// In ja, this message translates to:
+  /// **'{restCount}人'**
+  String restCountLabel(int restCount);
 }
 
 class _AppLocalizationsDelegate

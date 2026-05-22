@@ -15,6 +15,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get eventSetupTitle => 'ダブルス乱数表 ver0.1';
 
   @override
+  String get topPageMenu => 'TOPへ';
+
+  @override
   String get matchTableList => '対戦表一覧';
 
   @override
@@ -101,4 +104,116 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get generateScheduleButton => '対戦表の生成';
+
+  @override
+  String get generateButton => '生成';
+
+  @override
+  String get regenerateButton => '再生成';
+
+  @override
+  String get adoptingScheduleButton => '採用中';
+
+  @override
+  String get adoptScheduleButton => 'この対戦表を採用';
+
+  @override
+  String get cannotRegenerateAdoptedScheduleMessage => '採用済みのため再生成できません';
+
+  @override
+  String get regenerateConfirmTitle => '再生成しますか？';
+
+  @override
+  String get regenerateConfirmBody =>
+      '現在表示している対戦表を新しい対戦表に差し替えます。\n共有URLから表示される未採用の対戦表も、再生成後の内容に更新されます。';
+
+  @override
+  String get cancelButton => 'キャンセル';
+
+  @override
+  String get regenerateActionButton => '再生成する';
+
+  @override
+  String get scheduleNotFoundMessage => '対戦表が見つかりません';
+
+  @override
+  String get shareUrlCreateFailedMessage => 'URLを作成できませんでした';
+
+  @override
+  String get shareUrlCopiedMessage => 'URLをコピーしました';
+
+  @override
+  String generateScheduleFailedMessage(String error) {
+    return '対戦表を生成できませんでした: $error';
+  }
+
+  @override
+  String get reloadScheduleMissingIdMessage =>
+      '再取得する generated_schedule_id がありません';
+
+  @override
+  String reloadScheduleFailedMessage(String error) {
+    return '対戦表を取得できませんでした: $error';
+  }
+
+  @override
+  String get adoptScheduleMissingIdMessage =>
+      '採用する generated_schedule_id がありません';
+
+  @override
+  String get adoptEventMissingMessage => '採用するイベント情報がありません';
+
+  @override
+  String get alreadyAdoptedScheduleMessage => 'すでに採用済みです';
+
+  @override
+  String get scheduleUpdatedReloadMessage => '対戦表が更新されています。最新の情報に更新します';
+
+  @override
+  String get adoptScheduleCompletedMessage => 'この対戦表を採用しました';
+
+  @override
+  String adoptScheduleFailedMessage(String error) {
+    return '対戦表を採用できませんでした: $error';
+  }
+
+  @override
+  String schedulePlayersTitle(int courtCount, int playerCount) {
+    return '面数: $courtCount　　参加者: $playerCount人';
+  }
+
+  @override
+  String get matchTableTitle => '対戦表';
+
+  @override
+  String get errorTitle => 'エラー';
+
+  @override
+  String get copyUrlButton => 'URLをコピー';
+
+  @override
+  String get refreshLatestButton => '最新の情報に更新';
+
+  @override
+  String get shareUrlDescription => 'URLを共有して対戦表をみんなで確認しましょう٩( ᐛ )و';
+
+  @override
+  String get playersTitle => '参加者';
+
+  @override
+  String get noPlayersMessage => '参加者情報がありません';
+
+  @override
+  String get scheduleNotLoadedMessage => '対戦表を取得できていません';
+
+  @override
+  String get scheduleDataEmptyMessage => '対戦表データがありません';
+
+  @override
+  String get restLabel => '休憩';
+
+  @override
+  String restCountLabel(int restCount) {
+    return '$restCount人';
+  }
 }
