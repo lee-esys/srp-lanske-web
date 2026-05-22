@@ -8,6 +8,10 @@
   "@eventSetupTitle": {
     "description": "Title shown on the event setup page."
   },
+  "topPageMenu": "TOPへ",
+  "@topPageMenu": {
+    "description": "Menu item label for returning to the top page."
+  },
   "matchTableList": "対戦表一覧",
   "@matchTableList": {
     "description": "Menu item label for the saved/generated match table list."
@@ -48,14 +52,8 @@
   "@playerCountRangeHelp": {
     "description": "Help text that shows the valid player count range.",
     "placeholders": {
-      "minPlayerCount": {
-        "type": "int",
-        "example": "4"
-      },
-      "maxPlayerCount": {
-        "type": "int",
-        "example": "7"
-      }
+      "minPlayerCount": {"type": "int", "example": "4"},
+      "maxPlayerCount": {"type": "int", "example": "7"}
     }
   },
   "loadingEventInfo": "イベント情報を取得中...",
@@ -129,5 +127,145 @@
   "generateScheduleButton": "対戦表の生成",
   "@generateScheduleButton": {
     "description": "Button label for generating a match table."
+  },
+  "generateButton": "生成",
+  "@generateButton": {
+    "description": "Short button label for generating a schedule."
+  },
+  "regenerateButton": "再生成",
+  "@regenerateButton": {
+    "description": "Short button label for regenerating a schedule."
+  },
+  "adoptingScheduleButton": "採用中",
+  "@adoptingScheduleButton": {
+    "description": "Button label shown while adopting a schedule."
+  },
+  "adoptScheduleButton": "この対戦表を採用",
+  "@adoptScheduleButton": {
+    "description": "Button label for adopting the currently displayed schedule."
+  },
+  "cannotRegenerateAdoptedScheduleMessage": "採用済みのため再生成できません",
+  "@cannotRegenerateAdoptedScheduleMessage": {
+    "description": "Message shown when regeneration is blocked because the schedule was adopted."
+  },
+  "regenerateConfirmTitle": "再生成しますか？",
+  "@regenerateConfirmTitle": {
+    "description": "Dialog title for confirming schedule regeneration."
+  },
+  "regenerateConfirmBody": "現在表示している対戦表を新しい対戦表に差し替えます。\n共有URLから表示される未採用の対戦表も、再生成後の内容に更新されます。",
+  "@regenerateConfirmBody": {
+    "description": "Dialog body for confirming schedule regeneration."
+  },
+  "cancelButton": "キャンセル",
+  "@cancelButton": {
+    "description": "Generic cancel button label."
+  },
+  "regenerateActionButton": "再生成する",
+  "@regenerateActionButton": {
+    "description": "Dialog action button label for regenerating a schedule."
+  },
+  "scheduleNotFoundMessage": "対戦表が見つかりません",
+  "@scheduleNotFoundMessage": {
+    "description": "Message shown when the saved schedule cannot be found."
+  },
+  "shareUrlCreateFailedMessage": "URLを作成できませんでした",
+  "@shareUrlCreateFailedMessage": {
+    "description": "Message shown when a share URL cannot be created."
+  },
+  "shareUrlCopiedMessage": "URLをコピーしました",
+  "@shareUrlCopiedMessage": {
+    "description": "Message shown when the share URL was copied."
+  },
+  "generateScheduleFailedMessage": "対戦表を生成できませんでした: {error}",
+  "@generateScheduleFailedMessage": {
+    "description": "Error message shown when schedule generation failed.",
+    "placeholders": {"error": {"type": "String", "example": "network error"}}
+  },
+  "reloadScheduleMissingIdMessage": "再取得する generated_schedule_id がありません",
+  "@reloadScheduleMissingIdMessage": {
+    "description": "Error message shown when no generated schedule id is available for reload."
+  },
+  "reloadScheduleFailedMessage": "対戦表を取得できませんでした: {error}",
+  "@reloadScheduleFailedMessage": {
+    "description": "Error message shown when reloading a schedule failed.",
+    "placeholders": {"error": {"type": "String", "example": "network error"}}
+  },
+  "adoptScheduleMissingIdMessage": "採用する generated_schedule_id がありません",
+  "@adoptScheduleMissingIdMessage": {
+    "description": "Message shown when no generated schedule id is available for adoption."
+  },
+  "adoptEventMissingMessage": "採用するイベント情報がありません",
+  "@adoptEventMissingMessage": {
+    "description": "Message shown when event information for adoption is missing."
+  },
+  "alreadyAdoptedScheduleMessage": "すでに採用済みです",
+  "@alreadyAdoptedScheduleMessage": {
+    "description": "Message shown when the schedule has already been adopted."
+  },
+  "scheduleUpdatedReloadMessage": "対戦表が更新されています。最新の情報に更新します",
+  "@scheduleUpdatedReloadMessage": {
+    "description": "Message shown when the displayed schedule is outdated."
+  },
+  "adoptScheduleCompletedMessage": "この対戦表を採用しました",
+  "@adoptScheduleCompletedMessage": {
+    "description": "Message shown when schedule adoption completed."
+  },
+  "adoptScheduleFailedMessage": "対戦表を採用できませんでした: {error}",
+  "@adoptScheduleFailedMessage": {
+    "description": "Error message shown when schedule adoption failed.",
+    "placeholders": {"error": {"type": "String", "example": "network error"}}
+  },
+  "schedulePlayersTitle": "面数: {courtCount}　　参加者: {playerCount}人",
+  "@schedulePlayersTitle": {
+    "description": "Title for player list showing court count and player count.",
+    "placeholders": {
+      "courtCount": {"type": "int", "example": "1"},
+      "playerCount": {"type": "int", "example": "6"}
+    }
+  },
+  "matchTableTitle": "対戦表",
+  "@matchTableTitle": {
+    "description": "Section title for the match table."
+  },
+  "errorTitle": "エラー",
+  "@errorTitle": {
+    "description": "Generic error section title."
+  },
+  "copyUrlButton": "URLをコピー",
+  "@copyUrlButton": {
+    "description": "Button label for copying a share URL."
+  },
+  "refreshLatestButton": "最新の情報に更新",
+  "@refreshLatestButton": {
+    "description": "Button label for refreshing the latest schedule information."
+  },
+  "shareUrlDescription": "URLを共有して対戦表をみんなで確認しましょう٩( ᐛ )و",
+  "@shareUrlDescription": {
+    "description": "Short description encouraging users to share the schedule URL."
+  },
+  "playersTitle": "参加者",
+  "@playersTitle": {
+    "description": "Section title for player information."
+  },
+  "noPlayersMessage": "参加者情報がありません",
+  "@noPlayersMessage": {
+    "description": "Message shown when no player information is available."
+  },
+  "scheduleNotLoadedMessage": "対戦表を取得できていません",
+  "@scheduleNotLoadedMessage": {
+    "description": "Message shown when no schedule response is loaded."
+  },
+  "scheduleDataEmptyMessage": "対戦表データがありません",
+  "@scheduleDataEmptyMessage": {
+    "description": "Message shown when the schedule response contains no rounds."
+  },
+  "restLabel": "休憩",
+  "@restLabel": {
+    "description": "Label for resting players."
+  },
+  "restCountLabel": "{restCount}人",
+  "@restCountLabel": {
+    "description": "Short label showing the number of resting players.",
+    "placeholders": {"restCount": {"type": "int", "example": "2"}}
   }
 }
