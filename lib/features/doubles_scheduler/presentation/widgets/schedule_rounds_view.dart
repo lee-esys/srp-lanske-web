@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 
 import 'schedule_player_chip.dart';
 
@@ -27,16 +28,17 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final scheduleResponse = widget.scheduleResponse;
     if (scheduleResponse == null) {
-      return const Text('対戦表を取得できていません');
+      return Text(l10n.scheduleNotLoadedMessage);
     }
 
     final rounds = _asObjectList(scheduleResponse['rounds']);
     final slotToPlayerId = _buildSlotToPlayerId(scheduleResponse);
 
     if (rounds.isEmpty) {
-      return const Text('対戦表データがありません');
+      return Text(l10n.scheduleDataEmptyMessage);
     }
 
     return Column(
@@ -50,6 +52,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     Map<String, dynamic> round,
     Map<int, String> slotToPlayerId,
   ) {
+    final l10n = AppLocalizations.of(context);
     final roundNumber = round['round_number']?.toString() ?? '-';
     final roundNumberValue = int.tryParse(roundNumber);
     final isEvenRound = roundNumberValue != null && roundNumberValue.isEven;
@@ -113,8 +116,11 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ...courts.map((court) {
-                    return _buildCourtRow(court, slotToPlayerId,
-                        showCourtNumber: widget.courtCount >= 2);
+                    return _buildCourtRow(
+                      court,
+                      slotToPlayerId,
+                      showCourtNumber: widget.courtCount >= 2,
+                    );
                   }),
                   if (isRestExpanded) ...[
                     const Divider(),
@@ -123,7 +129,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
                       runSpacing: 6,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        const Text('休憩:'),
+                        Text('${l10n.restLabel}:'),
                         ...restSlotNumbers.map((slotNumber) {
                           return _buildPlayerChip(
                             slotNumber: slotNumber,
@@ -145,32 +151,35 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   }
 
   Widget _buildCourtRow(
-      Map<String, dynamic> court, Map<int, String> slotToPlayerId,
-      {required bool showCourtNumber}) {
+    Map<String, dynamic> court,
+    Map<int, String> slotToPlayerId, {
+    required bool showCourtNumber,
+  }) {
     final courtNumber = court['court_number']?.toString() ?? '-';
     final team1Slots = _asIntList(court['team1_player_slots']);
     final team2Slots = _asIntList(court['team2_player_slots']);
 
     return Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Wrap(
-          spacing: 4,
-          runSpacing: 4,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            if (showCourtNumber)
-              Text(
-                courtNumber,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Wrap(
+        spacing: 4,
+        runSpacing: 4,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          if (showCourtNumber)
+            Text(
+              courtNumber,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
               ),
-            _buildTeamGroup(team1Slots, slotToPlayerId),
-            const Text('vs'),
-            _buildTeamGroup(team2Slots, slotToPlayerId),
-          ],
-        ));
+            ),
+          _buildTeamGroup(team1Slots, slotToPlayerId),
+          const Text('vs'),
+          _buildTeamGroup(team2Slots, slotToPlayerId),
+        ],
+      ),
+    );
   }
 
   List<Widget> _buildTeamChips(
@@ -293,6 +302,7 @@ class _RestToggleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final backgroundColor =
         isHighlighted ? colorScheme.tertiaryContainer : Colors.transparent;
@@ -321,7 +331,7 @@ class _RestToggleButton extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                '休憩',
+                l10n.restLabel,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 10,
@@ -332,7 +342,7 @@ class _RestToggleButton extends StatelessWidget {
                 ),
               ),
               Text(
-                '$restCount人',
+                l10n.restCountLabel(restCount),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 10,
