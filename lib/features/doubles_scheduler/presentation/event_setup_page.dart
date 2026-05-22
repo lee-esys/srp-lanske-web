@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/utils/number_label_mapper.dart';
 
 import '../application/tennisbear_event_url.dart';
@@ -300,17 +301,19 @@ class _EventSetupPageState extends State<EventSetupPage> {
   Future<void> _fetchEventInfo() async {
     if (_isLoadingEvent) return;
 
+    final l10n = AppLocalizations.of(context);
+
     FocusScope.of(context).unfocus();
 
     final originalUrl = _urlController.text.trim();
     final parsedUrl = parseTennisbearEventUrl(originalUrl);
     if (originalUrl.isEmpty) {
-      _showMessage('URLを入力してください');
+      _showMessage(l10n.enterUrlMessage);
       return;
     }
 
     if (parsedUrl == null) {
-      _showMessage('テニスベアのイベントURLを入力してください');
+      _showMessage(l10n.enterTennisbearEventUrlMessage);
       return;
     }
 
@@ -376,9 +379,9 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
       final warnings = preview.warnings;
       if (warnings.isEmpty) {
-        _showMessage('イベント情報を取得しました');
+        _showMessage(l10n.eventInfoLoadedMessage);
       } else {
-        _showMessage('イベント情報を取得しました（一部情報は取得できませんでした）');
+        _showMessage(l10n.eventInfoPartiallyLoadedMessage);
       }
     } on TennisbearImportPreviewApiException catch (e) {
       final elapsed = DateTime.now().difference(startedAt);
@@ -398,7 +401,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
       if (!mounted) return;
       // TODO: イベント情報取得失敗時のエラーログを送る仕組みができたら、ここで例外内容も送る。adminにメール送信するのもあり。
-      _showMessage('取得できませんでした。URLを確認して再度お試しください');
+      _showMessage(l10n.eventInfoLoadFailedMessage);
     } finally {
       if (mounted) {
         setState(() {
@@ -458,11 +461,13 @@ class _EventSetupPageState extends State<EventSetupPage> {
   Future<void> _pasteEventUrl() async {
     if (!_canPasteEventUrl) return;
 
+    final l10n = AppLocalizations.of(context);
+
     final data = await Clipboard.getData('text/plain');
     final text = data?.text?.trim() ?? '';
 
     if (text.isEmpty) {
-      _showMessage('クリップボードにURLがありません');
+      _showMessage(l10n.clipboardUrlNotFoundMessage);
       return;
     }
 
@@ -476,7 +481,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
     });
 
     if (parseTennisbearEventUrl(text) == null) {
-      _showMessage('テニスベアのイベントURLを貼り付けてください');
+      _showMessage(l10n.pasteTennisbearEventUrlMessage);
     }
   }
 
@@ -521,19 +526,20 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final urlText = _urlController.text.trim();
     final showUrlError = urlText.isNotEmpty && !_isValidTennisbearEventUrl;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ダブルス乱数表 ver0.1'),
+        title: Text(l10n.eventSetupTitle),
         actions: [
           PopupMenuButton<_EventSetupMenuAction>(
             onSelected: _handleMenu,
-            itemBuilder: (context) => const [
+            itemBuilder: (context) => [
               PopupMenuItem(
                 value: _EventSetupMenuAction.list,
-                child: Text('対戦表一覧'),
+                child: Text(l10n.matchTableList),
               ),
             ],
           ),
@@ -551,14 +557,17 @@ class _EventSetupPageState extends State<EventSetupPage> {
                   child: ListView(
                     padding: const EdgeInsets.all(4),
                     children: [
-                      const Text(
-                        'URLを貼るか、手動で面数・人数を入力してください。',
-                        style: TextStyle(fontSize: 16),
+                      Text(
+                        l10n.eventSetupInstruction,
+                        style: const TextStyle(fontSize: 16),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'ver0.1では、1面4〜7人 / 2面8〜15人に対応しています。',
-                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                      Text(
+                        l10n.eventSetupSupportedConditions,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black54,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       EventSetupUrlSection(
@@ -579,29 +588,32 @@ class _EventSetupPageState extends State<EventSetupPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           EventSetupStepperField(
-                            label: '面数',
+                            label: l10n.courtCountLabel,
                             controller: _courtsController,
                             isLoadingEvent: _isLoadingEvent,
                             onDecrement: _decrementCourts,
                             onIncrement: _incrementCourts,
-                            tooltipDecrement: '面数を減らす',
-                            tooltipIncrement: '面数を増やす',
+                            tooltipDecrement: l10n.decrementCourtCountTooltip,
+                            tooltipIncrement: l10n.incrementCourtCountTooltip,
                           ),
                           const SizedBox(width: 12),
                           EventSetupStepperField(
-                            label: '人数',
+                            label: l10n.playerCountLabel,
                             controller: _playerCountController,
                             isLoadingEvent: _isLoadingEvent,
                             onDecrement: _decrementPlayerCount,
                             onIncrement: _incrementPlayerCount,
-                            tooltipDecrement: '人数を減らす',
-                            tooltipIncrement: '人数を増やす',
+                            tooltipDecrement: l10n.decrementPlayerCountTooltip,
+                            tooltipIncrement: l10n.incrementPlayerCountTooltip,
                           ),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '人数は $_minPlayerCount 人以上、$_maxPlayerCount 人以下で入力してください。',
+                        l10n.playerCountRangeHelp(
+                          _minPlayerCount,
+                          _maxPlayerCount,
+                        ),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(height: 24),
@@ -621,14 +633,14 @@ class _EventSetupPageState extends State<EventSetupPage> {
               ),
             ),
             if (_isLoadingEvent)
-              const Positioned.fill(
+              Positioned.fill(
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 12),
-                      Text('イベント情報を取得中...'),
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 12),
+                      Text(l10n.loadingEventInfo),
                     ],
                   ),
                 ),
