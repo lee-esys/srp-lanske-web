@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 import 'package:srp_lanske/shared/utils/browser_url.dart';
 
@@ -62,13 +63,13 @@ class _SchedulePageState extends State<SchedulePage> {
     return _isAdopted || (_savedEvent?.event.hasAdoptedSchedule ?? false);
   }
 
-  String get _generateButtonLabel {
+  String _generateButtonLabel(AppLocalizations l10n) {
     final generatedScheduleId =
         _savedEvent?.event.displayGeneratedScheduleId ?? _generatedScheduleId;
 
     return generatedScheduleId == null || generatedScheduleId.isEmpty
-        ? '生成'
-        : '再生成';
+        ? l10n.generateButton
+        : l10n.regenerateButton;
   }
 
   bool get _hasGeneratedSchedule {
@@ -101,11 +102,12 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _requestGenerateSchedule() async {
+    final l10n = AppLocalizations.of(context);
     final latestEvent = await _refreshSavedEventForAction();
     if (!mounted) return;
 
     if (latestEvent?.event.hasAdoptedSchedule == true) {
-      _showMessage('採用済みのため再生成できません');
+      _showMessage(l10n.cannotRegenerateAdoptedScheduleMessage);
       await _reloadSchedule();
       return;
     }
@@ -119,19 +121,16 @@ class _SchedulePageState extends State<SchedulePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('再生成しますか？'),
-          content: const Text(
-            '現在表示している対戦表を新しい対戦表に差し替えます。\n'
-            '共有URLから表示される未採用の対戦表も、再生成後の内容に更新されます。',
-          ),
+          title: Text(l10n.regenerateConfirmTitle),
+          content: Text(l10n.regenerateConfirmBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('キャンセル'),
+              child: Text(l10n.cancelButton),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('再生成する'),
+              child: Text(l10n.regenerateActionButton),
             ),
           ],
         );
@@ -144,7 +143,7 @@ class _SchedulePageState extends State<SchedulePage> {
     if (!mounted) return;
 
     if (latestBeforeGenerate?.event.hasAdoptedSchedule == true) {
-      _showMessage('採用済みのため再生成できません');
+      _showMessage(l10n.cannotRegenerateAdoptedScheduleMessage);
       await _reloadSchedule();
       return;
     }
@@ -153,6 +152,7 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<SavedEventAggregate?> _refreshSavedEventForAction() async {
+    final l10n = AppLocalizations.of(context);
     final savedEvent = _savedEvent;
     if (savedEvent == null) return null;
 
@@ -165,7 +165,7 @@ class _SchedulePageState extends State<SchedulePage> {
         _savedEvent = null;
         _scheduleResponse = null;
         _generatedScheduleId = null;
-        _errorMessage = '対戦表が見つかりません';
+        _errorMessage = l10n.scheduleNotFoundMessage;
       });
       return null;
     }
@@ -199,14 +199,15 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _copyShareUrl() async {
+    final l10n = AppLocalizations.of(context);
     final shareUrl = _buildShareUrl();
     if (shareUrl == null) {
-      _showMessage('URLを作成できませんでした');
+      _showMessage(l10n.shareUrlCreateFailedMessage);
       return;
     }
 
     await Clipboard.setData(ClipboardData(text: shareUrl));
-    _showMessage('URLをコピーしました');
+    _showMessage(l10n.shareUrlCopiedMessage);
   }
 
   void _showMessage(String message) {
@@ -221,8 +222,9 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _generateSchedule() async {
+    final l10n = AppLocalizations.of(context);
     if (_hasAdoptedSchedule) {
-      _showMessage('採用済みのため再生成できません');
+      _showMessage(l10n.cannotRegenerateAdoptedScheduleMessage);
       return;
     }
 
@@ -263,7 +265,7 @@ class _SchedulePageState extends State<SchedulePage> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = '対戦表を生成できませんでした: $e';
+        _errorMessage = l10n.generateScheduleFailedMessage(e.toString());
       });
     } finally {
       if (mounted) {
@@ -275,6 +277,7 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _reloadSchedule() async {
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -304,7 +307,7 @@ class _SchedulePageState extends State<SchedulePage> {
 
         setState(() {
           _scheduleResponse = null;
-          _errorMessage = '再取得する generated_schedule_id がありません';
+          _errorMessage = l10n.reloadScheduleMissingIdMessage;
           _isLoading = false;
         });
         return;
@@ -322,7 +325,7 @@ class _SchedulePageState extends State<SchedulePage> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = '対戦表を取得できませんでした: $e';
+        _errorMessage = l10n.reloadScheduleFailedMessage(e.toString());
       });
     } finally {
       if (mounted) {
@@ -334,11 +337,12 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _adoptSchedule() async {
+    final l10n = AppLocalizations.of(context);
     final displayedGeneratedScheduleId = _generatedScheduleId;
 
     if (displayedGeneratedScheduleId == null ||
         displayedGeneratedScheduleId.isEmpty) {
-      _showMessage('採用する generated_schedule_id がありません');
+      _showMessage(l10n.adoptScheduleMissingIdMessage);
       return;
     }
 
@@ -354,12 +358,12 @@ class _SchedulePageState extends State<SchedulePage> {
       if (!mounted) return;
 
       if (latestEvent == null) {
-        _showMessage('採用するイベント情報がありません');
+        _showMessage(l10n.adoptEventMissingMessage);
         return;
       }
 
       if (latestEvent.event.hasAdoptedSchedule) {
-        _showMessage('すでに採用済みです');
+        _showMessage(l10n.alreadyAdoptedScheduleMessage);
         await _reloadSchedule();
         return;
       }
@@ -368,7 +372,7 @@ class _SchedulePageState extends State<SchedulePage> {
           latestEvent.event.currentGeneratedScheduleId;
 
       if (latestCurrentGeneratedScheduleId != displayedGeneratedScheduleId) {
-        _showMessage('対戦表が更新されています。最新の情報に更新します');
+        _showMessage(l10n.scheduleUpdatedReloadMessage);
         await _reloadSchedule();
         return;
       }
@@ -392,13 +396,13 @@ class _SchedulePageState extends State<SchedulePage> {
       });
       await _saveScheduleHistory(nextSavedEvent);
 
-      _showMessage('この対戦表を採用しました');
+      _showMessage(l10n.adoptScheduleCompletedMessage);
       await _reloadSchedule();
     } catch (e) {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = '対戦表を採用できませんでした: $e';
+        _errorMessage = l10n.adoptScheduleFailedMessage(e.toString());
       });
     } finally {
       if (mounted) {
@@ -445,6 +449,8 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Widget _buildScheduleBody() {
+    final l10n = AppLocalizations.of(context);
+
     return ListView(
       padding: const EdgeInsets.all(4),
       children: [
@@ -455,8 +461,10 @@ class _SchedulePageState extends State<SchedulePage> {
         ),
         const SizedBox(height: 12),
         SchedulePlayersCard(
-          title:
-              '面数: ${widget.draft.courts}　　参加者: ${widget.draft.playerCount}人',
+          title: l10n.schedulePlayersTitle(
+            widget.draft.courts,
+            widget.draft.playerCount,
+          ),
           players: _playerViewModels,
           selectedPlayerId: _selectedPlayerId,
           onPlayerSelected: _toggleSelectedPlayer,
@@ -467,7 +475,7 @@ class _SchedulePageState extends State<SchedulePage> {
             child: ScheduleActionButtons(
               isLoading: _isLoading,
               isAdopting: _isAdopting,
-              generateButtonLabel: _generateButtonLabel,
+              generateButtonLabel: _generateButtonLabel(l10n),
               canAdopt:
                   _generatedScheduleId != null && _scheduleResponse != null,
               onGenerate: _requestGenerateSchedule,
@@ -477,7 +485,7 @@ class _SchedulePageState extends State<SchedulePage> {
         ],
         const SizedBox(height: 12),
         ScheduleSectionCard(
-          title: '対戦表',
+          title: l10n.matchTableTitle,
           child: _isLoading
               ? const Center(
                   child: Padding(
@@ -496,7 +504,7 @@ class _SchedulePageState extends State<SchedulePage> {
         if (_errorMessage != null) ...[
           const SizedBox(height: 12),
           ScheduleSectionCard(
-            title: 'エラー',
+            title: l10n.errorTitle,
             child: Text(_errorMessage!),
           ),
         ],
@@ -507,6 +515,7 @@ class _SchedulePageState extends State<SchedulePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final showInitialLoading = _isLoading && _scheduleResponse == null;
 
     return Scaffold(
@@ -516,14 +525,14 @@ class _SchedulePageState extends State<SchedulePage> {
         actions: [
           PopupMenuButton<_ScheduleMenuAction>(
             onSelected: _handleMenu,
-            itemBuilder: (context) => const [
+            itemBuilder: (context) => [
               PopupMenuItem(
                 value: _ScheduleMenuAction.top,
-                child: Text('TOPへ'),
+                child: Text(l10n.topPageMenu),
               ),
               PopupMenuItem(
                 value: _ScheduleMenuAction.list,
-                child: Text('対戦表一覧'),
+                child: Text(l10n.matchTableList),
               ),
             ],
           ),
