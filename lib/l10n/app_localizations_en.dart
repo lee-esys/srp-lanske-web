@@ -284,4 +284,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirmButton => 'OK';
+
+  @override
+  String get courtDisplayLabelLeft => 'L';
+
+  @override
+  String get courtDisplayLabelRight => 'R';
+
+  @override
+  String get courtDisplayLabelFront => 'F';
+
+  @override
+  String get courtDisplayLabelBack => 'B';
 }

@@ -583,6 +583,30 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'決定'**
   String get confirmButton;
+
+  /// One-character court display label for left.
+  ///
+  /// In ja, this message translates to:
+  /// **'左'**
+  String get courtDisplayLabelLeft;
+
+  /// One-character court display label for right.
+  ///
+  /// In ja, this message translates to:
+  /// **'右'**
+  String get courtDisplayLabelRight;
+
+  /// One-character court display label for front.
+  ///
+  /// In ja, this message translates to:
+  /// **'前'**
+  String get courtDisplayLabelFront;
+
+  /// One-character court display label for back.
+  ///
+  /// In ja, this message translates to:
+  /// **'奥'**
+  String get courtDisplayLabelBack;
 }
 
 class _AppLocalizationsDelegate

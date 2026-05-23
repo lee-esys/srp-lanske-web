@@ -256,27 +256,21 @@ class _CourtDisplaySettingsDialogState
   }
 
   List<String> _leftRightPresetLabels(BuildContext context) {
-    final labels = _directionLabels(
-      context,
-      japaneseStart: '左',
-      japaneseEnd: '右',
-      englishStart: 'L',
-      englishEnd: 'R',
-    );
+    final l10n = AppLocalizations.of(context);
 
-    return _edgePresetLabels(labels.start, labels.end);
+    return _edgePresetLabels(
+      l10n.courtDisplayLabelLeft,
+      l10n.courtDisplayLabelRight,
+    );
   }
 
   List<String> _frontBackPresetLabels(BuildContext context) {
-    final labels = _directionLabels(
-      context,
-      japaneseStart: '前',
-      japaneseEnd: '奥',
-      englishStart: 'F',
-      englishEnd: 'B',
-    );
+    final l10n = AppLocalizations.of(context);
 
-    return _edgePresetLabels(labels.start, labels.end);
+    return _edgePresetLabels(
+      l10n.courtDisplayLabelFront,
+      l10n.courtDisplayLabelBack,
+    );
   }
 
   List<String> _edgePresetLabels(String start, String end) {
@@ -294,22 +288,6 @@ class _CourtDisplaySettingsDialogState
 
       return (index + 1).toString();
     });
-  }
-
-  ({String start, String end}) _directionLabels(
-    BuildContext context, {
-    required String japaneseStart,
-    required String japaneseEnd,
-    required String englishStart,
-    required String englishEnd,
-  }) {
-    final languageCode = Localizations.localeOf(context).languageCode;
-
-    if (languageCode == 'ja') {
-      return (start: japaneseStart, end: japaneseEnd);
-    }
-
-    return (start: englishStart, end: englishEnd);
   }
 
   bool _sameLabels(List<String> a, List<String> b) {

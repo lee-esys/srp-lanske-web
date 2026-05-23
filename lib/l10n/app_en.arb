@@ -395,5 +395,21 @@
   "confirmButton": "OK",
   "@confirmButton": {
     "description": "Generic confirmation button label."
+  },
+  "courtDisplayLabelLeft": "L",
+  "@courtDisplayLabelLeft": {
+    "description": "One-character court display label for left."
+  },
+  "courtDisplayLabelRight": "R",
+  "@courtDisplayLabelRight": {
+    "description": "One-character court display label for right."
+  },
+  "courtDisplayLabelFront": "F",
+  "@courtDisplayLabelFront": {
+    "description": "One-character court display label for front."
+  },
+  "courtDisplayLabelBack": "B",
+  "@courtDisplayLabelBack": {
+    "description": "One-character court display label for back."
   }
 }

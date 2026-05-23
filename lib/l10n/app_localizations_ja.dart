@@ -275,4 +275,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get confirmButton => '決定';
+
+  @override
+  String get courtDisplayLabelLeft => '左';
+
+  @override
+  String get courtDisplayLabelRight => '右';
+
+  @override
+  String get courtDisplayLabelFront => '前';
+
+  @override
+  String get courtDisplayLabelBack => '奥';
 }

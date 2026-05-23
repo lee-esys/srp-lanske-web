@@ -395,5 +395,21 @@
   "confirmButton": "決定",
   "@confirmButton": {
     "description": "Generic confirmation button label."
+  },
+  "courtDisplayLabelLeft": "左",
+  "@courtDisplayLabelLeft": {
+    "description": "One-character court display label for left."
+  },
+  "courtDisplayLabelRight": "右",
+  "@courtDisplayLabelRight": {
+    "description": "One-character court display label for right."
+  },
+  "courtDisplayLabelFront": "前",
+  "@courtDisplayLabelFront": {
+    "description": "One-character court display label for front."
+  },
+  "courtDisplayLabelBack": "奥",
+  "@courtDisplayLabelBack": {
+    "description": "One-character court display label for back."
   }
 }
