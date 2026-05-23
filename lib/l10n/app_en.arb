@@ -331,5 +331,69 @@
   "cannotRemovePlayerTooltip": "Cannot remove because the minimum player count has been reached.",
   "@cannotRemovePlayerTooltip": {
     "description": "Tooltip shown when a player input field cannot be removed because the minimum player count has been reached."
+  },
+  "courtDisplaySummary": "Court display: {courtLabels}",
+  "@courtDisplaySummary": {
+    "description": "Summary text for current court display labels.",
+    "placeholders": {
+      "courtLabels": {
+        "type": "String",
+        "example": "A / B"
+      }
+    }
+  },
+  "changeCourtDisplayButton": "Change",
+  "@changeCourtDisplayButton": {
+    "description": "Button label for changing court display settings."
+  },
+  "displaySettingsDialogTitle": "Display settings",
+  "@displaySettingsDialogTitle": {
+    "description": "Dialog title for display settings."
+  },
+  "courtDisplaySectionTitle": "Court display",
+  "@courtDisplaySectionTitle": {
+    "description": "Section title for court display settings."
+  },
+  "courtDisplayPresetNumbers": "1 / 2",
+  "@courtDisplayPresetNumbers": {
+    "description": "Preset label for numeric court display."
+  },
+  "courtDisplayPresetLetters": "A / B",
+  "@courtDisplayPresetLetters": {
+    "description": "Preset label for alphabetic court display."
+  },
+  "courtDisplayPresetLeftRight": "Left / Right",
+  "@courtDisplayPresetLeftRight": {
+    "description": "Preset label for left-right court display."
+  },
+  "courtDisplayPresetFrontBack": "Front / Back",
+  "@courtDisplayPresetFrontBack": {
+    "description": "Preset label for front-back court display."
+  },
+  "courtDisplayPresetCustom": "Custom",
+  "@courtDisplayPresetCustom": {
+    "description": "Preset label for custom court display."
+  },
+  "courtDisplayInputLabel": "Court {courtNumber}",
+  "@courtDisplayInputLabel": {
+    "description": "Input label for each court display label.",
+    "placeholders": {
+      "courtNumber": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "courtDisplayEmptyError": "Enter a court display label.",
+  "@courtDisplayEmptyError": {
+    "description": "Validation error shown when a court display label is empty."
+  },
+  "courtDisplayDuplicateError": "Court display labels must be unique.",
+  "@courtDisplayDuplicateError": {
+    "description": "Validation error shown when court display labels are duplicated."
+  },
+  "confirmButton": "OK",
+  "@confirmButton": {
+    "description": "Generic confirmation button label."
   }
 }

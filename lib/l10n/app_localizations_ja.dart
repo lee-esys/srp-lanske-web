@@ -232,4 +232,47 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get cannotRemovePlayerTooltip => '最低人数のため削除できません';
+
+  @override
+  String courtDisplaySummary(String courtLabels) {
+    return 'コート表示: $courtLabels';
+  }
+
+  @override
+  String get changeCourtDisplayButton => '変更';
+
+  @override
+  String get displaySettingsDialogTitle => '表示の変更';
+
+  @override
+  String get courtDisplaySectionTitle => 'コート表示';
+
+  @override
+  String get courtDisplayPresetNumbers => '1 / 2';
+
+  @override
+  String get courtDisplayPresetLetters => 'A / B';
+
+  @override
+  String get courtDisplayPresetLeftRight => '左 / 右';
+
+  @override
+  String get courtDisplayPresetFrontBack => '前 / 奥';
+
+  @override
+  String get courtDisplayPresetCustom => '任意';
+
+  @override
+  String courtDisplayInputLabel(int courtNumber) {
+    return 'コート$courtNumber';
+  }
+
+  @override
+  String get courtDisplayEmptyError => 'コート表示を入力してください';
+
+  @override
+  String get courtDisplayDuplicateError => 'コート表示が重複しています';
+
+  @override
+  String get confirmButton => '決定';
 }
