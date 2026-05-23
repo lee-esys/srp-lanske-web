@@ -18,12 +18,14 @@ class InMemoryEventRepository implements EventRepository {
   final Map<String, List<SavedEventPlayer>> _playersByEventId = {};
   final Map<String, SavedEventShare> _sharesByPublicId = {};
   final Map<String, SavedEventImport> _importsByEventId = {};
+  final Map<String, List<SavedEventCourtSetting>> _courtSettingsByEventId = {};
 
   @override
   Future<SavedEventAggregate> createFromDraft(EventDraft draft) async {
     final now = DateTime.now();
     final eventId = _uuid.v4();
     final publicId = _generateUniquePublicId();
+    final courtSettings = buildDefaultCourtSettings(draft.courts);
 
     final event = SavedEvent(
       id: eventId,
@@ -77,12 +79,14 @@ class InMemoryEventRepository implements EventRepository {
     if (importRecord != null) {
       _importsByEventId[eventId] = importRecord;
     }
+    _courtSettingsByEventId[eventId] = courtSettings;
 
     return SavedEventAggregate(
       event: event,
       players: players,
       share: share,
       importRecord: importRecord,
+      courtSettings: courtSettings,
     );
   }
 
@@ -100,6 +104,8 @@ class InMemoryEventRepository implements EventRepository {
       players: _playersByEventId[eventId] ?? const [],
       share: share,
       importRecord: _importsByEventId[eventId],
+      courtSettings: _courtSettingsByEventId[eventId] ??
+          buildDefaultCourtSettings(event.courtCount),
     );
   }
 
@@ -151,6 +157,42 @@ class InMemoryEventRepository implements EventRepository {
 
     _eventsById[eventId] = updated;
     return updated;
+  }
+
+  @override
+  Future<SavedEventAggregate> updateCourtSettings({
+    required String eventId,
+    required List<SavedEventCourtSetting> courtSettings,
+  }) async {
+    final event = _eventsById[eventId];
+    if (event == null) {
+      throw StateError('event not found: $eventId');
+    }
+
+    if (event.hasAdoptedSchedule) {
+      throw StateError('event already adopted: $eventId');
+    }
+
+    final updatedEvent = event.copyWith(
+      updatedAt: DateTime.now(),
+    );
+
+    _eventsById[eventId] = updatedEvent;
+    _courtSettingsByEventId[eventId] = List.unmodifiable(courtSettings);
+
+    final share = _sharesByPublicId[updatedEvent.publicId];
+    if (share == null) {
+      throw StateError('share not found: ${updatedEvent.publicId}');
+    }
+
+    return SavedEventAggregate(
+      event: updatedEvent,
+      players: _playersByEventId[eventId] ?? const [],
+      share: share,
+      importRecord: _importsByEventId[eventId],
+      courtSettings: _courtSettingsByEventId[eventId] ??
+          buildDefaultCourtSettings(updatedEvent.courtCount),
+    );
   }
 
   String _generateUniquePublicId() {

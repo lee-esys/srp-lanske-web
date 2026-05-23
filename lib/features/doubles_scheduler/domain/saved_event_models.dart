@@ -276,12 +276,15 @@ class SavedEventAggregate {
     required this.players,
     required this.share,
     this.importRecord,
-  });
+    List<SavedEventCourtSetting>? courtSettings,
+  }) : courtSettings =
+            courtSettings ?? buildDefaultCourtSettings(event.courtCount);
 
   final SavedEvent event;
   final List<SavedEventPlayer> players;
   final SavedEventShare share;
   final SavedEventImport? importRecord;
+  final List<SavedEventCourtSetting> courtSettings;
 
   Map<String, dynamic> toJson() {
     return {
@@ -292,6 +295,9 @@ class SavedEventAggregate {
       }).toList(growable: false),
       'share': share.toJson(),
       'importRecord': importRecord?.toJson(),
+      'courtSettings': courtSettings.map((setting) {
+        return setting.toJson();
+      }).toList(growable: false),
     };
   }
 
@@ -307,6 +313,20 @@ class SavedEventAggregate {
       throw const FormatException('share is required');
     }
 
+    final event = SavedEvent.fromJson(eventJson);
+    final courtSettingsValue = json['courtSettings'];
+    final courtSettings = courtSettingsValue is List
+        ? courtSettingsValue.map((item) {
+            if (item is! Map) {
+              throw FormatException('invalid court setting item: $item');
+            }
+
+            return SavedEventCourtSetting.fromJson(
+              item.map((key, value) => MapEntry(key.toString(), value)),
+            );
+          }).toList(growable: false)
+        : buildDefaultCourtSettings(event.courtCount);
+
     // TODO(ver0.2): Remove the legacy participants fallback.
     final playersValue = json['players'] ?? json['participants'];
     if (playersValue is! List) {
@@ -316,7 +336,7 @@ class SavedEventAggregate {
     final importRecordJson = _nullableMapFromJson(json['importRecord']);
 
     return SavedEventAggregate(
-      event: SavedEvent.fromJson(eventJson),
+      event: event,
       players: playersValue.map((item) {
         if (item is! Map) {
           throw FormatException('invalid player item: $item');
@@ -330,6 +350,7 @@ class SavedEventAggregate {
       importRecord: importRecordJson == null
           ? null
           : SavedEventImport.fromJson(importRecordJson),
+      courtSettings: courtSettings,
     );
   }
 }
@@ -408,4 +429,38 @@ SavedEventStatus _savedEventStatusFromJson(Object? value) {
     (status) => status.name == value,
     orElse: () => SavedEventStatus.draft,
   );
+}
+
+class SavedEventCourtSetting {
+  SavedEventCourtSetting({
+    required this.courtNumber,
+    required this.displayLabel,
+  });
+
+  final int courtNumber;
+  final String displayLabel;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'courtNumber': courtNumber,
+      'displayLabel': displayLabel,
+    };
+  }
+
+  factory SavedEventCourtSetting.fromJson(Map<String, dynamic> json) {
+    return SavedEventCourtSetting(
+      courtNumber: _intFromJson(json['courtNumber']),
+      displayLabel: json['displayLabel']?.toString() ?? '',
+    );
+  }
+}
+
+List<SavedEventCourtSetting> buildDefaultCourtSettings(int courtCount) {
+  return List.generate(courtCount, (index) {
+    final courtNumber = index + 1;
+    return SavedEventCourtSetting(
+      courtNumber: courtNumber,
+      displayLabel: courtNumber.toString(),
+    );
+  });
 }
