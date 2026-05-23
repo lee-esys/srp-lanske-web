@@ -121,7 +121,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
                     return _buildCourtRow(
                       court,
                       slotToPlayerId,
-                      showCourtNumber: widget.courtCount >= 2,
                     );
                   }),
                   if (isRestExpanded) ...[
@@ -154,9 +153,8 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
   Widget _buildCourtRow(
     Map<String, dynamic> court,
-    Map<int, String> slotToPlayerId, {
-    required bool showCourtNumber,
-  }) {
+    Map<int, String> slotToPlayerId,
+  ) {
     final courtNumberText = court['court_number']?.toString() ?? '-';
     final courtNumber = int.tryParse(courtNumberText);
     final defaultCourtLabel = courtNumber?.toString() ?? courtNumberText;

@@ -658,25 +658,23 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
             selectedPlayerId: _selectedPlayerId,
             onPlayerSelected: _toggleSelectedPlayer,
           ),
-          if (!_hasAdoptedSchedule) ...[
-            const SizedBox(height: 12),
-            ScheduleSectionCard(
-              child: ScheduleOperationPanel(
-                courtDisplaySummary: _courtDisplaySummary,
-                canChangeCourtDisplay:
-                    !_hasAdoptedSchedule && _savedEvent != null,
-                onChangeCourtDisplay: _changeCourtDisplay,
-                showActionButtons: !_hasAdoptedSchedule,
-                isLoading: _isLoading,
-                isAdopting: _isAdopting,
-                generateButtonLabel: _generateButtonLabel(l10n),
-                canAdopt:
-                    _generatedScheduleId != null && _scheduleResponse != null,
-                onGenerate: _requestGenerateSchedule,
-                onAdopt: _adoptSchedule,
-              ),
+          const SizedBox(height: 12),
+          ScheduleSectionCard(
+            child: ScheduleOperationPanel(
+              courtDisplaySummary: _courtDisplaySummary,
+              canChangeCourtDisplay:
+                  !_hasAdoptedSchedule && _savedEvent != null,
+              onChangeCourtDisplay: _changeCourtDisplay,
+              showActionButtons: !_hasAdoptedSchedule,
+              isLoading: _isLoading,
+              isAdopting: _isAdopting,
+              generateButtonLabel: _generateButtonLabel(l10n),
+              canAdopt:
+                  _generatedScheduleId != null && _scheduleResponse != null,
+              onGenerate: _requestGenerateSchedule,
+              onAdopt: _adoptSchedule,
             ),
-          ],
+          ),
           const SizedBox(height: 12),
           ScheduleSectionCard(
             title: l10n.matchTableTitle,
