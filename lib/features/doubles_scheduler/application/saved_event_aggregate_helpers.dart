@@ -9,5 +9,6 @@ SavedEventAggregate replaceSavedEventInAggregate(
     players: aggregate.players,
     share: aggregate.share,
     importRecord: aggregate.importRecord,
+    courtSettings: aggregate.courtSettings,
   );
 }

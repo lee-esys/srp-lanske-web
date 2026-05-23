@@ -17,4 +17,9 @@ abstract class EventRepository {
     required String eventId,
     required String generatedScheduleId,
   });
+
+  Future<SavedEventAggregate> updateCourtSettings({
+    required String eventId,
+    required List<SavedEventCourtSetting> courtSettings,
+  });
 }

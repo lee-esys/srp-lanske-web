@@ -73,6 +73,7 @@ class JsonEventRepository implements EventRepository {
       players: players,
       share: share,
       importRecord: importRecord,
+      courtSettings: buildDefaultCourtSettings(draft.courts),
     );
 
     await _saveAggregate(aggregate);
@@ -142,6 +143,37 @@ class JsonEventRepository implements EventRepository {
     return updatedEvent;
   }
 
+  @override
+  Future<SavedEventAggregate> updateCourtSettings({
+    required String eventId,
+    required List<SavedEventCourtSetting> courtSettings,
+  }) async {
+    final aggregate = await _findByEventId(eventId);
+    if (aggregate == null) {
+      throw StateError('event not found: $eventId');
+    }
+
+    if (aggregate.event.hasAdoptedSchedule) {
+      throw StateError('event already adopted: $eventId');
+    }
+
+    final updatedEvent = aggregate.event.copyWith(
+      updatedAt: DateTime.now(),
+    );
+
+    final updatedAggregate = SavedEventAggregate(
+      event: updatedEvent,
+      players: aggregate.players,
+      share: aggregate.share,
+      importRecord: aggregate.importRecord,
+      courtSettings: courtSettings,
+    );
+
+    await _saveAggregate(updatedAggregate);
+
+    return updatedAggregate;
+  }
+
   Future<SavedEventAggregate?> _findByEventId(String eventId) async {
     final data = await _store.findByEventId(eventId);
     if (data == null) return null;
@@ -165,6 +197,7 @@ class JsonEventRepository implements EventRepository {
       players: aggregate.players,
       share: aggregate.share,
       importRecord: aggregate.importRecord,
+      courtSettings: aggregate.courtSettings,
     );
   }
 

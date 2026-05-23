@@ -240,4 +240,60 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cannotRemovePlayerTooltip =>
       'Cannot remove because the minimum player count has been reached.';
+
+  @override
+  String courtDisplaySummary(String courtLabels) {
+    return 'Court display: $courtLabels';
+  }
+
+  @override
+  String get changeCourtDisplayButton => 'Change';
+
+  @override
+  String get displaySettingsDialogTitle => 'Display settings';
+
+  @override
+  String get courtDisplaySectionTitle => 'Court display';
+
+  @override
+  String get courtDisplayPresetNumbers => '1 / 2';
+
+  @override
+  String get courtDisplayPresetLetters => 'A / B';
+
+  @override
+  String get courtDisplayPresetLeftRight => 'Left / Right';
+
+  @override
+  String get courtDisplayPresetFrontBack => 'Front / Back';
+
+  @override
+  String get courtDisplayPresetCustom => 'Custom';
+
+  @override
+  String courtDisplayInputLabel(int courtNumber) {
+    return 'Court $courtNumber';
+  }
+
+  @override
+  String get courtDisplayEmptyError => 'Enter a court display label.';
+
+  @override
+  String get courtDisplayDuplicateError =>
+      'Court display labels must be unique.';
+
+  @override
+  String get confirmButton => 'OK';
+
+  @override
+  String get courtDisplayLabelLeft => 'L';
+
+  @override
+  String get courtDisplayLabelRight => 'R';
+
+  @override
+  String get courtDisplayLabelFront => 'F';
+
+  @override
+  String get courtDisplayLabelBack => 'B';
 }

@@ -331,5 +331,85 @@
   "cannotRemovePlayerTooltip": "最低人数のため削除できません",
   "@cannotRemovePlayerTooltip": {
     "description": "Tooltip shown when a player input field cannot be removed because the minimum player count has been reached."
+  },
+  "courtDisplaySummary": "コート表示: {courtLabels}",
+  "@courtDisplaySummary": {
+    "description": "Summary text for current court display labels.",
+    "placeholders": {
+      "courtLabels": {
+        "type": "String",
+        "example": "A / B"
+      }
+    }
+  },
+  "changeCourtDisplayButton": "変更",
+  "@changeCourtDisplayButton": {
+    "description": "Button label for changing court display settings."
+  },
+  "displaySettingsDialogTitle": "表示の変更",
+  "@displaySettingsDialogTitle": {
+    "description": "Dialog title for display settings."
+  },
+  "courtDisplaySectionTitle": "コート表示",
+  "@courtDisplaySectionTitle": {
+    "description": "Section title for court display settings."
+  },
+  "courtDisplayPresetNumbers": "1 / 2",
+  "@courtDisplayPresetNumbers": {
+    "description": "Preset label for numeric court display."
+  },
+  "courtDisplayPresetLetters": "A / B",
+  "@courtDisplayPresetLetters": {
+    "description": "Preset label for alphabetic court display."
+  },
+  "courtDisplayPresetLeftRight": "左 / 右",
+  "@courtDisplayPresetLeftRight": {
+    "description": "Preset label for left-right court display."
+  },
+  "courtDisplayPresetFrontBack": "前 / 奥",
+  "@courtDisplayPresetFrontBack": {
+    "description": "Preset label for front-back court display."
+  },
+  "courtDisplayPresetCustom": "任意",
+  "@courtDisplayPresetCustom": {
+    "description": "Preset label for custom court display."
+  },
+  "courtDisplayInputLabel": "コート{courtNumber}",
+  "@courtDisplayInputLabel": {
+    "description": "Input label for each court display label.",
+    "placeholders": {
+      "courtNumber": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "courtDisplayEmptyError": "コート表示を入力してください",
+  "@courtDisplayEmptyError": {
+    "description": "Validation error shown when a court display label is empty."
+  },
+  "courtDisplayDuplicateError": "コート表示が重複しています",
+  "@courtDisplayDuplicateError": {
+    "description": "Validation error shown when court display labels are duplicated."
+  },
+  "confirmButton": "決定",
+  "@confirmButton": {
+    "description": "Generic confirmation button label."
+  },
+  "courtDisplayLabelLeft": "左",
+  "@courtDisplayLabelLeft": {
+    "description": "One-character court display label for left."
+  },
+  "courtDisplayLabelRight": "右",
+  "@courtDisplayLabelRight": {
+    "description": "One-character court display label for right."
+  },
+  "courtDisplayLabelFront": "前",
+  "@courtDisplayLabelFront": {
+    "description": "One-character court display label for front."
+  },
+  "courtDisplayLabelBack": "奥",
+  "@courtDisplayLabelBack": {
+    "description": "One-character court display label for back."
   }
 }

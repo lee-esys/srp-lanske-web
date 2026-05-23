@@ -505,6 +505,108 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'最低人数のため削除できません'**
   String get cannotRemovePlayerTooltip;
+
+  /// Summary text for current court display labels.
+  ///
+  /// In ja, this message translates to:
+  /// **'コート表示: {courtLabels}'**
+  String courtDisplaySummary(String courtLabels);
+
+  /// Button label for changing court display settings.
+  ///
+  /// In ja, this message translates to:
+  /// **'変更'**
+  String get changeCourtDisplayButton;
+
+  /// Dialog title for display settings.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示の変更'**
+  String get displaySettingsDialogTitle;
+
+  /// Section title for court display settings.
+  ///
+  /// In ja, this message translates to:
+  /// **'コート表示'**
+  String get courtDisplaySectionTitle;
+
+  /// Preset label for numeric court display.
+  ///
+  /// In ja, this message translates to:
+  /// **'1 / 2'**
+  String get courtDisplayPresetNumbers;
+
+  /// Preset label for alphabetic court display.
+  ///
+  /// In ja, this message translates to:
+  /// **'A / B'**
+  String get courtDisplayPresetLetters;
+
+  /// Preset label for left-right court display.
+  ///
+  /// In ja, this message translates to:
+  /// **'左 / 右'**
+  String get courtDisplayPresetLeftRight;
+
+  /// Preset label for front-back court display.
+  ///
+  /// In ja, this message translates to:
+  /// **'前 / 奥'**
+  String get courtDisplayPresetFrontBack;
+
+  /// Preset label for custom court display.
+  ///
+  /// In ja, this message translates to:
+  /// **'任意'**
+  String get courtDisplayPresetCustom;
+
+  /// Input label for each court display label.
+  ///
+  /// In ja, this message translates to:
+  /// **'コート{courtNumber}'**
+  String courtDisplayInputLabel(int courtNumber);
+
+  /// Validation error shown when a court display label is empty.
+  ///
+  /// In ja, this message translates to:
+  /// **'コート表示を入力してください'**
+  String get courtDisplayEmptyError;
+
+  /// Validation error shown when court display labels are duplicated.
+  ///
+  /// In ja, this message translates to:
+  /// **'コート表示が重複しています'**
+  String get courtDisplayDuplicateError;
+
+  /// Generic confirmation button label.
+  ///
+  /// In ja, this message translates to:
+  /// **'決定'**
+  String get confirmButton;
+
+  /// One-character court display label for left.
+  ///
+  /// In ja, this message translates to:
+  /// **'左'**
+  String get courtDisplayLabelLeft;
+
+  /// One-character court display label for right.
+  ///
+  /// In ja, this message translates to:
+  /// **'右'**
+  String get courtDisplayLabelRight;
+
+  /// One-character court display label for front.
+  ///
+  /// In ja, this message translates to:
+  /// **'前'**
+  String get courtDisplayLabelFront;
+
+  /// One-character court display label for back.
+  ///
+  /// In ja, this message translates to:
+  /// **'奥'**
+  String get courtDisplayLabelBack;
 }
 
 class _AppLocalizationsDelegate

@@ -215,5 +215,148 @@ void runEventRepositoryContractTests({
         throwsA(isA<StateError>()),
       );
     });
+
+    test('creates default court settings from draft court count', () async {
+      final repository = createRepository();
+
+      final aggregate = await repository.createFromDraft(
+        buildDraft(courts: 2),
+      );
+
+      expect(aggregate.courtSettings, hasLength(2));
+      expect(aggregate.courtSettings[0].courtNumber, 1);
+      expect(aggregate.courtSettings[0].displayLabel, '1');
+      expect(aggregate.courtSettings[1].courtNumber, 2);
+      expect(aggregate.courtSettings[1].displayLabel, '2');
+
+      final found = await repository.findByPublicId(aggregate.event.publicId);
+      expect(found, isNotNull);
+      expect(found!.courtSettings, hasLength(2));
+      expect(found.courtSettings[0].displayLabel, '1');
+      expect(found.courtSettings[1].displayLabel, '2');
+    });
+
+    test('updates and persists court settings', () async {
+      final repository = createRepository();
+
+      final created = await repository.createFromDraft(
+        buildDraft(courts: 2),
+      );
+
+      final updated = await repository.updateCourtSettings(
+        eventId: created.event.id,
+        courtSettings: [
+          SavedEventCourtSetting(
+            courtNumber: 1,
+            displayLabel: 'A',
+          ),
+          SavedEventCourtSetting(
+            courtNumber: 2,
+            displayLabel: 'B',
+          ),
+        ],
+      );
+
+      expect(updated.courtSettings, hasLength(2));
+      expect(updated.courtSettings[0].courtNumber, 1);
+      expect(updated.courtSettings[0].displayLabel, 'A');
+      expect(updated.courtSettings[1].courtNumber, 2);
+      expect(updated.courtSettings[1].displayLabel, 'B');
+
+      final found = await repository.findByPublicId(created.event.publicId);
+      expect(found, isNotNull);
+      expect(found!.courtSettings, hasLength(2));
+      expect(found.courtSettings[0].displayLabel, 'A');
+      expect(found.courtSettings[1].displayLabel, 'B');
+    });
+
+    test('keeps court settings when schedule ids are updated', () async {
+      final repository = createRepository();
+
+      final created = await repository.createFromDraft(
+        buildDraft(courts: 2),
+      );
+
+      await repository.updateCourtSettings(
+        eventId: created.event.id,
+        courtSettings: [
+          SavedEventCourtSetting(
+            courtNumber: 1,
+            displayLabel: '前',
+          ),
+          SavedEventCourtSetting(
+            courtNumber: 2,
+            displayLabel: '奥',
+          ),
+        ],
+      );
+
+      await repository.updateCurrentGeneratedScheduleId(
+        eventId: created.event.id,
+        generatedScheduleId: 'generated-1',
+      );
+
+      final generated = await repository.findByPublicId(created.event.publicId);
+      expect(generated, isNotNull);
+      expect(generated!.courtSettings[0].displayLabel, '前');
+      expect(generated.courtSettings[1].displayLabel, '奥');
+
+      await repository.updateAdoptedGeneratedScheduleId(
+        eventId: created.event.id,
+        generatedScheduleId: 'generated-1',
+      );
+
+      final adopted = await repository.findByPublicId(created.event.publicId);
+      expect(adopted, isNotNull);
+      expect(adopted!.courtSettings[0].displayLabel, '前');
+      expect(adopted.courtSettings[1].displayLabel, '奥');
+    });
+
+    test('throws when updating court settings for adopted event', () async {
+      final repository = createRepository();
+
+      final created = await repository.createFromDraft(
+        buildDraft(courts: 2),
+      );
+
+      await repository.updateAdoptedGeneratedScheduleId(
+        eventId: created.event.id,
+        generatedScheduleId: 'generated-1',
+      );
+
+      expect(
+        () => repository.updateCourtSettings(
+          eventId: created.event.id,
+          courtSettings: [
+            SavedEventCourtSetting(
+              courtNumber: 1,
+              displayLabel: 'A',
+            ),
+            SavedEventCourtSetting(
+              courtNumber: 2,
+              displayLabel: 'B',
+            ),
+          ],
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('throws when updating court settings for missing event', () async {
+      final repository = createRepository();
+
+      expect(
+        () => repository.updateCourtSettings(
+          eventId: 'missing-event',
+          courtSettings: [
+            SavedEventCourtSetting(
+              courtNumber: 1,
+              displayLabel: 'A',
+            ),
+          ],
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
   });
 }

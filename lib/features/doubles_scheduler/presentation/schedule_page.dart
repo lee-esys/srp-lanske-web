@@ -15,8 +15,9 @@ import '../infrastructure/generated_schedule_api_client.dart';
 import 'event_list_page.dart';
 import 'event_setup_page.dart';
 import 'models/event_draft.dart';
-import 'widgets/schedule_action_buttons.dart';
+import 'widgets/court_display_settings_dialog.dart';
 import 'widgets/schedule_event_summary_card.dart';
+import 'widgets/schedule_operation_panel.dart';
 import 'widgets/schedule_players_card.dart';
 import 'widgets/schedule_rounds_view.dart';
 import 'widgets/schedule_section_card.dart';
@@ -97,6 +98,25 @@ class _SchedulePageState extends State<SchedulePage> {
         playerId: entry.value.id,
       );
     }).toList(growable: false);
+  }
+
+  List<SavedEventCourtSetting> get _courtSettings {
+    return _savedEvent?.courtSettings ??
+        buildDefaultCourtSettings(widget.draft.courts);
+  }
+
+  Map<int, String> get _courtLabelByNumber {
+    return {
+      for (final setting in _courtSettings)
+        setting.courtNumber: setting.displayLabel,
+    };
+  }
+
+  String get _courtDisplaySummary {
+    final settings = _courtSettings.toList()
+      ..sort((a, b) => a.courtNumber.compareTo(b.courtNumber));
+
+    return settings.map((setting) => setting.displayLabel).join(' / ');
   }
 
   void _toggleSelectedPlayer(String playerId) {
@@ -426,6 +446,36 @@ class _SchedulePageState extends State<SchedulePage> {
     );
   }
 
+  Future<void> _changeCourtDisplay() async {
+    final savedEvent = _savedEvent;
+    if (savedEvent == null || _hasAdoptedSchedule) return;
+
+    final nextSettings = await showDialog<List<SavedEventCourtSetting>>(
+      context: context,
+      builder: (context) {
+        return CourtDisplaySettingsDialog(
+          courtCount: savedEvent.event.courtCount,
+          initialSettings: _courtSettings,
+        );
+      },
+    );
+
+    if (!mounted || nextSettings == null) return;
+
+    final updatedAggregate = await appEventRepository.updateCourtSettings(
+      eventId: savedEvent.event.id,
+      courtSettings: nextSettings,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _savedEvent = updatedAggregate;
+    });
+
+    await _saveScheduleHistory(updatedAggregate);
+  }
+
   void _handleMenu(_ScheduleMenuAction action) {
     switch (action) {
       case _ScheduleMenuAction.top:
@@ -473,20 +523,21 @@ class _SchedulePageState extends State<SchedulePage> {
           selectedPlayerId: _selectedPlayerId,
           onPlayerSelected: _toggleSelectedPlayer,
         ),
-        if (!_hasAdoptedSchedule) ...[
-          const SizedBox(height: 12),
-          ScheduleSectionCard(
-            child: ScheduleActionButtons(
-              isLoading: _isLoading,
-              isAdopting: _isAdopting,
-              generateButtonLabel: _generateButtonLabel(l10n),
-              canAdopt:
-                  _generatedScheduleId != null && _scheduleResponse != null,
-              onGenerate: _requestGenerateSchedule,
-              onAdopt: _adoptSchedule,
-            ),
+        const SizedBox(height: 12),
+        ScheduleSectionCard(
+          child: ScheduleOperationPanel(
+            courtDisplaySummary: _courtDisplaySummary,
+            canChangeCourtDisplay: !_hasAdoptedSchedule && _savedEvent != null,
+            onChangeCourtDisplay: _changeCourtDisplay,
+            showActionButtons: !_hasAdoptedSchedule,
+            isLoading: _isLoading,
+            isAdopting: _isAdopting,
+            generateButtonLabel: _generateButtonLabel(l10n),
+            canAdopt: _generatedScheduleId != null && _scheduleResponse != null,
+            onGenerate: _requestGenerateSchedule,
+            onAdopt: _adoptSchedule,
           ),
-        ],
+        ),
         const SizedBox(height: 12),
         ScheduleSectionCard(
           title: l10n.matchTableTitle,
@@ -503,6 +554,7 @@ class _SchedulePageState extends State<SchedulePage> {
                   courtCount: widget.draft.courts,
                   selectedPlayerId: _selectedPlayerId,
                   onPlayerSelected: _toggleSelectedPlayer,
+                  courtLabelByNumber: _courtLabelByNumber,
                 ),
         ),
         if (_errorMessage != null) ...[

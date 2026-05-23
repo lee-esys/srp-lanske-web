@@ -11,6 +11,7 @@ class ScheduleRoundsView extends StatefulWidget {
     required this.courtCount,
     this.selectedPlayerId,
     this.onPlayerSelected,
+    required this.courtLabelByNumber,
   });
 
   final Map<String, dynamic>? scheduleResponse;
@@ -18,6 +19,7 @@ class ScheduleRoundsView extends StatefulWidget {
   final int courtCount;
   final String? selectedPlayerId;
   final ValueChanged<String>? onPlayerSelected;
+  final Map<int, String> courtLabelByNumber;
 
   @override
   State<ScheduleRoundsView> createState() => _ScheduleRoundsViewState();
@@ -119,7 +121,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
                     return _buildCourtRow(
                       court,
                       slotToPlayerId,
-                      showCourtNumber: widget.courtCount >= 2,
                     );
                   }),
                   if (isRestExpanded) ...[
@@ -152,10 +153,21 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
   Widget _buildCourtRow(
     Map<String, dynamic> court,
-    Map<int, String> slotToPlayerId, {
-    required bool showCourtNumber,
-  }) {
-    final courtNumber = court['court_number']?.toString() ?? '-';
+    Map<int, String> slotToPlayerId,
+  ) {
+    final courtNumberText = court['court_number']?.toString() ?? '-';
+    final courtNumber = int.tryParse(courtNumberText);
+    final defaultCourtLabel = courtNumber?.toString() ?? courtNumberText;
+    final configuredCourtLabel =
+        courtNumber == null ? null : widget.courtLabelByNumber[courtNumber];
+
+    final courtLabel =
+        configuredCourtLabel == null || configuredCourtLabel.trim().isEmpty
+            ? defaultCourtLabel
+            : configuredCourtLabel.trim();
+
+    final hasCustomCourtLabel = courtLabel != defaultCourtLabel;
+    final showCourtLabel = widget.courtCount >= 2 || hasCustomCourtLabel;
     final team1Slots = _asIntList(court['team1_player_slots']);
     final team2Slots = _asIntList(court['team2_player_slots']);
 
@@ -166,9 +178,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
         runSpacing: 4,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          if (showCourtNumber)
+          if (showCourtLabel)
             Text(
-              courtNumber,
+              courtLabel,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
