@@ -17,8 +17,9 @@ import '../domain/saved_event_models.dart';
 import '../infrastructure/generated_schedule_api_client.dart';
 import 'event_list_page.dart';
 import 'models/event_draft.dart';
-import 'widgets/schedule_action_buttons.dart';
+import 'widgets/court_display_settings_dialog.dart';
 import 'widgets/schedule_event_summary_card.dart';
+import 'widgets/schedule_operation_panel.dart';
 import 'widgets/schedule_players_card.dart';
 import 'widgets/schedule_rounds_view.dart';
 import 'widgets/schedule_section_card.dart';
@@ -111,6 +112,27 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         playerId: player.id,
       );
     }).toList(growable: false);
+  }
+
+  List<SavedEventCourtSetting> get _courtSettings {
+    return _savedEvent?.courtSettings ??
+        buildDefaultCourtSettings(_savedEvent?.courtSettings.length ??
+            _savedEvent?.event.courtCount ??
+            0);
+  }
+
+  Map<int, String> get _courtLabelByNumber {
+    return {
+      for (final setting in _courtSettings)
+        setting.courtNumber: setting.displayLabel,
+    };
+  }
+
+  String get _courtDisplaySummary {
+    final settings = _courtSettings.toList()
+      ..sort((a, b) => a.courtNumber.compareTo(b.courtNumber));
+
+    return settings.map((setting) => setting.displayLabel).join(' / ');
   }
 
   void _toggleSelectedPlayer(String playerId) {
@@ -515,6 +537,36 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     );
   }
 
+  Future<void> _changeCourtDisplay() async {
+    final savedEvent = _savedEvent;
+    if (savedEvent == null || _hasAdoptedSchedule) return;
+
+    final nextSettings = await showDialog<List<SavedEventCourtSetting>>(
+      context: context,
+      builder: (context) {
+        return CourtDisplaySettingsDialog(
+          courtCount: savedEvent.event.courtCount,
+          initialSettings: _courtSettings,
+        );
+      },
+    );
+
+    if (!mounted || nextSettings == null) return;
+
+    final updatedAggregate = await appEventRepository.updateCourtSettings(
+      eventId: savedEvent.event.id,
+      courtSettings: nextSettings,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _savedEvent = updatedAggregate;
+    });
+
+    await _saveScheduleHistory(updatedAggregate);
+  }
+
   void _handleMenu(_ScheduleMenuAction action) {
     switch (action) {
       case _ScheduleMenuAction.top:
@@ -609,7 +661,12 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           if (!_hasAdoptedSchedule) ...[
             const SizedBox(height: 12),
             ScheduleSectionCard(
-              child: ScheduleActionButtons(
+              child: ScheduleOperationPanel(
+                courtDisplaySummary: _courtDisplaySummary,
+                canChangeCourtDisplay:
+                    !_hasAdoptedSchedule && _savedEvent != null,
+                onChangeCourtDisplay: _changeCourtDisplay,
+                showActionButtons: !_hasAdoptedSchedule,
                 isLoading: _isLoading,
                 isAdopting: _isAdopting,
                 generateButtonLabel: _generateButtonLabel(l10n),
@@ -636,6 +693,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
                     courtCount: savedEvent.event.courtCount,
                     selectedPlayerId: _selectedPlayerId,
                     onPlayerSelected: _toggleSelectedPlayer,
+                    courtLabelByNumber: _courtLabelByNumber,
                   ),
           ),
         ],
