@@ -26,6 +26,9 @@ class ScheduleRoundsView extends StatefulWidget {
 }
 
 class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
+  static const _courtAreaSpacing = 24.0;
+  static const _courtMatchCardWidth = 300.0;
+
   final Set<String> _expandedRestRoundNumbers = {};
 
   @override
@@ -54,7 +57,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     Map<String, dynamic> round,
     Map<int, String> slotToPlayerId,
   ) {
-    final l10n = AppLocalizations.of(context);
     final roundNumber = round['round_number']?.toString() ?? '-';
     final roundNumberValue = int.tryParse(roundNumber);
     final isEvenRound = roundNumberValue != null && roundNumberValue.isEven;
@@ -117,29 +119,15 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ...courts.map((court) {
-                    return _buildCourtRow(
-                      court,
-                      slotToPlayerId,
-                    );
-                  }),
+                  _buildCourtArea(
+                    courts: courts,
+                    slotToPlayerId: slotToPlayerId,
+                  ),
                   if (isRestExpanded) ...[
                     const Divider(),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text('${l10n.restLabel}:'),
-                        ...restSlotNumbers.map((slotNumber) {
-                          return _buildPlayerChip(
-                            slotNumber: slotNumber,
-                            slotToPlayerId: slotToPlayerId,
-                            size: SchedulePlayerChipSize.compact,
-                            highlightEnabled: false,
-                          );
-                        }),
-                      ],
+                    _buildRestPlayersRow(
+                      restSlotNumbers: restSlotNumbers,
+                      slotToPlayerId: slotToPlayerId,
                     ),
                   ],
                 ],
@@ -151,10 +139,107 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     );
   }
 
-  Widget _buildCourtRow(
+  Widget _buildCourtArea({
+    required List<Map<String, dynamic>> courts,
+    required Map<int, String> slotToPlayerId,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth;
+        final courtItemWidth =
+            _courtMatchCardWidth.clamp(0.0, maxWidth).toDouble();
+        final canUseTwoColumns = courts.length >= 2 &&
+            maxWidth >= (_courtMatchCardWidth * 2 + _courtAreaSpacing);
+
+        if (courts.length == 1) {
+          return SizedBox(
+            width: maxWidth,
+            child: _buildCourtMatchCard(
+              courts.first,
+              slotToPlayerId,
+              alignment: Alignment.center,
+            ),
+          );
+        }
+
+        if (courts.length == 2 && canUseTwoColumns) {
+          final groupWidth = _courtMatchCardWidth * 2 + _courtAreaSpacing;
+
+          return Align(
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: groupWidth,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: _courtMatchCardWidth,
+                    child: _buildCourtMatchCard(
+                      courts[0],
+                      slotToPlayerId,
+                      alignment: Alignment.centerLeft,
+                    ),
+                  ),
+                  const SizedBox(width: _courtAreaSpacing),
+                  SizedBox(
+                    width: _courtMatchCardWidth,
+                    child: _buildCourtMatchCard(
+                      courts[1],
+                      slotToPlayerId,
+                      alignment: Alignment.centerLeft,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        if (courts.length == 2) {
+          return Column(
+            children: courts.map((court) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: SizedBox(
+                  width: maxWidth,
+                  child: _buildCourtMatchCard(
+                    court,
+                    slotToPlayerId,
+                    alignment: Alignment.center,
+                  ),
+                ),
+              );
+            }).toList(growable: false),
+          );
+        }
+
+        final itemWidth =
+            canUseTwoColumns ? _courtMatchCardWidth : courtItemWidth;
+
+        return Wrap(
+          alignment: WrapAlignment.start,
+          spacing: _courtAreaSpacing,
+          runSpacing: 8,
+          children: courts.map((court) {
+            return SizedBox(
+              width: itemWidth,
+              child: _buildCourtMatchCard(
+                court,
+                slotToPlayerId,
+                alignment: Alignment.centerLeft,
+              ),
+            );
+          }).toList(growable: false),
+        );
+      },
+    );
+  }
+
+  Widget _buildCourtMatchCard(
     Map<String, dynamic> court,
-    Map<int, String> slotToPlayerId,
-  ) {
+    Map<int, String> slotToPlayerId, {
+    Alignment alignment = Alignment.centerLeft,
+  }) {
     final courtNumberText = court['court_number']?.toString() ?? '-';
     final courtNumber = int.tryParse(courtNumberText);
     final defaultCourtLabel = courtNumber?.toString() ?? courtNumberText;
@@ -171,25 +256,94 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     final team1Slots = _asIntList(court['team1_player_slots']);
     final team2Slots = _asIntList(court['team2_player_slots']);
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Wrap(
-        spacing: 4,
-        runSpacing: 4,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          if (showCourtLabel)
-            Text(
-              courtLabel,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
+    return _buildHorizontalScrollableContent(
+      alignment: alignment,
+      child: _buildCourtMatchContent(
+        courtLabel: courtLabel,
+        showCourtLabel: showCourtLabel,
+        team1Slots: team1Slots,
+        team2Slots: team2Slots,
+        slotToPlayerId: slotToPlayerId,
+      ),
+    );
+  }
+
+  Widget _buildHorizontalScrollableContent({
+    required Widget child,
+    required Alignment alignment,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: constraints.maxWidth),
+            child: Align(
+              alignment: alignment,
+              child: child,
             ),
-          _buildTeamGroup(team1Slots, slotToPlayerId),
-          const Text('vs'),
-          _buildTeamGroup(team2Slots, slotToPlayerId),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCourtMatchContent({
+    required String courtLabel,
+    required bool showCourtLabel,
+    required List<int> team1Slots,
+    required List<int> team2Slots,
+    required Map<int, String> slotToPlayerId,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (showCourtLabel) ...[
+          Text(
+            courtLabel,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(width: 8),
         ],
+        _buildTeamGroup(team1Slots, slotToPlayerId),
+        const SizedBox(width: 6),
+        const Text('vs'),
+        const SizedBox(width: 6),
+        _buildTeamGroup(team2Slots, slotToPlayerId),
+      ],
+    );
+  }
+
+  Widget _buildRestPlayersRow({
+    required List<int> restSlotNumbers,
+    required Map<int, String> slotToPlayerId,
+  }) {
+    final l10n = AppLocalizations.of(context);
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('${l10n.restLabel}:'),
+            const SizedBox(width: 6),
+            for (final slotNumber in restSlotNumbers) ...[
+              _buildPlayerChip(
+                slotNumber: slotNumber,
+                slotToPlayerId: slotToPlayerId,
+                size: SchedulePlayerChipSize.compact,
+                highlightEnabled: false,
+              ),
+              const SizedBox(width: 6),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -218,11 +372,15 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       return const Text('-');
     }
 
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: _buildTeamChips(slotNumbers, slotToPlayerId),
+    final chips = _buildTeamChips(slotNumbers, slotToPlayerId);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < chips.length; i++) ...[
+          if (i > 0) const SizedBox(width: 6),
+          chips[i],
+        ],
+      ],
     );
   }
 
