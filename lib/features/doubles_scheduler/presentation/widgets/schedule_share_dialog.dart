@@ -14,13 +14,19 @@ class ScheduleShareDialog extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return AlertDialog(
-      titlePadding: const EdgeInsets.fromLTRB(24, 20, 12, 0),
+      titlePadding: const EdgeInsets.fromLTRB(24, 16, 8, 0),
       title: Row(
         children: [
           const Expanded(child: Text('URLを共有')),
           IconButton(
             tooltip: '閉じる',
             onPressed: () => Navigator.pop(context),
+            iconSize: 36,
+            constraints: const BoxConstraints.tightFor(
+              width: 56,
+              height: 56,
+            ),
+            padding: EdgeInsets.zero,
             icon: const Icon(Icons.cancel_presentation),
           ),
         ],
