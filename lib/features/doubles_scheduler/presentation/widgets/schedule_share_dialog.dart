@@ -14,18 +14,22 @@ class ScheduleShareDialog extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return AlertDialog(
-      title: const Text('URLを共有'),
+      titlePadding: const EdgeInsets.fromLTRB(24, 20, 12, 0),
+      title: Row(
+        children: [
+          const Expanded(child: Text('URLを共有')),
+          IconButton(
+            tooltip: '閉じる',
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.cancel_presentation),
+          ),
+        ],
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const ScheduleShareQrPlaceholder(),
-          const SizedBox(height: 12),
-          Text(
-            l10n.shareUrlDescription,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
@@ -37,12 +41,6 @@ class ScheduleShareDialog extends StatelessWidget {
           ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('閉じる'),
-        ),
-      ],
     );
   }
 }
