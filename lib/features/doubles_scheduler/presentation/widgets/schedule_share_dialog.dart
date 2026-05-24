@@ -4,11 +4,9 @@ import 'package:srp_lanske/l10n/l10n.dart';
 class ScheduleShareDialog extends StatelessWidget {
   const ScheduleShareDialog({
     super.key,
-    required this.shareUrl,
     required this.onCopyShareUrl,
   });
 
-  final String shareUrl;
   final VoidCallback onCopyShareUrl;
 
   @override
@@ -16,15 +14,15 @@ class ScheduleShareDialog extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return AlertDialog(
-      title: Text(l10n.shareUrlDialogTitle),
+      title: const Text('URLを共有'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          ScheduleShareQrPlaceholder(shareUrl: shareUrl),
+          const ScheduleShareQrPlaceholder(),
           const SizedBox(height: 12),
           Text(
-            l10n.shareQrDescription,
+            l10n.shareUrlDescription,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall,
           ),
@@ -42,7 +40,7 @@ class ScheduleShareDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text(l10n.closeButton),
+          child: const Text('閉じる'),
         ),
       ],
     );
@@ -50,20 +48,14 @@ class ScheduleShareDialog extends StatelessWidget {
 }
 
 class ScheduleShareQrPlaceholder extends StatelessWidget {
-  const ScheduleShareQrPlaceholder({
-    super.key,
-    required this.shareUrl,
-  });
-
-  final String shareUrl;
+  const ScheduleShareQrPlaceholder({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Semantics(
-      label: l10n.shareQrPlaceholderSemanticLabel,
+      label: 'QRコード表示枠',
       child: Container(
         width: 220,
         height: 220,
@@ -84,7 +76,7 @@ class ScheduleShareQrPlaceholder extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                l10n.shareQrPlaceholderLabel,
+                'QRコードをここに表示します',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
