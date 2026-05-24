@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
+import 'schedule_share_dialog.dart';
+
 class ScheduleEventSummaryCard extends StatelessWidget {
   const ScheduleEventSummaryCard({
     super.key,
@@ -18,7 +20,19 @@ class ScheduleEventSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final shareAction = onShareUrl ?? onCopyShareUrl;
+    final shareAction = onShareUrl ??
+        (onCopyShareUrl == null
+            ? null
+            : () {
+                showDialog<void>(
+                  context: context,
+                  builder: (_) {
+                    return ScheduleShareDialog(
+                      onCopyShareUrl: onCopyShareUrl!,
+                    );
+                  },
+                );
+              });
 
     return Card(
       child: Padding(
