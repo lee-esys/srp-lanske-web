@@ -505,7 +505,11 @@ class _SchedulePageState extends State<SchedulePage> {
       case _ScheduleMenuAction.list:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const EventListPage()),
+          MaterialPageRoute(
+            builder: (_) => EventListPage(
+              currentPublicId: _savedEvent?.event.publicId,
+            ),
+          ),
         );
         break;
     }

@@ -7,19 +7,33 @@ import '../data/local_schedule_history_store.dart';
 import 'restored_schedule_page.dart';
 
 class EventListPage extends StatefulWidget {
-  const EventListPage({super.key});
+  const EventListPage({
+    super.key,
+    this.currentPublicId,
+  });
+
+  final String? currentPublicId;
 
   @override
   State<EventListPage> createState() => _EventListPageState();
 }
 
 class _EventListPageState extends State<EventListPage> {
+  final _historyStore = LocalScheduleHistoryStore();
+
   late Future<List<LocalScheduleHistoryItem>> _itemsFuture;
+  bool _canClearHistory = false;
 
   @override
   void initState() {
     super.initState();
-    _itemsFuture = LocalScheduleHistoryStore().findAll();
+    _itemsFuture = _loadItems();
+  }
+
+  String? get _currentPublicId {
+    final publicId = widget.currentPublicId?.trim().toUpperCase();
+    if (publicId == null || publicId.isEmpty) return null;
+    return publicId;
   }
 
   String _formatDateTime(DateTime dateTime) {
@@ -54,6 +68,81 @@ class _EventListPageState extends State<EventListPage> {
     );
   }
 
+  Future<List<LocalScheduleHistoryItem>> _loadItems() async {
+    final items = await _historyStore.findAll();
+    if (!mounted) return items;
+
+    setState(() {
+      _canClearHistory = _hasClearableHistory(items);
+    });
+
+    return items;
+  }
+
+  bool _hasClearableHistory(List<LocalScheduleHistoryItem> items) {
+    final currentPublicId = _currentPublicId;
+    if (currentPublicId == null) return items.isNotEmpty;
+
+    return items.any(
+      (item) => item.publicId.trim().toUpperCase() != currentPublicId,
+    );
+  }
+
+  void _reloadItems() {
+    setState(() {
+      _itemsFuture = _loadItems();
+    });
+  }
+
+  Future<void> _confirmClearHistory() async {
+    final l10n = AppLocalizations.of(context);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.clearScheduleHistoryConfirmTitle),
+          content: Text(l10n.clearScheduleHistoryConfirmBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancelButton),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.clearScheduleHistoryActionButton),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (!mounted || confirmed != true) return;
+
+    final currentPublicId = _currentPublicId;
+    if (currentPublicId == null) {
+      await _historyStore.clearAll();
+    } else {
+      await _historyStore.clearExceptPublicId(currentPublicId);
+    }
+
+    if (!mounted) return;
+
+    _showMessage(l10n.scheduleHistoryClearedMessage);
+    _reloadItems();
+  }
+
+  void _showMessage(String message) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -61,6 +150,14 @@ class _EventListPageState extends State<EventListPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.matchTableList),
+        actions: [
+          if (_canClearHistory)
+            IconButton(
+              onPressed: _confirmClearHistory,
+              icon: const Icon(Icons.delete_sweep_outlined),
+              tooltip: l10n.clearScheduleHistoryTooltip,
+            ),
+        ],
       ),
       body: FutureBuilder<List<LocalScheduleHistoryItem>>(
         future: _itemsFuture,
@@ -87,7 +184,7 @@ class _EventListPageState extends State<EventListPage> {
 
           if (items.isEmpty) {
             return Center(
-              child: Text(l10n.scheduleNotFoundMessage),
+              child: Text(l10n.scheduleHistoryEmptyMessage),
             );
           }
 

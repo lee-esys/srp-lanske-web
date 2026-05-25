@@ -619,6 +619,42 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'閉じる'**
   String get closeButton;
+
+  /// Message shown when there is no local schedule view history.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表表示履歴がありません'**
+  String get scheduleHistoryEmptyMessage;
+
+  /// Tooltip for clearing local schedule view history.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表表示履歴を削除'**
+  String get clearScheduleHistoryTooltip;
+
+  /// Dialog title for confirming local schedule view history deletion.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表表示履歴を削除しますか？'**
+  String get clearScheduleHistoryConfirmTitle;
+
+  /// Dialog body for confirming local schedule view history deletion.
+  ///
+  /// In ja, this message translates to:
+  /// **'この端末の対戦表表示履歴を削除します。削除した履歴は、共有URLまたはQRコードから再度アクセスすると一覧に戻ります。'**
+  String get clearScheduleHistoryConfirmBody;
+
+  /// Dialog action button label for clearing local schedule view history.
+  ///
+  /// In ja, this message translates to:
+  /// **'履歴を削除'**
+  String get clearScheduleHistoryActionButton;
+
+  /// Snack bar message shown after local schedule view history was cleared.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表表示履歴を削除しました'**
+  String get scheduleHistoryClearedMessage;
 }
 
 class _AppLocalizationsDelegate

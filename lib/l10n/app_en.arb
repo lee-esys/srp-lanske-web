@@ -419,5 +419,29 @@
   "closeButton": "Close",
   "@closeButton": {
     "description": "Generic close button or tooltip label."
+  },
+  "scheduleHistoryEmptyMessage": "No match table view history",
+  "@scheduleHistoryEmptyMessage": {
+    "description": "Message shown when there is no local schedule view history."
+  },
+  "clearScheduleHistoryTooltip": "Delete match table view history",
+  "@clearScheduleHistoryTooltip": {
+    "description": "Tooltip for clearing local schedule view history."
+  },
+  "clearScheduleHistoryConfirmTitle": "Delete match table view history?",
+  "@clearScheduleHistoryConfirmTitle": {
+    "description": "Dialog title for confirming local schedule view history deletion."
+  },
+  "clearScheduleHistoryConfirmBody": "This deletes the match table view history on this device. Deleted history will return to the list when opened again from a shared URL or QR code.",
+  "@clearScheduleHistoryConfirmBody": {
+    "description": "Dialog body for confirming local schedule view history deletion."
+  },
+  "clearScheduleHistoryActionButton": "Delete history",
+  "@clearScheduleHistoryActionButton": {
+    "description": "Dialog action button label for clearing local schedule view history."
+  },
+  "scheduleHistoryClearedMessage": "Match table view history deleted",
+  "@scheduleHistoryClearedMessage": {
+    "description": "Snack bar message shown after local schedule view history was cleared."
   }
 }

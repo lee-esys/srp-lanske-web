@@ -48,4 +48,32 @@ class LocalScheduleHistoryStore {
 
     await prefs.setString(_key, jsonEncode(limited));
   }
+
+  Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_key);
+  }
+
+  Future<void> clearExceptPublicId(String publicId) async {
+    final keepPublicId = publicId.trim().toUpperCase();
+    if (keepPublicId.isEmpty) {
+      await clearAll();
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final current = await findAll();
+
+    final kept = current
+        .where((item) => item.publicId.trim().toUpperCase() == keepPublicId)
+        .map((item) => item.toJson())
+        .toList(growable: false);
+
+    if (kept.isEmpty) {
+      await prefs.remove(_key);
+      return;
+    }
+
+    await prefs.setString(_key, jsonEncode(kept));
+  }
 }

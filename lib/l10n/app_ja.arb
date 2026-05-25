@@ -419,5 +419,29 @@
   "closeButton": "閉じる",
   "@closeButton": {
     "description": "Generic close button or tooltip label."
+  },
+  "scheduleHistoryEmptyMessage": "対戦表表示履歴がありません",
+  "@scheduleHistoryEmptyMessage": {
+    "description": "Message shown when there is no local schedule view history."
+  },
+  "clearScheduleHistoryTooltip": "対戦表表示履歴を削除",
+  "@clearScheduleHistoryTooltip": {
+    "description": "Tooltip for clearing local schedule view history."
+  },
+  "clearScheduleHistoryConfirmTitle": "対戦表表示履歴を削除しますか？",
+  "@clearScheduleHistoryConfirmTitle": {
+    "description": "Dialog title for confirming local schedule view history deletion."
+  },
+  "clearScheduleHistoryConfirmBody": "この端末の対戦表表示履歴を削除します。削除した履歴は、共有URLまたはQRコードから再度アクセスすると一覧に戻ります。",
+  "@clearScheduleHistoryConfirmBody": {
+    "description": "Dialog body for confirming local schedule view history deletion."
+  },
+  "clearScheduleHistoryActionButton": "履歴を削除",
+  "@clearScheduleHistoryActionButton": {
+    "description": "Dialog action button label for clearing local schedule view history."
+  },
+  "scheduleHistoryClearedMessage": "対戦表表示履歴を削除しました",
+  "@scheduleHistoryClearedMessage": {
+    "description": "Snack bar message shown after local schedule view history was cleared."
   }
 }
