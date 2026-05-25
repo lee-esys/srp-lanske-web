@@ -15,7 +15,7 @@ import 'widgets/event_setup_detail_section.dart';
 import 'widgets/event_setup_stepper_field.dart';
 import 'widgets/event_setup_url_section.dart';
 
-const _supportPagePath = '/support/';
+const _supportPagePath = '/support/index.html';
 
 class EventSetupPage extends StatefulWidget {
   // TODO: 編集時の initialDraft 対応
