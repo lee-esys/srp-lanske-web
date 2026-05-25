@@ -302,4 +302,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get closeButton => 'Close';
+
+  @override
+  String get scheduleHistoryEmptyMessage => 'No match table view history';
+
+  @override
+  String get clearScheduleHistoryTooltip => 'Delete match table view history';
+
+  @override
+  String get clearScheduleHistoryConfirmTitle =>
+      'Delete match table view history?';
+
+  @override
+  String get clearScheduleHistoryConfirmBody =>
+      'This deletes the match table view history on this device. Deleted history will return to the list when opened again from a shared URL or QR code.';
+
+  @override
+  String get clearScheduleHistoryActionButton => 'Delete history';
+
+  @override
+  String get scheduleHistoryClearedMessage =>
+      'Match table view history deleted';
 }

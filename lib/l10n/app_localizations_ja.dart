@@ -293,4 +293,23 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get closeButton => '閉じる';
+
+  @override
+  String get scheduleHistoryEmptyMessage => '対戦表表示履歴がありません';
+
+  @override
+  String get clearScheduleHistoryTooltip => '対戦表表示履歴を削除';
+
+  @override
+  String get clearScheduleHistoryConfirmTitle => '対戦表表示履歴を削除しますか？';
+
+  @override
+  String get clearScheduleHistoryConfirmBody =>
+      'この端末の対戦表表示履歴を削除します。削除した履歴は、共有URLまたはQRコードから再度アクセスすると一覧に戻ります。';
+
+  @override
+  String get clearScheduleHistoryActionButton => '履歴を削除';
+
+  @override
+  String get scheduleHistoryClearedMessage => '対戦表表示履歴を削除しました';
 }
