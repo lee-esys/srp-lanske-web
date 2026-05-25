@@ -15,7 +15,7 @@ import 'widgets/event_setup_detail_section.dart';
 import 'widgets/event_setup_stepper_field.dart';
 import 'widgets/event_setup_url_section.dart';
 
-const _feedbackFormUrl = 'https://forms.gle/xbXuJsZnfh5QrqjP8';
+const _supportPagePath = '/support/';
 
 class EventSetupPage extends StatefulWidget {
   // TODO: 編集時の initialDraft 対応
@@ -25,7 +25,7 @@ class EventSetupPage extends StatefulWidget {
   State<EventSetupPage> createState() => _EventSetupPageState();
 }
 
-enum _EventSetupMenuAction { list, feedback }
+enum _EventSetupMenuAction { list, support }
 
 class _EventSetupPageState extends State<EventSetupPage> {
   final _formKey = GlobalKey<FormState>();
@@ -124,10 +124,22 @@ class _EventSetupPageState extends State<EventSetupPage> {
           MaterialPageRoute(builder: (_) => const EventListPage()),
         );
         break;
-      case _EventSetupMenuAction.feedback:
-        openExternalUrl(_feedbackFormUrl);
+      case _EventSetupMenuAction.support:
+        openUrlInCurrentTab(_supportPagePath);
         break;
     }
+  }
+
+  String _supportMenuTitle(BuildContext context) {
+    final languageCode = Localizations.localeOf(context).languageCode;
+    if (languageCode == 'ja') return 'サポート';
+    return 'Support page (Japanese)';
+  }
+
+  String _supportMenuSubtitle(BuildContext context) {
+    final languageCode = Localizations.localeOf(context).languageCode;
+    if (languageCode == 'ja') return 'フィードバックもこちらから';
+    return 'Feedback form is linked there';
   }
 
   void _showMessage(String message) {
@@ -621,9 +633,19 @@ class _EventSetupPageState extends State<EventSetupPage> {
                 value: _EventSetupMenuAction.list,
                 child: Text(l10n.matchTableList),
               ),
-              const PopupMenuItem(
-                value: _EventSetupMenuAction.feedback,
-                child: Text('フィードバック'),
+              PopupMenuItem(
+                value: _EventSetupMenuAction.support,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(_supportMenuTitle(context)),
+                    Text(
+                      _supportMenuSubtitle(context),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
