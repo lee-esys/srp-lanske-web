@@ -5,6 +5,7 @@ import 'package:srp_lanske/features/doubles_scheduler/presentation/event_setup_p
 import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 import 'package:srp_lanske/shared/utils/browser_url.dart';
+import 'package:srp_lanske/shared/utils/external_link.dart';
 
 import '../application/generated_schedule_service.dart';
 import '../application/local_schedule_history_mapper.dart';
@@ -25,6 +26,8 @@ import 'widgets/schedule_rounds_view.dart';
 import 'widgets/schedule_section_card.dart';
 import 'widgets/schedule_share_dialog.dart';
 
+const _supportPagePath = '/support/index.html';
+
 class RestoredSchedulePage extends StatefulWidget {
   const RestoredSchedulePage({
     super.key,
@@ -37,7 +40,7 @@ class RestoredSchedulePage extends StatefulWidget {
   State<RestoredSchedulePage> createState() => _RestoredSchedulePageState();
 }
 
-enum _ScheduleMenuAction { top, list }
+enum _ScheduleMenuAction { top, list, support }
 
 class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   late final GeneratedScheduleService _service;
@@ -583,6 +586,9 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           ),
         );
         break;
+      case _ScheduleMenuAction.support:
+        openUrlInCurrentTab(_supportPagePath);
+        break;
     }
   }
 
@@ -644,6 +650,20 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         content: Text(message),
         duration: const Duration(seconds: 2),
       ),
+    );
+  }
+
+  Widget _buildSupportMenuItem(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(l10n.supportMenuTitle),
+        Text(
+          l10n.supportMenuSubtitle,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
     );
   }
 
@@ -747,6 +767,10 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
               PopupMenuItem(
                 value: _ScheduleMenuAction.list,
                 child: Text(l10n.matchTableList),
+              ),
+              PopupMenuItem(
+                value: _ScheduleMenuAction.support,
+                child: _buildSupportMenuItem(l10n),
               ),
             ],
           ),

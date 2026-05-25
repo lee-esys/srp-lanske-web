@@ -21,6 +21,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get matchTableList => '対戦表一覧';
 
   @override
+  String get supportMenuTitle => 'サポート';
+
+  @override
+  String get supportMenuSubtitle => 'フィードバックもこちらから';
+
+  @override
   String get eventSetupInstruction => 'URLを貼るか、手動で面数・人数を入力してください。';
 
   @override

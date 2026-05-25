@@ -4,6 +4,7 @@ import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 import 'package:srp_lanske/shared/utils/browser_url.dart';
+import 'package:srp_lanske/shared/utils/external_link.dart';
 
 import '../application/generated_schedule_service.dart';
 import '../application/local_schedule_history_mapper.dart';
@@ -23,6 +24,8 @@ import 'widgets/schedule_rounds_view.dart';
 import 'widgets/schedule_section_card.dart';
 import 'widgets/schedule_share_dialog.dart';
 
+const _supportPagePath = '/support/index.html';
+
 class SchedulePage extends StatefulWidget {
   const SchedulePage({super.key, required this.draft});
 
@@ -32,7 +35,7 @@ class SchedulePage extends StatefulWidget {
   State<SchedulePage> createState() => _SchedulePageState();
 }
 
-enum _ScheduleMenuAction { top, list }
+enum _ScheduleMenuAction { top, list, support }
 
 class _SchedulePageState extends State<SchedulePage> {
   late final GeneratedScheduleService _service;
@@ -512,6 +515,9 @@ class _SchedulePageState extends State<SchedulePage> {
           ),
         );
         break;
+      case _ScheduleMenuAction.support:
+        openUrlInCurrentTab(_supportPagePath);
+        break;
     }
   }
 
@@ -525,6 +531,20 @@ class _SchedulePageState extends State<SchedulePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       replaceUrl('/');
     });
+  }
+
+  Widget _buildSupportMenuItem(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(l10n.supportMenuTitle),
+        Text(
+          l10n.supportMenuSubtitle,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
+    );
   }
 
   Widget _buildScheduleBody() {
@@ -614,6 +634,10 @@ class _SchedulePageState extends State<SchedulePage> {
               PopupMenuItem(
                 value: _ScheduleMenuAction.list,
                 child: Text(l10n.matchTableList),
+              ),
+              PopupMenuItem(
+                value: _ScheduleMenuAction.support,
+                child: _buildSupportMenuItem(l10n),
               ),
             ],
           ),

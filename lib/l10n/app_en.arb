@@ -12,6 +12,14 @@
   "@topPageMenu": {
     "description": "Menu item label for returning to the top page."
   },
+  "supportMenuTitle": "Support page (Japanese)",
+  "@supportMenuTitle": {
+    "description": "Menu item title for opening the support page."
+  },
+  "supportMenuSubtitle": "Feedback form is linked there",
+  "@supportMenuSubtitle": {
+    "description": "Menu item subtitle for the support page link."
+  },
   "matchTableList": "Match table list",
   "@matchTableList": {
     "description": "Menu item label for the saved/generated match table list."

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
+import 'package:srp_lanske/shared/utils/external_link.dart';
 import 'package:srp_lanske/shared/utils/number_label_mapper.dart';
 
 import '../application/tennisbear_event_url.dart';
@@ -14,6 +15,8 @@ import 'widgets/event_setup_detail_section.dart';
 import 'widgets/event_setup_stepper_field.dart';
 import 'widgets/event_setup_url_section.dart';
 
+const _supportPagePath = '/support/index.html';
+
 class EventSetupPage extends StatefulWidget {
   // TODO: 編集時の initialDraft 対応
   const EventSetupPage({super.key});
@@ -22,7 +25,7 @@ class EventSetupPage extends StatefulWidget {
   State<EventSetupPage> createState() => _EventSetupPageState();
 }
 
-enum _EventSetupMenuAction { list }
+enum _EventSetupMenuAction { list, support }
 
 class _EventSetupPageState extends State<EventSetupPage> {
   final _formKey = GlobalKey<FormState>();
@@ -120,6 +123,9 @@ class _EventSetupPageState extends State<EventSetupPage> {
           context,
           MaterialPageRoute(builder: (_) => const EventListPage()),
         );
+        break;
+      case _EventSetupMenuAction.support:
+        openUrlInCurrentTab(_supportPagePath);
         break;
     }
   }
@@ -614,6 +620,20 @@ class _EventSetupPageState extends State<EventSetupPage> {
               PopupMenuItem(
                 value: _EventSetupMenuAction.list,
                 child: Text(l10n.matchTableList),
+              ),
+              PopupMenuItem(
+                value: _EventSetupMenuAction.support,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(l10n.supportMenuTitle),
+                    Text(
+                      l10n.supportMenuSubtitle,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

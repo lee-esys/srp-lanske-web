@@ -122,6 +122,18 @@ abstract class AppLocalizations {
   /// **'対戦表一覧'**
   String get matchTableList;
 
+  /// Menu item title for opening the support page.
+  ///
+  /// In ja, this message translates to:
+  /// **'サポート'**
+  String get supportMenuTitle;
+
+  /// Menu item subtitle for the support page link.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィードバックもこちらから'**
+  String get supportMenuSubtitle;
+
   /// Instruction text on the event setup page.
   ///
   /// In ja, this message translates to:
