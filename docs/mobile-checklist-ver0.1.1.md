@@ -20,6 +20,7 @@
 - [ ] 共有URL初期表示が体感的に極端に遅くない
 - [ ] 共有URLのリロード復元ができる
 - [ ] generate / regenerate / adopt が通常利用に耐える体感速度で動く
+- [ ] TennisBear で対戦表ページを開くまでの体感時間を記録する
 - [ ] 対戦表画面の画面内更新ボタンで再読込できる
 - [ ] スマホブラウザの下スワイプ更新が使えるか確認する
 - [ ] iOS Safari / Chrome の scroll-to-top 挙動を確認する
@@ -30,6 +31,7 @@
 - [ ] Lighthouse / WebPageTest などの詳細計測
 - [ ] Flutter Web bundle 最適化
 - [ ] Firebase Hosting / Firestore / core API の詳細チューニング
+- [ ] TennisBear 側の詳細な性能分析
 - [ ] iOS 専用の大規模 UI 改修
 - [ ] Flutter Web のスクロール基盤の大きな変更
 - [ ] ブラウザ標準の pull-to-refresh 挙動を強制的に再現すること
@@ -87,11 +89,42 @@
 | Pixel 5 | Chrome | 自宅 Wi-Fi | 共有URL初回表示 |  | OK / NG |  |
 | Pixel 5 | Chrome | 自宅 Wi-Fi | 同一URLリロード |  | OK / NG |  |
 
+### TennisBear 対戦表表示までの比較メモ
+
+Lanske の共有URL初期表示だけでなく、TennisBear 側でイベントページから対戦表ページを開くまでの体感時間も記録する。
+
+ここでは厳密なベンチマークではなく、実際のイベント運用で主催者が対戦表を開くまでにかかる手間と待ち時間を比較する。
+
+TennisBear 側で広告、モーダル、ポップアップ、アプリ誘導などを閉じる必要がある場合は、その操作も含めて記録する。
+
+| 端末 | ブラウザ | 通信環境 | 対象 | 起点 | 終点 | 体感秒数 | 広告等の操作 | 備考 |
+|---|---|---|---|---|---|---:|---|---|
+| iPhone SE2 | Safari | 自宅 Wi-Fi | TennisBear | イベントページを開く | 対戦表ページが見える |  | なし / あり |  |
+| iPhone SE2 | Chrome | 自宅 Wi-Fi | TennisBear | イベントページを開く | 対戦表ページが見える |  | なし / あり |  |
+| Pixel 5 | Chrome | 自宅 Wi-Fi | TennisBear | イベントページを開く | 対戦表ページが見える |  | なし / あり |  |
+| iPhone SE2 | Safari | 自宅 Wi-Fi | Lanske | 共有URLを開く | 対戦表が見える |  | なし / あり |  |
+| iPhone SE2 | Chrome | 自宅 Wi-Fi | Lanske | 共有URLを開く | 対戦表が見える |  | なし / あり |  |
+| Pixel 5 | Chrome | 自宅 Wi-Fi | Lanske | 共有URLを開く | 対戦表が見える |  | なし / あり |  |
+
+確認観点:
+
+- [ ] TennisBear で対戦表ページを開くまでの体感時間を記録した
+- [ ] 広告、モーダル、ポップアップ、アプリ誘導などを閉じる操作があれば記録した
+- [ ] Lanske 共有URL初期表示と比較できる形で記録した
+- [ ] Lanske が極端に遅いのか、スマホ実機での Web アプリ利用として許容範囲なのかを判断した
+
+メモ:
+
+```text
+
+```
+
 ### #51 判定
 
 | 観点 | 判定 |
 |---|---|
 | `ver0.1.1` のブロッカーか | [ ] いいえ / [ ] はい |
+| TennisBear 対戦表表示までの体感時間と比べて極端に遅いか | [ ] いいえ / [ ] はい |
 | 後続の性能改善 Issue が必要か | [ ] 不要 / [ ] 必要 |
 | ローディング表示の改善が必要か | [ ] 不要 / [ ] 必要 |
 | core API 側の調査が必要か | [ ] 不要 / [ ] 必要 |
@@ -217,6 +250,7 @@ scroll-to-top が操作上問題になる場合は、後続 Issue で以下を�
 | 観点 | 判定 |
 |---|---|
 | スマホ実機で共有URL初期表示は許容範囲 | [ ] OK / [ ] NG |
+| TennisBear 対戦表表示までの体感時間と比べて、Lanske 共有URL初期表示は許容範囲 | [ ] OK / [ ] NG |
 | generate / regenerate / adopt は許容範囲 | [ ] OK / [ ] NG |
 | 対戦表画面の画面内更新ボタンで再読込できる | [ ] OK / [ ] NG |
 | pull-to-refresh が効かない場合でも、画面内更新導線で代替できる | [ ] OK / [ ] NG |
