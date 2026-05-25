@@ -20,9 +20,9 @@ class ScheduleShareDialog extends StatelessWidget {
       titlePadding: const EdgeInsets.fromLTRB(24, 16, 8, 0),
       title: Row(
         children: [
-          const Expanded(child: Text('URLを共有')),
+          Expanded(child: Text(l10n.shareUrlButton)),
           IconButton(
-            tooltip: '閉じる',
+            tooltip: l10n.closeButton,
             onPressed: () => Navigator.pop(context),
             iconSize: 36,
             constraints: const BoxConstraints.tightFor(
