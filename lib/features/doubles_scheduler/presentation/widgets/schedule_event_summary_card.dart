@@ -32,7 +32,7 @@ class ScheduleEventSummaryCard extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: onShareUrl,
                     icon: const Icon(Icons.share),
-                    label: const Text('URLを共有'),
+                    label: Text(l10n.shareUrlButton),
                   ),
                 if (onRefresh != null)
                   FilledButton.tonalIcon(
