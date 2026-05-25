@@ -287,4 +287,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get courtDisplayLabelBack => '奥';
+
+  @override
+  String get shareUrlButton => 'URLを共有';
+
+  @override
+  String get closeButton => '閉じる';
 }

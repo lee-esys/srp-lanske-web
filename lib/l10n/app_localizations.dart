@@ -607,6 +607,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'奥'**
   String get courtDisplayLabelBack;
+
+  /// Button and dialog title label for sharing a schedule URL.
+  ///
+  /// In ja, this message translates to:
+  /// **'URLを共有'**
+  String get shareUrlButton;
+
+  /// Generic close button or tooltip label.
+  ///
+  /// In ja, this message translates to:
+  /// **'閉じる'**
+  String get closeButton;
 }
 
 class _AppLocalizationsDelegate

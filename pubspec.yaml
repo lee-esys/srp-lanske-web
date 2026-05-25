@@ -20,6 +20,7 @@ dependencies:
   shared_preferences: ^2.5.5
   web: ^1.1.1
   intl: any
+  pretty_qr_code: ^3.6.0
 
 dev_dependencies:
   flutter_test:

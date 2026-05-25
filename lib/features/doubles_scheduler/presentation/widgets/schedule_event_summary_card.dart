@@ -4,12 +4,12 @@ import 'package:srp_lanske/l10n/l10n.dart';
 class ScheduleEventSummaryCard extends StatelessWidget {
   const ScheduleEventSummaryCard({
     super.key,
-    this.onCopyShareUrl,
+    this.onShareUrl,
     this.onRefresh,
     this.canRefresh = true,
   });
 
-  final VoidCallback? onCopyShareUrl;
+  final VoidCallback? onShareUrl;
   final VoidCallback? onRefresh;
   final bool canRefresh;
 
@@ -28,11 +28,11 @@ class ScheduleEventSummaryCard extends StatelessWidget {
               runSpacing: 4,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                if (onCopyShareUrl != null)
+                if (onShareUrl != null)
                   OutlinedButton.icon(
-                    onPressed: onCopyShareUrl,
-                    icon: const Icon(Icons.copy),
-                    label: Text(l10n.copyUrlButton),
+                    onPressed: onShareUrl,
+                    icon: const Icon(Icons.share),
+                    label: Text(l10n.shareUrlButton),
                   ),
                 if (onRefresh != null)
                   FilledButton.tonalIcon(

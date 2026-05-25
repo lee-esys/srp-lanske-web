@@ -411,5 +411,13 @@
   "courtDisplayLabelBack": "奥",
   "@courtDisplayLabelBack": {
     "description": "One-character court display label for back."
+  },
+  "shareUrlButton": "URLを共有",
+  "@shareUrlButton": {
+    "description": "Button and dialog title label for sharing a schedule URL."
+  },
+  "closeButton": "閉じる",
+  "@closeButton": {
+    "description": "Generic close button or tooltip label."
   }
 }

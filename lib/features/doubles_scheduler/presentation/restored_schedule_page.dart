@@ -23,6 +23,7 @@ import 'widgets/schedule_operation_panel.dart';
 import 'widgets/schedule_players_card.dart';
 import 'widgets/schedule_rounds_view.dart';
 import 'widgets/schedule_section_card.dart';
+import 'widgets/schedule_share_dialog.dart';
 
 class RestoredSchedulePage extends StatefulWidget {
   const RestoredSchedulePage({
@@ -619,6 +620,18 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     _showMessage(l10n.shareUrlCopiedMessage);
   }
 
+  void _showShareDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (_) {
+        return ScheduleShareDialog(
+          shareUrl: _buildShareUrl(),
+          onCopyShareUrl: _copyShareUrl,
+        );
+      },
+    );
+  }
+
   void _showMessage(String message) {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
@@ -644,7 +657,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           )
         else ...[
           ScheduleEventSummaryCard(
-            onCopyShareUrl: _copyShareUrl,
+            onShareUrl: _showShareDialog,
             onRefresh: _reloadSchedule,
             canRefresh: _generatedScheduleId != null,
           ),
