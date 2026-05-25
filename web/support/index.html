@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="らんすけのサポートページです。フィードバック、問い合わせ、既知の制限事項を確認できます。">
+  <title>らんすけ サポート</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #eef7ef;
+      --surface: #ffffff;
+      --surface-soft: #f7fbf8;
+      --text: #1f2a24;
+      --muted: #5f6f66;
+      --primary: #13805c;
+      --primary-dark: #0b5f45;
+      --border: #d7e4dc;
+      --shadow: 0 10px 28px rgba(22, 64, 43, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #f8fcf8 0%, var(--bg) 100%);
+      line-height: 1.7;
+    }
+
+    a {
+      color: var(--primary-dark);
+    }
+
+    .page {
+      width: min(920px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero {
+      overflow: hidden;
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .hero-image {
+      min-height: 160px;
+      background:
+        radial-gradient(circle at 18% 28%, rgba(255, 230, 86, 0.95) 0 10px, transparent 11px),
+        radial-gradient(circle at 78% 64%, rgba(255, 230, 86, 0.95) 0 10px, transparent 11px),
+        linear-gradient(92deg, transparent 0 14%, rgba(255,255,255,0.92) 14.3% 15.2%, transparent 15.5%),
+        linear-gradient(92deg, transparent 0 82%, rgba(255,255,255,0.92) 82.3% 83.2%, transparent 83.5%),
+        linear-gradient(0deg, transparent 0 22%, rgba(255,255,255,0.92) 22.5% 23.6%, transparent 24%),
+        linear-gradient(0deg, transparent 0 75%, rgba(255,255,255,0.92) 75.5% 76.6%, transparent 77%),
+        linear-gradient(90deg, transparent 0 49%, rgba(10, 92, 67, 0.82) 49.4% 50.4%, transparent 50.8%),
+        linear-gradient(180deg, #8fd19e 0%, #5bbd8e 100%);
+      position: relative;
+    }
+
+    .hero-image::before,
+    .hero-image::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border-radius: 999px;
+      background: rgba(10, 92, 67, 0.11);
+      filter: blur(18px);
+    }
+
+    .hero-image::before {
+      left: -80px;
+      top: -90px;
+    }
+
+    .hero-image::after {
+      right: -70px;
+      bottom: -100px;
+    }
+
+    .hero-content {
+      padding: 28px;
+    }
+
+    .eyebrow {
+      color: var(--primary-dark);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      font-size: 0.84rem;
+      margin: 0 0 8px;
+    }
+
+    h1 {
+      font-size: clamp(1.9rem, 5vw, 3rem);
+      line-height: 1.2;
+      margin: 0 0 12px;
+    }
+
+    .lead {
+      color: var(--muted);
+      margin: 0;
+      max-width: 720px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      border: 1px solid var(--primary);
+    }
+
+    .button.primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .button.secondary {
+      background: #fff;
+      color: var(--primary-dark);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 4px 18px rgba(22, 64, 43, 0.05);
+    }
+
+    .card.full {
+      grid-column: 1 / -1;
+    }
+
+    h2 {
+      font-size: 1.24rem;
+      margin: 0 0 12px;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.2em;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    footer {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 32px;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        width: min(100% - 20px, 920px);
+        padding-top: 20px;
+      }
+
+      .hero-image {
+        min-height: 120px;
+      }
+
+      .hero-content {
+        padding: 22px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-image" aria-hidden="true"></div>
+      <div class="hero-content">
+        <p class="eyebrow">Lanske support</p>
+        <h1 id="page-title">らんすけ サポート</h1>
+        <p class="lead">
+          らんすけの使い方、フィードバック、不具合報告、既知の制限事項を確認するためのページです。
+          まずは軽量な静的ページとして運用します。
+        </p>
+        <div class="actions">
+          <a class="button primary" href="https://forms.gle/xbXuJsZnfh5QrqjP8">フィードバックフォームを開く</a>
+          <a class="button secondary" href="/">らんすけを開く</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid" aria-label="support contents">
+      <article class="card">
+        <h2>フィードバック / 問い合わせ</h2>
+        <p>
+          ご意見・ご質問・不具合報告・改善案は、フィードバックフォームから送信できます。
+        </p>
+        <p class="note">
+          返信が必要な場合のみ、フォーム内にメールアドレスを入力してください。
+        </p>
+      </article>
+
+      <article class="card">
+        <h2>共有URLの注意</h2>
+        <p>
+          共有URLを知っている人は、対象の対戦表を開けます。
+        </p>
+        <p class="note">
+          フォームに共有URLを送る場合は、公開したくない情報や不要に詳細な参加者情報を含めないよう注意してください。
+        </p>
+      </article>
+
+      <article class="card">
+        <h2>現在の対応範囲</h2>
+        <ul>
+          <li>1面4〜7人 / 2面8〜15人に対応</li>
+          <li>初回生成は15対戦固定</li>
+          <li>共有URLで対戦表を開き直し可能</li>
+          <li>QRコードで共有URLを表示可能</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>今後の扱い</h2>
+        <p>
+          FAQ、ヘルプ、ロードマップ、リリースノート、既知の不具合は、必要になった段階で静的ページとして整理します。
+        </p>
+        <p class="note">
+          本格的なヘルプサイト化やDB管理は、運用が固まってから検討します。
+        </p>
+      </article>
+
+      <article class="card full">
+        <h2>フォームの運用方針</h2>
+        <ul>
+          <li>メールアドレスは自動収集しません</li>
+          <li>ログイン必須にはしません</li>
+          <li>回答は1回に制限しません</li>
+          <li>すべての設問は任意入力です</li>
+          <li>返信が必要な場合のみ、メールアドレスを入力してもらいます</li>
+        </ul>
+      </article>
+    </section>
+
+    <footer>
+      Lanske / らんすけ
+    </footer>
+  </main>
+</body>
+
+</html>
