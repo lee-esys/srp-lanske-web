@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
 class ScheduleShareDialog extends StatelessWidget {
   const ScheduleShareDialog({
     super.key,
+    required this.shareUrl,
     required this.onCopyShareUrl,
   });
 
+  final String shareUrl;
   final VoidCallback onCopyShareUrl;
 
   @override
@@ -35,7 +38,7 @@ class ScheduleShareDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const ScheduleShareQrPlaceholder(),
+          ScheduleShareQrCode(data: shareUrl),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
@@ -51,44 +54,54 @@ class ScheduleShareDialog extends StatelessWidget {
   }
 }
 
-class ScheduleShareQrPlaceholder extends StatelessWidget {
-  const ScheduleShareQrPlaceholder({super.key});
+class ScheduleShareQrCode extends StatefulWidget {
+  const ScheduleShareQrCode({
+    super.key,
+    required this.data,
+  });
+
+  final String data;
+
+  @override
+  State<ScheduleShareQrCode> createState() => _ScheduleShareQrCodeState();
+}
+
+class _ScheduleShareQrCodeState extends State<ScheduleShareQrCode> {
+  late QrImage _qrImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _qrImage = _buildQrImage(widget.data);
+  }
+
+  @override
+  void didUpdateWidget(ScheduleShareQrCode oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.data != widget.data) {
+      _qrImage = _buildQrImage(widget.data);
+    }
+  }
+
+  QrImage _buildQrImage(String data) {
+    final qrCode = QrCode.fromData(
+      data: data,
+      errorCorrectLevel: QrErrorCorrectLevel.H,
+    );
+
+    return QrImage(qrCode);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Semantics(
-      label: 'QRコード表示枠',
-      child: Container(
-        width: 220,
-        height: 220,
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: colorScheme.outlineVariant),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.qr_code_2,
-              size: 80,
-              color: colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'QRコードをここに表示します',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ),
-          ],
+    return SizedBox(
+      width: 220,
+      height: 220,
+      child: PrettyQrView(
+        qrImage: _qrImage,
+        decoration: const PrettyQrDecoration(
+          quietZone: PrettyQrQuietZone.standard,
         ),
       ),
     );

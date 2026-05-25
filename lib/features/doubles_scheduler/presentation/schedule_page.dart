@@ -21,6 +21,7 @@ import 'widgets/schedule_operation_panel.dart';
 import 'widgets/schedule_players_card.dart';
 import 'widgets/schedule_rounds_view.dart';
 import 'widgets/schedule_section_card.dart';
+import 'widgets/schedule_share_dialog.dart';
 
 class SchedulePage extends StatefulWidget {
   const SchedulePage({super.key, required this.draft});
@@ -232,6 +233,26 @@ class _SchedulePageState extends State<SchedulePage> {
 
     await Clipboard.setData(ClipboardData(text: shareUrl));
     _showMessage(l10n.shareUrlCopiedMessage);
+  }
+
+  void _showShareDialog() {
+    final l10n = AppLocalizations.of(context);
+    final shareUrl = _buildShareUrl();
+
+    if (shareUrl == null) {
+      _showMessage(l10n.shareUrlCreateFailedMessage);
+      return;
+    }
+
+    showDialog<void>(
+      context: context,
+      builder: (_) {
+        return ScheduleShareDialog(
+          shareUrl: shareUrl,
+          onCopyShareUrl: _copyShareUrl,
+        );
+      },
+    );
   }
 
   void _showMessage(String message) {
@@ -509,7 +530,7 @@ class _SchedulePageState extends State<SchedulePage> {
       padding: const EdgeInsets.all(4),
       children: [
         ScheduleEventSummaryCard(
-          onCopyShareUrl: _savedEvent == null ? null : _copyShareUrl,
+          onShareUrl: _savedEvent == null ? null : _showShareDialog,
           onRefresh: _reloadSchedule,
           canRefresh: _generatedScheduleId != null,
         ),
