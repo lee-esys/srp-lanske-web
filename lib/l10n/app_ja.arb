@@ -16,6 +16,14 @@
   "@matchTableList": {
     "description": "Menu item label for the saved/generated match table list."
   },
+  "supportMenuTitle": "サポート",
+  "@supportMenuTitle": {
+    "description": "Menu item title for opening the support page."
+  },
+  "supportMenuSubtitle": "フィードバックもこちらから",
+  "@supportMenuSubtitle": {
+    "description": "Menu item subtitle for the support page link."
+  },
   "eventSetupInstruction": "URLを貼るか、手動で面数・人数を入力してください。",
   "@eventSetupInstruction": {
     "description": "Instruction text on the event setup page."
