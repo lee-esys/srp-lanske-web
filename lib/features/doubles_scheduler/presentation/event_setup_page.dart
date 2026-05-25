@@ -130,18 +130,6 @@ class _EventSetupPageState extends State<EventSetupPage> {
     }
   }
 
-  String _supportMenuTitle(BuildContext context) {
-    final languageCode = Localizations.localeOf(context).languageCode;
-    if (languageCode == 'ja') return 'サポート';
-    return 'Support page (Japanese)';
-  }
-
-  String _supportMenuSubtitle(BuildContext context) {
-    final languageCode = Localizations.localeOf(context).languageCode;
-    if (languageCode == 'ja') return 'フィードバックもこちらから';
-    return 'Feedback form is linked there';
-  }
-
   void _showMessage(String message) {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
@@ -639,9 +627,9 @@ class _EventSetupPageState extends State<EventSetupPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(_supportMenuTitle(context)),
+                    Text(l10n.supportMenuTitle),
                     Text(
-                      _supportMenuSubtitle(context),
+                      l10n.supportMenuSubtitle,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
