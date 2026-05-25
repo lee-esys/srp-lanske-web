@@ -411,5 +411,13 @@
   "courtDisplayLabelBack": "B",
   "@courtDisplayLabelBack": {
     "description": "One-character court display label for back."
+  },
+  "shareUrlButton": "Share URL",
+  "@shareUrlButton": {
+    "description": "Button and dialog title label for sharing a schedule URL."
+  },
+  "closeButton": "Close",
+  "@closeButton": {
+    "description": "Generic close button or tooltip label."
   }
 }

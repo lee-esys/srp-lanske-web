@@ -296,4 +296,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get courtDisplayLabelBack => 'B';
+
+  @override
+  String get shareUrlButton => 'Share URL';
+
+  @override
+  String get closeButton => 'Close';
 }
