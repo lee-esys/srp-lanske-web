@@ -41,12 +41,13 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyD2vJWtZeWmGklRmT4H8l8sB0KaR8CXSgA',
-    appId: '1:59678935940:web:c91584c1295a288e2a6bd1',
-    messagingSenderId: '59678935940',
-    projectId: 'srp-lanske-web-dev',
-    authDomain: 'srp-lanske-web-dev.firebaseapp.com',
-    storageBucket: 'srp-lanske-web-dev.firebasestorage.app',
+    apiKey: 'AIzaSyDn432u_1VlpIA5BSM9-XMk9kyeoGzg5Ms',
+    appId: '1:635072049481:web:bc353875f3ec79965bea98',
+    messagingSenderId: '635072049481',
+    projectId: 'lanske-srp',
+    authDomain: 'lanske-srp.firebaseapp.com',
+    storageBucket: 'lanske-srp.firebasestorage.app',
+    measurementId: 'G-P3NDW4S7D2',
   );
 
   static const FirebaseOptions android = FirebaseOptions(

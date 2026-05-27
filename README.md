@@ -10,7 +10,7 @@ Lanske（らんすけ）は、テニスのダブルス向けに、対戦表を�
 
 ## 🌐 公開URL
 
-https://srp-lanske-web-dev.web.app
+https://lanske-srp.web.app
 
 ---
 
@@ -170,6 +170,7 @@ flutter run -d web-server --web-hostname 0.0.0.0 --web-port 3000 \
 
 - [Architecture](docs/architecture.md)
 - [Contributing Guide](docs/contributing.md)
+- [Firebase Hosting deploy memo](docs/firebase-hosting-deploy.md)
 - [ver0.1 リリース前チェックリスト](docs/release-checklist-ver0.1.md)
 
 ---
