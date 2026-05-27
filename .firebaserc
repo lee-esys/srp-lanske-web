@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "srp-lanske-web-dev"
+    "default": "lanske-srp",
+    "prod": "lanske-srp",
+    "dev": "srp-lanske-web-dev"
   }
 }
