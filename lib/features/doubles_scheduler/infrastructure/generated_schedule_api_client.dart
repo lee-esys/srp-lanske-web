@@ -43,13 +43,6 @@ class GeneratedScheduleApiClient {
     );
   }
 
-  Future<Map<String, dynamic>> adopt(String generatedScheduleId) {
-    return _requestJson(
-      method: 'POST',
-      path: '/api/v1/generated-schedules/$generatedScheduleId/adopt',
-    );
-  }
-
   Future<Map<String, dynamic>> _requestJson({
     required String method,
     required String path,
