@@ -113,6 +113,7 @@ class JsonEventRepository implements EventRepository {
     final updatedEvent = event.copyWith(
       status: SavedEventStatus.generated,
       currentGeneratedScheduleId: generatedScheduleId,
+      revision: event.revision + 1,
       updatedAt: DateTime.now(),
     );
 
@@ -131,11 +132,15 @@ class JsonEventRepository implements EventRepository {
       throw StateError('event not found: $eventId');
     }
 
-    final updatedEvent = aggregate.event.copyWith(
+    final event = aggregate.event;
+    final now = DateTime.now();
+    final updatedEvent = event.copyWith(
       status: SavedEventStatus.adopted,
       currentGeneratedScheduleId: generatedScheduleId,
       adoptedGeneratedScheduleId: generatedScheduleId,
-      updatedAt: DateTime.now(),
+      adoptedAt: now,
+      revision: event.revision + 1,
+      updatedAt: now,
     );
 
     await _saveAggregate(_replaceEvent(aggregate, updatedEvent));
@@ -153,11 +158,13 @@ class JsonEventRepository implements EventRepository {
       throw StateError('event not found: $eventId');
     }
 
-    if (aggregate.event.hasAdoptedSchedule) {
+    final event = aggregate.event;
+    if (event.hasAdoptedSchedule) {
       throw StateError('event already adopted: $eventId');
     }
 
-    final updatedEvent = aggregate.event.copyWith(
+    final updatedEvent = event.copyWith(
+      revision: event.revision + 1,
       updatedAt: DateTime.now(),
     );
 
