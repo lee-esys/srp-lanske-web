@@ -239,10 +239,38 @@ web から接続する core API の base URL は、`AppConfig.coreApiBaseUrl` �
 
 - generate
 - get
-- adopt
+
+採用状態は、web 側の event / view state として扱う。
+backend 側の generated schedule snapshot は、通常の採用操作では更新しない。
 
 ver0.1 では、環境別設定ファイルや secret 管理の本格化は行わず、`dart-define` による明示的な切り替えを優先する。
 
+### 10.2 共有URLと採用状態
+
+共有URLは `publicId` を入口にする。
+web 側の `events/{publicId}` 相当の document に、現在表示・採用する backend 側 generated schedule snapshot の ID を保存する。
+
+最小 schema 方針：
+
+```txt
+events/{publicId}
+  event.publicId
+  event.currentGeneratedScheduleId
+  event.adoptedGeneratedScheduleId
+  event.adoptedAt
+  event.visibility
+  event.visibleUntilRoundNo
+  event.expiresAt
+  event.revision
+  event.createdAt
+  event.updatedAt
+```
+
+`expiresAt` は作成から10日後を初期値として持つ。
+ただし、ver0.1.x では期限切れによる非表示処理はまだ行わない。
+
+将来の試合カード進行状況・対戦成績は、event 本体ではなく、試合カード単位の subcollection で扱う想定とする。
+`events/{publicId}/matchCards/{roundNo}_{courtNo}` のような形を候補にし、document が存在しない場合は既定で「試合前」とみなせるようにする。
 
 ---
 
