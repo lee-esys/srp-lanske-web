@@ -1,4 +1,10 @@
 const savedEventAggregateSchemaVersion = 1;
+const savedEventDefaultVisibility = 'unlisted';
+const savedEventDefaultExpiresInDays = 10;
+
+DateTime defaultSavedEventExpiresAt(DateTime createdAt) {
+  return createdAt.add(const Duration(days: savedEventDefaultExpiresInDays));
+}
 
 enum EventSourceType {
   tennisbear,
@@ -30,7 +36,12 @@ class SavedEvent {
     this.location,
     this.currentGeneratedScheduleId,
     this.adoptedGeneratedScheduleId,
-  });
+    this.adoptedAt,
+    this.visibility = savedEventDefaultVisibility,
+    this.visibleUntilRoundNo,
+    DateTime? expiresAt,
+    this.revision = 1,
+  }) : expiresAt = expiresAt ?? defaultSavedEventExpiresAt(createdAt);
 
   final String id;
   final String publicId;
@@ -45,6 +56,11 @@ class SavedEvent {
   final SavedEventStatus status;
   final String? currentGeneratedScheduleId;
   final String? adoptedGeneratedScheduleId;
+  final DateTime? adoptedAt;
+  final String visibility;
+  final int? visibleUntilRoundNo;
+  final DateTime expiresAt;
+  final int revision;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -69,6 +85,11 @@ class SavedEvent {
     SavedEventStatus? status,
     String? currentGeneratedScheduleId,
     String? adoptedGeneratedScheduleId,
+    DateTime? adoptedAt,
+    String? visibility,
+    int? visibleUntilRoundNo,
+    DateTime? expiresAt,
+    int? revision,
     DateTime? updatedAt,
   }) {
     return SavedEvent(
@@ -87,6 +108,11 @@ class SavedEvent {
           currentGeneratedScheduleId ?? this.currentGeneratedScheduleId,
       adoptedGeneratedScheduleId:
           adoptedGeneratedScheduleId ?? this.adoptedGeneratedScheduleId,
+      adoptedAt: adoptedAt ?? this.adoptedAt,
+      visibility: visibility ?? this.visibility,
+      visibleUntilRoundNo: visibleUntilRoundNo ?? this.visibleUntilRoundNo,
+      expiresAt: expiresAt ?? this.expiresAt,
+      revision: revision ?? this.revision,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -107,12 +133,19 @@ class SavedEvent {
       'status': status.name,
       'currentGeneratedScheduleId': currentGeneratedScheduleId,
       'adoptedGeneratedScheduleId': adoptedGeneratedScheduleId,
+      'adoptedAt': _nullableDateTimeToJson(adoptedAt),
+      'visibility': visibility,
+      'visibleUntilRoundNo': visibleUntilRoundNo,
+      'expiresAt': _dateTimeToJson(expiresAt),
+      'revision': revision,
       'createdAt': _dateTimeToJson(createdAt),
       'updatedAt': _dateTimeToJson(updatedAt),
     };
   }
 
   factory SavedEvent.fromJson(Map<String, dynamic> json) {
+    final createdAt = _dateTimeFromJson(json['createdAt']);
+
     return SavedEvent(
       id: json['id'].toString(),
       publicId: json['publicId'].toString(),
@@ -129,7 +162,13 @@ class SavedEvent {
           json['currentGeneratedScheduleId']?.toString(),
       adoptedGeneratedScheduleId:
           json['adoptedGeneratedScheduleId']?.toString(),
-      createdAt: _dateTimeFromJson(json['createdAt']),
+      adoptedAt: _nullableDateTimeFromJson(json['adoptedAt']),
+      visibility: json['visibility']?.toString() ?? savedEventDefaultVisibility,
+      visibleUntilRoundNo: _nullableIntFromJson(json['visibleUntilRoundNo']),
+      expiresAt: _nullableDateTimeFromJson(json['expiresAt']) ??
+          defaultSavedEventExpiresAt(createdAt),
+      revision: _nullableIntFromJson(json['revision']) ?? 1,
+      createdAt: createdAt,
       updatedAt: _dateTimeFromJson(json['updatedAt']),
     );
   }
@@ -387,6 +426,11 @@ int _intFromJson(Object? value) {
   }
 
   return parsed;
+}
+
+int? _nullableIntFromJson(Object? value) {
+  if (value == null) return null;
+  return _intFromJson(value);
 }
 
 Map<String, dynamic>? _nullableMapFromJson(Object? value) {

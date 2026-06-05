@@ -44,6 +44,12 @@ void runEventRepositoryContractTests({
       expect(aggregate.event.status, SavedEventStatus.draft);
       expect(aggregate.event.currentGeneratedScheduleId, isNull);
       expect(aggregate.event.adoptedGeneratedScheduleId, isNull);
+      expect(aggregate.event.adoptedAt, isNull);
+      expect(aggregate.event.visibility, savedEventDefaultVisibility);
+      expect(aggregate.event.visibleUntilRoundNo, isNull);
+      expect(aggregate.event.expiresAt,
+          defaultSavedEventExpiresAt(aggregate.event.createdAt));
+      expect(aggregate.event.revision, 1);
 
       expect(aggregate.players, hasLength(6));
       expect(aggregate.players[0].displayName, '参加者1');
@@ -136,12 +142,14 @@ void runEventRepositoryContractTests({
       expect(updated.status, SavedEventStatus.generated);
       expect(updated.displayGeneratedScheduleId, 'generated-1');
       expect(updated.hasAdoptedSchedule, isFalse);
+      expect(updated.revision, created.event.revision + 1);
 
       final found = await repository.findByPublicId(created.event.publicId);
       expect(found, isNotNull);
       expect(found!.event.currentGeneratedScheduleId, 'generated-1');
       expect(found.event.adoptedGeneratedScheduleId, isNull);
       expect(found.event.status, SavedEventStatus.generated);
+      expect(found.event.revision, 2);
     });
 
     test('overwrites current generated schedule id when regenerated', () async {
@@ -163,10 +171,12 @@ void runEventRepositoryContractTests({
       expect(updated.adoptedGeneratedScheduleId, isNull);
       expect(updated.status, SavedEventStatus.generated);
       expect(updated.displayGeneratedScheduleId, 'generated-2');
+      expect(updated.revision, 3);
 
       final found = await repository.findByPublicId(created.event.publicId);
       expect(found!.event.currentGeneratedScheduleId, 'generated-2');
       expect(found.event.adoptedGeneratedScheduleId, isNull);
+      expect(found.event.revision, 3);
     });
 
     test('updates and persists adopted generated schedule id', () async {
@@ -181,15 +191,19 @@ void runEventRepositoryContractTests({
 
       expect(updated.currentGeneratedScheduleId, 'generated-1');
       expect(updated.adoptedGeneratedScheduleId, 'generated-1');
+      expect(updated.adoptedAt, isNotNull);
       expect(updated.status, SavedEventStatus.adopted);
       expect(updated.displayGeneratedScheduleId, 'generated-1');
       expect(updated.hasAdoptedSchedule, isTrue);
+      expect(updated.revision, created.event.revision + 1);
 
       final found = await repository.findByPublicId(created.event.publicId);
       expect(found, isNotNull);
       expect(found!.event.currentGeneratedScheduleId, 'generated-1');
       expect(found.event.adoptedGeneratedScheduleId, 'generated-1');
+      expect(found.event.adoptedAt, isNotNull);
       expect(found.event.status, SavedEventStatus.adopted);
+      expect(found.event.revision, 2);
     });
 
     test('throws when updating current schedule for missing event', () async {
@@ -262,12 +276,14 @@ void runEventRepositoryContractTests({
       expect(updated.courtSettings[0].displayLabel, 'A');
       expect(updated.courtSettings[1].courtNumber, 2);
       expect(updated.courtSettings[1].displayLabel, 'B');
+      expect(updated.event.revision, created.event.revision + 1);
 
       final found = await repository.findByPublicId(created.event.publicId);
       expect(found, isNotNull);
       expect(found!.courtSettings, hasLength(2));
       expect(found.courtSettings[0].displayLabel, 'A');
       expect(found.courtSettings[1].displayLabel, 'B');
+      expect(found.event.revision, 2);
     });
 
     test('keeps court settings when schedule ids are updated', () async {

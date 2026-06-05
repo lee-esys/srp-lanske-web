@@ -52,7 +52,6 @@
 
 - [ ] `generate` が正常動作する
 - [ ] `get` が正常動作する
-- [ ] `adopt` が正常動作する
 - [ ] 不正 request が想定通り error になる
 - [ ] 未対応条件が想定通り error になる
 - [ ] 存在しない generated_schedule_id が想定通り error になる
@@ -63,7 +62,7 @@
 - [ ] local 開発 origin の扱いを確認した
 - [ ] Codespaces preview origin の扱いを確認した
 - [ ] 不要な origin を許可しすぎていない
-- [ ] 公開 web から generate / get / adopt 時に CORS error が出ない
+- [ ] 公開 web から generate / get 時に CORS error が出ない
 
 ---
 
@@ -100,7 +99,10 @@
 - [ ] import 情報が保存される
 - [ ] `currentGeneratedScheduleId` が保存される
 - [ ] `adoptedGeneratedScheduleId` が保存される
-- [ ] generated_schedule 本体は web 側に保存せず、core 側 ID 参照のみである
+- [ ] `adoptedAt` が保存される
+- [ ] `expiresAt` が保存される
+- [ ] `revision` が保存される
+- [ ] generated_schedule 本体は web 側に保存せず、backend 側 ID 参照のみである
 
 ### Firestore Rules
 
@@ -251,7 +253,8 @@ ver0.1 対応条件について、公開環境または本番相当環境で gen
 
 - [ ] 公開 web が表示できる
 - [ ] 本番 core API に接続できる
-- [ ] generate / get / adopt が本番相当環境で動く
+- [ ] generate / get が本番相当環境で動く
+- [ ] web 側の adopt state 更新が本番相当環境で動く
 - [ ] 共有URL reopening が動く
 - [ ] リロード復元が動く
 - [ ] Firestore rules / API key / secret scanning の扱いを説明できる

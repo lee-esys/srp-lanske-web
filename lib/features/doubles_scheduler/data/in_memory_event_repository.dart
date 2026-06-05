@@ -131,6 +131,7 @@ class InMemoryEventRepository implements EventRepository {
     final updated = event.copyWith(
       status: SavedEventStatus.generated,
       currentGeneratedScheduleId: generatedScheduleId,
+      revision: event.revision + 1,
       updatedAt: DateTime.now(),
     );
 
@@ -148,11 +149,14 @@ class InMemoryEventRepository implements EventRepository {
       throw StateError('event not found: $eventId');
     }
 
+    final now = DateTime.now();
     final updated = event.copyWith(
       status: SavedEventStatus.adopted,
       currentGeneratedScheduleId: generatedScheduleId,
       adoptedGeneratedScheduleId: generatedScheduleId,
-      updatedAt: DateTime.now(),
+      adoptedAt: now,
+      revision: event.revision + 1,
+      updatedAt: now,
     );
 
     _eventsById[eventId] = updated;
@@ -174,6 +178,7 @@ class InMemoryEventRepository implements EventRepository {
     }
 
     final updatedEvent = event.copyWith(
+      revision: event.revision + 1,
       updatedAt: DateTime.now(),
     );
 

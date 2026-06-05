@@ -5,11 +5,14 @@ void main() {
   group('SavedEvent models JSON', () {
     final createdAt = DateTime.utc(2026, 5, 14, 4, 30);
     final updatedAt = DateTime.utc(2026, 5, 14, 4, 45);
+    final adoptedAt = DateTime.utc(2026, 5, 14, 4, 50);
+    final expiresAt = DateTime.utc(2026, 5, 24, 4, 30);
 
     SavedEventAggregate buildAggregate({
       SavedEventStatus status = SavedEventStatus.adopted,
       String? currentGeneratedScheduleId = 'generated-current',
       String? adoptedGeneratedScheduleId = 'generated-adopted',
+      DateTime? adoptedAtValue,
       SavedEventImport? importRecord,
     }) {
       final event = SavedEvent(
@@ -26,6 +29,11 @@ void main() {
         status: status,
         currentGeneratedScheduleId: currentGeneratedScheduleId,
         adoptedGeneratedScheduleId: adoptedGeneratedScheduleId,
+        adoptedAt: adoptedAtValue,
+        visibility: 'unlisted',
+        visibleUntilRoundNo: 10,
+        expiresAt: expiresAt,
+        revision: 3,
         createdAt: createdAt,
         updatedAt: updatedAt,
       );
@@ -85,7 +93,7 @@ void main() {
     }
 
     test('round trips SavedEventAggregate through JSON', () {
-      final aggregate = buildAggregate();
+      final aggregate = buildAggregate(adoptedAtValue: adoptedAt);
 
       final json = aggregate.toJson();
       final restored = SavedEventAggregate.fromJson(json);
@@ -103,6 +111,11 @@ void main() {
       expect(restored.event.sourceType, EventSourceType.tennisbear);
       expect(restored.event.sourceUrl, 'https://example.com/events/1');
       expect(restored.event.status, SavedEventStatus.adopted);
+      expect(restored.event.adoptedAt, adoptedAt);
+      expect(restored.event.visibility, 'unlisted');
+      expect(restored.event.visibleUntilRoundNo, 10);
+      expect(restored.event.expiresAt, expiresAt);
+      expect(restored.event.revision, 3);
       expect(restored.event.createdAt, createdAt);
       expect(restored.event.updatedAt, updatedAt);
 
@@ -157,6 +170,26 @@ void main() {
       expect(restored.importRecord!.parsedPlayersJson, hasLength(2));
     });
 
+    test('restores legacy event JSON with web state defaults', () {
+      final aggregate = buildAggregate();
+      final json = aggregate.toJson();
+      final eventJson = json['event'] as Map<String, dynamic>;
+
+      eventJson.remove('adoptedAt');
+      eventJson.remove('visibility');
+      eventJson.remove('visibleUntilRoundNo');
+      eventJson.remove('expiresAt');
+      eventJson.remove('revision');
+
+      final restored = SavedEventAggregate.fromJson(json);
+
+      expect(restored.event.adoptedAt, isNull);
+      expect(restored.event.visibility, savedEventDefaultVisibility);
+      expect(restored.event.visibleUntilRoundNo, isNull);
+      expect(restored.event.expiresAt, defaultSavedEventExpiresAt(createdAt));
+      expect(restored.event.revision, 1);
+    });
+
     test('round trips generated schedule refs through JSON', () {
       final aggregate = buildAggregate(
         status: SavedEventStatus.generated,
@@ -178,6 +211,7 @@ void main() {
         status: SavedEventStatus.adopted,
         currentGeneratedScheduleId: 'generated-1',
         adoptedGeneratedScheduleId: 'generated-1',
+        adoptedAtValue: adoptedAt,
       );
 
       final restored = SavedEventAggregate.fromJson(aggregate.toJson());
@@ -185,6 +219,7 @@ void main() {
       expect(restored.event.status, SavedEventStatus.adopted);
       expect(restored.event.currentGeneratedScheduleId, 'generated-1');
       expect(restored.event.adoptedGeneratedScheduleId, 'generated-1');
+      expect(restored.event.adoptedAt, adoptedAt);
       expect(restored.event.displayGeneratedScheduleId, 'generated-1');
       expect(restored.event.hasAdoptedSchedule, isTrue);
     });
