@@ -26,8 +26,12 @@ class TeamSetupNumberField extends StatelessWidget {
   bool get _canDecrement => value > minValue;
   bool get _canIncrement => value < maxValue;
 
+  int _clampValue(int nextValue) {
+    return nextValue.clamp(minValue, maxValue).toInt();
+  }
+
   void _setValue(int nextValue) {
-    onChanged(nextValue.clamp(minValue, maxValue));
+    onChanged(_clampValue(nextValue));
   }
 
   @override
