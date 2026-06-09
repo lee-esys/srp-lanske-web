@@ -2,27 +2,24 @@ import 'dart:convert';
 
 class TeamSetupDraft {
   const TeamSetupDraft({
-    required this.courts,
-    required this.teamCount,
-    required this.activeTeamCountPerRound,
-    required this.teamSize,
+    required this.concurrentMatchCount,
     required this.participantCount,
+    required this.teamCount,
+    required this.teamsPerMatch,
   });
 
-  final int courts;
-  final int teamCount;
-  final int activeTeamCountPerRound;
-  final int teamSize;
+  final int concurrentMatchCount;
   final int participantCount;
+  final int teamCount;
+  final int teamsPerMatch;
 
   Map<String, dynamic> toJson() {
     return {
       'scheduleType': 'team',
-      'courts': courts,
-      'teamCount': teamCount,
-      'activeTeamCountPerRound': activeTeamCountPerRound,
-      'teamSize': teamSize,
+      'concurrentMatchCount': concurrentMatchCount,
       'participantCount': participantCount,
+      'teamCount': teamCount,
+      'teamsPerMatch': teamsPerMatch,
     };
   }
 
