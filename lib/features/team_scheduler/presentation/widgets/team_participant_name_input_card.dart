@@ -51,9 +51,11 @@ class _TeamParticipantNameInputCardState
   }
 
   List<String> _parseParticipantNames(String rawText) {
-    final normalizedText = rawText.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+    final normalizedText =
+        rawText.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
     final hasNewLine = normalizedText.contains('\n');
-    final hasComma = normalizedText.contains(',') || normalizedText.contains('、');
+    final hasComma =
+        normalizedText.contains(',') || normalizedText.contains('、');
     final hasTab = normalizedText.contains('\t');
 
     final separator = hasNewLine
@@ -73,9 +75,11 @@ class _TeamParticipantNameInputCardState
   }
 
   int _parsedCountBeforeLimit(String rawText) {
-    final normalizedText = rawText.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+    final normalizedText =
+        rawText.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
     final hasNewLine = normalizedText.contains('\n');
-    final hasComma = normalizedText.contains(',') || normalizedText.contains('、');
+    final hasComma =
+        normalizedText.contains(',') || normalizedText.contains('、');
     final hasTab = normalizedText.contains('\t');
 
     final separator = hasNewLine

@@ -89,9 +89,8 @@ extension TeamL10n on AppLocalizations {
   String get teamParticipantInputLabel =>
       _isJapanese ? '参加者名' : 'Participant names';
 
-  String get teamParticipantInputHint => _isJapanese
-      ? '例:\n田中\n佐藤\n鈴木'
-      : 'Example:\nAlex\nBlair\nCasey';
+  String get teamParticipantInputHint =>
+      _isJapanese ? '例:\n田中\n佐藤\n鈴木' : 'Example:\nAlex\nBlair\nCasey';
 
   String get applyParticipantNamesButton =>
       _isJapanese ? '参加者名を反映' : 'Apply participant names';
@@ -118,9 +117,8 @@ extension TeamL10n on AppLocalizations {
       ? '参加者名は2人以上入力してください。'
       : 'Enter at least two participant names.';
 
-  String get participantNamesEmptyMessage => _isJapanese
-      ? '参加者名を入力してください。'
-      : 'Enter participant names.';
+  String get participantNamesEmptyMessage =>
+      _isJapanese ? '参加者名を入力してください。' : 'Enter participant names.';
 
   String get resetTeamSetupButton => _isJapanese ? '入力項目のリセット' : 'Reset inputs';
 
