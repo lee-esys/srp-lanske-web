@@ -12,22 +12,19 @@ class TeamSetupPage extends StatefulWidget {
 }
 
 class _TeamSetupPageState extends State<TeamSetupPage> {
-  static const _minCourts = 1;
-  static const _maxCourts = 5;
-  static const _minTeamCount = 2;
-  static const _maxTeamCount = 25;
+  static const _minConcurrentMatchCount = 1;
+  static const _maxConcurrentMatchCount = 5;
   static const _minParticipantCount = 2;
   static const _maxParticipantCount = 50;
-  static const _minTeamSize = 1;
-  static const _maxTeamSize = 25;
-  static const _minActiveTeamCountPerRound = 2;
-  static const _maxActiveTeamCountPerRound = 25;
+  static const _minTeamCount = 2;
+  static const _maxTeamCount = 25;
+  static const _minTeamsPerMatch = 2;
+  static const _maxTeamsPerMatch = 25;
 
-  int _courts = 1;
-  int _teamCount = 4;
-  int _activeTeamCountPerRound = 2;
-  int _teamSize = 2;
+  int _concurrentMatchCount = 1;
   int _participantCount = 8;
+  int _teamCount = 4;
+  int _teamsPerMatch = 2;
 
   int _clampInt(int value, int minValue, int maxValue) =>
       value.clamp(minValue, maxValue).toInt();
@@ -35,63 +32,40 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
   int get _effectiveMaxTeamCount =>
       _clampInt(_maxTeamCount, _minTeamCount, _participantCount);
 
-  int get _effectiveMaxTeamSize =>
-      _clampInt(_maxTeamSize, _minTeamSize, _participantCount);
-
-  int get _effectiveMaxActiveTeamCountPerRound => _clampInt(
-        _maxActiveTeamCountPerRound,
-        _minActiveTeamCountPerRound,
+  int get _effectiveMaxTeamsPerMatch => _clampInt(
+        _maxTeamsPerMatch,
+        _minTeamsPerMatch,
         _teamCount,
       );
 
+  int get _minMemberCountPerTeam => _participantCount ~/ _teamCount;
+
+  int get _maxMemberCountPerTeam =>
+      (_participantCount / _teamCount).ceil().toInt();
+
   TeamSetupDraft get _draft => TeamSetupDraft(
-        courts: _courts,
-        teamCount: _teamCount,
-        activeTeamCountPerRound: _activeTeamCountPerRound,
-        teamSize: _teamSize,
+        concurrentMatchCount: _concurrentMatchCount,
         participantCount: _participantCount,
+        teamCount: _teamCount,
+        teamsPerMatch: _teamsPerMatch,
       );
 
   void _syncDependentValues() {
     _teamCount = _clampInt(_teamCount, _minTeamCount, _effectiveMaxTeamCount);
-    _activeTeamCountPerRound = _clampInt(
-      _activeTeamCountPerRound,
-      _minActiveTeamCountPerRound,
-      _effectiveMaxActiveTeamCountPerRound,
+    _teamsPerMatch = _clampInt(
+      _teamsPerMatch,
+      _minTeamsPerMatch,
+      _effectiveMaxTeamsPerMatch,
     );
-    _teamSize = _clampInt(_teamSize, _minTeamSize, _effectiveMaxTeamSize);
   }
 
-  void _setCourts(int value) {
-    setState(() => _courts = _clampInt(value, _minCourts, _maxCourts));
-  }
-
-  void _setTeamCount(int value) {
+  void _setConcurrentMatchCount(int value) {
     setState(() {
-      _teamCount = _clampInt(value, _minTeamCount, _effectiveMaxTeamCount);
-      _syncDependentValues();
-    });
-  }
-
-  void _setActiveTeamCountPerRound(int value) {
-    setState(() {
-      _activeTeamCountPerRound = _clampInt(
+      _concurrentMatchCount = _clampInt(
         value,
-        _minActiveTeamCountPerRound,
-        _effectiveMaxActiveTeamCountPerRound,
+        _minConcurrentMatchCount,
+        _maxConcurrentMatchCount,
       );
-    });
-  }
-
-  void _setTeamSize(int value) {
-    setState(() {
-      _teamSize = _clampInt(value, _minTeamSize, _effectiveMaxTeamSize);
-      _participantCount = _clampInt(
-        _teamCount * _teamSize,
-        _minParticipantCount,
-        _maxParticipantCount,
-      );
-      _syncDependentValues();
     });
   }
 
@@ -106,13 +80,29 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
     });
   }
 
+  void _setTeamCount(int value) {
+    setState(() {
+      _teamCount = _clampInt(value, _minTeamCount, _effectiveMaxTeamCount);
+      _syncDependentValues();
+    });
+  }
+
+  void _setTeamsPerMatch(int value) {
+    setState(() {
+      _teamsPerMatch = _clampInt(
+        value,
+        _minTeamsPerMatch,
+        _effectiveMaxTeamsPerMatch,
+      );
+    });
+  }
+
   void _resetInputs() {
     setState(() {
-      _courts = 1;
-      _teamCount = 4;
-      _activeTeamCountPerRound = 2;
-      _teamSize = 2;
+      _concurrentMatchCount = 1;
       _participantCount = 8;
+      _teamCount = 4;
+      _teamsPerMatch = 2;
     });
   }
 
@@ -146,13 +136,27 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
             SizedBox(
               width: itemWidth,
               child: TeamSetupNumberField(
-                label: l10n.courtCountLabel,
-                value: _courts,
-                minValue: _minCourts,
-                maxValue: _maxCourts,
-                onChanged: _setCourts,
-                tooltipDecrement: l10n.decrementCourtCountTooltip,
-                tooltipIncrement: l10n.incrementCourtCountTooltip,
+                label: l10n.concurrentMatchCountLabel,
+                value: _concurrentMatchCount,
+                minValue: _minConcurrentMatchCount,
+                maxValue: _maxConcurrentMatchCount,
+                onChanged: _setConcurrentMatchCount,
+                tooltipDecrement:
+                    l10n.decrementConcurrentMatchCountTooltip,
+                tooltipIncrement:
+                    l10n.incrementConcurrentMatchCountTooltip,
+              ),
+            ),
+            SizedBox(
+              width: itemWidth,
+              child: TeamSetupNumberField(
+                label: l10n.participantCountLabel,
+                value: _participantCount,
+                minValue: _minParticipantCount,
+                maxValue: _maxParticipantCount,
+                onChanged: _setParticipantCount,
+                tooltipDecrement: l10n.decrementParticipantCountTooltip,
+                tooltipIncrement: l10n.incrementParticipantCountTooltip,
               ),
             ),
             SizedBox(
@@ -170,40 +174,13 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
             SizedBox(
               width: itemWidth,
               child: TeamSetupNumberField(
-                label: l10n.activeTeamCountPerRoundLabel,
-                value: _activeTeamCountPerRound,
-                minValue: _minActiveTeamCountPerRound,
-                maxValue: _effectiveMaxActiveTeamCountPerRound,
-                onChanged: _setActiveTeamCountPerRound,
-                tooltipDecrement:
-                    l10n.decrementActiveTeamCountPerRoundTooltip,
-                tooltipIncrement:
-                    l10n.incrementActiveTeamCountPerRoundTooltip,
-              ),
-            ),
-            SizedBox(
-              width: itemWidth,
-              child: TeamSetupNumberField(
-                label: l10n.teamSizeLabel,
-                value: _teamSize,
-                minValue: _minTeamSize,
-                maxValue: _effectiveMaxTeamSize,
-                onChanged: _setTeamSize,
-                tooltipDecrement: l10n.decrementTeamSizeTooltip,
-                tooltipIncrement: l10n.incrementTeamSizeTooltip,
-                helpText: l10n.teamSetupDerivedTeamSizeHelp,
-              ),
-            ),
-            SizedBox(
-              width: itemWidth,
-              child: TeamSetupNumberField(
-                label: l10n.participantCountLabel,
-                value: _participantCount,
-                minValue: _minParticipantCount,
-                maxValue: _maxParticipantCount,
-                onChanged: _setParticipantCount,
-                tooltipDecrement: l10n.decrementParticipantCountTooltip,
-                tooltipIncrement: l10n.incrementParticipantCountTooltip,
+                label: l10n.teamsPerMatchLabel,
+                value: _teamsPerMatch,
+                minValue: _minTeamsPerMatch,
+                maxValue: _effectiveMaxTeamsPerMatch,
+                onChanged: _setTeamsPerMatch,
+                tooltipDecrement: l10n.decrementTeamsPerMatchTooltip,
+                tooltipIncrement: l10n.incrementTeamsPerMatchTooltip,
               ),
             ),
           ],
@@ -212,89 +189,127 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
     );
   }
 
+  Widget _buildMemberCountSummary(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return Card(
+      elevation: 0,
+      color: Colors.blue.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.teamMemberCountSummary(
+                _minMemberCountPerTeam,
+                _maxMemberCountPerTeam,
+              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(l10n.teamMemberCountSummaryHelp),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.teamSetupTitle)),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(12),
-          children: [
-            Text(
-              l10n.teamSetupInstruction,
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.teamSetupSupportedConditions,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              l10n.teamSetupInputUpperLimitNote,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 16),
-            _buildNumberFields(context),
-            const SizedBox(height: 16),
-            Card(
-              elevation: 0,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.teamSetupMockNoticeTitle,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+    return Theme(
+      data: Theme.of(context).copyWith(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        scaffoldBackgroundColor: Colors.blue.shade50,
+      ),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.teamSetupTitle),
+          backgroundColor: Colors.blue.shade700,
+          foregroundColor: Colors.white,
+        ),
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.all(12),
+            children: [
+              Text(
+                l10n.teamSetupInstruction,
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.teamSetupSupportedConditions,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                l10n.teamSetupInputUpperLimitNote,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 16),
+              _buildNumberFields(context),
+              const SizedBox(height: 16),
+              _buildMemberCountSummary(context),
+              const SizedBox(height: 16),
+              Card(
+                elevation: 0,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.teamSetupMockNoticeTitle,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(l10n.teamSetupMockNoticeBody),
-                  ],
+                      const SizedBox(height: 8),
+                      Text(l10n.teamSetupMockNoticeBody),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FilledButton.tonal(
-                  onPressed: _resetInputs,
-                  style: FilledButton.styleFrom(
-                    minimumSize: Size.zero,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FilledButton.tonal(
+                    onPressed: _resetInputs,
+                    style: FilledButton.styleFrom(
+                      minimumSize: Size.zero,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    child: Text(l10n.resetTeamSetupButton),
                   ),
-                  child: Text(l10n.resetTeamSetupButton),
-                ),
-                const SizedBox(width: 12),
-                FilledButton(
-                  onPressed: _submitMock,
-                  style: FilledButton.styleFrom(
-                    minimumSize: Size.zero,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 14,
+                  const SizedBox(width: 12),
+                  FilledButton(
+                    onPressed: _submitMock,
+                    style: FilledButton.styleFrom(
+                      minimumSize: Size.zero,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    child: Text(
+                      l10n.generateTeamScheduleButton,
+                      style: const TextStyle(fontSize: 18),
+                    ),
                   ),
-                  child: Text(
-                    l10n.generateTeamScheduleButton,
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 80),
-          ],
+                ],
+              ),
+              const SizedBox(height: 80),
+            ],
+          ),
         ),
       ),
     );
