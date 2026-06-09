@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
-import 'package:srp_lanske/shared/utils/external_link.dart';
 
 import 'models/team_setup_draft.dart';
 import 'widgets/team_setup_number_field.dart';
-
-const _topPagePath = '/';
 
 class TeamSetupPage extends StatefulWidget {
   const TeamSetupPage({super.key});
@@ -32,18 +29,20 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
   int _teamSize = 2;
   int _participantCount = 8;
 
-  int get _effectiveMaxTeamCount => _maxTeamCount.clamp(
-        _minTeamCount,
-        _participantCount,
-      );
+  int _clampInt(int value, int minValue, int maxValue) =>
+      value.clamp(minValue, maxValue).toInt();
 
-  int get _effectiveMaxTeamSize => _maxTeamSize.clamp(
-        _minTeamSize,
-        _participantCount,
-      );
+  int get _effectiveMaxTeamCount =>
+      _clampInt(_maxTeamCount, _minTeamCount, _participantCount);
 
-  int get _effectiveMaxActiveTeamCountPerRound => _maxActiveTeamCountPerRound
-      .clamp(_minActiveTeamCountPerRound, _teamCount);
+  int get _effectiveMaxTeamSize =>
+      _clampInt(_maxTeamSize, _minTeamSize, _participantCount);
+
+  int get _effectiveMaxActiveTeamCountPerRound => _clampInt(
+        _maxActiveTeamCountPerRound,
+        _minActiveTeamCountPerRound,
+        _teamCount,
+      );
 
   TeamSetupDraft get _draft => TeamSetupDraft(
         courts: _courts,
@@ -54,30 +53,30 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
       );
 
   void _syncDependentValues() {
-    _teamCount = _teamCount.clamp(_minTeamCount, _effectiveMaxTeamCount);
-    _activeTeamCountPerRound = _activeTeamCountPerRound.clamp(
+    _teamCount = _clampInt(_teamCount, _minTeamCount, _effectiveMaxTeamCount);
+    _activeTeamCountPerRound = _clampInt(
+      _activeTeamCountPerRound,
       _minActiveTeamCountPerRound,
       _effectiveMaxActiveTeamCountPerRound,
     );
-    _teamSize = _teamSize.clamp(_minTeamSize, _effectiveMaxTeamSize);
+    _teamSize = _clampInt(_teamSize, _minTeamSize, _effectiveMaxTeamSize);
   }
 
   void _setCourts(int value) {
-    setState(() {
-      _courts = value.clamp(_minCourts, _maxCourts);
-    });
+    setState(() => _courts = _clampInt(value, _minCourts, _maxCourts));
   }
 
   void _setTeamCount(int value) {
     setState(() {
-      _teamCount = value.clamp(_minTeamCount, _effectiveMaxTeamCount);
+      _teamCount = _clampInt(value, _minTeamCount, _effectiveMaxTeamCount);
       _syncDependentValues();
     });
   }
 
   void _setActiveTeamCountPerRound(int value) {
     setState(() {
-      _activeTeamCountPerRound = value.clamp(
+      _activeTeamCountPerRound = _clampInt(
+        value,
         _minActiveTeamCountPerRound,
         _effectiveMaxActiveTeamCountPerRound,
       );
@@ -86,19 +85,23 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
 
   void _setTeamSize(int value) {
     setState(() {
-      _teamSize = value.clamp(_minTeamSize, _effectiveMaxTeamSize);
-      final nextParticipantCount = (_teamCount * _teamSize).clamp(
+      _teamSize = _clampInt(value, _minTeamSize, _effectiveMaxTeamSize);
+      _participantCount = _clampInt(
+        _teamCount * _teamSize,
         _minParticipantCount,
         _maxParticipantCount,
       );
-      _participantCount = nextParticipantCount;
       _syncDependentValues();
     });
   }
 
   void _setParticipantCount(int value) {
     setState(() {
-      _participantCount = value.clamp(_minParticipantCount, _maxParticipantCount);
+      _participantCount = _clampInt(
+        value,
+        _minParticipantCount,
+        _maxParticipantCount,
+      );
       _syncDependentValues();
     });
   }
@@ -115,10 +118,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
 
   void _submitMock() {
     final l10n = AppLocalizations.of(context);
-    final draft = _draft;
-
-    debugPrint(draft.toString());
-
+    debugPrint(_draft.toString());
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
@@ -217,24 +217,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.teamSetupTitle),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'top') {
-                openUrlInCurrentTab(_topPagePath);
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'top',
-                child: Text(l10n.topPageMenu),
-              ),
-            ],
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text(l10n.teamSetupTitle)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(12),
