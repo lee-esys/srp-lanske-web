@@ -3,6 +3,7 @@ import 'package:srp_lanske/l10n/l10n.dart';
 
 import '../features/doubles_scheduler/presentation/event_setup_page.dart';
 import '../features/doubles_scheduler/presentation/restored_schedule_page.dart';
+import '../features/team_scheduler/presentation/team_setup_page.dart';
 import 'theme/app_theme.dart';
 
 class App extends StatelessWidget {
@@ -10,10 +11,11 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final publicId = Uri.base.queryParameters['sid']?.trim();
+    final uri = Uri.base;
+    final publicId = uri.queryParameters['sid']?.trim();
 
     final home = publicId == null || publicId.isEmpty
-        ? const EventSetupPage()
+        ? _homeForPath(uri.path)
         : RestoredSchedulePage(publicId: publicId);
 
     return MaterialApp(
@@ -25,5 +27,13 @@ class App extends StatelessWidget {
       theme: appTheme,
       home: home,
     );
+  }
+
+  Widget _homeForPath(String path) {
+    if (path == '/team') {
+      return const TeamSetupPage();
+    }
+
+    return const EventSetupPage();
   }
 }
