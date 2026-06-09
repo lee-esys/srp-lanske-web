@@ -5,67 +5,57 @@ extension TeamL10n on AppLocalizations {
 
   String get teamSetupMenuTitle => _isJapanese ? 'らんすけ：チーム' : 'Lanske: Team';
 
-  String get teamSetupMenuSubtitle => _isJapanese
-      ? 'チーム用対戦表を作成'
-      : 'Create a team match table';
+  String get teamSetupMenuSubtitle =>
+      _isJapanese ? 'チーム用対戦表を作成' : 'Create a team match table';
 
   String get teamSetupTitle => _isJapanese ? 'らんすけ：チーム' : 'Lanske: Team';
 
   String get teamSetupInstruction => _isJapanese
-      ? '同時進行試合数・参加人数・チーム数を決めて、チーム用対戦表を作成します。'
-      : 'Set simultaneous matches, participants, and teams to create a team match table.';
+      ? '同時進行試合数・参加人数・1チームの目安人数を決めて、チーム用対戦表を作成します。'
+      : 'Set simultaneous matches, participants, and preferred team size to create a team match table.';
 
   String get teamSetupSupportedConditions => _isJapanese
       ? '初期MVPでは、同時進行1〜2試合 / 10チーム程度までを主な確認範囲としています。'
       : 'For the initial MVP, the main verification range is 1 to 2 simultaneous matches and roughly up to 10 teams.';
 
   String get teamSetupInputUpperLimitNote => _isJapanese
-      ? '入力上限: 同時進行試合数5 / 参加人数50 / チーム数25 / 1試合で対戦するチーム数25'
-      : 'Input limits: 5 simultaneous matches / 50 participants / 25 teams / 25 teams per match';
+      ? '入力上限: 同時進行試合数5 / 参加人数50 / 1チームの目安人数25 / 1試合で対戦するチーム数25'
+      : 'Input limits: 5 simultaneous matches / 50 participants / preferred team size 25 / 25 teams per match';
 
-  String get concurrentMatchCountLabel => _isJapanese
-      ? '同時進行試合数'
-      : 'Simultaneous matches';
+  String get concurrentMatchCountLabel =>
+      _isJapanese ? '同時進行試合数' : 'Simultaneous matches';
 
   String get participantCountLabel => _isJapanese ? '参加人数' : 'Participants';
 
-  String get teamCountLabel => _isJapanese ? 'チーム数' : 'Teams';
+  String get preferredTeamSizeLabel =>
+      _isJapanese ? '1チームの目安人数' : 'Preferred team size';
 
-  String get teamsPerMatchLabel => _isJapanese
-      ? '1試合で対戦するチーム数'
-      : 'Teams per match';
+  String get teamsPerMatchLabel =>
+      _isJapanese ? '1試合で対戦するチーム数' : 'Teams per match';
 
-  String get decrementConcurrentMatchCountTooltip => _isJapanese
-      ? '同時進行試合数を減らす'
-      : 'Decrease simultaneous match count';
+  String get decrementConcurrentMatchCountTooltip =>
+      _isJapanese ? '同時進行試合数を減らす' : 'Decrease simultaneous match count';
 
-  String get incrementConcurrentMatchCountTooltip => _isJapanese
-      ? '同時進行試合数を増やす'
-      : 'Increase simultaneous match count';
+  String get incrementConcurrentMatchCountTooltip =>
+      _isJapanese ? '同時進行試合数を増やす' : 'Increase simultaneous match count';
 
-  String get decrementParticipantCountTooltip => _isJapanese
-      ? '参加人数を減らす'
-      : 'Decrease participant count';
+  String get decrementParticipantCountTooltip =>
+      _isJapanese ? '参加人数を減らす' : 'Decrease participant count';
 
-  String get incrementParticipantCountTooltip => _isJapanese
-      ? '参加人数を増やす'
-      : 'Increase participant count';
+  String get incrementParticipantCountTooltip =>
+      _isJapanese ? '参加人数を増やす' : 'Increase participant count';
 
-  String get decrementTeamCountTooltip => _isJapanese
-      ? 'チーム数を減らす'
-      : 'Decrease team count';
+  String get decrementPreferredTeamSizeTooltip =>
+      _isJapanese ? '1チームの目安人数を減らす' : 'Decrease preferred team size';
 
-  String get incrementTeamCountTooltip => _isJapanese
-      ? 'チーム数を増やす'
-      : 'Increase team count';
+  String get incrementPreferredTeamSizeTooltip =>
+      _isJapanese ? '1チームの目安人数を増やす' : 'Increase preferred team size';
 
-  String get decrementTeamsPerMatchTooltip => _isJapanese
-      ? '1試合で対戦するチーム数を減らす'
-      : 'Decrease teams per match';
+  String get decrementTeamsPerMatchTooltip =>
+      _isJapanese ? '1試合で対戦するチーム数を減らす' : 'Decrease teams per match';
 
-  String get incrementTeamsPerMatchTooltip => _isJapanese
-      ? '1試合で対戦するチーム数を増やす'
-      : 'Increase teams per match';
+  String get incrementTeamsPerMatchTooltip =>
+      _isJapanese ? '1試合で対戦するチーム数を増やす' : 'Increase teams per match';
 
   String teamSetupRangeHelp(int minValue, int maxValue) {
     return _isJapanese
@@ -73,31 +63,28 @@ extension TeamL10n on AppLocalizations {
         : 'Select a value from $minValue to $maxValue.';
   }
 
-  String teamMemberCountSummary(int minMemberCount, int maxMemberCount) {
-    if (minMemberCount == maxMemberCount) {
-      return _isJapanese
-          ? '1チーム$minMemberCount人'
-          : '$minMemberCount per team';
-    }
-
-    return _isJapanese
-        ? '1チーム$minMemberCount〜$maxMemberCount人'
-        : '$minMemberCount to $maxMemberCount per team';
+  String teamCountSummary(int teamCount) {
+    return _isJapanese ? '$teamCountチーム' : '$teamCount teams';
   }
 
-  String get teamMemberCountSummaryHelp => _isJapanese
-      ? '参加人数とチーム数から自動計算します。余りがある場合は、一部チームが+1人になります。'
-      : 'Calculated from participants and teams. If the participants do not divide evenly, some teams will have one extra member.';
+  String get teamCountSummaryHelp => _isJapanese
+      ? '参加人数と1チームの目安人数から自動計算します。'
+      : 'Calculated automatically from participants and preferred team size.';
+
+  String teamDistributionSummary(String summary) {
+    return _isJapanese ? '内訳: $summary' : 'Distribution: $summary';
+  }
+
+  String get teamDistributionSummaryHelp => _isJapanese
+      ? '余りがある場合は、一部チームの人数が1人少なくなります。'
+      : 'If there is a remainder, some teams will have one fewer member.';
 
   String get resetTeamSetupButton => _isJapanese ? '入力項目のリセット' : 'Reset inputs';
 
-  String get generateTeamScheduleButton => _isJapanese
-      ? 'チーム対戦表を作成'
-      : 'Create team match table';
+  String get generateTeamScheduleButton =>
+      _isJapanese ? 'チーム対戦表を作成' : 'Create team match table';
 
-  String get teamSetupMockNoticeTitle => _isJapanese
-      ? 'モック確認中'
-      : 'Mock flow';
+  String get teamSetupMockNoticeTitle => _isJapanese ? 'モック確認中' : 'Mock flow';
 
   String get teamSetupMockNoticeBody => _isJapanese
       ? 'backend API 接続前のため、次の作業でチーム用対戦表画面へ接続します。'

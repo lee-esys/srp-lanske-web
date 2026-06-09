@@ -16,42 +16,77 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
   static const _maxConcurrentMatchCount = 5;
   static const _minParticipantCount = 2;
   static const _maxParticipantCount = 50;
-  static const _minTeamCount = 2;
-  static const _maxTeamCount = 25;
+  static const _minPreferredTeamSize = 1;
+  static const _maxPreferredTeamSize = 25;
   static const _minTeamsPerMatch = 2;
   static const _maxTeamsPerMatch = 25;
 
   int _concurrentMatchCount = 1;
   int _participantCount = 8;
-  int _teamCount = 4;
+  int _preferredTeamSize = 2;
   int _teamsPerMatch = 2;
 
   int _clampInt(int value, int minValue, int maxValue) =>
       value.clamp(minValue, maxValue).toInt();
 
-  int get _effectiveMaxTeamCount =>
-      _clampInt(_maxTeamCount, _minTeamCount, _participantCount);
+  int get _effectiveMaxPreferredTeamSize {
+    final maxValue = (_participantCount - 1).clamp(
+      _minPreferredTeamSize,
+      _maxPreferredTeamSize,
+    );
+    return maxValue.toInt();
+  }
+
+  int get _derivedTeamCount =>
+      (_participantCount / _preferredTeamSize).ceil().toInt();
 
   int get _effectiveMaxTeamsPerMatch => _clampInt(
         _maxTeamsPerMatch,
         _minTeamsPerMatch,
-        _teamCount,
+        _derivedTeamCount,
       );
 
-  int get _minMemberCountPerTeam => _participantCount ~/ _teamCount;
+  List<int> get _teamMemberCounts {
+    final teamCount = _derivedTeamCount;
+    final base = _participantCount ~/ teamCount;
+    final remainder = _participantCount % teamCount;
 
-  int get _maxMemberCountPerTeam =>
-      (_participantCount / _teamCount).ceil().toInt();
+    return List<int>.generate(
+      teamCount,
+      (index) => index < remainder ? base + 1 : base,
+      growable: false,
+    );
+  }
+
+  String get _teamDistributionText {
+    final counts = _teamMemberCounts;
+    final grouped = <int, int>{};
+
+    for (final count in counts) {
+      grouped[count] = (grouped[count] ?? 0) + 1;
+    }
+
+    final entries = grouped.entries.toList()
+      ..sort((a, b) => b.key.compareTo(a.key));
+
+    return entries.map((entry) {
+      return '${entry.key}人×${entry.value}チーム';
+    }).join(' / ');
+  }
 
   TeamSetupDraft get _draft => TeamSetupDraft(
         concurrentMatchCount: _concurrentMatchCount,
         participantCount: _participantCount,
-        teamCount: _teamCount,
+        preferredTeamSize: _preferredTeamSize,
         teamsPerMatch: _teamsPerMatch,
       );
 
   void _syncDependentValues() {
-    _teamCount = _clampInt(_teamCount, _minTeamCount, _effectiveMaxTeamCount);
+    _preferredTeamSize = _clampInt(
+      _preferredTeamSize,
+      _minPreferredTeamSize,
+      _effectiveMaxPreferredTeamSize,
+    );
     _teamsPerMatch = _clampInt(
       _teamsPerMatch,
       _minTeamsPerMatch,
@@ -80,9 +115,13 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
     });
   }
 
-  void _setTeamCount(int value) {
+  void _setPreferredTeamSize(int value) {
     setState(() {
-      _teamCount = _clampInt(value, _minTeamCount, _effectiveMaxTeamCount);
+      _preferredTeamSize = _clampInt(
+        value,
+        _minPreferredTeamSize,
+        _effectiveMaxPreferredTeamSize,
+      );
       _syncDependentValues();
     });
   }
@@ -101,7 +140,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
     setState(() {
       _concurrentMatchCount = 1;
       _participantCount = 8;
-      _teamCount = 4;
+      _preferredTeamSize = 2;
       _teamsPerMatch = 2;
     });
   }
@@ -109,6 +148,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
   void _submitMock() {
     final l10n = AppLocalizations.of(context);
     debugPrint(_draft.toString());
+
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
@@ -141,10 +181,8 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
                 minValue: _minConcurrentMatchCount,
                 maxValue: _maxConcurrentMatchCount,
                 onChanged: _setConcurrentMatchCount,
-                tooltipDecrement:
-                    l10n.decrementConcurrentMatchCountTooltip,
-                tooltipIncrement:
-                    l10n.incrementConcurrentMatchCountTooltip,
+                tooltipDecrement: l10n.decrementConcurrentMatchCountTooltip,
+                tooltipIncrement: l10n.incrementConcurrentMatchCountTooltip,
               ),
             ),
             SizedBox(
@@ -162,13 +200,13 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
             SizedBox(
               width: itemWidth,
               child: TeamSetupNumberField(
-                label: l10n.teamCountLabel,
-                value: _teamCount,
-                minValue: _minTeamCount,
-                maxValue: _effectiveMaxTeamCount,
-                onChanged: _setTeamCount,
-                tooltipDecrement: l10n.decrementTeamCountTooltip,
-                tooltipIncrement: l10n.incrementTeamCountTooltip,
+                label: l10n.preferredTeamSizeLabel,
+                value: _preferredTeamSize,
+                minValue: _minPreferredTeamSize,
+                maxValue: _effectiveMaxPreferredTeamSize,
+                onChanged: _setPreferredTeamSize,
+                tooltipDecrement: l10n.decrementPreferredTeamSizeTooltip,
+                tooltipIncrement: l10n.incrementPreferredTeamSizeTooltip,
               ),
             ),
             SizedBox(
@@ -189,29 +227,55 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
     );
   }
 
-  Widget _buildMemberCountSummary(BuildContext context) {
+  Widget _buildSummaryCards(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return Card(
-      elevation: 0,
-      color: Colors.blue.shade50,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.teamMemberCountSummary(
-                _minMemberCountPerTeam,
-                _maxMemberCountPerTeam,
-              ),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return Column(
+      children: [
+        Card(
+          elevation: 0,
+          color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.teamCountSummary(_derivedTeamCount),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(l10n.teamCountSummaryHelp),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(l10n.teamMemberCountSummaryHelp),
-          ],
+          ),
         ),
-      ),
+        const SizedBox(height: 12),
+        Card(
+          elevation: 0,
+          color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.teamDistributionSummary(_teamDistributionText),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(l10n.teamDistributionSummaryHelp),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -227,8 +291,10 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.teamSetupTitle),
-          backgroundColor: Colors.blue.shade700,
-          foregroundColor: Colors.white,
+          backgroundColor: Colors.blue.shade100,
+          foregroundColor: Colors.black87,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
         ),
         body: SafeArea(
           child: ListView(
@@ -251,10 +317,11 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
               const SizedBox(height: 16),
               _buildNumberFields(context),
               const SizedBox(height: 16),
-              _buildMemberCountSummary(context),
+              _buildSummaryCards(context),
               const SizedBox(height: 16),
               Card(
                 elevation: 0,
+                color: Colors.white,
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(

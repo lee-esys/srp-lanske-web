@@ -4,13 +4,13 @@ class TeamSetupDraft {
   const TeamSetupDraft({
     required this.concurrentMatchCount,
     required this.participantCount,
-    required this.teamCount,
+    required this.preferredTeamSize,
     required this.teamsPerMatch,
   });
 
   final int concurrentMatchCount;
   final int participantCount;
-  final int teamCount;
+  final int preferredTeamSize;
   final int teamsPerMatch;
 
   Map<String, dynamic> toJson() {
@@ -18,7 +18,7 @@ class TeamSetupDraft {
       'scheduleType': 'team',
       'concurrentMatchCount': concurrentMatchCount,
       'participantCount': participantCount,
-      'teamCount': teamCount,
+      'preferredTeamSize': preferredTeamSize,
       'teamsPerMatch': teamsPerMatch,
     };
   }
