@@ -79,6 +79,47 @@ extension TeamL10n on AppLocalizations {
       ? '余りがある場合は、一部チームの人数が1人少なくなります。'
       : 'If there is a remainder, some teams will have one fewer member.';
 
+  String get teamParticipantInputTitle =>
+      _isJapanese ? '参加者名の取り込み' : 'Participant names';
+
+  String get teamParticipantInputDescription => _isJapanese
+      ? '改行区切りで参加者名を貼り付けて反映できます。カンマ・読点・タブ区切りも簡易対応します。'
+      : 'Paste participant names separated by new lines. Commas and tabs are also supported in a simple form.';
+
+  String get teamParticipantInputLabel =>
+      _isJapanese ? '参加者名' : 'Participant names';
+
+  String get teamParticipantInputHint =>
+      _isJapanese ? '例:\n田中\n佐藤\n鈴木' : 'Example:\nAlex\nBlair\nCasey';
+
+  String get applyParticipantNamesButton =>
+      _isJapanese ? '参加者名を反映' : 'Apply participant names';
+
+  String participantNameCountStatus(int nameCount, int participantCount) {
+    return _isJapanese
+        ? '入力済み: $nameCount人 / 参加人数: $participantCount人'
+        : 'Names: $nameCount / Participants: $participantCount';
+  }
+
+  String participantNamesAppliedMessage(int nameCount) {
+    return _isJapanese
+        ? '$nameCount人の参加者名を反映しました'
+        : 'Applied $nameCount participant names.';
+  }
+
+  String participantNamesTrimmedMessage(int maxCount) {
+    return _isJapanese
+        ? '$maxCount人まで取り込みました。超過分は省略しました。'
+        : 'Applied up to $maxCount participant names. Extra names were omitted.';
+  }
+
+  String get participantNamesTooFewMessage => _isJapanese
+      ? '参加者名は2人以上入力してください。'
+      : 'Enter at least two participant names.';
+
+  String get participantNamesEmptyMessage =>
+      _isJapanese ? '参加者名を入力してください。' : 'Enter participant names.';
+
   String get resetTeamSetupButton => _isJapanese ? '入力項目のリセット' : 'Reset inputs';
 
   String get generateTeamScheduleButton =>

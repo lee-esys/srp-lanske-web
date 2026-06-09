@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
 import 'models/team_setup_draft.dart';
+import 'widgets/team_participant_name_input_card.dart';
 import 'widgets/team_setup_number_field.dart';
 
 class TeamSetupPage extends StatefulWidget {
@@ -25,6 +26,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
   int _participantCount = 8;
   int _preferredTeamSize = 2;
   int _teamsPerMatch = 2;
+  List<String> _participantNames = const [];
 
   int _clampInt(int value, int minValue, int maxValue) =>
       value.clamp(minValue, maxValue).toInt();
@@ -79,6 +81,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
         participantCount: _participantCount,
         preferredTeamSize: _preferredTeamSize,
         teamsPerMatch: _teamsPerMatch,
+        participantNames: _participantNames,
       );
 
   void _syncDependentValues() {
@@ -136,12 +139,25 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
     });
   }
 
+  void _applyParticipantNames(List<String> names) {
+    setState(() {
+      _participantNames = names;
+      _participantCount = _clampInt(
+        names.length,
+        _minParticipantCount,
+        _maxParticipantCount,
+      );
+      _syncDependentValues();
+    });
+  }
+
   void _resetInputs() {
     setState(() {
       _concurrentMatchCount = 1;
       _participantCount = 8;
       _preferredTeamSize = 2;
       _teamsPerMatch = 2;
+      _participantNames = const [];
     });
   }
 
@@ -316,6 +332,13 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
               ),
               const SizedBox(height: 16),
               _buildNumberFields(context),
+              const SizedBox(height: 16),
+              TeamParticipantNameInputCard(
+                participantNames: _participantNames,
+                participantCount: _participantCount,
+                maxParticipantCount: _maxParticipantCount,
+                onApply: _applyParticipantNames,
+              ),
               const SizedBox(height: 16),
               _buildSummaryCards(context),
               const SizedBox(height: 16),
