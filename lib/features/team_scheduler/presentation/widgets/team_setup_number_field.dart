@@ -63,7 +63,7 @@ class TeamSetupNumberField extends StatelessWidget {
                 ),
                 Expanded(
                   child: DropdownButtonFormField<int>(
-                    value: value,
+                    initialValue: value,
                     items: values
                         .map(
                           (item) => DropdownMenuItem<int>(
