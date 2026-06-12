@@ -3,6 +3,7 @@ import 'package:srp_lanske/l10n/l10n.dart';
 
 import '../features/doubles_scheduler/presentation/event_setup_page.dart';
 import '../features/doubles_scheduler/presentation/restored_schedule_page.dart';
+import '../features/team_scheduler/presentation/team_schedule_page.dart';
 import '../features/team_scheduler/presentation/team_setup_page.dart';
 import 'theme/app_theme.dart';
 
@@ -32,6 +33,14 @@ class App extends StatelessWidget {
   Widget _homeForPath(String path) {
     if (path == '/team') {
       return const TeamSetupPage();
+    }
+
+    final teamScheduleMatch =
+        RegExp(r'^/team/schedules/([^/]+)$').firstMatch(path);
+    if (teamScheduleMatch != null) {
+      return TeamSchedulePage.restore(
+        shareId: teamScheduleMatch.group(1)!.trim().toUpperCase(),
+      );
     }
 
     return const EventSetupPage();
