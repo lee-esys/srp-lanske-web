@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
+import '../../../l10n/team_l10n.dart';
 import 'models/team_setup_draft.dart';
 
 class TeamSchedulePage extends StatefulWidget {
@@ -17,16 +19,26 @@ class TeamSchedulePage extends StatefulWidget {
 class _TeamSchedulePageState extends State<TeamSchedulePage> {
   late final _MockTeamSchedule _schedule;
   late String _selectedTeamId;
+  bool _initialized = false;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    _schedule = _buildMockSchedule(widget.draft);
+    if (_initialized) {
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context);
+    _schedule = _buildMockSchedule(widget.draft, l10n);
     _selectedTeamId = _schedule.teams.first.id;
+    _initialized = true;
   }
 
-  _MockTeamSchedule _buildMockSchedule(TeamSetupDraft draft) {
+  _MockTeamSchedule _buildMockSchedule(
+    TeamSetupDraft draft,
+    AppLocalizations l10n,
+  ) {
     final participantCount = draft.participantCount;
     final preferredTeamSize =
         draft.preferredTeamSize.clamp(1, participantCount);
@@ -43,7 +55,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
         }
       }
 
-      return '参加者${index + 1}';
+      return l10n.defaultTeamMemberName(index + 1);
     }, growable: false);
 
     final members = List<_MockTeamMember>.generate(
@@ -72,7 +84,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
 
       return _MockTeam(
         id: 'team-${teamIndex + 1}',
-        displayName: 'チーム${teamIndex + 1}',
+        displayName: l10n.defaultTeamName(teamIndex + 1),
         memberIds: memberIds,
       );
     }, growable: false);
@@ -113,7 +125,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     }, growable: false);
 
     return _MockTeamSchedule(
-      eventTitle: 'チーム練習会',
+      eventTitle: l10n.defaultTeamScheduleEventTitle,
       members: members,
       teams: teams,
       rounds: rounds,
@@ -139,14 +151,15 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     return _memberById[memberId]?.displayName ?? memberId;
   }
 
-  String _matchTitle(_MockTeamMatch match) {
+  String _matchTitle(BuildContext context, _MockTeamMatch match) {
+    final l10n = AppLocalizations.of(context);
     final teamNames = match.teamIds.map(_teamName).toList(growable: false);
 
     if (teamNames.length == 2) {
-      return '${teamNames[0]} vs ${teamNames[1]}';
+      return teamNames.join(l10n.teamMatchVsSeparator);
     }
 
-    return teamNames.join(' / ');
+    return teamNames.join(l10n.teamMatchGroupSeparator);
   }
 
   void _selectTeam(String teamId) {
@@ -157,6 +170,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
 
   Widget _buildHeaderCard(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Card(
       elevation: 0,
@@ -174,14 +188,16 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              '${_schedule.teams.length}チーム / '
-              '${_schedule.members.length}人 / '
-              '${widget.draft.concurrentMatchCount}同時進行',
+              l10n.teamScheduleSummary(
+                teamCount: _schedule.teams.length,
+                memberCount: _schedule.members.length,
+                concurrentMatchCount: widget.draft.concurrentMatchCount,
+              ),
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              'backend API 接続前のため、表示内容はセットアップ条件から作成したモックデータです。',
+              l10n.teamScheduleMockDataNotice,
               style: theme.textTheme.bodySmall,
             ),
           ],
@@ -192,6 +208,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
 
   Widget _buildNextRoundCard(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final nextRound = _schedule.rounds.firstWhere(
       (round) => round.roundNo == _schedule.nextRoundNo,
       orElse: () => _schedule.rounds.first,
@@ -206,20 +223,23 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '次の対戦',
+              l10n.nextTeamMatchTitle,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              '第${nextRound.roundNo}ラウンド',
+              l10n.teamRoundTitle(nextRound.roundNo),
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 8),
             for (final match in nextRound.matches) ...[
               Text(
-                'コート${match.courtNo}: ${_matchTitle(match)}',
+                l10n.teamCourtMatchTitle(
+                  courtNo: match.courtNo,
+                  matchTitle: _matchTitle(context, match),
+                ),
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -234,6 +254,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
 
   Widget _buildTeamListCard(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Card(
       elevation: 0,
@@ -244,7 +265,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'チーム一覧',
+              l10n.teamListTitle,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -257,7 +278,10 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
                 for (final team in _schedule.teams)
                   ChoiceChip(
                     label: Text(
-                      '${team.displayName} (${team.memberIds.length}人)',
+                      l10n.teamChoiceLabel(
+                        teamName: _teamName(team.id),
+                        memberCount: team.memberIds.length,
+                      ),
                     ),
                     selected: team.id == _selectedTeamId,
                     onSelected: (_) => _selectTeam(team.id),
@@ -272,6 +296,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
 
   Widget _buildSelectedTeamMembersCard(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final team = _selectedTeam;
 
     return Card(
@@ -283,7 +308,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${team.displayName} のメンバー',
+              l10n.selectedTeamMembersTitle(_teamName(team.id)),
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -315,6 +340,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
 
   Widget _buildRoundCard(BuildContext context, _MockTeamRound round) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isNextRound = round.roundNo == _schedule.nextRoundNo;
 
     return Card(
@@ -334,7 +360,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
             Row(
               children: [
                 Text(
-                  '第${round.roundNo}ラウンド',
+                  l10n.teamRoundTitle(round.roundNo),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -342,7 +368,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
                 if (isNextRound) ...[
                   const SizedBox(width: 8),
                   Chip(
-                    label: const Text('次の対戦'),
+                    label: Text(l10n.nextTeamMatchTitle),
                     visualDensity: VisualDensity.compact,
                     backgroundColor: Colors.blue.shade100,
                   ),
@@ -362,17 +388,18 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
 
   Widget _buildMatchRow(BuildContext context, _MockTeamMatch match) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'コート${match.courtNo}',
+          l10n.teamCourtTitle(match.courtNo),
           style: theme.textTheme.labelLarge,
         ),
         const SizedBox(height: 6),
         Text(
-          _matchTitle(match),
+          _matchTitle(context, match),
           style: theme.textTheme.bodyLarge?.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -398,6 +425,8 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Theme(
       data: Theme.of(context).copyWith(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
@@ -405,7 +434,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       ),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('チーム対戦表'),
+          title: Text(l10n.teamScheduleTitle),
           backgroundColor: Colors.blue.shade100,
           foregroundColor: Colors.black87,
           surfaceTintColor: Colors.transparent,
