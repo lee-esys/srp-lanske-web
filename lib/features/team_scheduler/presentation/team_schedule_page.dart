@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/app/config/app_config.dart';
+import 'package:srp_lanske/features/doubles_scheduler/infrastructure/generated_schedule_api_client.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 
-import '../../../l10n/app_localizations.dart';
-import '../../../l10n/team_l10n.dart';
+import '../application/team_generated_schedule_service.dart';
+import '../domain/team_generated_schedule.dart';
 import 'models/team_setup_draft.dart';
 
 class TeamSchedulePage extends StatefulWidget {
@@ -17,157 +20,246 @@ class TeamSchedulePage extends StatefulWidget {
 }
 
 class _TeamSchedulePageState extends State<TeamSchedulePage> {
-  late final _MockTeamSchedule _schedule;
-  late String _eventTitle;
-  late Map<String, String> _teamDisplayNames;
-  late Map<String, String> _memberDisplayNames;
-  late String _selectedTeamId;
-  bool _initialized = false;
+  late final TeamGeneratedScheduleService _service;
+
+  _TeamScheduleViewData? _schedule;
+  String? _errorMessage;
+  bool _isLoading = true;
+
+  String _eventTitle = '';
+  Map<int, String> _teamDisplayNames = const {};
+  Map<int, String> _memberDisplayNames = const {};
+  int? _selectedTeamSlot;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
 
-    if (_initialized) {
-      return;
-    }
-
-    final l10n = AppLocalizations.of(context);
-    _schedule = _buildMockSchedule(widget.draft, l10n);
-    _eventTitle = _schedule.eventTitle;
-    _teamDisplayNames = {
-      for (final team in _schedule.teams) team.id: team.displayName,
-    };
-    _memberDisplayNames = {
-      for (final member in _schedule.members) member.id: member.displayName,
-    };
-    _selectedTeamId = _schedule.teams.first.id;
-    _initialized = true;
-  }
-
-  _MockTeamSchedule _buildMockSchedule(
-    TeamSetupDraft draft,
-    AppLocalizations l10n,
-  ) {
-    final participantCount = draft.participantCount;
-    final preferredTeamSize =
-        draft.preferredTeamSize.clamp(1, participantCount);
-    final teamCount = (participantCount / preferredTeamSize)
-        .ceil()
-        .clamp(1, participantCount)
-        .toInt();
-
-    final memberNames = List<String>.generate(participantCount, (index) {
-      if (index < draft.participantNames.length) {
-        final name = draft.participantNames[index].trim();
-        if (name.isNotEmpty) {
-          return name;
-        }
-      }
-
-      return l10n.defaultTeamMemberName(index + 1);
-    }, growable: false);
-
-    final members = List<_MockTeamMember>.generate(
-      participantCount,
-      (index) => _MockTeamMember(
-        id: 'member-${index + 1}',
-        displayName: memberNames[index],
+    _service = TeamGeneratedScheduleService(
+      GeneratedScheduleApiClient(
+        baseUrl: AppConfig.coreApiBaseUrl,
       ),
-      growable: false,
     );
 
-    final baseMemberCount = participantCount ~/ teamCount;
-    final remainder = participantCount % teamCount;
-    var memberIndex = 0;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _generateSchedule();
+      }
+    });
+  }
 
-    final teams = List<_MockTeam>.generate(teamCount, (teamIndex) {
-      final memberCount =
-          teamIndex < remainder ? baseMemberCount + 1 : baseMemberCount;
-      final memberIds = members
-          .skip(memberIndex)
-          .take(memberCount)
-          .map((member) => member.id)
-          .toList(growable: false);
+  Map<int, _TeamViewData> get _teamBySlot {
+    final schedule = _schedule;
+    if (schedule == null) {
+      return const {};
+    }
 
-      memberIndex += memberCount;
+    return {
+      for (final team in schedule.teams) team.teamSlot: team,
+    };
+  }
 
-      return _MockTeam(
-        id: 'team-${teamIndex + 1}',
-        displayName: l10n.defaultTeamName(teamIndex + 1),
-        memberIds: memberIds,
-      );
-    }, growable: false);
+  Map<int, _TeamMemberViewData> get _memberBySlot {
+    final schedule = _schedule;
+    if (schedule == null) {
+      return const {};
+    }
 
-    final effectiveTeamsPerMatch =
-        teamCount <= 1 ? 1 : draft.teamsPerMatch.clamp(2, teamCount).toInt();
-    final effectiveConcurrentMatchCount =
-        draft.concurrentMatchCount.clamp(1, teamCount).toInt();
+    return {
+      for (final member in schedule.members) member.playerSlot: member,
+    };
+  }
 
-    final rounds = List<_MockTeamRound>.generate(6, (roundIndex) {
-      final matches = List<_MockTeamMatch>.generate(
-        effectiveConcurrentMatchCount,
-        (matchIndex) {
-          final startTeamIndex = (roundIndex *
-                      effectiveConcurrentMatchCount *
-                      effectiveTeamsPerMatch +
-                  matchIndex * effectiveTeamsPerMatch) %
-              teamCount;
+  _TeamViewData get _selectedTeam {
+    final schedule = _schedule!;
+    final selectedTeamSlot = _selectedTeamSlot;
 
-          final teamIds = List<String>.generate(
-            effectiveTeamsPerMatch,
-            (offset) => teams[(startTeamIndex + offset) % teamCount].id,
+    if (selectedTeamSlot == null) {
+      return schedule.teams.first;
+    }
+
+    return _teamBySlot[selectedTeamSlot] ?? schedule.teams.first;
+  }
+
+  Future<void> _generateSchedule() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final generated = await _service.generateFromDraft(widget.draft);
+
+      if (!mounted) {
+        return;
+      }
+
+      final l10n = AppLocalizations.of(context);
+      final schedule = _buildViewData(generated, l10n);
+
+      setState(() {
+        _schedule = schedule;
+        _eventTitle = schedule.eventTitle;
+        _teamDisplayNames = {
+          for (final team in schedule.teams) team.teamSlot: team.displayName,
+        };
+        _memberDisplayNames = {
+          for (final member in schedule.members)
+            member.playerSlot: member.displayName,
+        };
+        _selectedTeamSlot = schedule.teams.first.teamSlot;
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = _formatError(error);
+        _isLoading = false;
+      });
+    }
+  }
+
+  String _formatError(Object error) {
+    if (error is CoreApiException) {
+      return 'HTTP ${error.statusCode}: ${error.message}';
+    }
+
+    return error.toString();
+  }
+
+  _TeamScheduleViewData _buildViewData(
+    TeamGeneratedSchedule generated,
+    AppLocalizations l10n,
+  ) {
+    final sortedGeneratedTeams = generated.teams.toList(growable: false)
+      ..sort((a, b) => a.teamSlot.compareTo(b.teamSlot));
+
+    if (sortedGeneratedTeams.isEmpty) {
+      throw const FormatException('team generate response has no teams');
+    }
+
+    final playerSlots = generated.players
+        .map((player) => player.playerSlot)
+        .where((slot) => slot > 0)
+        .toSet()
+        .toList(growable: false)
+      ..sort();
+
+    final fallbackPlayerCount = generated.playerCount > 0
+        ? generated.playerCount
+        : widget.draft.participantCount;
+
+    final effectivePlayerSlots = playerSlots.isEmpty
+        ? List<int>.generate(
+            fallbackPlayerCount,
+            (index) => index + 1,
             growable: false,
-          );
+          )
+        : playerSlots;
 
-          return _MockTeamMatch(
-            courtNo: matchIndex + 1,
-            teamIds: teamIds,
-          );
-        },
-        growable: false,
+    final members = effectivePlayerSlots.map((playerSlot) {
+      return _TeamMemberViewData(
+        playerSlot: playerSlot,
+        displayName: _initialMemberName(playerSlot, l10n),
       );
+    }).toList(growable: false);
 
-      return _MockTeamRound(
-        roundNo: roundIndex + 1,
-        matches: matches,
+    final assignmentMemberSlotsByTeam = <int, List<int>>{};
+    for (final assignment in generated.assignments) {
+      assignmentMemberSlotsByTeam
+          .putIfAbsent(assignment.teamSlot, () => <int>[])
+          .add(assignment.playerSlot);
+    }
+
+    for (final memberSlots in assignmentMemberSlotsByTeam.values) {
+      memberSlots.sort();
+    }
+
+    final teams = sortedGeneratedTeams.map((team) {
+      final memberPlayerSlots = team.memberPlayerSlots.isNotEmpty
+          ? team.memberPlayerSlots.toList(growable: false)
+          : assignmentMemberSlotsByTeam[team.teamSlot] ?? const <int>[];
+
+      return _TeamViewData(
+        teamSlot: team.teamSlot,
+        displayName: l10n.defaultTeamName(team.teamSlot),
+        memberPlayerSlots: memberPlayerSlots,
       );
-    }, growable: false);
+    }).toList(growable: false);
 
-    return _MockTeamSchedule(
+    final sortedGeneratedRounds = generated.rounds.toList(growable: false)
+      ..sort((a, b) => a.roundNo.compareTo(b.roundNo));
+
+    final rounds = sortedGeneratedRounds.map((round) {
+      final sortedCourts = round.courts.toList(growable: false)
+        ..sort((a, b) {
+          final courtCompare = a.courtNo.compareTo(b.courtNo);
+          if (courtCompare != 0) {
+            return courtCompare;
+          }
+
+          return a.matchNo.compareTo(b.matchNo);
+        });
+
+      return _TeamRoundViewData(
+        roundNo: round.roundNo,
+        matches: sortedCourts.map((court) {
+          return _TeamMatchViewData(
+            courtNo: court.courtNo,
+            matchNo: court.matchNo,
+            teamSlots: court.teamSlots,
+          );
+        }).toList(growable: false),
+      );
+    }).toList(growable: false);
+
+    if (rounds.isEmpty) {
+      throw const FormatException('team generate response has no rounds');
+    }
+
+    return _TeamScheduleViewData(
+      generatedScheduleId: generated.generatedScheduleId,
       eventTitle: l10n.defaultTeamScheduleEventTitle,
       members: members,
       teams: teams,
       rounds: rounds,
-      nextRoundNo: 1,
+      nextRoundNo: rounds.first.roundNo,
+      concurrentMatchCount: generated.courts > 0
+          ? generated.courts
+          : widget.draft.concurrentMatchCount,
     );
   }
 
-  Map<String, _MockTeam> get _teamById => {
-        for (final team in _schedule.teams) team.id: team,
-      };
+  String _initialMemberName(int playerSlot, AppLocalizations l10n) {
+    final index = playerSlot - 1;
+    if (index >= 0 && index < widget.draft.participantNames.length) {
+      final name = widget.draft.participantNames[index].trim();
+      if (name.isNotEmpty) {
+        return name;
+      }
+    }
 
-  Map<String, _MockTeamMember> get _memberById => {
-        for (final member in _schedule.members) member.id: member,
-      };
-
-  _MockTeam get _selectedTeam => _teamById[_selectedTeamId]!;
-
-  String _teamName(String teamId) {
-    return _teamDisplayNames[teamId] ??
-        _teamById[teamId]?.displayName ??
-        teamId;
+    return l10n.defaultTeamMemberName(playerSlot);
   }
 
-  String _memberName(String memberId) {
-    return _memberDisplayNames[memberId] ??
-        _memberById[memberId]?.displayName ??
-        memberId;
+  String _teamName(int teamSlot) {
+    return _teamDisplayNames[teamSlot] ??
+        _teamBySlot[teamSlot]?.displayName ??
+        'Team $teamSlot';
   }
 
-  String _matchTitle(BuildContext context, _MockTeamMatch match) {
+  String _memberName(int playerSlot) {
+    return _memberDisplayNames[playerSlot] ??
+        _memberBySlot[playerSlot]?.displayName ??
+        'Participant $playerSlot';
+  }
+
+  String _matchTitle(BuildContext context, _TeamMatchViewData match) {
     final l10n = AppLocalizations.of(context);
-    final teamNames = match.teamIds.map(_teamName).toList(growable: false);
+    final teamNames = match.teamSlots.map(_teamName).toList(growable: false);
 
     if (teamNames.length == 2) {
       return teamNames.join(l10n.teamMatchVsSeparator);
@@ -176,9 +268,9 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     return teamNames.join(l10n.teamMatchGroupSeparator);
   }
 
-  void _selectTeam(String teamId) {
+  void _selectTeam(int teamSlot) {
     setState(() {
-      _selectedTeamId = teamId;
+      _selectedTeamSlot = teamSlot;
     });
   }
 
@@ -244,31 +336,38 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     );
   }
 
-  Future<void> _editTeamName(String teamId) async {
+  Future<void> _editTeamName(int teamSlot) async {
     final l10n = AppLocalizations.of(context);
 
     await _editDisplayName(
-      dialogTitle: l10n.editTeamNameDialogTitle(_teamName(teamId)),
-      initialValue: _teamName(teamId),
+      dialogTitle: l10n.editTeamNameDialogTitle(_teamName(teamSlot)),
+      initialValue: _teamName(teamSlot),
       onSaved: (value) {
-        _teamDisplayNames[teamId] = value;
+        _teamDisplayNames = {
+          ..._teamDisplayNames,
+          teamSlot: value,
+        };
       },
     );
   }
 
-  Future<void> _editMemberName(String memberId) async {
+  Future<void> _editMemberName(int playerSlot) async {
     final l10n = AppLocalizations.of(context);
 
     await _editDisplayName(
-      dialogTitle: l10n.editTeamMemberNameDialogTitle(_memberName(memberId)),
-      initialValue: _memberName(memberId),
+      dialogTitle: l10n.editTeamMemberNameDialogTitle(_memberName(playerSlot)),
+      initialValue: _memberName(playerSlot),
       onSaved: (value) {
-        _memberDisplayNames[memberId] = value;
+        _memberDisplayNames = {
+          ..._memberDisplayNames,
+          playerSlot: value,
+        };
       },
     );
   }
 
   Widget _buildHeaderCard(BuildContext context) {
+    final schedule = _schedule!;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
 
@@ -301,15 +400,15 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
             const SizedBox(height: 8),
             Text(
               l10n.teamScheduleSummary(
-                teamCount: _schedule.teams.length,
-                memberCount: _schedule.members.length,
-                concurrentMatchCount: widget.draft.concurrentMatchCount,
+                teamCount: schedule.teams.length,
+                memberCount: schedule.members.length,
+                concurrentMatchCount: schedule.concurrentMatchCount,
               ),
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              l10n.teamScheduleMockDataNotice,
+              l10n.teamScheduleBackendDataNotice,
               style: theme.textTheme.bodySmall,
             ),
           ],
@@ -319,11 +418,12 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
   }
 
   Widget _buildNextRoundCard(BuildContext context) {
+    final schedule = _schedule!;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    final nextRound = _schedule.rounds.firstWhere(
-      (round) => round.roundNo == _schedule.nextRoundNo,
-      orElse: () => _schedule.rounds.first,
+    final nextRound = schedule.rounds.firstWhere(
+      (round) => round.roundNo == schedule.nextRoundNo,
+      orElse: () => schedule.rounds.first,
     );
 
     return Card(
@@ -365,6 +465,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
   }
 
   Widget _buildTeamListCard(BuildContext context) {
+    final schedule = _schedule!;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
 
@@ -387,7 +488,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                for (final team in _schedule.teams)
+                for (final team in schedule.teams)
                   _buildTeamSelectionChip(context, team),
               ],
             ),
@@ -397,10 +498,10 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     );
   }
 
-  Widget _buildTeamSelectionChip(BuildContext context, _MockTeam team) {
+  Widget _buildTeamSelectionChip(BuildContext context, _TeamViewData team) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    final isSelected = team.id == _selectedTeamId;
+    final isSelected = team.teamSlot == _selectedTeamSlot;
 
     return Card(
       margin: EdgeInsets.zero,
@@ -414,7 +515,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        onTap: () => _selectTeam(team.id),
+        onTap: () => _selectTeam(team.teamSlot),
         child: Padding(
           padding: const EdgeInsets.only(left: 12, right: 4),
           child: Row(
@@ -426,15 +527,15 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
               ],
               Text(
                 l10n.teamChoiceLabel(
-                  teamName: _teamName(team.id),
-                  memberCount: team.memberIds.length,
+                  teamName: _teamName(team.teamSlot),
+                  memberCount: team.memberPlayerSlots.length,
                 ),
                 style: theme.textTheme.bodyMedium,
               ),
               IconButton(
                 tooltip: l10n.editTeamNameTooltip,
                 visualDensity: VisualDensity.compact,
-                onPressed: () => _editTeamName(team.id),
+                onPressed: () => _editTeamName(team.teamSlot),
                 icon: const Icon(Icons.edit_outlined, size: 18),
               ),
             ],
@@ -458,21 +559,21 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.selectedTeamMembersTitle(_teamName(team.id)),
+              l10n.selectedTeamMembersTitle(_teamName(team.teamSlot)),
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 12),
-            for (final memberId in team.memberIds)
+            for (final playerSlot in team.memberPlayerSlots)
               ListTile(
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.person_outline),
-                title: Text(_memberName(memberId)),
+                title: Text(_memberName(playerSlot)),
                 trailing: IconButton(
                   tooltip: l10n.editTeamMemberNameTooltip,
-                  onPressed: () => _editMemberName(memberId),
+                  onPressed: () => _editMemberName(playerSlot),
                   icon: const Icon(Icons.edit_outlined),
                 ),
               ),
@@ -483,20 +584,23 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
   }
 
   Widget _buildRoundList(BuildContext context) {
+    final schedule = _schedule!;
+
     return Column(
       children: [
-        for (final round in _schedule.rounds) ...[
+        for (final round in schedule.rounds) ...[
           _buildRoundCard(context, round),
-          if (round != _schedule.rounds.last) const SizedBox(height: 12),
+          if (round != schedule.rounds.last) const SizedBox(height: 12),
         ],
       ],
     );
   }
 
-  Widget _buildRoundCard(BuildContext context, _MockTeamRound round) {
+  Widget _buildRoundCard(BuildContext context, _TeamRoundViewData round) {
+    final schedule = _schedule!;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    final isNextRound = round.roundNo == _schedule.nextRoundNo;
+    final isNextRound = round.roundNo == schedule.nextRoundNo;
 
     return Card(
       elevation: 0,
@@ -541,7 +645,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     );
   }
 
-  Widget _buildMatchRow(BuildContext context, _MockTeamMatch match) {
+  Widget _buildMatchRow(BuildContext context, _TeamMatchViewData match) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
 
@@ -564,18 +668,104 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           spacing: 8,
           runSpacing: 8,
           children: [
-            for (final teamId in match.teamIds)
+            for (final teamSlot in match.teamSlots)
               ActionChip(
-                label: Text(_teamName(teamId)),
-                avatar: teamId == _selectedTeamId
+                label: Text(_teamName(teamSlot)),
+                avatar: teamSlot == _selectedTeamSlot
                     ? const Icon(Icons.check, size: 18)
                     : null,
-                onPressed: () => _selectTeam(teamId),
+                onPressed: () => _selectTeam(teamSlot),
               ),
           ],
         ),
       ],
     );
+  }
+
+  Widget _buildLoadingBody(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(l10n.creatingTeamScheduleMessage),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorBody(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final message = _errorMessage ?? '';
+
+    return ListView(
+      padding: const EdgeInsets.all(12),
+      children: [
+        Card(
+          elevation: 0,
+          color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.teamScheduleGenerateFailedTitle,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(l10n.teamScheduleGenerateFailedBody(message)),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: _generateSchedule,
+                  icon: const Icon(Icons.refresh),
+                  label: Text(l10n.retryTeamScheduleGenerateButton),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScheduleBody(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(12),
+      children: [
+        _buildHeaderCard(context),
+        const SizedBox(height: 12),
+        _buildNextRoundCard(context),
+        const SizedBox(height: 12),
+        _buildTeamListCard(context),
+        const SizedBox(height: 12),
+        _buildSelectedTeamMembersCard(context),
+        const SizedBox(height: 16),
+        _buildRoundList(context),
+        const SizedBox(height: 80),
+      ],
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    if (_isLoading) {
+      return _buildLoadingBody(context);
+    }
+
+    if (_errorMessage != null || _schedule == null) {
+      return _buildErrorBody(context);
+    }
+
+    return _buildScheduleBody(context);
   }
 
   @override
@@ -596,81 +786,73 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           elevation: 0,
         ),
         body: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.all(12),
-            children: [
-              _buildHeaderCard(context),
-              const SizedBox(height: 12),
-              _buildNextRoundCard(context),
-              const SizedBox(height: 12),
-              _buildTeamListCard(context),
-              const SizedBox(height: 12),
-              _buildSelectedTeamMembersCard(context),
-              const SizedBox(height: 16),
-              _buildRoundList(context),
-              const SizedBox(height: 80),
-            ],
-          ),
+          child: _buildBody(context),
         ),
       ),
     );
   }
 }
 
-class _MockTeamSchedule {
-  const _MockTeamSchedule({
+class _TeamScheduleViewData {
+  const _TeamScheduleViewData({
+    required this.generatedScheduleId,
     required this.eventTitle,
     required this.members,
     required this.teams,
     required this.rounds,
     required this.nextRoundNo,
+    required this.concurrentMatchCount,
   });
 
+  final String generatedScheduleId;
   final String eventTitle;
-  final List<_MockTeamMember> members;
-  final List<_MockTeam> teams;
-  final List<_MockTeamRound> rounds;
+  final List<_TeamMemberViewData> members;
+  final List<_TeamViewData> teams;
+  final List<_TeamRoundViewData> rounds;
   final int nextRoundNo;
+  final int concurrentMatchCount;
 }
 
-class _MockTeamMember {
-  const _MockTeamMember({
-    required this.id,
+class _TeamMemberViewData {
+  const _TeamMemberViewData({
+    required this.playerSlot,
     required this.displayName,
   });
 
-  final String id;
+  final int playerSlot;
   final String displayName;
 }
 
-class _MockTeam {
-  const _MockTeam({
-    required this.id,
+class _TeamViewData {
+  const _TeamViewData({
+    required this.teamSlot,
     required this.displayName,
-    required this.memberIds,
+    required this.memberPlayerSlots,
   });
 
-  final String id;
+  final int teamSlot;
   final String displayName;
-  final List<String> memberIds;
+  final List<int> memberPlayerSlots;
 }
 
-class _MockTeamRound {
-  const _MockTeamRound({
+class _TeamRoundViewData {
+  const _TeamRoundViewData({
     required this.roundNo,
     required this.matches,
   });
 
   final int roundNo;
-  final List<_MockTeamMatch> matches;
+  final List<_TeamMatchViewData> matches;
 }
 
-class _MockTeamMatch {
-  const _MockTeamMatch({
+class _TeamMatchViewData {
+  const _TeamMatchViewData({
     required this.courtNo,
-    required this.teamIds,
+    required this.matchNo,
+    required this.teamSlots,
   });
 
   final int courtNo;
-  final List<String> teamIds;
+  final int matchNo;
+  final List<int> teamSlots;
 }
