@@ -197,4 +197,29 @@ extension TeamL10n on AppLocalizations {
   String get teamMatchVsSeparator => ' vs ';
 
   String get teamMatchGroupSeparator => ' / ';
+
+  String get editTeamScheduleEventTitleTooltip =>
+      _isJapanese ? 'イベントタイトルを編集' : 'Edit event title';
+
+  String get editTeamNameTooltip => _isJapanese ? 'チーム名を編集' : 'Edit team name';
+
+  String get editTeamMemberNameTooltip =>
+      _isJapanese ? 'メンバー表示名を編集' : 'Edit member display name';
+
+  String get editTeamScheduleEventTitleDialogTitle =>
+      _isJapanese ? 'イベントタイトルを編集' : 'Edit event title';
+
+  String editTeamNameDialogTitle(String teamName) {
+    return _isJapanese ? '$teamName を編集' : 'Edit $teamName';
+  }
+
+  String editTeamMemberNameDialogTitle(String memberName) {
+    return _isJapanese ? '$memberName を編集' : 'Edit $memberName';
+  }
+
+  String get displayNameInputLabel => _isJapanese ? '表示名' : 'Display name';
+
+  String get cancelDisplayNameEditButton => _isJapanese ? 'キャンセル' : 'Cancel';
+
+  String get saveDisplayNameEditButton => _isJapanese ? '保存' : 'Save';
 }

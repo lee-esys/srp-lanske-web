@@ -18,6 +18,9 @@ class TeamSchedulePage extends StatefulWidget {
 
 class _TeamSchedulePageState extends State<TeamSchedulePage> {
   late final _MockTeamSchedule _schedule;
+  late String _eventTitle;
+  late Map<String, String> _teamDisplayNames;
+  late Map<String, String> _memberDisplayNames;
   late String _selectedTeamId;
   bool _initialized = false;
 
@@ -31,6 +34,13 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
 
     final l10n = AppLocalizations.of(context);
     _schedule = _buildMockSchedule(widget.draft, l10n);
+    _eventTitle = _schedule.eventTitle;
+    _teamDisplayNames = {
+      for (final team in _schedule.teams) team.id: team.displayName,
+    };
+    _memberDisplayNames = {
+      for (final member in _schedule.members) member.id: member.displayName,
+    };
     _selectedTeamId = _schedule.teams.first.id;
     _initialized = true;
   }
@@ -144,11 +154,15 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
   _MockTeam get _selectedTeam => _teamById[_selectedTeamId]!;
 
   String _teamName(String teamId) {
-    return _teamById[teamId]?.displayName ?? teamId;
+    return _teamDisplayNames[teamId] ??
+        _teamById[teamId]?.displayName ??
+        teamId;
   }
 
   String _memberName(String memberId) {
-    return _memberById[memberId]?.displayName ?? memberId;
+    return _memberDisplayNames[memberId] ??
+        _memberById[memberId]?.displayName ??
+        memberId;
   }
 
   String _matchTitle(BuildContext context, _MockTeamMatch match) {
@@ -168,6 +182,92 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     });
   }
 
+  Future<void> _editDisplayName({
+    required String dialogTitle,
+    required String initialValue,
+    required ValueChanged<String> onSaved,
+  }) async {
+    final l10n = AppLocalizations.of(context);
+    final controller = TextEditingController(text: initialValue);
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(dialogTitle),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: l10n.displayNameInputLabel,
+            ),
+            textInputAction: TextInputAction.done,
+            onSubmitted: (value) {
+              Navigator.of(context).pop(value);
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.cancelDisplayNameEditButton),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(controller.text),
+              child: Text(l10n.saveDisplayNameEditButton),
+            ),
+          ],
+        );
+      },
+    );
+
+    controller.dispose();
+
+    final trimmed = result?.trim();
+    if (trimmed == null || trimmed.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      onSaved(trimmed);
+    });
+  }
+
+  Future<void> _editEventTitle() async {
+    final l10n = AppLocalizations.of(context);
+
+    await _editDisplayName(
+      dialogTitle: l10n.editTeamScheduleEventTitleDialogTitle,
+      initialValue: _eventTitle,
+      onSaved: (value) {
+        _eventTitle = value;
+      },
+    );
+  }
+
+  Future<void> _editTeamName(String teamId) async {
+    final l10n = AppLocalizations.of(context);
+
+    await _editDisplayName(
+      dialogTitle: l10n.editTeamNameDialogTitle(_teamName(teamId)),
+      initialValue: _teamName(teamId),
+      onSaved: (value) {
+        _teamDisplayNames[teamId] = value;
+      },
+    );
+  }
+
+  Future<void> _editMemberName(String memberId) async {
+    final l10n = AppLocalizations.of(context);
+
+    await _editDisplayName(
+      dialogTitle: l10n.editTeamMemberNameDialogTitle(_memberName(memberId)),
+      initialValue: _memberName(memberId),
+      onSaved: (value) {
+        _memberDisplayNames[memberId] = value;
+      },
+    );
+  }
+
   Widget _buildHeaderCard(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
@@ -180,11 +280,23 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _schedule.eventTitle,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    _eventTitle,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: l10n.editTeamScheduleEventTitleTooltip,
+                  onPressed: _editEventTitle,
+                  icon: const Icon(Icons.edit_outlined),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Text(
@@ -276,19 +388,57 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
               runSpacing: 8,
               children: [
                 for (final team in _schedule.teams)
-                  ChoiceChip(
-                    label: Text(
-                      l10n.teamChoiceLabel(
-                        teamName: _teamName(team.id),
-                        memberCount: team.memberIds.length,
-                      ),
-                    ),
-                    selected: team.id == _selectedTeamId,
-                    onSelected: (_) => _selectTeam(team.id),
-                  ),
+                  _buildTeamSelectionChip(context, team),
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTeamSelectionChip(BuildContext context, _MockTeam team) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final isSelected = team.id == _selectedTeamId;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      color: isSelected ? Colors.blue.shade50 : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: isSelected ? Colors.blue.shade300 : Colors.grey.shade300,
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => _selectTeam(team.id),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 12, right: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isSelected) ...[
+                const Icon(Icons.check, size: 18),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                l10n.teamChoiceLabel(
+                  teamName: _teamName(team.id),
+                  memberCount: team.memberIds.length,
+                ),
+                style: theme.textTheme.bodyMedium,
+              ),
+              IconButton(
+                tooltip: l10n.editTeamNameTooltip,
+                visualDensity: VisualDensity.compact,
+                onPressed: () => _editTeamName(team.id),
+                icon: const Icon(Icons.edit_outlined, size: 18),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -320,6 +470,11 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.person_outline),
                 title: Text(_memberName(memberId)),
+                trailing: IconButton(
+                  tooltip: l10n.editTeamMemberNameTooltip,
+                  onPressed: () => _editMemberName(memberId),
+                  icon: const Icon(Icons.edit_outlined),
+                ),
               ),
           ],
         ),
