@@ -1,19 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
+import 'package:srp_lanske/features/doubles_scheduler/domain/public_id.dart';
 import 'package:srp_lanske/features/doubles_scheduler/infrastructure/generated_schedule_api_client.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
+import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
 import '../application/team_generated_schedule_service.dart';
+import '../domain/saved_team_schedule.dart';
 import '../domain/team_generated_schedule.dart';
 import 'models/team_setup_draft.dart';
 
-class TeamSchedulePage extends StatefulWidget {
-  const TeamSchedulePage({
-    required this.draft,
-    super.key,
-  });
+enum _TeamSchedulePageMode {
+  create,
+  restore,
+}
 
-  final TeamSetupDraft draft;
+class TeamSchedulePage extends StatefulWidget {
+  const TeamSchedulePage.create({
+    required TeamSetupDraft draft,
+    super.key,
+  })  : _mode = _TeamSchedulePageMode.create,
+        _draft = draft,
+        _shareId = null;
+
+  const TeamSchedulePage.restore({
+    required String shareId,
+    super.key,
+  })  : _mode = _TeamSchedulePageMode.restore,
+        _draft = null,
+        _shareId = shareId;
+
+  final _TeamSchedulePageMode _mode;
+  final TeamSetupDraft? _draft;
+  final String? _shareId;
 
   @override
   State<TeamSchedulePage> createState() => _TeamSchedulePageState();
@@ -25,11 +45,17 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
   _TeamScheduleViewData? _schedule;
   String? _errorMessage;
   bool _isLoading = true;
+  bool _isSavingDisplay = false;
+  String? _displaySaveErrorMessage;
 
   String _eventTitle = '';
   Map<int, String> _teamDisplayNames = const {};
   Map<int, String> _memberDisplayNames = const {};
   int? _selectedTeamSlot;
+  String? _shareId;
+  String? _shareUrl;
+
+  bool get _isRestoreMode => widget._mode == _TeamSchedulePageMode.restore;
 
   @override
   void initState() {
@@ -42,7 +68,13 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
+      if (!mounted) {
+        return;
+      }
+
+      if (_isRestoreMode) {
+        _restoreSchedule();
+      } else {
         _generateSchedule();
       }
     });
@@ -82,32 +114,128 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
   }
 
   Future<void> _generateSchedule() async {
+    final draft = widget._draft;
+    if (draft == null) {
+      setState(() {
+        _errorMessage = 'missing team setup draft';
+        _isLoading = false;
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _displaySaveErrorMessage = null;
     });
 
     try {
-      final generated = await _service.generateFromDraft(widget.draft);
+      final generated = await _service.generateFromDraft(draft);
 
       if (!mounted) {
         return;
       }
 
       final l10n = AppLocalizations.of(context);
-      final schedule = _buildViewData(generated, l10n);
+      final schedule = _buildViewData(
+        generated: generated,
+        l10n: l10n,
+        draft: draft,
+      );
+
+      final teamNames = {
+        for (final team in schedule.teams) team.teamSlot: team.displayName,
+      };
+      final memberNames = {
+        for (final member in schedule.members)
+          member.playerSlot: member.displayName,
+      };
+
+      final saved = await appTeamScheduleRepository.createFromGenerated(
+        draft: draft,
+        generated: generated,
+        eventTitle: schedule.eventTitle,
+        teamNames: teamNames,
+        memberNames: memberNames,
+      );
+
+      if (!mounted) {
+        return;
+      }
 
       setState(() {
         _schedule = schedule;
-        _eventTitle = schedule.eventTitle;
-        _teamDisplayNames = {
-          for (final team in schedule.teams) team.teamSlot: team.displayName,
-        };
-        _memberDisplayNames = {
-          for (final member in schedule.members)
-            member.playerSlot: member.displayName,
-        };
+        _eventTitle = saved.display.eventTitle;
+        _teamDisplayNames = saved.display.teamNames;
+        _memberDisplayNames = saved.display.memberNames;
         _selectedTeamSlot = schedule.teams.first.teamSlot;
+        _shareId = saved.shareId;
+        _shareUrl = _buildShareUrl(saved.shareId);
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = _formatError(error);
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _restoreSchedule() async {
+    final rawShareId = widget._shareId?.trim().toUpperCase() ?? '';
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+      _displaySaveErrorMessage = null;
+    });
+
+    try {
+      if (!isValidPublicId(rawShareId)) {
+        throw FormatException('invalid share id: $rawShareId');
+      }
+
+      final saved = await appTeamScheduleRepository.findByShareId(rawShareId);
+      if (saved == null) {
+        throw StateError('team schedule not found: $rawShareId');
+      }
+
+      final generated = TeamGeneratedSchedule.fromJson(saved.snapshot);
+
+      if (!mounted) {
+        return;
+      }
+
+      final schedule = _buildViewData(
+        generated: generated,
+        l10n: AppLocalizations.of(context),
+        savedSetup: saved.setup,
+      );
+
+      setState(() {
+        _schedule = schedule;
+        _eventTitle = saved.display.eventTitle.isEmpty
+            ? schedule.eventTitle
+            : saved.display.eventTitle;
+        _teamDisplayNames = saved.display.teamNames.isEmpty
+            ? {
+                for (final team in schedule.teams)
+                  team.teamSlot: team.displayName,
+              }
+            : saved.display.teamNames;
+        _memberDisplayNames = saved.display.memberNames.isEmpty
+            ? {
+                for (final member in schedule.members)
+                  member.playerSlot: member.displayName,
+              }
+            : saved.display.memberNames;
+        _selectedTeamSlot = schedule.teams.first.teamSlot;
+        _shareId = saved.shareId;
+        _shareUrl = _buildShareUrl(saved.shareId);
         _isLoading = false;
       });
     } catch (error) {
@@ -130,10 +258,24 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     return error.toString();
   }
 
-  _TeamScheduleViewData _buildViewData(
-    TeamGeneratedSchedule generated,
-    AppLocalizations l10n,
-  ) {
+  String _buildShareUrl(String shareId) {
+    final base = Uri.base;
+
+    return base
+        .replace(
+          path: '/team/schedules/$shareId',
+          queryParameters: const <String, String>{},
+          fragment: '',
+        )
+        .toString();
+  }
+
+  _TeamScheduleViewData _buildViewData({
+    required TeamGeneratedSchedule generated,
+    required AppLocalizations l10n,
+    TeamSetupDraft? draft,
+    SavedTeamScheduleSetup? savedSetup,
+  }) {
     final sortedGeneratedTeams = generated.teams.toList(growable: false)
       ..sort((a, b) => a.teamSlot.compareTo(b.teamSlot));
 
@@ -150,7 +292,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
 
     final fallbackPlayerCount = generated.playerCount > 0
         ? generated.playerCount
-        : widget.draft.participantCount;
+        : draft?.participantCount ?? savedSetup?.participantCount ?? 0;
 
     final effectivePlayerSlots = playerSlots.isEmpty
         ? List<int>.generate(
@@ -163,7 +305,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     final members = effectivePlayerSlots.map((playerSlot) {
       return _TeamMemberViewData(
         playerSlot: playerSlot,
-        displayName: _initialMemberName(playerSlot, l10n),
+        displayName: _initialMemberName(playerSlot, l10n, draft),
       );
     }).toList(growable: false);
 
@@ -229,14 +371,21 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       nextRoundNo: rounds.first.roundNo,
       concurrentMatchCount: generated.courts > 0
           ? generated.courts
-          : widget.draft.concurrentMatchCount,
+          : draft?.concurrentMatchCount ??
+              savedSetup?.concurrentMatchCount ??
+              1,
     );
   }
 
-  String _initialMemberName(int playerSlot, AppLocalizations l10n) {
+  String _initialMemberName(
+    int playerSlot,
+    AppLocalizations l10n,
+    TeamSetupDraft? draft,
+  ) {
+    final names = draft?.participantNames ?? const <String>[];
     final index = playerSlot - 1;
-    if (index >= 0 && index < widget.draft.participantNames.length) {
-      final name = widget.draft.participantNames[index].trim();
+    if (index >= 0 && index < names.length) {
+      final name = names[index].trim();
       if (name.isNotEmpty) {
         return name;
       }
@@ -257,6 +406,53 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
         'Participant $playerSlot';
   }
 
+  SavedTeamScheduleDisplay _currentDisplay() {
+    return SavedTeamScheduleDisplay(
+      eventTitle: _eventTitle,
+      teamNames: Map<int, String>.unmodifiable(_teamDisplayNames),
+      memberNames: Map<int, String>.unmodifiable(_memberDisplayNames),
+    );
+  }
+
+  Future<void> _saveCurrentDisplay() async {
+    final shareId = _shareId;
+    if (shareId == null || shareId.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _isSavingDisplay = true;
+      _displaySaveErrorMessage = null;
+    });
+
+    try {
+      final saved = await appTeamScheduleRepository.updateDisplay(
+        shareId: shareId,
+        display: _currentDisplay(),
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _eventTitle = saved.display.eventTitle;
+        _teamDisplayNames = saved.display.teamNames;
+        _memberDisplayNames = saved.display.memberNames;
+        _isSavingDisplay = false;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _displaySaveErrorMessage = _formatError(error);
+        _isSavingDisplay = false;
+      });
+    }
+  }
+
   String _matchTitle(BuildContext context, _TeamMatchViewData match) {
     final l10n = AppLocalizations.of(context);
     final teamNames = match.teamSlots.map(_teamName).toList(growable: false);
@@ -272,6 +468,24 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     setState(() {
       _selectedTeamSlot = teamSlot;
     });
+  }
+
+  Future<void> _copyShareUrl() async {
+    final l10n = AppLocalizations.of(context);
+    final shareUrl = _shareUrl;
+    if (shareUrl == null || shareUrl.isEmpty) {
+      return;
+    }
+
+    await Clipboard.setData(ClipboardData(text: shareUrl));
+
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.teamScheduleShareUrlCopiedMessage)),
+    );
   }
 
   Future<void> _editDisplayName({
@@ -322,6 +536,8 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     setState(() {
       onSaved(trimmed);
     });
+
+    await _saveCurrentDisplay();
   }
 
   Future<void> _editEventTitle() async {
@@ -410,6 +626,91 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
             Text(
               l10n.teamScheduleBackendDataNotice,
               style: theme.textTheme.bodySmall,
+            ),
+            if (_isSavingDisplay || _displaySaveErrorMessage != null) ...[
+              const SizedBox(height: 8),
+              _buildDisplaySaveStatus(context),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDisplaySaveStatus(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final error = _displaySaveErrorMessage;
+
+    if (_isSavingDisplay) {
+      return Row(
+        children: [
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            l10n.savingTeamScheduleDisplayMessage,
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
+      );
+    }
+
+    if (error != null && error.isNotEmpty) {
+      return Text(
+        l10n.teamScheduleDisplaySaveFailedMessage(error),
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.error,
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildShareCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final shareId = _shareId;
+    final shareUrl = _shareUrl;
+
+    if (shareId == null || shareUrl == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Card(
+      elevation: 0,
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.teamScheduleShareTitle,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(l10n.teamScheduleShareDescription),
+            const SizedBox(height: 12),
+            SelectableText(
+              l10n.teamScheduleShareIdLabel(shareId),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SelectableText(shareUrl),
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              onPressed: _copyShareUrl,
+              icon: const Icon(Icons.copy),
+              label: Text(l10n.copyTeamScheduleShareUrlButton),
             ),
           ],
         ),
@@ -684,6 +985,9 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
 
   Widget _buildLoadingBody(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final message = _isRestoreMode
+        ? l10n.restoringTeamScheduleMessage
+        : l10n.creatingTeamScheduleMessage;
 
     return Center(
       child: Padding(
@@ -693,7 +997,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(height: 16),
-            Text(l10n.creatingTeamScheduleMessage),
+            Text(message),
           ],
         ),
       ),
@@ -717,18 +1021,29 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  l10n.teamScheduleGenerateFailedTitle,
+                  _isRestoreMode
+                      ? l10n.teamScheduleRestoreFailedTitle
+                      : l10n.teamScheduleGenerateFailedTitle,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(l10n.teamScheduleGenerateFailedBody(message)),
+                Text(
+                  _isRestoreMode
+                      ? l10n.teamScheduleRestoreFailedBody(message)
+                      : l10n.teamScheduleGenerateFailedBody(message),
+                ),
                 const SizedBox(height: 16),
                 FilledButton.icon(
-                  onPressed: _generateSchedule,
+                  onPressed:
+                      _isRestoreMode ? _restoreSchedule : _generateSchedule,
                   icon: const Icon(Icons.refresh),
-                  label: Text(l10n.retryTeamScheduleGenerateButton),
+                  label: Text(
+                    _isRestoreMode
+                        ? l10n.retryTeamScheduleRestoreButton
+                        : l10n.retryTeamScheduleGenerateButton,
+                  ),
                 ),
               ],
             ),
@@ -743,6 +1058,8 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       padding: const EdgeInsets.all(12),
       children: [
         _buildHeaderCard(context),
+        const SizedBox(height: 12),
+        _buildShareCard(context),
         const SizedBox(height: 12),
         _buildNextRoundCard(context),
         const SizedBox(height: 12),

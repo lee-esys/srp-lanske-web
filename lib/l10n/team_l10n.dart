@@ -129,8 +129,8 @@ extension TeamL10n on AppLocalizations {
       _isJapanese ? 'alpha確認中' : 'Alpha flow';
 
   String get teamSetupAlphaNoticeBody => _isJapanese
-      ? '作成後、backend API の生成結果を表示します。チーム変更・スコア入力・共有URLはまだ未実装です。'
-      : 'After creation, this screen shows the backend API result. Team changes, score input, and share URLs are not implemented yet.';
+      ? '作成後、backend API の生成結果を保存し、共有URLから再表示できます。チーム変更・スコア入力はまだ未実装です。'
+      : 'After creation, the backend API result is saved and can be reopened from a share URL. Team changes and score input are not implemented yet.';
 
   String get teamSetupMockNoticeTitle => teamSetupAlphaNoticeTitle;
 
@@ -166,11 +166,19 @@ extension TeamL10n on AppLocalizations {
   String get teamScheduleMockDataNotice => teamScheduleBackendDataNotice;
 
   String get teamScheduleBackendDataNotice => _isJapanese
-      ? 'backend API の生成結果を表示しています。表示名はこの画面内で編集できます。'
-      : 'Showing the backend API result. Display names can be edited on this screen.';
+      ? 'backend API の生成結果を保存して表示しています。表示名はこの画面内で編集できます。'
+      : 'Showing the saved backend API result. Display names can be edited on this screen.';
 
-  String get creatingTeamScheduleMessage =>
-      _isJapanese ? 'チーム対戦表を作成中です…' : 'Creating team match table...';
+  String get creatingTeamScheduleMessage => _isJapanese
+      ? 'チーム対戦表を作成・保存中です…'
+      : 'Creating and saving team match table...';
+
+  String get restoringTeamScheduleMessage => _isJapanese
+      ? '保存済みのチーム対戦表を読み込み中です…'
+      : 'Loading saved team match table...';
+
+  String get savingTeamScheduleDisplayMessage =>
+      _isJapanese ? '表示名を保存中です…' : 'Saving display names...';
 
   String get teamScheduleGenerateFailedTitle =>
       _isJapanese ? 'チーム対戦表の作成に失敗しました' : 'Failed to create team match table';
@@ -178,17 +186,57 @@ extension TeamL10n on AppLocalizations {
   String teamScheduleGenerateFailedBody(String detail) {
     if (detail.isEmpty) {
       return _isJapanese
-          ? 'backend API の応答を確認してください。'
-          : 'Check the backend API response.';
+          ? 'backend API または Firestore 保存の応答を確認してください。'
+          : 'Check the backend API or Firestore save response.';
     }
 
     return _isJapanese
-        ? 'backend API の応答を確認してください。\n\n$detail'
-        : 'Check the backend API response.\n\n$detail';
+        ? 'backend API または Firestore 保存の応答を確認してください。\n\n$detail'
+        : 'Check the backend API or Firestore save response.\n\n$detail';
+  }
+
+  String get teamScheduleRestoreFailedTitle =>
+      _isJapanese ? 'チーム対戦表の読み込みに失敗しました' : 'Failed to load team match table';
+
+  String teamScheduleRestoreFailedBody(String detail) {
+    if (detail.isEmpty) {
+      return _isJapanese
+          ? '共有IDまたは保存済みデータを確認してください。'
+          : 'Check the share ID or saved data.';
+    }
+
+    return _isJapanese
+        ? '共有IDまたは保存済みデータを確認してください。\n\n$detail'
+        : 'Check the share ID or saved data.\n\n$detail';
+  }
+
+  String teamScheduleDisplaySaveFailedMessage(String detail) {
+    return _isJapanese
+        ? '表示名の保存に失敗しました: $detail'
+        : 'Failed to save display names: $detail';
   }
 
   String get retryTeamScheduleGenerateButton =>
       _isJapanese ? 'もう一度作成' : 'Try again';
+
+  String get retryTeamScheduleRestoreButton =>
+      _isJapanese ? 'もう一度読み込む' : 'Reload';
+
+  String get teamScheduleShareTitle => _isJapanese ? '共有URL' : 'Share URL';
+
+  String get teamScheduleShareDescription => _isJapanese
+      ? 'このURLを共有すると、保存済みのチーム対戦表を開き直せます。'
+      : 'Share this URL to reopen the saved team match table.';
+
+  String teamScheduleShareIdLabel(String shareId) {
+    return _isJapanese ? '共有ID: $shareId' : 'Share ID: $shareId';
+  }
+
+  String get copyTeamScheduleShareUrlButton =>
+      _isJapanese ? '共有URLをコピー' : 'Copy share URL';
+
+  String get teamScheduleShareUrlCopiedMessage =>
+      _isJapanese ? '共有URLをコピーしました' : 'Copied share URL.';
 
   String get nextTeamMatchTitle => _isJapanese ? '次の対戦' : 'Next match';
 

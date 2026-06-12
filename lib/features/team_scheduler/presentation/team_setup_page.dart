@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
-import 'team_schedule_page.dart';
 import 'models/team_setup_draft.dart';
+import 'team_schedule_page.dart';
 import 'widgets/team_participant_name_input_card.dart';
 import 'widgets/team_setup_number_field.dart';
 
@@ -180,7 +180,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
   void _submit() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => TeamSchedulePage(draft: _draft),
+        builder: (context) => TeamSchedulePage.create(draft: _draft),
       ),
     );
   }
