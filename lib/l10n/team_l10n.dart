@@ -15,12 +15,12 @@ extension TeamL10n on AppLocalizations {
       : 'Set simultaneous matches, participants, and preferred team size to create a team match table.';
 
   String get teamSetupSupportedConditions => _isJapanese
-      ? '初期MVPでは、同時進行1〜2試合 / 10チーム程度までを主な確認範囲としています。'
-      : 'For the initial MVP, the main verification range is 1 to 2 simultaneous matches and roughly up to 10 teams.';
+      ? '初期alphaでは、backend APIで5ラウンド分のチーム対戦表を作成します。'
+      : 'For the initial alpha, the backend API creates a 5-round team match table.';
 
   String get teamSetupInputUpperLimitNote => _isJapanese
-      ? '入力上限: 同時進行試合数5 / 参加人数50 / 1チームの目安人数25 / 1試合で対戦するチーム数25'
-      : 'Input limits: 5 simultaneous matches / 50 participants / preferred team size 25 / 25 teams per match';
+      ? '入力上限: 同時進行試合数5 / 参加人数50 / 1チームの目安人数25 / 1試合で対戦するチーム数25。条件により同時進行数は安全範囲に丸めます。'
+      : 'Input limits: 5 simultaneous matches / 50 participants / preferred team size 25 / 25 teams per match. Simultaneous matches are clamped to a safe range when needed.';
 
   String get concurrentMatchCountLabel =>
       _isJapanese ? '同時進行試合数' : 'Simultaneous matches';
@@ -125,11 +125,16 @@ extension TeamL10n on AppLocalizations {
   String get generateTeamScheduleButton =>
       _isJapanese ? 'チーム対戦表を作成' : 'Create team match table';
 
-  String get teamSetupMockNoticeTitle => _isJapanese ? 'モック確認中' : 'Mock flow';
+  String get teamSetupAlphaNoticeTitle =>
+      _isJapanese ? 'alpha確認中' : 'Alpha flow';
 
-  String get teamSetupMockNoticeBody => _isJapanese
-      ? 'backend API 接続前のため、次の作業でチーム用対戦表画面へ接続します。'
-      : 'The backend API is not connected yet. The next work item will connect this to the team match table screen.';
+  String get teamSetupAlphaNoticeBody => _isJapanese
+      ? '作成後、backend API の生成結果を表示します。チーム変更・スコア入力・共有URLはまだ未実装です。'
+      : 'After creation, this screen shows the backend API result. Team changes, score input, and share URLs are not implemented yet.';
+
+  String get teamSetupMockNoticeTitle => teamSetupAlphaNoticeTitle;
+
+  String get teamSetupMockNoticeBody => teamSetupAlphaNoticeBody;
 
   String get teamSetupCreatedMessage => _isJapanese
       ? 'チーム用セットアップ条件を作成しました'
@@ -158,9 +163,32 @@ extension TeamL10n on AppLocalizations {
         : '$teamCount teams / $memberCount members / $concurrentMatchCount simultaneous matches';
   }
 
-  String get teamScheduleMockDataNotice => _isJapanese
-      ? 'backend API 接続前のため、表示内容はセットアップ条件から作成したモックデータです。'
-      : 'The backend API is not connected yet, so this screen shows mock data created from the setup conditions.';
+  String get teamScheduleMockDataNotice => teamScheduleBackendDataNotice;
+
+  String get teamScheduleBackendDataNotice => _isJapanese
+      ? 'backend API の生成結果を表示しています。表示名はこの画面内で編集できます。'
+      : 'Showing the backend API result. Display names can be edited on this screen.';
+
+  String get creatingTeamScheduleMessage =>
+      _isJapanese ? 'チーム対戦表を作成中です…' : 'Creating team match table...';
+
+  String get teamScheduleGenerateFailedTitle =>
+      _isJapanese ? 'チーム対戦表の作成に失敗しました' : 'Failed to create team match table';
+
+  String teamScheduleGenerateFailedBody(String detail) {
+    if (detail.isEmpty) {
+      return _isJapanese
+          ? 'backend API の応答を確認してください。'
+          : 'Check the backend API response.';
+    }
+
+    return _isJapanese
+        ? 'backend API の応答を確認してください。\n\n$detail'
+        : 'Check the backend API response.\n\n$detail';
+  }
+
+  String get retryTeamScheduleGenerateButton =>
+      _isJapanese ? 'もう一度作成' : 'Try again';
 
   String get nextTeamMatchTitle => _isJapanese ? '次の対戦' : 'Next match';
 

@@ -49,6 +49,15 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
         _derivedTeamCount,
       );
 
+  int get _effectiveMaxConcurrentMatchCount {
+    final maxByTeams = _derivedTeamCount ~/ _teamsPerMatch;
+    return _clampInt(
+      maxByTeams,
+      _minConcurrentMatchCount,
+      _maxConcurrentMatchCount,
+    );
+  }
+
   List<int> get _teamMemberCounts {
     final teamCount = _derivedTeamCount;
     final base = _participantCount ~/ teamCount;
@@ -96,6 +105,11 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
       _minTeamsPerMatch,
       _effectiveMaxTeamsPerMatch,
     );
+    _concurrentMatchCount = _clampInt(
+      _concurrentMatchCount,
+      _minConcurrentMatchCount,
+      _effectiveMaxConcurrentMatchCount,
+    );
   }
 
   void _setConcurrentMatchCount(int value) {
@@ -103,7 +117,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
       _concurrentMatchCount = _clampInt(
         value,
         _minConcurrentMatchCount,
-        _maxConcurrentMatchCount,
+        _effectiveMaxConcurrentMatchCount,
       );
     });
   }
@@ -137,6 +151,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
         _minTeamsPerMatch,
         _effectiveMaxTeamsPerMatch,
       );
+      _syncDependentValues();
     });
   }
 
@@ -162,9 +177,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
     });
   }
 
-  void _submitMock() {
-    debugPrint(_draft.toString());
-
+  void _submit() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => TeamSchedulePage(draft: _draft),
@@ -192,7 +205,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
                 label: l10n.concurrentMatchCountLabel,
                 value: _concurrentMatchCount,
                 minValue: _minConcurrentMatchCount,
-                maxValue: _maxConcurrentMatchCount,
+                maxValue: _effectiveMaxConcurrentMatchCount,
                 onChanged: _setConcurrentMatchCount,
                 tooltipDecrement: l10n.decrementConcurrentMatchCountTooltip,
                 tooltipIncrement: l10n.incrementConcurrentMatchCountTooltip,
@@ -348,14 +361,14 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        l10n.teamSetupMockNoticeTitle,
+                        l10n.teamSetupAlphaNoticeTitle,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text(l10n.teamSetupMockNoticeBody),
+                      Text(l10n.teamSetupAlphaNoticeBody),
                     ],
                   ),
                 ),
@@ -378,7 +391,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
                   ),
                   const SizedBox(width: 12),
                   FilledButton(
-                    onPressed: _submitMock,
+                    onPressed: _submit,
                     style: FilledButton.styleFrom(
                       minimumSize: Size.zero,
                       padding: const EdgeInsets.symmetric(
