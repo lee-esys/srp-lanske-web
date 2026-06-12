@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
+import 'team_schedule_page.dart';
 import 'models/team_setup_draft.dart';
 import 'widgets/team_participant_name_input_card.dart';
 import 'widgets/team_setup_number_field.dart';
@@ -162,15 +163,11 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
   }
 
   void _submitMock() {
-    final l10n = AppLocalizations.of(context);
     debugPrint(_draft.toString());
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(l10n.teamSetupCreatedMessage),
-        duration: const Duration(seconds: 2),
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => TeamSchedulePage(draft: _draft),
       ),
     );
   }

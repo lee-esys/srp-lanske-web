@@ -134,4 +134,92 @@ extension TeamL10n on AppLocalizations {
   String get teamSetupCreatedMessage => _isJapanese
       ? 'チーム用セットアップ条件を作成しました'
       : 'Team setup conditions were created.';
+
+  String get teamScheduleTitle => _isJapanese ? 'チーム対戦表' : 'Team match table';
+
+  String get defaultTeamScheduleEventTitle =>
+      _isJapanese ? 'チーム練習会' : 'Team practice';
+
+  String defaultTeamMemberName(int memberNo) {
+    return _isJapanese ? '参加者$memberNo' : 'Participant $memberNo';
+  }
+
+  String defaultTeamName(int teamNo) {
+    return _isJapanese ? 'チーム$teamNo' : 'Team $teamNo';
+  }
+
+  String teamScheduleSummary({
+    required int teamCount,
+    required int memberCount,
+    required int concurrentMatchCount,
+  }) {
+    return _isJapanese
+        ? '$teamCountチーム / $memberCount人 / $concurrentMatchCount同時進行'
+        : '$teamCount teams / $memberCount members / $concurrentMatchCount simultaneous matches';
+  }
+
+  String get teamScheduleMockDataNotice => _isJapanese
+      ? 'backend API 接続前のため、表示内容はセットアップ条件から作成したモックデータです。'
+      : 'The backend API is not connected yet, so this screen shows mock data created from the setup conditions.';
+
+  String get nextTeamMatchTitle => _isJapanese ? '次の対戦' : 'Next match';
+
+  String teamRoundTitle(int roundNo) {
+    return _isJapanese ? '第$roundNoラウンド' : 'Round $roundNo';
+  }
+
+  String teamCourtTitle(int courtNo) {
+    return _isJapanese ? 'コート$courtNo' : 'Court $courtNo';
+  }
+
+  String teamCourtMatchTitle({
+    required int courtNo,
+    required String matchTitle,
+  }) {
+    return '${teamCourtTitle(courtNo)}: $matchTitle';
+  }
+
+  String get teamListTitle => _isJapanese ? 'チーム一覧' : 'Teams';
+
+  String teamChoiceLabel({
+    required String teamName,
+    required int memberCount,
+  }) {
+    return _isJapanese
+        ? '$teamName ($memberCount人)'
+        : '$teamName ($memberCount members)';
+  }
+
+  String selectedTeamMembersTitle(String teamName) {
+    return _isJapanese ? '$teamName のメンバー' : '$teamName members';
+  }
+
+  String get teamMatchVsSeparator => ' vs ';
+
+  String get teamMatchGroupSeparator => ' / ';
+
+  String get editTeamScheduleEventTitleTooltip =>
+      _isJapanese ? 'イベントタイトルを編集' : 'Edit event title';
+
+  String get editTeamNameTooltip => _isJapanese ? 'チーム名を編集' : 'Edit team name';
+
+  String get editTeamMemberNameTooltip =>
+      _isJapanese ? 'メンバー表示名を編集' : 'Edit member display name';
+
+  String get editTeamScheduleEventTitleDialogTitle =>
+      _isJapanese ? 'イベントタイトルを編集' : 'Edit event title';
+
+  String editTeamNameDialogTitle(String teamName) {
+    return _isJapanese ? '$teamName を編集' : 'Edit $teamName';
+  }
+
+  String editTeamMemberNameDialogTitle(String memberName) {
+    return _isJapanese ? '$memberName を編集' : 'Edit $memberName';
+  }
+
+  String get displayNameInputLabel => _isJapanese ? '表示名' : 'Display name';
+
+  String get cancelDisplayNameEditButton => _isJapanese ? 'キャンセル' : 'Cancel';
+
+  String get saveDisplayNameEditButton => _isJapanese ? '保存' : 'Save';
 }
