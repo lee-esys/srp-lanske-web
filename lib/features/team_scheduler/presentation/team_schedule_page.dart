@@ -7,9 +7,11 @@ import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
 import '../application/team_generated_schedule_service.dart';
+import '../domain/boccia_score.dart';
 import '../domain/saved_team_schedule.dart';
 import '../domain/team_generated_schedule.dart';
 import 'models/team_setup_draft.dart';
+import 'widgets/boccia_score_dialog.dart';
 
 enum _TeamSchedulePageMode {
   create,
@@ -47,6 +49,10 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
   bool _isLoading = true;
   bool _isSavingDisplay = false;
   String? _displaySaveErrorMessage;
+
+  TeamScheduleScores _scores = const TeamScheduleScores.empty();
+  bool _isSavingScores = false;
+  String? _scoresSaveErrorMessage;
 
   String _eventTitle = '';
   Map<int, String> _teamDisplayNames = const {};
@@ -171,6 +177,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
         _selectedTeamSlot = schedule.teams.first.teamSlot;
         _shareId = saved.shareId;
         _shareUrl = _buildShareUrl(saved.shareId);
+        _scores = TeamScheduleScores.fromJson(saved.scores);
         _isLoading = false;
       });
     } catch (error) {
@@ -236,6 +243,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
         _selectedTeamSlot = schedule.teams.first.teamSlot;
         _shareId = saved.shareId;
         _shareUrl = _buildShareUrl(saved.shareId);
+        _scores = TeamScheduleScores.fromJson(saved.scores);
         _isLoading = false;
       });
     } catch (error) {
@@ -453,6 +461,128 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     }
   }
 
+  Future<TeamScheduleScores> _saveScores(TeamScheduleScores scores) async {
+    final shareId = _shareId;
+    if (shareId == null || shareId.isEmpty) {
+      setState(() {
+        _scores = scores;
+        _scoresSaveErrorMessage = null;
+      });
+      return scores;
+    }
+
+    setState(() {
+      _isSavingScores = true;
+      _scoresSaveErrorMessage = null;
+    });
+
+    try {
+      final saved = await appTeamScheduleRepository.updateScores(
+        shareId: shareId,
+        scores: scores.toJson(),
+      );
+
+      final savedScores = TeamScheduleScores.fromJson(saved.scores);
+
+      if (!mounted) {
+        return savedScores;
+      }
+
+      setState(() {
+        _scores = savedScores;
+        _isSavingScores = false;
+      });
+
+      return savedScores;
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _scoresSaveErrorMessage = _formatError(error);
+          _isSavingScores = false;
+        });
+      }
+
+      rethrow;
+    }
+  }
+
+  Future<void> _selectSport(TeamScheduleSport? sport) async {
+    if (sport == null || sport == _scores.selectedSport || _isSavingScores) {
+      return;
+    }
+
+    try {
+      await _saveScores(_scores.copyWith(selectedSport: sport));
+    } catch (_) {
+      // Error message is shown in the header card.
+    }
+  }
+
+  Future<BocciaMatchScore> _saveBocciaMatchScore(
+    BocciaMatchScore score,
+  ) async {
+    final nextScores = _scores.copyWith(
+      selectedSport: TeamScheduleSport.boccia,
+      boccia: _scores.boccia.upsertMatch(score),
+    );
+
+    final savedScores = await _saveScores(nextScores);
+
+    return savedScores.boccia.matchScore(score.matchNo) ?? score;
+  }
+
+  Future<void> _openBocciaScoreDialog(_TeamMatchViewData match) async {
+    final l10n = AppLocalizations.of(context);
+
+    if (_scores.selectedSport == TeamScheduleSport.none) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.selectSportBeforeScoreInputMessage)),
+      );
+      return;
+    }
+
+    if (_scores.selectedSport != TeamScheduleSport.boccia) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.selectSportBeforeScoreInputMessage)),
+      );
+      return;
+    }
+
+    if (match.teamSlots.length != 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.unsupportedBocciaMatchMessage)),
+      );
+      return;
+    }
+
+    final initialScore = _scores.boccia.matchScoreOrInitial(
+      matchNo: match.matchNo,
+      teamSlots: match.teamSlots,
+    );
+
+    await showDialog<BocciaMatchScore>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return BocciaScoreDialog(
+          initialScore: initialScore,
+          redTeamName: _teamName(initialScore.redTeamSlot),
+          blueTeamName: _teamName(initialScore.blueTeamSlot),
+          onSave: _saveBocciaMatchScore,
+        );
+      },
+    );
+  }
+
+  String _sportLabel(TeamScheduleSport sport) {
+    final l10n = AppLocalizations.of(context);
+
+    return switch (sport) {
+      TeamScheduleSport.none => l10n.teamScheduleSportNoneLabel,
+      TeamScheduleSport.boccia => l10n.teamScheduleSportBocciaLabel,
+    };
+  }
+
   String _matchTitle(BuildContext context, _TeamMatchViewData match) {
     final l10n = AppLocalizations.of(context);
     final teamNames = match.teamSlots.map(_teamName).toList(growable: false);
@@ -627,6 +757,8 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
               l10n.teamScheduleBackendDataNotice,
               style: theme.textTheme.bodySmall,
             ),
+            const SizedBox(height: 16),
+            _buildSportSelector(context),
             if (_isSavingDisplay || _displaySaveErrorMessage != null) ...[
               const SizedBox(height: 8),
               _buildDisplaySaveStatus(context),
@@ -669,6 +801,85 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     }
 
     return const SizedBox.shrink();
+  }
+
+  Widget _buildScoreSaveStatus(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final error = _scoresSaveErrorMessage;
+
+    if (_isSavingScores) {
+      return Row(
+        children: [
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            l10n.savingTeamScheduleScoresMessage,
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
+      );
+    }
+
+    if (error != null && error.isNotEmpty) {
+      return Text(
+        l10n.teamScheduleScoresSaveFailedMessage(error),
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.error,
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildSportSelector(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.teamScheduleSportSectionTitle,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<TeamScheduleSport>(
+          initialValue: _scores.selectedSport,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
+          ),
+          onChanged: _isSavingScores ? null : _selectSport,
+          items: [
+            for (final sport in TeamScheduleSport.values)
+              DropdownMenuItem<TeamScheduleSport>(
+                value: sport,
+                child: Text(_sportLabel(sport)),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          l10n.teamScheduleSportHelp,
+          style: theme.textTheme.bodySmall,
+        ),
+        if (_isSavingScores || _scoresSaveErrorMessage != null) ...[
+          const SizedBox(height: 8),
+          _buildScoreSaveStatus(context),
+        ],
+      ],
+    );
   }
 
   Widget _buildShareCard(BuildContext context) {
@@ -946,6 +1157,48 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     );
   }
 
+  Widget _buildMatchScoreAction(
+    BuildContext context,
+    _TeamMatchViewData match,
+  ) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final score = _scores.boccia.matchScore(match.matchNo);
+    final hasScore = score?.hasAnyScore ?? false;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (_scores.selectedSport == TeamScheduleSport.boccia &&
+            score != null) ...[
+          Text(
+            l10n.bocciaScoreSummary(
+              redTeamName: _teamName(score.redTeamSlot),
+              redScore: score.totalRedScore,
+              blueTeamName: _teamName(score.blueTeamSlot),
+              blueScore: score.totalBlueScore,
+            ),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+        FilledButton.tonalIcon(
+          onPressed: _isSavingScores
+              ? null
+              : () {
+                  _openBocciaScoreDialog(match);
+                },
+          icon: const Icon(Icons.edit_note),
+          label: Text(
+            hasScore ? l10n.editBocciaScoreButton : l10n.inputBocciaScoreButton,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildMatchRow(BuildContext context, _TeamMatchViewData match) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
@@ -979,6 +1232,8 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
               ),
           ],
         ),
+        const SizedBox(height: 12),
+        _buildMatchScoreAction(context, match),
       ],
     );
   }

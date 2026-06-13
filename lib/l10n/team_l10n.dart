@@ -298,4 +298,94 @@ extension TeamL10n on AppLocalizations {
   String get cancelDisplayNameEditButton => _isJapanese ? 'キャンセル' : 'Cancel';
 
   String get saveDisplayNameEditButton => _isJapanese ? '保存' : 'Save';
+
+  String get teamScheduleSportSectionTitle =>
+      _isJapanese ? 'スコア入力' : 'Score input';
+
+  String get teamScheduleSportNoneLabel => _isJapanese ? '未選択' : 'Not selected';
+
+  String get teamScheduleSportBocciaLabel => _isJapanese ? 'ボッチャ' : 'Boccia';
+
+  String get teamScheduleSportHelp => _isJapanese
+      ? '競技を選択すると、対戦カードからスコアを入力できます。'
+      : 'Select a sport to enter scores from match cards.';
+
+  String get savingTeamScheduleScoresMessage =>
+      _isJapanese ? 'スコアを保存中です…' : 'Saving scores...';
+
+  String teamScheduleScoresSaveFailedMessage(String detail) {
+    return _isJapanese
+        ? 'スコアの保存に失敗しました: $detail'
+        : 'Failed to save scores: $detail';
+  }
+
+  String get selectSportBeforeScoreInputMessage =>
+      _isJapanese ? '先に競技を選択してください。' : 'Select a sport first.';
+
+  String get unsupportedBocciaMatchMessage => _isJapanese
+      ? 'ボッチャのスコア入力は2チーム対戦のみ対応しています。'
+      : 'Boccia score input supports two-team matches only.';
+
+  String get inputBocciaScoreButton => _isJapanese ? 'スコア入力' : 'Enter score';
+
+  String get editBocciaScoreButton => _isJapanese ? 'スコア編集' : 'Edit score';
+
+  String bocciaScoreSummary({
+    required String redTeamName,
+    required int redScore,
+    required String blueTeamName,
+    required int blueScore,
+  }) {
+    return '$redTeamName $redScore - $blueScore $blueTeamName';
+  }
+
+  String get bocciaScoreDialogTitle =>
+      _isJapanese ? 'ボッチャ スコア入力' : 'Boccia score input';
+
+  String bocciaScoreDialogMatchTitle({
+    required String redTeamName,
+    required String blueTeamName,
+  }) {
+    return '$redTeamName vs $blueTeamName';
+  }
+
+  String get bocciaFirstTeamLabel => _isJapanese ? '先攻' : 'First';
+
+  String get bocciaSecondTeamLabel => _isJapanese ? '後攻' : 'Second';
+
+  String get swapBocciaOrderButton => _isJapanese ? '先攻 🔁 後攻' : 'Swap order';
+
+  String get swapBocciaOrderTooltip =>
+      _isJapanese ? '先攻と後攻をスコアごと入れ替える' : 'Swap teams and their scores';
+
+  String bocciaEndLabel(int endNo) {
+    return _isJapanese ? '$endNo E' : 'E$endNo';
+  }
+
+  String get bocciaTotalLabel => _isJapanese ? '合計' : 'Total';
+
+  String get saveBocciaScoreButton => _isJapanese ? '保存' : 'Save';
+
+  String get closeBocciaScoreDialogButton => _isJapanese ? '閉じる' : 'Close';
+
+  String get bocciaScoreSavedMessage => _isJapanese ? '保存しました' : 'Saved.';
+
+  String get bocciaScoreUnsavedChangesMessage =>
+      _isJapanese ? '未保存の変更があります' : 'There are unsaved changes.';
+
+  String get bocciaScoreDiscardChangesTitle =>
+      _isJapanese ? '未保存の変更があります' : 'Unsaved changes';
+
+  String get bocciaScoreDiscardChangesBody => _isJapanese
+      ? '保存していないスコア変更があります。閉じますか？'
+      : 'There are unsaved score changes. Do you want to close?';
+
+  String get returnToBocciaScoreInputButton =>
+      _isJapanese ? '入力に戻る' : 'Back to input';
+
+  String get discardBocciaScoreChangesButton =>
+      _isJapanese ? '保存せず閉じる' : 'Close without saving';
+
+  String get saveAndCloseBocciaScoreButton =>
+      _isJapanese ? '保存して閉じる' : 'Save and close';
 }

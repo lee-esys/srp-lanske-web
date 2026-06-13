@@ -61,10 +61,7 @@ class InMemoryTeamScheduleRepository implements TeamScheduleRepository {
     required String shareId,
     required SavedTeamScheduleDisplay display,
   }) async {
-    final current = _schedulesByShareId[shareId];
-    if (current == null) {
-      throw StateError('team schedule not found: $shareId');
-    }
+    final current = _readExisting(shareId);
 
     final updated = current.copyWith(
       display: display,
@@ -73,6 +70,31 @@ class InMemoryTeamScheduleRepository implements TeamScheduleRepository {
 
     _schedulesByShareId[shareId] = updated;
     return updated;
+  }
+
+  @override
+  Future<SavedTeamSchedule> updateScores({
+    required String shareId,
+    required Map<String, dynamic> scores,
+  }) async {
+    final current = _readExisting(shareId);
+
+    final updated = current.copyWith(
+      scores: Map<String, dynamic>.unmodifiable(scores),
+      updatedAt: DateTime.now(),
+    );
+
+    _schedulesByShareId[shareId] = updated;
+    return updated;
+  }
+
+  SavedTeamSchedule _readExisting(String shareId) {
+    final current = _schedulesByShareId[shareId];
+    if (current == null) {
+      throw StateError('team schedule not found: $shareId');
+    }
+
+    return current;
   }
 
   String _generateUniqueShareId() {

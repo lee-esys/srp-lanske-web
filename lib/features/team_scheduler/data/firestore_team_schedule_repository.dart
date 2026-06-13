@@ -79,10 +79,7 @@ class FirestoreTeamScheduleRepository implements TeamScheduleRepository {
     required String shareId,
     required SavedTeamScheduleDisplay display,
   }) async {
-    final current = await findByShareId(shareId);
-    if (current == null) {
-      throw StateError('team schedule not found: $shareId');
-    }
+    final current = await _readExisting(shareId);
 
     final updated = current.copyWith(
       display: display,
@@ -92,6 +89,32 @@ class FirestoreTeamScheduleRepository implements TeamScheduleRepository {
     await _collection.doc(shareId).set(updated.toJson());
 
     return updated;
+  }
+
+  @override
+  Future<SavedTeamSchedule> updateScores({
+    required String shareId,
+    required Map<String, dynamic> scores,
+  }) async {
+    final current = await _readExisting(shareId);
+
+    final updated = current.copyWith(
+      scores: Map<String, dynamic>.unmodifiable(scores),
+      updatedAt: DateTime.now(),
+    );
+
+    await _collection.doc(shareId).set(updated.toJson());
+
+    return updated;
+  }
+
+  Future<SavedTeamSchedule> _readExisting(String shareId) async {
+    final current = await findByShareId(shareId);
+    if (current == null) {
+      throw StateError('team schedule not found: $shareId');
+    }
+
+    return current;
   }
 
   Future<String> _generateUniqueShareId() async {
