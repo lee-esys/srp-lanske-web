@@ -17,4 +17,9 @@ abstract class TeamScheduleRepository {
     required String shareId,
     required SavedTeamScheduleDisplay display,
   });
+
+  Future<SavedTeamSchedule> updateScores({
+    required String shareId,
+    required Map<String, dynamic> scores,
+  });
 }

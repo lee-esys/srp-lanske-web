@@ -152,6 +152,30 @@ flutter run -d web-server --web-hostname 0.0.0.0 --web-port 3000 \
 
 `<core-api-url>` には Cloud Run などの公開 core API URL を指定します。
 
+### Codespaces で core API と接続して起動する
+
+`srp-lanske-web` を Codespaces で起動し、別 Codespace で起動している `srp-lanske-core` に接続する場合は、core 側の forwarded URL を `LANSKE_CORE_API_BASE_URL` に指定する。
+
+```bash
+flutter run -d chrome \
+  --dart-define=LANSKE_CORE_API_BASE_URL=https://<core-codespace-name>-8080.app.github.dev
+```
+
+Firestore event repository を使う場合は、必要に応じて以下も指定する。
+
+```bash
+flutter run -d chrome \
+  --dart-define=LANSKE_CORE_API_BASE_URL=https://<core-codespace-name>-8080.app.github.dev \
+  --dart-define=LANSKE_EVENT_REPOSITORY=firestore
+```
+
+注意:
+
+* web から core を叩く場合、基本的に `localhost` ではなく core Codespace の forwarded URL を使う
+* core の `8080` port が Private の場合、別 Codespace / ブラウザからのアクセスで `302 pf-signin` にリダイレクトされることがある
+* core の forwarded URL で `/health` が通ることを確認してから web を起動する
+* 詳細な起動・確認手順は `lee-esys/worklog/lanske/codespaces-web-core-runbook.md` を参照する
+
 ---
 
 ## 📚 ドキュメント
