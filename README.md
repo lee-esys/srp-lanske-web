@@ -154,18 +154,18 @@ flutter run -d web-server --web-hostname 0.0.0.0 --web-port 3000 \
 
 ### Codespaces で core API と接続して起動する
 
-`srp-lanske-web` を Codespaces で起動し、別 Codespace で起動している `srp-lanske-core` に接続する場合は、core 側の forwarded URL を `LANSKE_API_BASE_URL` に指定する。
+`srp-lanske-web` を Codespaces で起動し、別 Codespace で起動している `srp-lanske-core` に接続する場合は、core 側の forwarded URL を `LANSKE_CORE_API_BASE_URL` に指定する。
 
 ```bash
 flutter run -d chrome \
-  --dart-define=LANSKE_API_BASE_URL=https://<core-codespace-name>-8080.app.github.dev
+  --dart-define=LANSKE_CORE_API_BASE_URL=https://<core-codespace-name>-8080.app.github.dev
 ```
 
 Firestore event repository を使う場合は、必要に応じて以下も指定する。
 
 ```bash
 flutter run -d chrome \
-  --dart-define=LANSKE_API_BASE_URL=https://<core-codespace-name>-8080.app.github.dev \
+  --dart-define=LANSKE_CORE_API_BASE_URL=https://<core-codespace-name>-8080.app.github.dev \
   --dart-define=LANSKE_EVENT_REPOSITORY=firestore
 ```
 
