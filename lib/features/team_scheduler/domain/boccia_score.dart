@@ -348,15 +348,34 @@ class BocciaMatchScore {
       return this;
     }
 
+    final normalizedPlayerSlot = _normalizePlayerSlot(playerSlot);
+    final currentAssignment = throwingBoxAssignment(normalizedBoxNo);
+    final currentPlayerSlot = currentAssignment?.playerSlot;
+
+    final duplicatedAssignment = normalizedPlayerSlot == null
+        ? null
+        : throwingBoxAssignments
+            .where((assignment) => assignment.boxNo != normalizedBoxNo)
+            .where(
+                (assignment) => assignment.playerSlot == normalizedPlayerSlot)
+            .firstOrNull;
+
     return copyWith(
       throwingBoxAssignments: throwingBoxAssignments.map((assignment) {
-        if (assignment.boxNo != normalizedBoxNo) {
-          return assignment;
+        if (assignment.boxNo == normalizedBoxNo) {
+          return assignment.copyWith(
+            playerSlot: normalizedPlayerSlot,
+          );
         }
 
-        return assignment.copyWith(
-          playerSlot: playerSlot,
-        );
+        if (duplicatedAssignment != null &&
+            assignment.boxNo == duplicatedAssignment.boxNo) {
+          return assignment.copyWith(
+            playerSlot: currentPlayerSlot,
+          );
+        }
+
+        return assignment;
       }).toList(growable: false),
     );
   }

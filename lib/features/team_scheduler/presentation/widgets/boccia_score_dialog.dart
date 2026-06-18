@@ -588,23 +588,32 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
               _buildScoreTable(context),
               const SizedBox(height: 16),
               _buildThrowingBoxSection(context),
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: _buildStatus(context),
-              ),
             ],
           ),
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: _isSaving ? null : _close,
-          child: Text(l10n.closeBocciaScoreDialogButton),
-        ),
-        FilledButton(
-          onPressed: _isSaving ? null : _save,
-          child: Text(l10n.saveBocciaScoreButton),
+        SizedBox(
+          width: dialogWidth,
+          child: Row(
+            children: [
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: _buildStatus(context),
+                ),
+              ),
+              TextButton(
+                onPressed: _isSaving ? null : _close,
+                child: Text(l10n.closeBocciaScoreDialogButton),
+              ),
+              const SizedBox(width: 8),
+              FilledButton(
+                onPressed: _isSaving ? null : _save,
+                child: Text(l10n.saveBocciaScoreButton),
+              ),
+            ],
+          ),
         ),
       ],
     );
