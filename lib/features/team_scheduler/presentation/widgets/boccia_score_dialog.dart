@@ -8,6 +8,8 @@ class BocciaScoreDialog extends StatefulWidget {
     required this.initialScore,
     required this.redTeamName,
     required this.blueTeamName,
+    required this.redPlayerOptions,
+    required this.bluePlayerOptions,
     required this.onSave,
     super.key,
   });
@@ -15,10 +17,22 @@ class BocciaScoreDialog extends StatefulWidget {
   final BocciaMatchScore initialScore;
   final String redTeamName;
   final String blueTeamName;
+  final List<BocciaScorePlayerOption> redPlayerOptions;
+  final List<BocciaScorePlayerOption> bluePlayerOptions;
   final Future<BocciaMatchScore> Function(BocciaMatchScore score) onSave;
 
   @override
   State<BocciaScoreDialog> createState() => _BocciaScoreDialogState();
+}
+
+class BocciaScorePlayerOption {
+  const BocciaScorePlayerOption({
+    required this.playerSlot,
+    required this.displayName,
+  });
+
+  final int playerSlot;
+  final String displayName;
 }
 
 class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
@@ -52,6 +66,31 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     }
 
     return widget.redTeamName;
+  }
+
+  List<BocciaScorePlayerOption> _redPlayerOptions(BocciaMatchScore score) {
+    if (score.redTeamSlot == widget.initialScore.redTeamSlot) {
+      return widget.redPlayerOptions;
+    }
+
+    return widget.bluePlayerOptions;
+  }
+
+  List<BocciaScorePlayerOption> _bluePlayerOptions(BocciaMatchScore score) {
+    if (score.blueTeamSlot == widget.initialScore.blueTeamSlot) {
+      return widget.bluePlayerOptions;
+    }
+
+    return widget.redPlayerOptions;
+  }
+
+  List<BocciaScorePlayerOption> _playerOptionsForAssignment(
+    BocciaThrowingBoxAssignment assignment,
+  ) {
+    return switch (assignment.side) {
+      BocciaThrowingSide.red => _redPlayerOptions(_draftScore),
+      BocciaThrowingSide.blue => _bluePlayerOptions(_draftScore),
+    };
   }
 
   Future<bool> _save() async {
@@ -174,6 +213,20 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     });
   }
 
+  void _setThrowingBoxPlayer({
+    required int boxNo,
+    required int? playerSlot,
+  }) {
+    setState(() {
+      _draftScore = _draftScore.replaceThrowingBoxPlayer(
+        boxNo: boxNo,
+        playerSlot: playerSlot,
+      );
+      _statusMessage = null;
+      _errorMessage = null;
+    });
+  }
+
   Widget _buildOrderHeader(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
@@ -283,7 +336,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
           DataRow(
             color: WidgetStatePropertyAll(Colors.red.shade50),
             cells: [
-              DataCell(Text(l10n.bocciaFirstTeamLabel)),
+              const DataCell(SizedBox.shrink()),
               for (final endScore in _draftScore.endScores)
                 DataCell(
                   _buildScoreDropdown(
@@ -311,7 +364,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
           DataRow(
             color: WidgetStatePropertyAll(Colors.blue.shade50),
             cells: [
-              DataCell(Text(l10n.bocciaSecondTeamLabel)),
+              const DataCell(SizedBox.shrink()),
               for (final endScore in _draftScore.endScores)
                 DataCell(
                   _buildScoreDropdown(
@@ -355,6 +408,112 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
             child: Text(score.toString()),
           ),
       ],
+    );
+  }
+
+  Widget _buildThrowingBoxSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final assignments = _draftScore.throwingBoxAssignments;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '投球場所',
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '赤は奇数ボックス、青は偶数ボックスに投球者を設定します。',
+          style: theme.textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (final assignment in assignments) ...[
+                _buildThrowingBoxCard(context, assignment),
+                if (assignment != assignments.last) const SizedBox(width: 8),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildThrowingBoxCard(
+    BuildContext context,
+    BocciaThrowingBoxAssignment assignment,
+  ) {
+    final theme = Theme.of(context);
+    final isRed = assignment.side == BocciaThrowingSide.red;
+    final playerOptions = _playerOptionsForAssignment(assignment);
+    final selectedPlayerSlot = playerOptions.any(
+      (option) => option.playerSlot == assignment.playerSlot,
+    )
+        ? assignment.playerSlot
+        : null;
+
+    return Container(
+      width: 150,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: isRed ? Colors.red.shade50 : Colors.blue.shade50,
+        border: Border.all(
+          color: isRed ? Colors.red.shade200 : Colors.blue.shade200,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '${assignment.boxNo}',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<int?>(
+            initialValue: selectedPlayerSlot,
+            isExpanded: true,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
+            ),
+            onChanged: _isSaving
+                ? null
+                : (value) {
+                    _setThrowingBoxPlayer(
+                      boxNo: assignment.boxNo,
+                      playerSlot: value,
+                    );
+                  },
+            items: [
+              const DropdownMenuItem<int?>(
+                value: null,
+                child: Text('未使用'),
+              ),
+              for (final option in playerOptions)
+                DropdownMenuItem<int?>(
+                  value: option.playerSlot,
+                  child: Text(
+                    option.displayName,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -410,11 +569,16 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final dialogWidth = MediaQuery.sizeOf(context).width * 0.95;
 
     return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 24,
+      ),
       title: Text(l10n.bocciaScoreDialogTitle),
-      content: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 720),
+      content: SizedBox(
+        width: dialogWidth,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -422,23 +586,34 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
               _buildOrderHeader(context),
               const SizedBox(height: 16),
               _buildScoreTable(context),
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: _buildStatus(context),
-              ),
+              const SizedBox(height: 16),
+              _buildThrowingBoxSection(context),
             ],
           ),
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: _isSaving ? null : _close,
-          child: Text(l10n.closeBocciaScoreDialogButton),
-        ),
-        FilledButton(
-          onPressed: _isSaving ? null : _save,
-          child: Text(l10n.saveBocciaScoreButton),
+        SizedBox(
+          width: dialogWidth,
+          child: Row(
+            children: [
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: _buildStatus(context),
+                ),
+              ),
+              TextButton(
+                onPressed: _isSaving ? null : _close,
+                child: Text(l10n.closeBocciaScoreDialogButton),
+              ),
+              const SizedBox(width: 8),
+              FilledButton(
+                onPressed: _isSaving ? null : _save,
+                child: Text(l10n.saveBocciaScoreButton),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -455,7 +630,8 @@ bool _scoreEquals(BocciaMatchScore a, BocciaMatchScore b) {
   if (a.matchNo != b.matchNo ||
       a.redTeamSlot != b.redTeamSlot ||
       a.blueTeamSlot != b.blueTeamSlot ||
-      a.endScores.length != b.endScores.length) {
+      a.endScores.length != b.endScores.length ||
+      a.throwingBoxAssignments.length != b.throwingBoxAssignments.length) {
     return false;
   }
 
@@ -466,6 +642,17 @@ bool _scoreEquals(BocciaMatchScore a, BocciaMatchScore b) {
     if (aEnd.endNo != bEnd.endNo ||
         aEnd.red != bEnd.red ||
         aEnd.blue != bEnd.blue) {
+      return false;
+    }
+  }
+
+  for (var index = 0; index < a.throwingBoxAssignments.length; index += 1) {
+    final aAssignment = a.throwingBoxAssignments[index];
+    final bAssignment = b.throwingBoxAssignments[index];
+
+    if (aAssignment.boxNo != bAssignment.boxNo ||
+        aAssignment.side != bAssignment.side ||
+        aAssignment.playerSlot != bAssignment.playerSlot) {
       return false;
     }
   }
