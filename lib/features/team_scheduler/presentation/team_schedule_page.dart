@@ -414,6 +414,28 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
         'Participant $playerSlot';
   }
 
+  _TeamViewData? _teamOrNull(int teamSlot) {
+    return _teamBySlot[teamSlot];
+  }
+
+  List<int> _teamMemberSlots(int teamSlot) {
+    final team = _teamOrNull(teamSlot);
+    if (team == null) {
+      return const <int>[];
+    }
+
+    return team.memberPlayerSlots;
+  }
+
+  List<BocciaScorePlayerOption> _bocciaPlayerOptions(int teamSlot) {
+    return _teamMemberSlots(teamSlot).map((playerSlot) {
+      return BocciaScorePlayerOption(
+        playerSlot: playerSlot,
+        displayName: _memberName(playerSlot),
+      );
+    }).toList(growable: false);
+  }
+
   SavedTeamScheduleDisplay _currentDisplay() {
     return SavedTeamScheduleDisplay(
       eventTitle: _eventTitle,
@@ -555,9 +577,16 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       return;
     }
 
+    final redTeamSlot = match.teamSlots[0];
+    final blueTeamSlot = match.teamSlots[1];
+    final redPlayerSlots = _teamMemberSlots(redTeamSlot);
+    final bluePlayerSlots = _teamMemberSlots(blueTeamSlot);
+
     final initialScore = _scores.boccia.matchScoreOrInitial(
       matchNo: match.matchNo,
       teamSlots: match.teamSlots,
+      redPlayerSlots: redPlayerSlots,
+      bluePlayerSlots: bluePlayerSlots,
     );
 
     await showDialog<BocciaMatchScore>(
@@ -568,6 +597,8 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           initialScore: initialScore,
           redTeamName: _teamName(initialScore.redTeamSlot),
           blueTeamName: _teamName(initialScore.blueTeamSlot),
+          redPlayerOptions: _bocciaPlayerOptions(initialScore.redTeamSlot),
+          bluePlayerOptions: _bocciaPlayerOptions(initialScore.blueTeamSlot),
           onSave: _saveBocciaMatchScore,
         );
       },
