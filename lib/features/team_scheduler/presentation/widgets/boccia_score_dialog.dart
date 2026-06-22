@@ -11,6 +11,7 @@ class BocciaScoreDialog extends StatefulWidget {
     required this.redPlayerOptions,
     required this.bluePlayerOptions,
     required this.onSave,
+    this.onRefresh,
     super.key,
   });
 
@@ -20,6 +21,7 @@ class BocciaScoreDialog extends StatefulWidget {
   final List<BocciaScorePlayerOption> redPlayerOptions;
   final List<BocciaScorePlayerOption> bluePlayerOptions;
   final Future<BocciaMatchScore> Function(BocciaMatchScore score) onSave;
+  final Future<BocciaMatchScore?> Function()? onRefresh;
 
   @override
   State<BocciaScoreDialog> createState() => _BocciaScoreDialogState();
@@ -40,11 +42,15 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
   late BocciaMatchScore _lastSavedScore;
 
   bool _isSaving = false;
+  bool _isRefreshing = false;
   String? _statusMessage;
   String? _errorMessage;
 
+  bool get _isBusy => _isSaving || _isRefreshing;
+
   int _selectedEndNo = 1;
   bool _isEditingThrowingBoxAssignments = false;
+
   bool get _isDirty => !_scoreEquals(_draftScore, _lastSavedScore);
 
   @override
@@ -132,6 +138,86 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
       });
 
       return false;
+    }
+  }
+
+  Future<void> _refreshLatestScore() async {
+    final onRefresh = widget.onRefresh;
+    if (_isBusy || onRefresh == null) {
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context);
+
+    if (_isDirty) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(l10n.refreshBocciaScoreDiscardChangesTitle),
+            content: Text(l10n.refreshBocciaScoreDiscardChangesBody),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+                child: Text(l10n.cancelRefreshBocciaScoreButton),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+                child: Text(l10n.confirmRefreshBocciaScoreButton),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (!mounted || confirmed != true) {
+        return;
+      }
+    }
+
+    setState(() {
+      _isRefreshing = true;
+      _statusMessage = null;
+      _errorMessage = null;
+    });
+
+    try {
+      final refreshed = await onRefresh();
+
+      if (!mounted) {
+        return;
+      }
+
+      if (refreshed == null) {
+        setState(() {
+          _errorMessage = l10n.refreshBocciaScoreFailedMessage;
+          _isRefreshing = false;
+        });
+        return;
+      }
+
+      setState(() {
+        _draftScore = refreshed;
+        _lastSavedScore = refreshed;
+        _selectedEndNo = 1;
+        _isEditingThrowingBoxAssignments = false;
+        _statusMessage = l10n.bocciaScoreRefreshedMessage;
+        _isRefreshing = false;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.toString();
+        _isRefreshing = false;
+      });
     }
   }
 
@@ -367,6 +453,39 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     };
   }
 
+  Widget _buildConcurrentEditNotice(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.info_outline,
+            size: 18,
+            color: theme.colorScheme.outline,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              l10n.teamScheduleConcurrentEditNotice,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildOrderHeader(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
@@ -375,7 +494,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         FilledButton.tonalIcon(
-          onPressed: _isSaving || !_draftScore.canEditThrowingBoxAssignments
+          onPressed: _isBusy || !_draftScore.canEditThrowingBoxAssignments
               ? null
               : _swapOrder,
           icon: const Icon(Icons.swap_horiz),
@@ -578,7 +697,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
   }) {
     return DropdownButton<int>(
       value: value,
-      onChanged: _isSaving ? null : onChanged,
+      onChanged: _isBusy ? null : onChanged,
       items: [
         for (var score = 0; score <= 6; score += 1)
           DropdownMenuItem<int>(
@@ -608,37 +727,11 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                l10n.bocciaThrowLogTitle(_selectedEndNo),
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            Text(
-              l10n.bocciaThrowCountSummary(
-                redCount: redThrowCount,
-                blueCount: blueThrowCount,
-              ),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          l10n.bocciaThrowLogHelp,
-          style: theme.textTheme.bodySmall,
-        ),
         const SizedBox(height: 8),
         Row(
           children: [
             FilledButton.tonalIcon(
-              onPressed: _isSaving || !canEditAssignments
+              onPressed: _isBusy || !canEditAssignments
                   ? null
                   : _toggleThrowingBoxAssignmentMode,
               icon: Icon(
@@ -672,6 +765,32 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
               style: theme.textTheme.bodySmall,
             ),
           ],
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.bocciaThrowLogTitle(_selectedEndNo),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Text(
+              l10n.bocciaThrowCountSummary(
+                redCount: redThrowCount,
+                blueCount: blueThrowCount,
+              ),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          l10n.bocciaThrowLogHelp,
+          style: theme.textTheme.bodySmall,
         ),
         const SizedBox(height: 8),
         SingleChildScrollView(
@@ -715,7 +834,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
       endNo: _selectedEndNo,
       boxNo: assignment.boxNo,
     );
-    final canAdd = !_isSaving &&
+    final canAdd = !_isBusy &&
         assignment.hasPlayer &&
         _draftScore.canAddThrowLogForEnd(_selectedEndNo) &&
         !isEditing;
@@ -752,7 +871,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
                   vertical: 8,
                 ),
               ),
-              onChanged: _isSaving
+              onChanged: _isBusy
                   ? null
                   : (value) {
                       _setThrowingBoxPlayer(
@@ -832,7 +951,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
             ),
             TextButton.icon(
               onPressed:
-                  _isSaving || !hasLogs ? null : _clearSelectedEndThrowLogs,
+                  _isBusy || !hasLogs ? null : _clearSelectedEndThrowLogs,
               icon: const Icon(Icons.delete_outline),
               label: Text(l10n.clearBocciaEndThrowLogsButton),
             ),
@@ -915,7 +1034,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
             IconButton(
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
-              onPressed: _isSaving ? null : _removeLastThrowLog,
+              onPressed: _isBusy ? null : _removeLastThrowLog,
               icon: const Icon(Icons.remove_circle_outline),
               tooltip: l10n.removeLastBocciaThrowLogTooltip,
             ),
@@ -938,6 +1057,23 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
           ),
           const SizedBox(width: 8),
           Text(l10n.savingTeamScheduleScoresMessage),
+        ],
+      );
+    }
+
+    if (_isRefreshing) {
+      return Row(
+        children: [
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            l10n.refreshingTeamScheduleScoresMessage,
+            style: theme.textTheme.bodySmall,
+          ),
         ],
       );
     }
@@ -990,6 +1126,8 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              _buildConcurrentEditNotice(context),
+              const SizedBox(height: 12),
               _buildOrderHeader(context),
               const SizedBox(height: 16),
               _buildScoreTable(context),
@@ -1010,13 +1148,21 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
                   child: _buildStatus(context),
                 ),
               ),
+              TextButton.icon(
+                onPressed: _isBusy || widget.onRefresh == null
+                    ? null
+                    : _refreshLatestScore,
+                icon: const Icon(Icons.refresh),
+                label: Text(l10n.refreshLatestTeamScheduleButton),
+              ),
+              const SizedBox(width: 8),
               TextButton(
-                onPressed: _isSaving ? null : _close,
+                onPressed: _isBusy ? null : _close,
                 child: Text(l10n.closeBocciaScoreDialogButton),
               ),
               const SizedBox(width: 8),
               FilledButton(
-                onPressed: _isSaving ? null : _save,
+                onPressed: _isBusy ? null : _save,
                 child: Text(l10n.saveBocciaScoreButton),
               ),
             ],
@@ -1050,6 +1196,17 @@ bool _scoreEquals(BocciaMatchScore a, BocciaMatchScore b) {
     if (aEnd.endNo != bEnd.endNo ||
         aEnd.red != bEnd.red ||
         aEnd.blue != bEnd.blue) {
+      return false;
+    }
+  }
+
+  for (var index = 0; index < a.throwingBoxAssignments.length; index += 1) {
+    final aAssignment = a.throwingBoxAssignments[index];
+    final bAssignment = b.throwingBoxAssignments[index];
+
+    if (aAssignment.boxNo != bAssignment.boxNo ||
+        aAssignment.side != bAssignment.side ||
+        aAssignment.playerSlot != bAssignment.playerSlot) {
       return false;
     }
   }

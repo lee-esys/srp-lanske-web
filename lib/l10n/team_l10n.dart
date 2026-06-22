@@ -319,6 +319,35 @@ extension TeamL10n on AppLocalizations {
         : 'Failed to save scores: $detail';
   }
 
+  String get refreshLatestTeamScheduleButton =>
+      _isJapanese ? '最新の情報に更新' : 'Refresh latest';
+
+  String get teamScheduleConcurrentEditNotice => _isJapanese
+      ? '複数端末で同時に編集すると、保存内容が意図どおり反映されない場合があります。'
+      : 'When editing from multiple devices at the same time, saved data may not be reflected as intended.';
+
+  String get refreshingTeamScheduleScoresMessage =>
+      _isJapanese ? '最新のスコア情報を取得しています...' : 'Refreshing latest score data...';
+
+  String get bocciaScoreRefreshedMessage =>
+      _isJapanese ? '最新の情報に更新しました' : 'Refreshed latest data';
+
+  String get refreshBocciaScoreFailedMessage =>
+      _isJapanese ? '最新の情報を取得できませんでした' : 'Failed to refresh latest data';
+
+  String get refreshBocciaScoreDiscardChangesTitle => _isJapanese
+      ? '未保存の変更を破棄して更新しますか？'
+      : 'Discard unsaved changes and refresh?';
+
+  String get refreshBocciaScoreDiscardChangesBody => _isJapanese
+      ? '最新の情報に更新すると、保存していない入力内容は破棄されます。'
+      : 'Refreshing latest data will discard unsaved changes.';
+
+  String get cancelRefreshBocciaScoreButton => _isJapanese ? 'キャンセル' : 'Cancel';
+
+  String get confirmRefreshBocciaScoreButton =>
+      _isJapanese ? '更新する' : 'Refresh';
+
   String get selectSportBeforeScoreInputMessage =>
       _isJapanese ? '先に競技を選択してください。' : 'Select a sport first.';
 
