@@ -43,6 +43,8 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
   String? _statusMessage;
   String? _errorMessage;
 
+  int _selectedEndNo = 1;
+  bool _isEditingThrowingBoxAssignments = false;
   bool get _isDirty => !_scoreEquals(_draftScore, _lastSavedScore);
 
   @override
@@ -190,6 +192,10 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
   }
 
   void _swapOrder() {
+    if (!_draftScore.canEditThrowingBoxAssignments) {
+      return;
+    }
+
     setState(() {
       _draftScore = _draftScore.swapped();
       _statusMessage = null;
@@ -203,6 +209,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     int? blue,
   }) {
     setState(() {
+      _selectedEndNo = endNo;
       _draftScore = _draftScore.replaceEndScore(
         endNo: endNo,
         red: red,
@@ -227,6 +234,139 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     });
   }
 
+  void _selectEnd(int endNo) {
+    setState(() {
+      _selectedEndNo = endNo;
+      _isEditingThrowingBoxAssignments = false;
+    });
+  }
+
+  void _toggleThrowingBoxAssignmentMode() {
+    if (!_draftScore.canEditThrowingBoxAssignments) {
+      return;
+    }
+
+    setState(() {
+      _isEditingThrowingBoxAssignments = !_isEditingThrowingBoxAssignments;
+    });
+  }
+
+  void _addThrowLog({
+    required int boxNo,
+  }) {
+    setState(() {
+      _draftScore = _draftScore.addThrowLog(
+        endNo: _selectedEndNo,
+        boxNo: boxNo,
+      );
+      _statusMessage = null;
+      _errorMessage = null;
+    });
+  }
+
+  void _removeLastThrowLog() {
+    setState(() {
+      _draftScore = _draftScore.removeLastThrowLog(
+        endNo: _selectedEndNo,
+      );
+      _statusMessage = null;
+      _errorMessage = null;
+    });
+  }
+
+  Future<void> _clearSelectedEndThrowLogs() async {
+    final hasLogs = _draftScore.throwLogCountForEnd(_selectedEndNo) > 0;
+    if (!hasLogs) {
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.clearBocciaEndThrowLogsDialogTitle),
+          content: Text(l10n.clearBocciaEndThrowLogsDialogBody),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: Text(l10n.cancelClearBocciaEndThrowLogsButton),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: Text(l10n.confirmClearBocciaEndThrowLogsButton),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (!mounted || confirmed != true) {
+      return;
+    }
+
+    setState(() {
+      _draftScore = _draftScore.clearThrowLogsForEnd(
+        endNo: _selectedEndNo,
+      );
+      _statusMessage = null;
+      _errorMessage = null;
+    });
+  }
+
+  String _playerNameForAssignment(
+    BocciaThrowingBoxAssignment assignment,
+    AppLocalizations l10n,
+  ) {
+    final playerSlot = assignment.playerSlot;
+    if (playerSlot == null) {
+      return l10n.bocciaUnusedThrowingBoxLabel;
+    }
+
+    final playerOptions = _playerOptionsForAssignment(assignment);
+    for (final option in playerOptions) {
+      if (option.playerSlot == playerSlot) {
+        return option.displayName;
+      }
+    }
+
+    return l10n.bocciaDefaultParticipantName(playerSlot);
+  }
+
+  String _playerNameForThrowLog(
+    BocciaThrowLog log,
+    AppLocalizations l10n,
+  ) {
+    final playerOptions = switch (log.side) {
+      BocciaThrowingSide.red => _redPlayerOptions(_draftScore),
+      BocciaThrowingSide.blue => _bluePlayerOptions(_draftScore),
+    };
+
+    for (final option in playerOptions) {
+      if (option.playerSlot == log.playerSlot) {
+        return option.displayName;
+      }
+    }
+
+    return l10n.bocciaDefaultParticipantName(log.playerSlot);
+  }
+
+  String _throwingSideLabel(
+    BocciaThrowingSide side,
+    AppLocalizations l10n,
+  ) {
+    return switch (side) {
+      BocciaThrowingSide.red => l10n.bocciaRedSideLabel,
+      BocciaThrowingSide.blue => l10n.bocciaBlueSideLabel,
+    };
+  }
+
   Widget _buildOrderHeader(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
@@ -235,7 +375,9 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         FilledButton.tonalIcon(
-          onPressed: _isSaving ? null : _swapOrder,
+          onPressed: _isSaving || !_draftScore.canEditThrowingBoxAssignments
+              ? null
+              : _swapOrder,
           icon: const Icon(Icons.swap_horiz),
           label: Text(l10n.swapBocciaOrderButton),
         ),
@@ -313,6 +455,42 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     );
   }
 
+  Widget _buildEndHeader(
+    BuildContext context,
+    int endNo,
+  ) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final isSelected = endNo == _selectedEndNo;
+
+    return InkWell(
+      onTap: () {
+        _selectEnd(endNo);
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 6,
+        ),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+            width: 2,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          l10n.bocciaEndLabel(endNo),
+          style: theme.textTheme.labelLarge?.copyWith(
+            fontWeight: isSelected ? FontWeight.bold : null,
+            color: isSelected ? theme.colorScheme.primary : null,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildScoreTable(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
@@ -326,7 +504,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
           const DataColumn(label: SizedBox(width: 56)),
           for (final endScore in _draftScore.endScores)
             DataColumn(
-              label: Text(l10n.bocciaEndLabel(endScore.endNo)),
+              label: _buildEndHeader(context, endScore.endNo),
             ),
           DataColumn(
             label: Text(l10n.bocciaTotalLabel),
@@ -413,21 +591,87 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
 
   Widget _buildThrowingBoxSection(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final assignments = _draftScore.throwingBoxAssignments;
+    final canEditAssignments = _draftScore.canEditThrowingBoxAssignments;
+    final selectedEndThrowCount =
+        _draftScore.throwLogCountForEnd(_selectedEndNo);
+    final redThrowCount = _draftScore.throwLogCountForEndSide(
+      endNo: _selectedEndNo,
+      side: BocciaThrowingSide.red,
+    );
+    final blueThrowCount = _draftScore.throwLogCountForEndSide(
+      endNo: _selectedEndNo,
+      side: BocciaThrowingSide.blue,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '投球場所',
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.bocciaThrowLogTitle(_selectedEndNo),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Text(
+              l10n.bocciaThrowCountSummary(
+                redCount: redThrowCount,
+                blueCount: blueThrowCount,
+              ),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 4),
         Text(
-          '赤は奇数ボックス、青は偶数ボックスに投球者を設定します。',
+          l10n.bocciaThrowLogHelp,
           style: theme.textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            FilledButton.tonalIcon(
+              onPressed: _isSaving || !canEditAssignments
+                  ? null
+                  : _toggleThrowingBoxAssignmentMode,
+              icon: Icon(
+                _isEditingThrowingBoxAssignments
+                    ? Icons.list_alt
+                    : Icons.edit_location_alt,
+              ),
+              label: Text(
+                _isEditingThrowingBoxAssignments
+                    ? l10n.bocciaReturnToThrowLogButton
+                    : l10n.bocciaThrowingBoxSettingsButton,
+              ),
+            ),
+            if (!canEditAssignments) ...[
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  l10n.bocciaThrowingBoxLockedMessage,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.outline,
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(width: 12),
+            Text(
+              l10n.bocciaThrowCountProgress(
+                count: selectedEndThrowCount,
+                maxCount: 12,
+              ),
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         SingleChildScrollView(
@@ -435,21 +679,30 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
           child: Row(
             children: [
               for (final assignment in assignments) ...[
-                _buildThrowingBoxCard(context, assignment),
+                _buildThrowingBoxCard(
+                  context,
+                  assignment,
+                  isEditing:
+                      _isEditingThrowingBoxAssignments && canEditAssignments,
+                ),
                 if (assignment != assignments.last) const SizedBox(width: 8),
               ],
             ],
           ),
         ),
+        const SizedBox(height: 16),
+        _buildThrowOrderSection(context),
       ],
     );
   }
 
   Widget _buildThrowingBoxCard(
     BuildContext context,
-    BocciaThrowingBoxAssignment assignment,
-  ) {
+    BocciaThrowingBoxAssignment assignment, {
+    required bool isEditing,
+  }) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isRed = assignment.side == BocciaThrowingSide.red;
     final playerOptions = _playerOptionsForAssignment(assignment);
     final selectedPlayerSlot = playerOptions.any(
@@ -457,6 +710,15 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     )
         ? assignment.playerSlot
         : null;
+    final playerName = _playerNameForAssignment(assignment, l10n);
+    final throwCount = _draftScore.throwLogCountForEndBox(
+      endNo: _selectedEndNo,
+      boxNo: assignment.boxNo,
+    );
+    final canAdd = !_isSaving &&
+        assignment.hasPlayer &&
+        _draftScore.canAddThrowLogForEnd(_selectedEndNo) &&
+        !isEditing;
 
     return Container(
       width: 150,
@@ -479,39 +741,184 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
             ),
           ),
           const SizedBox(height: 8),
-          DropdownButtonFormField<int?>(
-            initialValue: selectedPlayerSlot,
-            isExpanded: true,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 8,
+          if (isEditing)
+            DropdownButtonFormField<int?>(
+              initialValue: selectedPlayerSlot,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 8,
+                ),
+              ),
+              onChanged: _isSaving
+                  ? null
+                  : (value) {
+                      _setThrowingBoxPlayer(
+                        boxNo: assignment.boxNo,
+                        playerSlot: value,
+                      );
+                    },
+              items: [
+                DropdownMenuItem<int?>(
+                  value: null,
+                  child: Text(l10n.bocciaUnusedThrowingBoxLabel),
+                ),
+                for (final option in playerOptions)
+                  DropdownMenuItem<int?>(
+                    value: option.playerSlot,
+                    child: Text(
+                      option.displayName,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+              ],
+            )
+          else ...[
+            Text(
+              playerName,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: assignment.hasPlayer ? FontWeight.bold : null,
               ),
             ),
-            onChanged: _isSaving
-                ? null
-                : (value) {
-                    _setThrowingBoxPlayer(
-                      boxNo: assignment.boxNo,
-                      playerSlot: value,
-                    );
-                  },
-            items: [
-              const DropdownMenuItem<int?>(
-                value: null,
-                child: Text('未使用'),
-              ),
-              for (final option in playerOptions)
-                DropdownMenuItem<int?>(
-                  value: option.playerSlot,
-                  child: Text(
-                    option.displayName,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+            const SizedBox(height: 8),
+            Text(
+              assignment.hasPlayer
+                  ? l10n.bocciaThrowCountForBox(throwCount)
+                  : '',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            if (assignment.hasPlayer)
+              IconButton(
+                onPressed: canAdd
+                    ? () {
+                        _addThrowLog(boxNo: assignment.boxNo);
+                      }
+                    : null,
+                icon: const Icon(Icons.add),
+                tooltip: l10n.bocciaAddThrowLogTooltip,
+              )
+            else
+              const SizedBox(height: 48),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThrowOrderSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final logs = _draftScore.throwLogsForEnd(_selectedEndNo);
+    final hasLogs = logs.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.bocciaThrowOrderTitle,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
+              ),
+            ),
+            TextButton.icon(
+              onPressed:
+                  _isSaving || !hasLogs ? null : _clearSelectedEndThrowLogs,
+              icon: const Icon(Icons.delete_outline),
+              label: Text(l10n.clearBocciaEndThrowLogsButton),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (!hasLogs)
+          Text(
+            l10n.bocciaNoThrowLogsMessage,
+            style: theme.textTheme.bodySmall,
+          )
+        else
+          _buildThrowOrderGrid(context, logs),
+      ],
+    );
+  }
+
+  Widget _buildThrowOrderGrid(
+    BuildContext context,
+    List<BocciaThrowLog> logs,
+  ) {
+    final columns = <Widget>[];
+
+    for (var columnIndex = 0; columnIndex < 3; columnIndex += 1) {
+      final startIndex = columnIndex * 4;
+      final columnLogs = logs.skip(startIndex).take(4).toList(growable: false);
+
+      columns.add(
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final log in columnLogs) _buildThrowOrderItem(context, log),
+              for (var index = columnLogs.length; index < 4; index += 1)
+                const SizedBox(height: 36),
             ],
           ),
+        ),
+      );
+
+      if (columnIndex < 2) {
+        columns.add(const SizedBox(width: 12));
+      }
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: columns,
+    );
+  }
+
+  Widget _buildThrowOrderItem(
+    BuildContext context,
+    BocciaThrowLog log,
+  ) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final logs = _draftScore.throwLogsForEnd(_selectedEndNo);
+    final isLast = logs.isNotEmpty &&
+        logs.last.endNo == log.endNo &&
+        logs.last.throwNo == log.throwNo;
+
+    return SizedBox(
+      height: 36,
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              l10n.bocciaThrowOrderItem(
+                throwNo: log.throwNo,
+                playerName: _playerNameForThrowLog(log, l10n),
+                sideLabel: _throwingSideLabel(log.side, l10n),
+                boxNo: log.boxNo,
+              ),
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall,
+            ),
+          ),
+          if (isLast)
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              onPressed: _isSaving ? null : _removeLastThrowLog,
+              icon: const Icon(Icons.remove_circle_outline),
+              tooltip: l10n.removeLastBocciaThrowLogTooltip,
+            ),
         ],
       ),
     );
@@ -631,7 +1038,8 @@ bool _scoreEquals(BocciaMatchScore a, BocciaMatchScore b) {
       a.redTeamSlot != b.redTeamSlot ||
       a.blueTeamSlot != b.blueTeamSlot ||
       a.endScores.length != b.endScores.length ||
-      a.throwingBoxAssignments.length != b.throwingBoxAssignments.length) {
+      a.throwingBoxAssignments.length != b.throwingBoxAssignments.length ||
+      a.throwLogs.length != b.throwLogs.length) {
     return false;
   }
 
@@ -646,13 +1054,16 @@ bool _scoreEquals(BocciaMatchScore a, BocciaMatchScore b) {
     }
   }
 
-  for (var index = 0; index < a.throwingBoxAssignments.length; index += 1) {
-    final aAssignment = a.throwingBoxAssignments[index];
-    final bAssignment = b.throwingBoxAssignments[index];
+  for (var index = 0; index < a.throwLogs.length; index += 1) {
+    final aLog = a.throwLogs[index];
+    final bLog = b.throwLogs[index];
 
-    if (aAssignment.boxNo != bAssignment.boxNo ||
-        aAssignment.side != bAssignment.side ||
-        aAssignment.playerSlot != bAssignment.playerSlot) {
+    if (aLog.endNo != bLog.endNo ||
+        aLog.throwNo != bLog.throwNo ||
+        aLog.side != bLog.side ||
+        aLog.boxNo != bLog.boxNo ||
+        aLog.teamSlot != bLog.teamSlot ||
+        aLog.playerSlot != bLog.playerSlot) {
       return false;
     }
   }

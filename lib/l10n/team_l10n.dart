@@ -349,9 +349,37 @@ extension TeamL10n on AppLocalizations {
     return '$redTeamName vs $blueTeamName';
   }
 
+  String bocciaThrowLogTitle(int endNo) {
+    return _isJapanese ? '${endNo}E 投球ログ' : 'End $endNo throw log';
+  }
+
+  String get bocciaThrowLogHelp => _isJapanese
+      ? '投球場所に設定された参加者の＋を押すと、このエンドの投球ログに追加します。'
+      : 'Tap + for a participant assigned to a throwing box to add a throw log for this end.';
+
+  String bocciaThrowCountSummary({
+    required int redCount,
+    required int blueCount,
+  }) {
+    return _isJapanese
+        ? '投球数：赤：$redCount　青：$blueCount'
+        : 'Throws: Red $redCount / Blue $blueCount';
+  }
+
+  String bocciaThrowCountProgress({
+    required int count,
+    required int maxCount,
+  }) {
+    return _isJapanese ? '$count / $maxCount投' : '$count / $maxCount throws';
+  }
+
   String get bocciaFirstTeamLabel => _isJapanese ? '先攻' : 'First';
 
   String get bocciaSecondTeamLabel => _isJapanese ? '後攻' : 'Second';
+
+  String get bocciaRedSideLabel => _isJapanese ? '赤' : 'Red';
+
+  String get bocciaBlueSideLabel => _isJapanese ? '青' : 'Blue';
 
   String get swapBocciaOrderButton => _isJapanese ? '先攻 🔁 後攻' : 'Swap order';
 
@@ -361,6 +389,51 @@ extension TeamL10n on AppLocalizations {
   String bocciaEndLabel(int endNo) {
     return _isJapanese ? '$endNo E' : 'E$endNo';
   }
+
+  String get bocciaThrowingBoxSettingsButton =>
+      _isJapanese ? '投球場所を設定する' : 'Set throwing boxes';
+
+  String get bocciaReturnToThrowLogButton =>
+      _isJapanese ? '投球ログに戻る' : 'Back to throw log';
+
+  String get bocciaThrowingBoxLockedMessage => _isJapanese
+      ? '投球ログ入力後は投球場所を変更できません'
+      : 'Throwing boxes cannot be changed after throw logs are entered.';
+
+  String get bocciaUnusedThrowingBoxLabel => _isJapanese ? '未使用' : 'Unused';
+
+  String bocciaDefaultParticipantName(int playerSlot) {
+    return _isJapanese ? '参加者$playerSlot' : 'Participant $playerSlot';
+  }
+
+  String bocciaThrowCountForBox(int count) {
+    return _isJapanese ? '投球数：$count' : 'Throws: $count';
+  }
+
+  String get bocciaAddThrowLogTooltip =>
+      _isJapanese ? '投球ログを追加' : 'Add throw log';
+
+  String get bocciaThrowOrderTitle => _isJapanese ? '投球順' : 'Throw order';
+
+  String get bocciaNoThrowLogsMessage =>
+      _isJapanese ? 'まだ投球ログはありません。' : 'No throw logs yet.';
+
+  String get clearBocciaEndThrowLogsButton =>
+      _isJapanese ? 'このエンドの履歴をクリア' : 'Clear this end';
+
+  String bocciaThrowOrderItem({
+    required int throwNo,
+    required String playerName,
+    required String sideLabel,
+    required int boxNo,
+  }) {
+    return _isJapanese
+        ? '$throwNo. $playerName（$sideLabel / Box $boxNo）'
+        : '$throwNo. $playerName ($sideLabel / Box $boxNo)';
+  }
+
+  String get removeLastBocciaThrowLogTooltip =>
+      _isJapanese ? '最後の投球を取り消す' : 'Undo last throw';
 
   String get bocciaTotalLabel => _isJapanese ? '合計' : 'Total';
 
@@ -379,6 +452,19 @@ extension TeamL10n on AppLocalizations {
   String get bocciaScoreDiscardChangesBody => _isJapanese
       ? '保存していないスコア変更があります。閉じますか？'
       : 'There are unsaved score changes. Do you want to close?';
+
+  String get clearBocciaEndThrowLogsDialogTitle =>
+      _isJapanese ? 'このエンドの投球履歴をクリアしますか？' : 'Clear throw logs for this end?';
+
+  String get clearBocciaEndThrowLogsDialogBody => _isJapanese
+      ? '選択中エンドの投球順と投球数を削除します。この操作は元に戻せません。'
+      : 'This will delete the throw order and throw counts for the selected end. This action cannot be undone.';
+
+  String get cancelClearBocciaEndThrowLogsButton =>
+      _isJapanese ? 'キャンセル' : 'Cancel';
+
+  String get confirmClearBocciaEndThrowLogsButton =>
+      _isJapanese ? 'クリア' : 'Clear';
 
   String get returnToBocciaScoreInputButton =>
       _isJapanese ? '入力に戻る' : 'Back to input';
