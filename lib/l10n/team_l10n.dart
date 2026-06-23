@@ -142,6 +142,63 @@ extension TeamL10n on AppLocalizations {
 
   String get teamScheduleTitle => _isJapanese ? 'チーム対戦表' : 'Team match table';
 
+  String get teamScheduleListTitle =>
+      _isJapanese ? 'チーム対戦表一覧' : 'Team match tables';
+
+  String get teamScheduleListEmptyTitle =>
+      _isJapanese ? 'チーム対戦表はまだありません' : 'No team match tables yet';
+
+  String get teamScheduleListEmptyMessage => _isJapanese
+      ? 'チーム対戦表を作成または共有URLから開くと、この端末の一覧に表示されます。'
+      : 'Create a team match table or open one from a share URL to show it in this device list.';
+
+  String get teamScheduleListLoadErrorTitle =>
+      _isJapanese ? '一覧を読み込めませんでした' : 'Failed to load the list';
+
+  String get teamScheduleListLoadErrorMessage => _isJapanese
+      ? '端末内の保存履歴を確認できませんでした。もう一度お試しください。'
+      : 'Could not read the saved history on this device. Please try again.';
+
+  String get teamScheduleUntitledEvent =>
+      _isJapanese ? 'タイトル未設定のチーム対戦表' : 'Untitled team match table';
+
+  String teamScheduleListShareId(String shareId) {
+    return _isJapanese ? '共有ID: $shareId' : 'Share ID: $shareId';
+  }
+
+  String teamScheduleListTeamCount(int teamCount) {
+    return _isJapanese ? '$teamCountチーム' : '$teamCount teams';
+  }
+
+  String teamScheduleListMemberCount(int memberCount) {
+    return _isJapanese ? '$memberCount人' : '$memberCount members';
+  }
+
+  String teamScheduleListUpdatedAt(String updatedAt) {
+    return _isJapanese ? '更新: $updatedAt' : 'Updated: $updatedAt';
+  }
+
+  String get refreshLatestInfo => refreshLatestTeamScheduleButton;
+
+  String get teamNavigationMenuTooltip =>
+      _isJapanese ? 'チーム用メニューを開く' : 'Open team menu';
+
+  String get teamNavigationTitle => _isJapanese ? 'チーム乱数表' : 'Team scheduler';
+
+  String get teamNavigationSubtitle => _isJapanese ? 'チーム用メニュー' : 'Team menu';
+
+  String get teamNavigationHome => _isJapanese ? 'チームTOP' : 'Team setup';
+
+  String get teamNavigationScheduleList =>
+      _isJapanese ? '対戦表一覧' : 'Match table list';
+
+  String get teamNavigationSupport => _isJapanese ? 'サポート' : 'Support';
+
+  String get teamNavigationServiceList => _isJapanese ? 'サービス一覧' : 'Services';
+
+  String get teamNavigationDoublesScheduler =>
+      _isJapanese ? 'ダブルス乱数表' : 'Doubles scheduler';
+
   String get defaultTeamScheduleEventTitle =>
       _isJapanese ? 'チーム練習会' : 'Team practice';
 

@@ -7,10 +7,13 @@ import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
 import '../application/team_generated_schedule_service.dart';
+import '../data/local_team_schedule_history_item.dart';
+import '../data/local_team_schedule_history_store.dart';
 import '../domain/boccia_score.dart';
 import '../domain/saved_team_schedule.dart';
 import '../domain/team_generated_schedule.dart';
 import 'models/team_setup_draft.dart';
+import 'team_navigation_drawer.dart';
 import 'widgets/boccia_score_dialog.dart';
 
 enum _TeamSchedulePageMode {
@@ -43,6 +46,8 @@ class TeamSchedulePage extends StatefulWidget {
 
 class _TeamSchedulePageState extends State<TeamSchedulePage> {
   late final TeamGeneratedScheduleService _service;
+  final LocalTeamScheduleHistoryStore _historyStore =
+      LocalTeamScheduleHistoryStore();
 
   _TeamScheduleViewData? _schedule;
   String? _errorMessage;
@@ -170,6 +175,12 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
         return;
       }
 
+      await _upsertLocalHistory(saved: saved, schedule: schedule);
+
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         _schedule = schedule;
         _eventTitle = saved.display.eventTitle;
@@ -224,6 +235,12 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
         savedSetup: saved.setup,
       );
 
+      await _upsertLocalHistory(saved: saved, schedule: schedule);
+
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         _schedule = schedule;
         _eventTitle = saved.display.eventTitle.isEmpty
@@ -277,6 +294,28 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           fragment: '',
         )
         .toString();
+  }
+
+  Future<void> _upsertLocalHistory({
+    required SavedTeamSchedule saved,
+    required _TeamScheduleViewData schedule,
+  }) async {
+    final eventTitle = saved.display.eventTitle.trim().isEmpty
+        ? schedule.eventTitle
+        : saved.display.eventTitle.trim();
+
+    await _historyStore.upsert(
+      LocalTeamScheduleHistoryItem(
+        shareId: saved.shareId,
+        eventTitle: eventTitle,
+        teamCount: schedule.teams.length,
+        memberCount: schedule.members.length,
+        hasMemo: false,
+        createdAt: saved.createdAt,
+        firstSavedAt: saved.createdAt,
+        updatedAt: saved.updatedAt,
+      ),
+    );
   }
 
   _TeamScheduleViewData _buildViewData({
@@ -1478,6 +1517,21 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           foregroundColor: Colors.black87,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
+          actions: [
+            Builder(
+              builder: (context) {
+                return IconButton(
+                  tooltip: l10n.teamNavigationMenuTooltip,
+                  onPressed: () => Scaffold.of(context).openEndDrawer(),
+                  icon: const Icon(Icons.menu),
+                );
+              },
+            ),
+          ],
+        ),
+        endDrawer: TeamNavigationDrawer(
+          showHomeLink: true,
+          onRefreshLatestInfo: _refreshScores,
         ),
         body: SafeArea(
           child: _buildBody(context),
