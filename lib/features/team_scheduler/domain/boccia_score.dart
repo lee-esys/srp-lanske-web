@@ -216,7 +216,7 @@ class BocciaMatchScore {
         redPlayerSlots: redPlayerSlots,
         bluePlayerSlots: bluePlayerSlots,
       ),
-      throwLogs: const <Map<String, dynamic>>[],
+      throwLogs: const <BocciaThrowLog>[],
     );
   }
 
@@ -238,7 +238,7 @@ class BocciaMatchScore {
       throwingBoxAssignments: _normalizeThrowingBoxAssignments(
         _readThrowingBoxAssignments(json['throwing_box_assignments']),
       ),
-      throwLogs: _readObjectList(json['throw_logs']),
+      throwLogs: _readThrowLogs(json['throw_logs']),
     );
   }
 
@@ -247,7 +247,7 @@ class BocciaMatchScore {
   final int blueTeamSlot;
   final List<BocciaEndScore> endScores;
   final List<BocciaThrowingBoxAssignment> throwingBoxAssignments;
-  final List<Map<String, dynamic>> throwLogs;
+  final List<BocciaThrowLog> throwLogs;
 
   int get endCount => endScores.length;
 
@@ -267,6 +267,51 @@ class BocciaMatchScore {
 
   bool get hasAnyScore {
     return endScores.any((endScore) => endScore.red > 0 || endScore.blue > 0);
+  }
+
+  bool get hasAnyThrowLog {
+    return throwLogs.isNotEmpty;
+  }
+
+  bool get canEditThrowingBoxAssignments {
+    return !hasAnyThrowLog;
+  }
+
+  List<BocciaThrowLog> throwLogsForEnd(int endNo) {
+    return throwLogs.where((log) => log.endNo == endNo).toList(growable: false);
+  }
+
+  int throwLogCountForEnd(int endNo) {
+    return throwLogsForEnd(endNo).length;
+  }
+
+  int throwLogCountForEndSide({
+    required int endNo,
+    required BocciaThrowingSide side,
+  }) {
+    return throwLogs
+        .where((log) => log.endNo == endNo)
+        .where((log) => log.side == side)
+        .length;
+  }
+
+  int throwLogCountForEndBox({
+    required int endNo,
+    required int boxNo,
+  }) {
+    final normalizedBoxNo = _normalizeThrowingBoxNo(boxNo);
+    if (normalizedBoxNo == null) {
+      return 0;
+    }
+
+    return throwLogs
+        .where((log) => log.endNo == endNo)
+        .where((log) => log.boxNo == normalizedBoxNo)
+        .length;
+  }
+
+  bool canAddThrowLogForEnd(int endNo) {
+    return throwLogCountForEnd(endNo) < 12;
   }
 
   BocciaThrowingBoxAssignment? throwingBoxAssignment(int boxNo) {
@@ -302,7 +347,7 @@ class BocciaMatchScore {
     int? blueTeamSlot,
     List<BocciaEndScore>? endScores,
     List<BocciaThrowingBoxAssignment>? throwingBoxAssignments,
-    List<Map<String, dynamic>>? throwLogs,
+    List<BocciaThrowLog>? throwLogs,
   }) {
     return BocciaMatchScore(
       matchNo: matchNo ?? this.matchNo,
@@ -314,8 +359,8 @@ class BocciaMatchScore {
       throwingBoxAssignments: _normalizeThrowingBoxAssignments(
         throwingBoxAssignments ?? this.throwingBoxAssignments,
       ),
-      throwLogs: List<Map<String, dynamic>>.unmodifiable(
-        throwLogs ?? this.throwLogs,
+      throwLogs: List<BocciaThrowLog>.unmodifiable(
+        _normalizeThrowLogs(throwLogs ?? this.throwLogs),
       ),
     );
   }
@@ -343,6 +388,10 @@ class BocciaMatchScore {
     required int boxNo,
     int? playerSlot,
   }) {
+    if (!canEditThrowingBoxAssignments) {
+      return this;
+    }
+
     final normalizedBoxNo = _normalizeThrowingBoxNo(boxNo);
     if (normalizedBoxNo == null) {
       return this;
@@ -386,6 +435,71 @@ class BocciaMatchScore {
     return replaceThrowingBoxPlayer(boxNo: boxNo);
   }
 
+  BocciaMatchScore addThrowLog({
+    required int endNo,
+    required int boxNo,
+  }) {
+    if (!canAddThrowLogForEnd(endNo)) {
+      return this;
+    }
+
+    final normalizedBoxNo = _normalizeThrowingBoxNo(boxNo);
+    if (normalizedBoxNo == null) {
+      return this;
+    }
+
+    final assignment = throwingBoxAssignment(normalizedBoxNo);
+    final playerSlot = assignment?.playerSlot;
+    if (playerSlot == null) {
+      return this;
+    }
+
+    final nextThrowNo = throwLogCountForEnd(endNo) + 1;
+
+    return copyWith(
+      throwLogs: <BocciaThrowLog>[
+        ...throwLogs,
+        BocciaThrowLog(
+          endNo: endNo,
+          throwNo: nextThrowNo,
+          side: assignment!.side,
+          boxNo: normalizedBoxNo,
+          teamSlot: assignment.side == BocciaThrowingSide.red
+              ? redTeamSlot
+              : blueTeamSlot,
+          playerSlot: playerSlot,
+        ),
+      ],
+    );
+  }
+
+  BocciaMatchScore removeLastThrowLog({
+    required int endNo,
+  }) {
+    final endLogs = throwLogsForEnd(endNo);
+    if (endLogs.isEmpty) {
+      return this;
+    }
+
+    final lastEndLog = endLogs.last;
+
+    return copyWith(
+      throwLogs: throwLogs
+          .where((log) => !(log.endNo == lastEndLog.endNo &&
+              log.throwNo == lastEndLog.throwNo))
+          .toList(growable: false),
+    );
+  }
+
+  BocciaMatchScore clearThrowLogsForEnd({
+    required int endNo,
+  }) {
+    return copyWith(
+      throwLogs:
+          throwLogs.where((log) => log.endNo != endNo).toList(growable: false),
+    );
+  }
+
   BocciaMatchScore swapped() {
     return copyWith(
       redTeamSlot: blueTeamSlot,
@@ -396,6 +510,12 @@ class BocciaMatchScore {
       throwingBoxAssignments: _swapThrowingBoxAssignments(
         throwingBoxAssignments,
       ),
+      throwLogs: throwLogs
+          .map((log) => log.swapped(
+                redTeamSlot: blueTeamSlot,
+                blueTeamSlot: redTeamSlot,
+              ))
+          .toList(growable: false),
     );
   }
 
@@ -409,7 +529,7 @@ class BocciaMatchScore {
       'throwing_box_assignments': throwingBoxAssignments
           .map((assignment) => assignment.toJson())
           .toList(),
-      'throw_logs': throwLogs,
+      'throw_logs': throwLogs.map((log) => log.toJson()).toList(),
     };
   }
 }
@@ -462,6 +582,87 @@ class BocciaEndScore {
       'end_no': endNo,
       'red': red,
       'blue': blue,
+    };
+  }
+}
+
+class BocciaThrowLog {
+  const BocciaThrowLog({
+    required this.endNo,
+    required this.throwNo,
+    required this.side,
+    required this.boxNo,
+    required this.teamSlot,
+    required this.playerSlot,
+  });
+
+  factory BocciaThrowLog.fromJson(Map<String, dynamic> json) {
+    final boxNo = _normalizeThrowingBoxNo(json['box_no']) ?? 1;
+    final side = BocciaThrowingSideJson.fromJsonValue(
+      json['team_color'] ?? json['side'],
+    );
+
+    return BocciaThrowLog(
+      endNo: _readInt(json['end_no']),
+      throwNo: _readInt(json['throw_no']),
+      side: side,
+      boxNo: boxNo,
+      teamSlot: _readInt(json['team_slot']),
+      playerSlot: _readInt(json['player_slot']),
+    );
+  }
+
+  final int endNo;
+  final int throwNo;
+  final BocciaThrowingSide side;
+  final int boxNo;
+  final int teamSlot;
+  final int playerSlot;
+
+  BocciaThrowLog copyWith({
+    int? endNo,
+    int? throwNo,
+    BocciaThrowingSide? side,
+    int? boxNo,
+    int? teamSlot,
+    int? playerSlot,
+  }) {
+    final normalizedBoxNo = _normalizeThrowingBoxNo(boxNo ?? this.boxNo) ??
+        _normalizeThrowingBoxNo(this.boxNo) ??
+        this.boxNo;
+
+    return BocciaThrowLog(
+      endNo: endNo ?? this.endNo,
+      throwNo: throwNo ?? this.throwNo,
+      side: side ?? this.side,
+      boxNo: normalizedBoxNo,
+      teamSlot: teamSlot ?? this.teamSlot,
+      playerSlot: playerSlot ?? this.playerSlot,
+    );
+  }
+
+  BocciaThrowLog swapped({
+    required int redTeamSlot,
+    required int blueTeamSlot,
+  }) {
+    final nextBoxNo = _swappedThrowingBoxNo(boxNo);
+    final nextSide = _throwingSideForBoxNo(nextBoxNo);
+
+    return copyWith(
+      side: nextSide,
+      boxNo: nextBoxNo,
+      teamSlot: nextSide == BocciaThrowingSide.red ? redTeamSlot : blueTeamSlot,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'end_no': endNo,
+      'throw_no': throwNo,
+      'team_color': side.toJsonValue(),
+      'box_no': boxNo,
+      'team_slot': teamSlot,
+      'player_slot': playerSlot,
     };
   }
 }
@@ -520,15 +721,7 @@ class BocciaThrowingBoxAssignment {
   }
 
   BocciaThrowingBoxAssignment swapped() {
-    final nextBoxNo = switch (boxNo) {
-      1 => 2,
-      2 => 1,
-      3 => 4,
-      4 => 3,
-      5 => 6,
-      6 => 5,
-      _ => boxNo,
-    };
+    final nextBoxNo = _swappedThrowingBoxNo(boxNo);
 
     return BocciaThrowingBoxAssignment(
       boxNo: nextBoxNo,
@@ -589,6 +782,61 @@ List<BocciaThrowingBoxAssignment> _readThrowingBoxAssignments(Object? value) {
       .map((json) => BocciaThrowingBoxAssignment.fromJson(_readObject(json)))
       .where((assignment) => _normalizeThrowingBoxNo(assignment.boxNo) != null)
       .toList(growable: false);
+}
+
+List<BocciaThrowLog> _readThrowLogs(Object? value) {
+  if (value is! List) {
+    return const <BocciaThrowLog>[];
+  }
+
+  return _normalizeThrowLogs(
+    value
+        .whereType<Map>()
+        .map((json) => BocciaThrowLog.fromJson(_readObject(json)))
+        .where((log) => log.endNo > 0)
+        .where((log) => _normalizeThrowingBoxNo(log.boxNo) != null)
+        .where((log) => log.teamSlot > 0)
+        .where((log) => log.playerSlot > 0)
+        .toList(growable: false),
+  );
+}
+
+List<BocciaThrowLog> _normalizeThrowLogs(List<BocciaThrowLog> source) {
+  final grouped = <int, List<BocciaThrowLog>>{};
+
+  for (final log in source) {
+    if (log.endNo <= 0) {
+      continue;
+    }
+
+    final normalizedBoxNo = _normalizeThrowingBoxNo(log.boxNo);
+    if (normalizedBoxNo == null || log.teamSlot <= 0 || log.playerSlot <= 0) {
+      continue;
+    }
+
+    grouped.putIfAbsent(log.endNo, () => <BocciaThrowLog>[]).add(
+          log.copyWith(
+            boxNo: normalizedBoxNo,
+          ),
+        );
+  }
+
+  final endNos = grouped.keys.toList(growable: false)..sort();
+  final normalized = <BocciaThrowLog>[];
+
+  for (final endNo in endNos) {
+    final logs = grouped[endNo]!;
+    for (var index = 0; index < logs.length && index < 12; index += 1) {
+      normalized.add(
+        logs[index].copyWith(
+          endNo: endNo,
+          throwNo: index + 1,
+        ),
+      );
+    }
+  }
+
+  return List<BocciaThrowLog>.unmodifiable(normalized);
 }
 
 List<BocciaThrowingBoxAssignment> _initialThrowingBoxAssignments({
@@ -724,6 +972,18 @@ List<int> _preferredThrowingBoxNos({
   };
 }
 
+int _swappedThrowingBoxNo(int boxNo) {
+  return switch (boxNo) {
+    1 => 2,
+    2 => 1,
+    3 => 4,
+    4 => 3,
+    5 => 6,
+    6 => 5,
+    _ => boxNo,
+  };
+}
+
 BocciaThrowingSide _throwingSideForBoxNo(int boxNo) {
   return boxNo.isOdd ? BocciaThrowingSide.red : BocciaThrowingSide.blue;
 }
@@ -754,16 +1014,6 @@ Map<String, dynamic> _readObject(Object? value) {
   return <String, dynamic>{
     for (final entry in value.entries) entry.key.toString(): entry.value,
   };
-}
-
-List<Map<String, dynamic>> _readObjectList(Object? value) {
-  if (value is! List) {
-    return const <Map<String, dynamic>>[];
-  }
-
-  return List<Map<String, dynamic>>.unmodifiable(
-    value.whereType<Map>().map(_readObject),
-  );
 }
 
 int _readInt(Object? value, {int defaultValue = 0}) {

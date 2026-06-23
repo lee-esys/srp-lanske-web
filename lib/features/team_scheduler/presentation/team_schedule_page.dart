@@ -52,6 +52,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
 
   TeamScheduleScores _scores = const TeamScheduleScores.empty();
   bool _isSavingScores = false;
+  bool _isRefreshingScores = false;
   String? _scoresSaveErrorMessage;
 
   String _eventTitle = '';
@@ -528,8 +529,52 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     }
   }
 
+  Future<TeamScheduleScores?> _refreshScores() async {
+    final shareId = _shareId;
+    if (shareId == null || shareId.isEmpty || _isRefreshingScores) {
+      return null;
+    }
+
+    setState(() {
+      _isRefreshingScores = true;
+      _scoresSaveErrorMessage = null;
+    });
+
+    try {
+      final saved = await appTeamScheduleRepository.findByShareId(shareId);
+      if (saved == null) {
+        throw StateError('team schedule not found: $shareId');
+      }
+
+      final latestScores = TeamScheduleScores.fromJson(saved.scores);
+
+      if (!mounted) {
+        return latestScores;
+      }
+
+      setState(() {
+        _scores = latestScores;
+        _isRefreshingScores = false;
+      });
+
+      return latestScores;
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _scoresSaveErrorMessage = _formatError(error);
+          _isRefreshingScores = false;
+        });
+      }
+
+      return null;
+    }
+  }
+
   Future<void> _selectSport(TeamScheduleSport? sport) async {
-    if (sport == null || sport == _scores.selectedSport || _isSavingScores) {
+    if (sport == null ||
+        sport == _scores.selectedSport ||
+        _isSavingScores ||
+        _isRefreshingScores) {
       return;
     }
 
@@ -551,6 +596,18 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     final savedScores = await _saveScores(nextScores);
 
     return savedScores.boccia.matchScore(score.matchNo) ?? score;
+  }
+
+  Future<BocciaMatchScore?> _refreshBocciaMatchScore(
+    BocciaMatchScore fallbackScore,
+  ) async {
+    final latestScores = await _refreshScores();
+    if (latestScores == null) {
+      return null;
+    }
+
+    return latestScores.boccia.matchScore(fallbackScore.matchNo) ??
+        fallbackScore;
   }
 
   Future<void> _openBocciaScoreDialog(_TeamMatchViewData match) async {
@@ -600,6 +657,9 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           redPlayerOptions: _bocciaPlayerOptions(initialScore.redTeamSlot),
           bluePlayerOptions: _bocciaPlayerOptions(initialScore.blueTeamSlot),
           onSave: _saveBocciaMatchScore,
+          onRefresh: () {
+            return _refreshBocciaMatchScore(initialScore);
+          },
         );
       },
     );
@@ -856,6 +916,23 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       );
     }
 
+    if (_isRefreshingScores) {
+      return Row(
+        children: [
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            l10n.refreshingTeamScheduleScoresMessage,
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
+      );
+    }
+
     if (error != null && error.isNotEmpty) {
       return Text(
         l10n.teamScheduleScoresSaveFailedMessage(error),
@@ -891,7 +968,8 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
               vertical: 10,
             ),
           ),
-          onChanged: _isSavingScores ? null : _selectSport,
+          onChanged:
+              _isSavingScores || _isRefreshingScores ? null : _selectSport,
           items: [
             for (final sport in TeamScheduleSport.values)
               DropdownMenuItem<TeamScheduleSport>(
@@ -905,7 +983,9 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           l10n.teamScheduleSportHelp,
           style: theme.textTheme.bodySmall,
         ),
-        if (_isSavingScores || _scoresSaveErrorMessage != null) ...[
+        if (_isSavingScores ||
+            _isRefreshingScores ||
+            _scoresSaveErrorMessage != null) ...[
           const SizedBox(height: 8),
           _buildScoreSaveStatus(context),
         ],
@@ -949,10 +1029,21 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
             const SizedBox(height: 8),
             SelectableText(shareUrl),
             const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: _copyShareUrl,
-              icon: const Icon(Icons.copy),
-              label: Text(l10n.copyTeamScheduleShareUrlButton),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(
+                  onPressed: _copyShareUrl,
+                  icon: const Icon(Icons.copy),
+                  label: Text(l10n.copyTeamScheduleShareUrlButton),
+                ),
+                OutlinedButton.icon(
+                  onPressed: _isRefreshingScores ? null : _refreshScores,
+                  icon: const Icon(Icons.refresh),
+                  label: Text(l10n.refreshLatestTeamScheduleButton),
+                ),
+              ],
             ),
           ],
         ),
@@ -1216,7 +1307,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           const SizedBox(height: 8),
         ],
         FilledButton.tonalIcon(
-          onPressed: _isSavingScores
+          onPressed: _isSavingScores || _isRefreshingScores
               ? null
               : () {
                   _openBocciaScoreDialog(match);
