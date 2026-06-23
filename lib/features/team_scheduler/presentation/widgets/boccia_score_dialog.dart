@@ -48,6 +48,15 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
 
   bool get _isBusy => _isSaving || _isRefreshing;
 
+  Color get _bocciaDialogBackgroundColor => const Color(0xFFFBF9FD);
+  Color get _bocciaSectionBackgroundColor => const Color(0xFFF7F3FB);
+  Color get _bocciaInputBackgroundColor => const Color(0xFFFFFFFF);
+  Color get _bocciaAccentBackgroundColor => const Color(0xFFF1EAFB);
+  Color get _bocciaAccentBorderColor => const Color(0xFFD7C7F2);
+  Color get _bocciaAccentTextColor => const Color(0xFF6F57B6);
+  Color get _bocciaButtonBackgroundColor => const Color(0xFFE8DCF8);
+  Color get _bocciaButtonForegroundColor => const Color(0xFF5F43A8);
+
   int _selectedEndNo = 1;
   bool _isEditingThrowingBoxAssignments = false;
 
@@ -461,8 +470,9 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
       width: double.infinity,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: _bocciaAccentBackgroundColor,
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _bocciaAccentBorderColor),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -470,14 +480,14 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
           Icon(
             Icons.info_outline,
             size: 18,
-            color: theme.colorScheme.outline,
+            color: _bocciaAccentTextColor,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               l10n.teamScheduleConcurrentEditNotice,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+                color: _bocciaAccentTextColor,
               ),
             ),
           ),
@@ -494,9 +504,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         FilledButton.tonalIcon(
-          onPressed: _isBusy || !_draftScore.canEditThrowingBoxAssignments
-              ? null
-              : _swapOrder,
+          onPressed: _isBusy || !_draftScore.canEditThrowingBoxAssignments ? null : _swapOrder,
           icon: const Icon(Icons.swap_horiz),
           label: Text(l10n.swapBocciaOrderButton),
         ),
@@ -582,6 +590,10 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     final l10n = AppLocalizations.of(context);
     final isSelected = endNo == _selectedEndNo;
 
+    final borderColor = isSelected ? _bocciaAccentTextColor : _bocciaAccentBorderColor;
+    final backgroundColor = isSelected ? _bocciaAccentBackgroundColor : _bocciaInputBackgroundColor;
+    final textColor = isSelected ? _bocciaAccentTextColor : theme.colorScheme.onSurface;
+
     return InkWell(
       onTap: () {
         _selectEnd(endNo);
@@ -593,17 +605,18 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
           vertical: 6,
         ),
         decoration: BoxDecoration(
-          border: Border.all(
-            color: isSelected ? theme.colorScheme.primary : Colors.transparent,
-            width: 2,
-          ),
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: borderColor,
+            width: isSelected ? 2 : 1,
+          ),
         ),
         child: Text(
           l10n.bocciaEndLabel(endNo),
-          style: theme.textTheme.labelLarge?.copyWith(
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: textColor,
             fontWeight: isSelected ? FontWeight.bold : null,
-            color: isSelected ? theme.colorScheme.primary : null,
           ),
         ),
       ),
@@ -713,8 +726,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     final l10n = AppLocalizations.of(context);
     final assignments = _draftScore.throwingBoxAssignments;
     final canEditAssignments = _draftScore.canEditThrowingBoxAssignments;
-    final selectedEndThrowCount =
-        _draftScore.throwLogCountForEnd(_selectedEndNo);
+    final selectedEndThrowCount = _draftScore.throwLogCountForEnd(_selectedEndNo);
     final redThrowCount = _draftScore.throwLogCountForEndSide(
       endNo: _selectedEndNo,
       side: BocciaThrowingSide.red,
@@ -731,13 +743,15 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
         Row(
           children: [
             FilledButton.tonalIcon(
-              onPressed: _isBusy || !canEditAssignments
-                  ? null
-                  : _toggleThrowingBoxAssignmentMode,
+              style: FilledButton.styleFrom(
+                backgroundColor: _bocciaButtonBackgroundColor,
+                foregroundColor: _bocciaButtonForegroundColor,
+                disabledBackgroundColor: _bocciaButtonBackgroundColor.withOpacity(0.45),
+                disabledForegroundColor: _bocciaButtonForegroundColor.withOpacity(0.5),
+              ),
+              onPressed: _isBusy || !canEditAssignments ? null : _toggleThrowingBoxAssignmentMode,
               icon: Icon(
-                _isEditingThrowingBoxAssignments
-                    ? Icons.list_alt
-                    : Icons.edit_location_alt,
+                _isEditingThrowingBoxAssignments ? Icons.list_alt : Icons.edit_location_alt,
               ),
               label: Text(
                 _isEditingThrowingBoxAssignments
@@ -771,7 +785,8 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
             Expanded(
               child: Text(
                 l10n.bocciaThrowLogTitle(_selectedEndNo),
-                style: theme.textTheme.titleSmall?.copyWith(
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: _bocciaAccentTextColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -783,6 +798,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
               ),
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: _bocciaAccentTextColor,
               ),
             ),
           ],
@@ -801,8 +817,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
                 _buildThrowingBoxCard(
                   context,
                   assignment,
-                  isEditing:
-                      _isEditingThrowingBoxAssignments && canEditAssignments,
+                  isEditing: _isEditingThrowingBoxAssignments && canEditAssignments,
                 ),
                 if (assignment != assignments.last) const SizedBox(width: 8),
               ],
@@ -823,6 +838,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final isRed = assignment.side == BocciaThrowingSide.red;
+    final sideColor = isRed ? Colors.red : Colors.blue;
     final playerOptions = _playerOptionsForAssignment(assignment);
     final selectedPlayerSlot = playerOptions.any(
       (option) => option.playerSlot == assignment.playerSlot,
@@ -845,7 +861,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
       decoration: BoxDecoration(
         color: isRed ? Colors.red.shade50 : Colors.blue.shade50,
         border: Border.all(
-          color: isRed ? Colors.red.shade200 : Colors.blue.shade200,
+          color: sideColor.withOpacity(0.35),
         ),
         borderRadius: BorderRadius.circular(12),
       ),
@@ -864,9 +880,25 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
             DropdownButtonFormField<int?>(
               initialValue: selectedPlayerSlot,
               isExpanded: true,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: _bocciaInputBackgroundColor,
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: _bocciaAccentBorderColor),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: _bocciaAccentTextColor,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                disabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: _bocciaAccentBorderColor.withOpacity(0.6)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
                   horizontal: 8,
                   vertical: 8,
                 ),
@@ -905,9 +937,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
             ),
             const SizedBox(height: 8),
             Text(
-              assignment.hasPlayer
-                  ? l10n.bocciaThrowCountForBox(throwCount)
-                  : '',
+              assignment.hasPlayer ? l10n.bocciaThrowCountForBox(throwCount) : '',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodySmall,
             ),
@@ -936,36 +966,45 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     final logs = _draftScore.throwLogsForEnd(_selectedEndNo);
     final hasLogs = logs.isNotEmpty;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                l10n.bocciaThrowOrderTitle,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _bocciaDialogBackgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _bocciaAccentBorderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l10n.bocciaThrowOrderTitle,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: _bocciaAccentTextColor,
+                  ),
                 ),
               ),
-            ),
-            TextButton.icon(
-              onPressed:
-                  _isBusy || !hasLogs ? null : _clearSelectedEndThrowLogs,
-              icon: const Icon(Icons.delete_outline),
-              label: Text(l10n.clearBocciaEndThrowLogsButton),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        if (!hasLogs)
-          Text(
-            l10n.bocciaNoThrowLogsMessage,
-            style: theme.textTheme.bodySmall,
-          )
-        else
-          _buildThrowOrderGrid(context, logs),
-      ],
+              TextButton.icon(
+                onPressed: _isBusy || !hasLogs ? null : _clearSelectedEndThrowLogs,
+                icon: const Icon(Icons.delete_outline),
+                label: Text(l10n.clearBocciaEndThrowLogsButton),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (!hasLogs)
+            Text(
+              l10n.bocciaNoThrowLogsMessage,
+              style: theme.textTheme.bodySmall,
+            )
+          else
+            _buildThrowOrderGrid(context, logs),
+        ],
+      ),
     );
   }
 
@@ -985,8 +1024,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               for (final log in columnLogs) _buildThrowOrderItem(context, log),
-              for (var index = columnLogs.length; index < 4; index += 1)
-                const SizedBox(height: 36),
+              for (var index = columnLogs.length; index < 4; index += 1) const SizedBox(height: 36),
             ],
           ),
         ),
@@ -1010,12 +1048,17 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final logs = _draftScore.throwLogsForEnd(_selectedEndNo);
-    final isLast = logs.isNotEmpty &&
-        logs.last.endNo == log.endNo &&
-        logs.last.throwNo == log.throwNo;
+    final isLast =
+        logs.isNotEmpty && logs.last.endNo == log.endNo && logs.last.throwNo == log.throwNo;
 
-    return SizedBox(
+    return Container(
       height: 36,
+      padding: const EdgeInsets.only(left: 8, right: 4),
+      decoration: BoxDecoration(
+        color: _bocciaInputBackgroundColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: _bocciaAccentBorderColor),
+      ),
       child: Row(
         children: [
           Expanded(
@@ -1034,6 +1077,11 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
             IconButton(
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(
+                minWidth: 28,
+                minHeight: 28,
+              ),
+              iconSize: 18,
               onPressed: _isBusy ? null : _removeLastThrowLog,
               icon: const Icon(Icons.remove_circle_outline),
               tooltip: l10n.removeLastBocciaThrowLogTooltip,
@@ -1120,20 +1168,30 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
         vertical: 24,
       ),
       title: Text(l10n.bocciaScoreDialogTitle),
+      backgroundColor: _bocciaDialogBackgroundColor,
       content: SizedBox(
         width: dialogWidth,
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildConcurrentEditNotice(context),
-              const SizedBox(height: 12),
-              _buildOrderHeader(context),
-              const SizedBox(height: 16),
-              _buildScoreTable(context),
-              const SizedBox(height: 16),
-              _buildThrowingBoxSection(context),
-            ],
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _bocciaSectionBackgroundColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _bocciaAccentBorderColor),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildConcurrentEditNotice(context),
+                const SizedBox(height: 12),
+                _buildOrderHeader(context),
+                const SizedBox(height: 16),
+                _buildScoreTable(context),
+                const SizedBox(height: 16),
+                _buildThrowingBoxSection(context),
+              ],
+            ),
           ),
         ),
       ),
@@ -1149,9 +1207,10 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
                 ),
               ),
               TextButton.icon(
-                onPressed: _isBusy || widget.onRefresh == null
-                    ? null
-                    : _refreshLatestScore,
+                style: TextButton.styleFrom(
+                  foregroundColor: _bocciaButtonForegroundColor,
+                ),
+                onPressed: _isBusy || widget.onRefresh == null ? null : _refreshLatestScore,
                 icon: const Icon(Icons.refresh),
                 label: Text(l10n.refreshLatestTeamScheduleButton),
               ),
@@ -1193,9 +1252,7 @@ bool _scoreEquals(BocciaMatchScore a, BocciaMatchScore b) {
     final aEnd = a.endScores[index];
     final bEnd = b.endScores[index];
 
-    if (aEnd.endNo != bEnd.endNo ||
-        aEnd.red != bEnd.red ||
-        aEnd.blue != bEnd.blue) {
+    if (aEnd.endNo != bEnd.endNo || aEnd.red != bEnd.red || aEnd.blue != bEnd.blue) {
       return false;
     }
   }
