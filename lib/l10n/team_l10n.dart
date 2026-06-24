@@ -202,6 +202,32 @@ extension TeamL10n on AppLocalizations {
   String get defaultTeamScheduleEventTitle =>
       _isJapanese ? 'チーム練習会' : 'Team practice';
 
+  String get teamScheduleBulkEditTitle =>
+      _isJapanese ? 'まとめて編集' : 'Edit details';
+
+  String get teamScheduleBulkEditButton =>
+      _isJapanese ? 'まとめて編集' : 'Edit details';
+
+  String get teamScheduleEventTitleLabel =>
+      _isJapanese ? 'イベントタイトル' : 'Event title';
+
+  String get teamScheduleMemoLabel => _isJapanese ? 'メモ' : 'Memo';
+
+  String get teamScheduleHasMemoTooltip => _isJapanese ? 'メモあり' : 'Has memo';
+
+  String get teamScheduleBulkEditTeamsSection =>
+      _isJapanese ? 'チーム名' : 'Team names';
+
+  String get teamScheduleBulkEditMembersSection =>
+      _isJapanese ? 'メンバー名' : 'Member names';
+
+  String teamScheduleTeamNameLabel(int teamSlot) =>
+      _isJapanese ? 'チーム$teamSlot' : 'Team $teamSlot';
+
+  String get cancel => _isJapanese ? 'キャンセル' : 'Cancel';
+
+  String get save => _isJapanese ? '保存' : 'Save';
+
   String defaultTeamMemberName(int memberNo) {
     return _isJapanese ? '参加者$memberNo' : 'Participant $memberNo';
   }

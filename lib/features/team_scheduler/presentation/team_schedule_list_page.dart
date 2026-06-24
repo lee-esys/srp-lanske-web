@@ -147,9 +147,28 @@ class _TeamScheduleListItemBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+            if (item.hasMemo) ...[
+              const SizedBox(width: 8),
+              Tooltip(
+                message: l10n.teamScheduleHasMemoTooltip,
+                child: Icon(
+                  Icons.edit_note_outlined,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 4),
         Text(
