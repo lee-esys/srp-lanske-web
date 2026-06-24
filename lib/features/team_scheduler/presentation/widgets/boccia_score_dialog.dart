@@ -754,9 +754,9 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
                 backgroundColor: _bocciaButtonBackgroundColor,
                 foregroundColor: _bocciaButtonForegroundColor,
                 disabledBackgroundColor:
-                    _bocciaButtonBackgroundColor.withOpacity(0.45),
+                    _bocciaButtonBackgroundColor.withValues(alpha: 0.45),
                 disabledForegroundColor:
-                    _bocciaButtonForegroundColor.withOpacity(0.5),
+                    _bocciaButtonForegroundColor.withValues(alpha: 0.5),
               ),
               onPressed: _isBusy || !canEditAssignments
                   ? null
@@ -875,7 +875,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
       decoration: BoxDecoration(
         color: isRed ? Colors.red.shade50 : Colors.blue.shade50,
         border: Border.all(
-          color: sideColor.withOpacity(0.35),
+          color: sideColor.withValues(alpha: 0.35),
         ),
         borderRadius: BorderRadius.circular(12),
       ),
@@ -911,7 +911,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
                 ),
                 disabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                      color: _bocciaAccentBorderColor.withOpacity(0.6)),
+                      color: _bocciaAccentBorderColor.withValues(alpha: 0.6)),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 contentPadding: const EdgeInsets.symmetric(

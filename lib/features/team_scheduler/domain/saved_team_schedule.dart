@@ -130,6 +130,7 @@ class SavedTeamScheduleDisplay {
     required this.eventTitle,
     required this.teamNames,
     required this.memberNames,
+    this.memo = '',
   });
 
   factory SavedTeamScheduleDisplay.fromJson(Map<String, dynamic> json) {
@@ -137,18 +138,21 @@ class SavedTeamScheduleDisplay {
       eventTitle: _readString(json, 'event_title'),
       teamNames: _readIntStringMap(json, 'team_names'),
       memberNames: _readIntStringMap(json, 'member_names'),
+      memo: _readString(json, 'memo'),
     );
   }
 
   final String eventTitle;
   final Map<int, String> teamNames;
   final Map<int, String> memberNames;
+  final String memo;
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'event_title': eventTitle,
       'team_names': _writeIntStringMap(teamNames),
       'member_names': _writeIntStringMap(memberNames),
+      'memo': memo,
     };
   }
 }

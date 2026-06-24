@@ -7,10 +7,13 @@ import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
 import '../application/team_generated_schedule_service.dart';
+import '../data/local_team_schedule_history_item.dart';
+import '../data/local_team_schedule_history_store.dart';
 import '../domain/boccia_score.dart';
 import '../domain/saved_team_schedule.dart';
 import '../domain/team_generated_schedule.dart';
 import 'models/team_setup_draft.dart';
+import 'team_navigation_drawer.dart';
 import 'widgets/boccia_score_dialog.dart';
 
 enum _TeamSchedulePageMode {
@@ -43,6 +46,8 @@ class TeamSchedulePage extends StatefulWidget {
 
 class _TeamSchedulePageState extends State<TeamSchedulePage> {
   late final TeamGeneratedScheduleService _service;
+  final LocalTeamScheduleHistoryStore _historyStore =
+      LocalTeamScheduleHistoryStore();
 
   _TeamScheduleViewData? _schedule;
   String? _errorMessage;
@@ -56,6 +61,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
   String? _scoresSaveErrorMessage;
 
   String _eventTitle = '';
+  String _memo = '';
   Map<int, String> _teamDisplayNames = const {};
   Map<int, String> _memberDisplayNames = const {};
   int? _selectedTeamSlot;
@@ -170,9 +176,16 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
         return;
       }
 
+      await _upsertLocalHistory(saved: saved, schedule: schedule);
+
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         _schedule = schedule;
         _eventTitle = saved.display.eventTitle;
+        _memo = saved.display.memo;
         _teamDisplayNames = saved.display.teamNames;
         _memberDisplayNames = saved.display.memberNames;
         _selectedTeamSlot = schedule.teams.first.teamSlot;
@@ -224,11 +237,18 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
         savedSetup: saved.setup,
       );
 
+      await _upsertLocalHistory(saved: saved, schedule: schedule);
+
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         _schedule = schedule;
         _eventTitle = saved.display.eventTitle.isEmpty
             ? schedule.eventTitle
             : saved.display.eventTitle;
+        _memo = saved.display.memo;
         _teamDisplayNames = saved.display.teamNames.isEmpty
             ? {
                 for (final team in schedule.teams)
@@ -277,6 +297,28 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           fragment: '',
         )
         .toString();
+  }
+
+  Future<void> _upsertLocalHistory({
+    required SavedTeamSchedule saved,
+    required _TeamScheduleViewData schedule,
+  }) async {
+    final eventTitle = saved.display.eventTitle.trim().isEmpty
+        ? schedule.eventTitle
+        : saved.display.eventTitle.trim();
+
+    await _historyStore.upsert(
+      LocalTeamScheduleHistoryItem(
+        shareId: saved.shareId,
+        eventTitle: eventTitle,
+        teamCount: schedule.teams.length,
+        memberCount: schedule.members.length,
+        hasMemo: saved.display.memo.trim().isNotEmpty,
+        createdAt: saved.createdAt,
+        firstSavedAt: saved.createdAt,
+        updatedAt: saved.updatedAt,
+      ),
+    );
   }
 
   _TeamScheduleViewData _buildViewData({
@@ -442,13 +484,14 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       eventTitle: _eventTitle,
       teamNames: Map<int, String>.unmodifiable(_teamDisplayNames),
       memberNames: Map<int, String>.unmodifiable(_memberDisplayNames),
+      memo: _memo,
     );
   }
 
-  Future<void> _saveCurrentDisplay() async {
+  Future<SavedTeamSchedule?> _saveCurrentDisplay() async {
     final shareId = _shareId;
     if (shareId == null || shareId.isEmpty) {
-      return;
+      return null;
     }
 
     setState(() {
@@ -463,24 +506,29 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       );
 
       if (!mounted) {
-        return;
+        return saved;
       }
 
       setState(() {
         _eventTitle = saved.display.eventTitle;
+        _memo = saved.display.memo;
         _teamDisplayNames = saved.display.teamNames;
         _memberDisplayNames = saved.display.memberNames;
         _isSavingDisplay = false;
       });
+
+      return saved;
     } catch (error) {
       if (!mounted) {
-        return;
+        return null;
       }
 
       setState(() {
         _displaySaveErrorMessage = _formatError(error);
         _isSavingDisplay = false;
       });
+
+      return null;
     }
   }
 
@@ -761,16 +809,167 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     await _saveCurrentDisplay();
   }
 
-  Future<void> _editEventTitle() async {
+  Future<_TeamScheduleBulkEditResult?> _showBulkEditDialog(
+    BuildContext context, {
+    required _TeamScheduleViewData schedule,
+  }) {
     final l10n = AppLocalizations.of(context);
 
-    await _editDisplayName(
-      dialogTitle: l10n.editTeamScheduleEventTitleDialogTitle,
-      initialValue: _eventTitle,
-      onSaved: (value) {
-        _eventTitle = value;
+    final eventTitleController = TextEditingController(text: _eventTitle);
+    final memoController = TextEditingController(text: _memo);
+
+    final teamControllers = <int, TextEditingController>{
+      for (final team in schedule.teams)
+        team.teamSlot: TextEditingController(
+          text: _teamDisplayNames[team.teamSlot] ?? team.displayName,
+        ),
+    };
+
+    final memberControllers = <int, TextEditingController>{
+      for (final member in schedule.members)
+        member.playerSlot: TextEditingController(
+          text: _memberDisplayNames[member.playerSlot] ?? member.displayName,
+        ),
+    };
+
+    return showDialog<_TeamScheduleBulkEditResult>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.teamScheduleBulkEditTitle),
+          content: SizedBox(
+            width: 520,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: eventTitleController,
+                    decoration: InputDecoration(
+                      labelText: l10n.teamScheduleEventTitleLabel,
+                    ),
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: memoController,
+                    decoration: InputDecoration(
+                      labelText: l10n.teamScheduleMemoLabel,
+                      alignLabelWithHint: true,
+                    ),
+                    minLines: 3,
+                    maxLines: 6,
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    l10n.teamScheduleBulkEditTeamsSection,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  for (final team in schedule.teams) ...[
+                    TextField(
+                      controller: teamControllers[team.teamSlot],
+                      decoration: InputDecoration(
+                        labelText: l10n.teamScheduleTeamNameLabel(
+                          team.teamSlot,
+                        ),
+                      ),
+                      textInputAction: TextInputAction.next,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.teamScheduleBulkEditMembersSection,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  for (final member in schedule.members) ...[
+                    TextField(
+                      controller: memberControllers[member.playerSlot],
+                      decoration: InputDecoration(
+                        labelText: member.displayName,
+                      ),
+                      textInputAction: TextInputAction.next,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop(
+                  _TeamScheduleBulkEditResult(
+                    eventTitle: eventTitleController.text.trim(),
+                    memo: memoController.text.trim(),
+                    teamNames: {
+                      for (final entry in teamControllers.entries)
+                        entry.key: entry.value.text.trim(),
+                    },
+                    memberNames: {
+                      for (final entry in memberControllers.entries)
+                        entry.key: entry.value.text.trim(),
+                    },
+                  ),
+                );
+              },
+              child: Text(l10n.save),
+            ),
+          ],
+        );
       },
+    ).whenComplete(() {
+      eventTitleController.dispose();
+      memoController.dispose();
+
+      for (final controller in teamControllers.values) {
+        controller.dispose();
+      }
+      for (final controller in memberControllers.values) {
+        controller.dispose();
+      }
+    });
+  }
+
+  Future<void> _editTeamScheduleDetails() async {
+    final schedule = _schedule;
+    if (schedule == null || _isSavingDisplay) {
+      return;
+    }
+
+    final result = await _showBulkEditDialog(
+      context,
+      schedule: schedule,
     );
+
+    if (result == null) {
+      return;
+    }
+
+    setState(() {
+      _eventTitle =
+          result.eventTitle.isEmpty ? schedule.eventTitle : result.eventTitle;
+      _memo = result.memo;
+      _teamDisplayNames = Map<int, String>.unmodifiable(result.teamNames);
+      _memberDisplayNames = Map<int, String>.unmodifiable(result.memberNames);
+    });
+
+    final saved = await _saveCurrentDisplay();
+
+    if (saved != null) {
+      await _upsertLocalHistory(
+        saved: saved,
+        schedule: schedule,
+      );
+    }
   }
 
   Future<void> _editTeamName(int teamSlot) async {
@@ -827,10 +1026,14 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
                     ),
                   ),
                 ),
-                IconButton(
-                  tooltip: l10n.editTeamScheduleEventTitleTooltip,
-                  onPressed: _editEventTitle,
-                  icon: const Icon(Icons.edit_outlined),
+                TextButton.icon(
+                  onPressed: _isSavingDisplay ? null : _editTeamScheduleDetails,
+                  icon: Icon(
+                    _memo.trim().isEmpty
+                        ? Icons.edit_outlined
+                        : Icons.edit_note_outlined,
+                  ),
+                  label: Text(l10n.teamScheduleBulkEditButton),
                 ),
               ],
             ),
@@ -1478,6 +1681,21 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           foregroundColor: Colors.black87,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
+          actions: [
+            Builder(
+              builder: (context) {
+                return IconButton(
+                  tooltip: l10n.teamNavigationMenuTooltip,
+                  onPressed: () => Scaffold.of(context).openEndDrawer(),
+                  icon: const Icon(Icons.menu),
+                );
+              },
+            ),
+          ],
+        ),
+        endDrawer: TeamNavigationDrawer(
+          showHomeLink: true,
+          onRefreshLatestInfo: _refreshScores,
         ),
         body: SafeArea(
           child: _buildBody(context),
@@ -1515,6 +1733,20 @@ class _TeamMemberViewData {
 
   final int playerSlot;
   final String displayName;
+}
+
+class _TeamScheduleBulkEditResult {
+  const _TeamScheduleBulkEditResult({
+    required this.eventTitle,
+    required this.memo,
+    required this.teamNames,
+    required this.memberNames,
+  });
+
+  final String eventTitle;
+  final String memo;
+  final Map<int, String> teamNames;
+  final Map<int, String> memberNames;
 }
 
 class _TeamViewData {

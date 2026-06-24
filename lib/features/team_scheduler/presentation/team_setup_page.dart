@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
 import 'models/team_setup_draft.dart';
+import 'team_navigation_drawer.dart';
 import 'team_schedule_page.dart';
 import 'widgets/team_participant_name_input_card.dart';
 import 'widgets/team_setup_number_field.dart';
@@ -321,7 +322,19 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
           foregroundColor: Colors.black87,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
+          actions: [
+            Builder(
+              builder: (context) {
+                return IconButton(
+                  tooltip: l10n.teamNavigationMenuTooltip,
+                  onPressed: () => Scaffold.of(context).openEndDrawer(),
+                  icon: const Icon(Icons.menu),
+                );
+              },
+            ),
+          ],
         ),
+        endDrawer: const TeamNavigationDrawer(showHomeLink: true),
         body: SafeArea(
           child: ListView(
             padding: const EdgeInsets.all(12),
