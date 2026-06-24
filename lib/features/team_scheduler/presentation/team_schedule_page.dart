@@ -962,8 +962,6 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       _memberDisplayNames = Map<int, String>.unmodifiable(result.memberNames);
     });
 
-    await _saveCurrentDisplay();
-
     final saved = await _saveCurrentDisplay();
 
     if (saved != null) {

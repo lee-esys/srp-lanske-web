@@ -66,12 +66,11 @@ class TeamNavigationDrawer extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 children: [
                   if (showHomeLink)
-                    if (showHomeLink)
-                      _TeamNavigationTile(
-                        icon: Icons.home_outlined,
-                        label: l10n.teamNavigationHome,
-                        onTap: () => _openPath(context, '/team'),
-                      ),
+                    _TeamNavigationTile(
+                      icon: Icons.home_outlined,
+                      label: l10n.teamNavigationHome,
+                      onTap: () => _openPath(context, '/team'),
+                    ),
                   _TeamNavigationTile(
                     icon: Icons.list_alt_outlined,
                     label: l10n.teamNavigationScheduleList,
@@ -86,7 +85,6 @@ class TeamNavigationDrawer extends StatelessWidget {
                         onRefreshLatestInfo!();
                       },
                     ),
-                  const Divider(height: 1),
                   const Divider(height: 1),
                   _TeamNavigationTile(
                     icon: Icons.help_outline,
