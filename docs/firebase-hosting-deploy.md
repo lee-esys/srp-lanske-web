@@ -138,7 +138,6 @@ deploy 後は以下を軽く確認する。
 * team schedule の表示名編集を保存できる
 * team schedule のスコア更新を保存できる
 * Firebase Console の Rules が repo の `firestore.rules` と一致している
-rebase deploy --only firestore:rules --project lanske-srp
 
 ## Firestore data migration policy
 
