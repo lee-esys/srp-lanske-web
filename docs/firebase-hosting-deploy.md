@@ -102,6 +102,44 @@ npx firebase deploy --only hosting --project lanske-srp
 
 主導線としては `https://lanske-srp.web.app` を使う。
 
+## Firestore Rules deploy
+
+Firestore Security Rules は `firestore.rules` で管理する。
+
+Rules の deploy は Hosting deploy とは別に行う。
+
+```bash
+npx firebase deploy --only firestore:rules --project lanske-srp
+```
+
+deploy 前に以下を確認する。
+
+* `firestore.rules` に必要な collection の rule が含まれている
+* `firebase.json` に Firestore Rules 設定が含まれている
+* 期限付きの全許可 rule に依存していない
+* 不要な `delete` 許可を追加していない
+
+現在クライアントから利用する主な collection は以下。
+
+| collection       | 用途                      | client write    |
+| ---------------- | ----------------------- | --------------- |
+| `events`         | doubles schedule の保存・復元 | create / update |
+| `team_schedules` | team schedule の保存・復元・編集 | create / update |
+| `core_*`         | core 由来の既存データ参照         | なし              |
+
+`core_*` collection は client から read のみ許可し、create / update / delete は許可しない。
+
+deploy 後は以下を軽く確認する。
+
+* doubles schedule を保存できる
+* doubles schedule を共有URLから復元できる
+* team schedule を保存できる
+* team schedule を共有URLから復元できる
+* team schedule の表示名編集を保存できる
+* team schedule のスコア更新を保存できる
+* Firebase Console の Rules が repo の `firestore.rules` と一致している
+rebase deploy --only firestore:rules --project lanske-srp
+
 ## Firestore data migration policy
 
 ver0.1.3 の `lanske-srp` 切り替えでは、旧 `srp-lanske-web-dev` の Firestore データは移行しない。
