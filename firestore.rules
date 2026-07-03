@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isReadOnlyCoreCollection(collectionId) {
+      return collectionId.matches('^core_.*$');
+    }
+
+    // Public share documents used by doubles schedules.
+    match /events/{publicId} {
+      allow read, create, update: if true;
+      allow delete: if false;
+    }
+
+    // Public share documents used by team schedules, including boccia data.
+    match /team_schedules/{shareId} {
+      allow read, create, update: if true;
+      allow delete: if false;
+    }
+
+    // Existing core-generated data is readable from the client,
+    // but client writes are not allowed.
+    match /{collectionId}/{documentId} {
+      allow read: if isReadOnlyCoreCollection(collectionId);
+      allow create, update, delete: if false;
+    }
+
+    // Deny any collection or document path that is not explicitly handled above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
