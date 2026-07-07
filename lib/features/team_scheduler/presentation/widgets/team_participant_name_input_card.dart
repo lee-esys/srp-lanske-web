@@ -133,6 +133,14 @@ class _TeamParticipantNameInputCardState
     );
   }
 
+  String _participantInputTitle(AppLocalizations l10n) {
+    if (l10n.localeName.startsWith('ja')) {
+      return '参加者入力';
+    }
+
+    return l10n.teamParticipantInputTitle;
+  }
+
   Widget _buildTextField(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
@@ -166,7 +174,7 @@ class _TeamParticipantNameInputCardState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.teamParticipantInputTitle,
+              _participantInputTitle(l10n),
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
