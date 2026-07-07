@@ -8,12 +8,14 @@ class TeamParticipantNameInputCard extends StatefulWidget {
     required this.participantCount,
     required this.maxParticipantCount,
     required this.onApply,
+    this.expandToFillHeight = false,
   });
 
   final List<String> participantNames;
   final int participantCount;
   final int maxParticipantCount;
   final ValueChanged<List<String>> onApply;
+  final bool expandToFillHeight;
 
   @override
   State<TeamParticipantNameInputCard> createState() =>
@@ -131,9 +133,29 @@ class _TeamParticipantNameInputCardState
     );
   }
 
+  Widget _buildTextField(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return TextField(
+      controller: _controller,
+      keyboardType: TextInputType.multiline,
+      minLines: widget.expandToFillHeight ? null : 4,
+      maxLines: widget.expandToFillHeight ? null : 8,
+      expands: widget.expandToFillHeight,
+      textAlignVertical: TextAlignVertical.top,
+      decoration: InputDecoration(
+        border: const OutlineInputBorder(),
+        labelText: l10n.teamParticipantInputLabel,
+        hintText: l10n.teamParticipantInputHint,
+        alignLabelWithHint: true,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final textField = _buildTextField(context);
 
     return Card(
       elevation: 0,
@@ -150,18 +172,10 @@ class _TeamParticipantNameInputCardState
             const SizedBox(height: 8),
             Text(l10n.teamParticipantInputDescription),
             const SizedBox(height: 12),
-            TextField(
-              controller: _controller,
-              keyboardType: TextInputType.multiline,
-              minLines: 4,
-              maxLines: 8,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                labelText: l10n.teamParticipantInputLabel,
-                hintText: l10n.teamParticipantInputHint,
-                alignLabelWithHint: true,
-              ),
-            ),
+            if (widget.expandToFillHeight)
+              Expanded(child: textField)
+            else
+              textField,
             const SizedBox(height: 8),
             Text(
               l10n.participantNameCountStatus(
