@@ -301,16 +301,13 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
-              l10n.teamSetupSummaryCompact(
-                teamCount: _derivedTeamCount,
-                distribution: _teamDistributionText,
-              ),
+              '${l10n.teamCountSummary(_derivedTeamCount)} / ${l10n.teamDistributionSummary(_teamDistributionText)}',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
-              l10n.teamSetupSummaryHelpCompact,
+              l10n.teamCountSummaryHelp,
               style: theme.textTheme.bodySmall,
             ),
           ],
