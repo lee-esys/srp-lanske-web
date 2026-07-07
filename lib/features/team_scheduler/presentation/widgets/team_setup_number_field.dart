@@ -12,6 +12,7 @@ class TeamSetupNumberField extends StatelessWidget {
     required this.tooltipDecrement,
     required this.tooltipIncrement,
     this.helpText,
+    this.showRangeHelp = true,
   });
 
   final String label;
@@ -22,6 +23,7 @@ class TeamSetupNumberField extends StatelessWidget {
   final String tooltipDecrement;
   final String tooltipIncrement;
   final String? helpText;
+  final bool showRangeHelp;
 
   bool get _canDecrement => value > minValue;
   bool get _canIncrement => value < maxValue;
@@ -41,6 +43,8 @@ class TeamSetupNumberField extends StatelessWidget {
       maxValue - minValue + 1,
       (index) => minValue + index,
     );
+    final helperText = helpText ??
+        (showRangeHelp ? l10n.teamSetupRangeHelp(minValue, maxValue) : null);
 
     return Card(
       elevation: 0,
@@ -79,8 +83,7 @@ class TeamSetupNumberField extends StatelessWidget {
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
                       isDense: true,
-                      helperText: helpText ??
-                          l10n.teamSetupRangeHelp(minValue, maxValue),
+                      helperText: helperText,
                     ),
                   ),
                 ),
