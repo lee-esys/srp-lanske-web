@@ -147,9 +147,9 @@ class _TeamParticipantNameInputCardState
     return TextField(
       controller: _controller,
       keyboardType: TextInputType.multiline,
-      minLines: widget.expandToFillHeight ? null : 4,
-      maxLines: widget.expandToFillHeight ? null : 8,
-      expands: widget.expandToFillHeight,
+      minLines: 10,
+      maxLines: 10,
+      expands: false,
       textAlignVertical: TextAlignVertical.top,
       decoration: InputDecoration(
         border: const OutlineInputBorder(),

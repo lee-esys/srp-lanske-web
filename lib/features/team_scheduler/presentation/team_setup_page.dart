@@ -24,6 +24,10 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
   static const _minTeamsPerMatch = 2;
   static const _maxTeamsPerMatch = 25;
 
+  static const _leftColumnMinWidth = 220.0;
+  static const _rightColumnMinWidth = 220.0;
+  static const _columnGap = 16.0;
+
   int _concurrentMatchCount = 1;
   int _participantCount = 8;
   int _preferredTeamSize = 2;
@@ -241,7 +245,8 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
   Widget _buildSetupInputs(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final useTwoColumns = constraints.maxWidth >= 760;
+        final useTwoColumns = constraints.maxWidth >=
+            _leftColumnMinWidth + _rightColumnMinWidth + _columnGap;
 
         if (!useTwoColumns) {
           return Column(
@@ -258,19 +263,21 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
           );
         }
 
-        final columnWidth = (constraints.maxWidth - 16) / 2;
+        final leftColumnWidth = _leftColumnMinWidth;
+        final rightColumnWidth =
+            constraints.maxWidth - leftColumnWidth - _columnGap;
 
         return IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(
-                width: columnWidth,
+                width: _leftColumnMinWidth,
                 child: _buildNumberFields(context),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: _columnGap),
               SizedBox(
-                width: columnWidth,
+                width: rightColumnWidth,
                 child: TeamParticipantNameInputCard(
                   participantNames: _participantNames,
                   participantCount: _participantCount,
