@@ -835,6 +835,8 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     return showDialog<_TeamScheduleBulkEditResult>(
       context: context,
       builder: (context) {
+        final theme = Theme.of(context);
+
         return AlertDialog(
           title: Text(l10n.teamScheduleBulkEditTitle),
           content: SizedBox(
@@ -862,12 +864,14 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
                     maxLines: 6,
                   ),
                   const SizedBox(height: 24),
-                  Text(
-                    l10n.teamScheduleBulkEditTeamsSection,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 8),
                   for (final team in schedule.teams) ...[
+                    Text(
+                      _teamName(team.teamSlot),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     TextField(
                       controller: teamControllers[team.teamSlot],
                       decoration: InputDecoration(
@@ -878,22 +882,21 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
                       textInputAction: TextInputAction.next,
                     ),
                     const SizedBox(height: 12),
-                  ],
-                  const SizedBox(height: 12),
-                  Text(
-                    l10n.teamScheduleBulkEditMembersSection,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  for (final member in schedule.members) ...[
-                    TextField(
-                      controller: memberControllers[member.playerSlot],
-                      decoration: InputDecoration(
-                        labelText: member.displayName,
+                    for (final playerSlot in team.memberPlayerSlots) ...[
+                      TextField(
+                        controller: memberControllers[playerSlot],
+                        decoration: InputDecoration(
+                          labelText: _memberName(playerSlot),
+                        ),
+                        textInputAction: TextInputAction.next,
                       ),
-                      textInputAction: TextInputAction.next,
-                    ),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
+                    ],
+                    if (team != schedule.teams.last) ...[
+                      const SizedBox(height: 4),
+                      const Divider(),
+                      const SizedBox(height: 16),
+                    ],
                   ],
                 ],
               ),
@@ -1417,9 +1420,6 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: Colors.transparent,
-        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -1530,11 +1530,14 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade300),
       ),
-      alignment: Alignment.center,
-      child: Text(
-        score?.toString() ?? '-',
-        style: theme.textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.bold,
+      child: Center(
+        widthFactor: 1,
+        heightFactor: 1,
+        child: Text(
+          score?.toString() ?? '-',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
