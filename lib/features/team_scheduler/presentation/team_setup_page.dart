@@ -319,10 +319,9 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
       color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Wrap(
-          spacing: 16,
-          runSpacing: 8,
-          crossAxisAlignment: WrapCrossAlignment.center,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               '${l10n.teamCountSummary(_derivedTeamCount)} / ${l10n.teamDistributionSummary(_teamDistributionText)}',
@@ -330,6 +329,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            const SizedBox(height: 8),
             Text(
               l10n.teamCountSummaryHelp,
               style: theme.textTheme.bodySmall,
