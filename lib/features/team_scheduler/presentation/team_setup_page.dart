@@ -24,9 +24,9 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
   static const _minTeamsPerMatch = 2;
   static const _maxTeamsPerMatch = 25;
 
-  static const _leftColumnMinWidth = 220.0;
-  static const _rightColumnMinWidth = 220.0;
-  static const _columnGap = 16.0;
+  static const _numberFieldMinWidth = 220.0;
+  static const _numberFieldGap = 12.0;
+  static const _setupContentMaxWidth = 560.0;
 
   int _concurrentMatchCount = 1;
   int _participantCount = 8;
@@ -190,104 +190,121 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
     );
   }
 
-  Widget _buildNumberFields(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+  String _participantInputButtonLabel(AppLocalizations l10n) {
+    if (l10n.localeName.startsWith('ja')) {
+      return '参加者入力';
+    }
 
-    return Column(
-      children: [
-        TeamSetupNumberField(
-          label: l10n.concurrentMatchCountLabel,
-          value: _concurrentMatchCount,
-          minValue: _minConcurrentMatchCount,
-          maxValue: _effectiveMaxConcurrentMatchCount,
-          onChanged: _setConcurrentMatchCount,
-          tooltipDecrement: l10n.decrementConcurrentMatchCountTooltip,
-          tooltipIncrement: l10n.incrementConcurrentMatchCountTooltip,
-          showRangeHelp: false,
-        ),
-        const SizedBox(height: 12),
-        TeamSetupNumberField(
-          label: l10n.participantCountLabel,
-          value: _participantCount,
-          minValue: _minParticipantCount,
-          maxValue: _maxParticipantCount,
-          onChanged: _setParticipantCount,
-          tooltipDecrement: l10n.decrementParticipantCountTooltip,
-          tooltipIncrement: l10n.incrementParticipantCountTooltip,
-          showRangeHelp: false,
-        ),
-        const SizedBox(height: 12),
-        TeamSetupNumberField(
-          label: l10n.preferredTeamSizeLabel,
-          value: _preferredTeamSize,
-          minValue: _minPreferredTeamSize,
-          maxValue: _effectiveMaxPreferredTeamSize,
-          onChanged: _setPreferredTeamSize,
-          tooltipDecrement: l10n.decrementPreferredTeamSizeTooltip,
-          tooltipIncrement: l10n.incrementPreferredTeamSizeTooltip,
-          showRangeHelp: false,
-        ),
-        const SizedBox(height: 12),
-        TeamSetupNumberField(
-          label: l10n.teamsPerMatchLabel,
-          value: _teamsPerMatch,
-          minValue: _minTeamsPerMatch,
-          maxValue: _effectiveMaxTeamsPerMatch,
-          onChanged: _setTeamsPerMatch,
-          tooltipDecrement: l10n.decrementTeamsPerMatchTooltip,
-          tooltipIncrement: l10n.incrementTeamsPerMatchTooltip,
-          showRangeHelp: false,
-        ),
-      ],
+    return l10n.teamParticipantInputTitle;
+  }
+
+  Future<void> _showParticipantNameInputDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        final l10n = AppLocalizations.of(context);
+
+        return AlertDialog(
+          contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          content: SizedBox(
+            width: 520,
+            child: TeamParticipantNameInputCard(
+              participantNames: _participantNames,
+              participantCount: _participantCount,
+              maxParticipantCount: _maxParticipantCount,
+              onApply: _applyParticipantNames,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.cancel),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildSetupInputs(BuildContext context) {
+  Widget _buildParticipantInputButton(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return TextButton(
+      onPressed: _showParticipantNameInputDialog,
+      style: TextButton.styleFrom(
+        minimumSize: Size.zero,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        visualDensity: VisualDensity.compact,
+      ),
+      child: Text(_participantInputButtonLabel(l10n)),
+    );
+  }
+
+  Widget _buildNumberFields(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final fields = [
+      TeamSetupNumberField(
+        label: l10n.concurrentMatchCountLabel,
+        value: _concurrentMatchCount,
+        minValue: _minConcurrentMatchCount,
+        maxValue: _effectiveMaxConcurrentMatchCount,
+        onChanged: _setConcurrentMatchCount,
+        tooltipDecrement: l10n.decrementConcurrentMatchCountTooltip,
+        tooltipIncrement: l10n.incrementConcurrentMatchCountTooltip,
+        showRangeHelp: false,
+      ),
+      TeamSetupNumberField(
+        label: l10n.teamsPerMatchLabel,
+        value: _teamsPerMatch,
+        minValue: _minTeamsPerMatch,
+        maxValue: _effectiveMaxTeamsPerMatch,
+        onChanged: _setTeamsPerMatch,
+        tooltipDecrement: l10n.decrementTeamsPerMatchTooltip,
+        tooltipIncrement: l10n.incrementTeamsPerMatchTooltip,
+        showRangeHelp: false,
+      ),
+      TeamSetupNumberField(
+        label: l10n.participantCountLabel,
+        value: _participantCount,
+        minValue: _minParticipantCount,
+        maxValue: _maxParticipantCount,
+        onChanged: _setParticipantCount,
+        tooltipDecrement: l10n.decrementParticipantCountTooltip,
+        tooltipIncrement: l10n.incrementParticipantCountTooltip,
+        showRangeHelp: false,
+      ),
+      TeamSetupNumberField(
+        label: l10n.preferredTeamSizeLabel,
+        value: _preferredTeamSize,
+        minValue: _minPreferredTeamSize,
+        maxValue: _effectiveMaxPreferredTeamSize,
+        onChanged: _setPreferredTeamSize,
+        tooltipDecrement: l10n.decrementPreferredTeamSizeTooltip,
+        tooltipIncrement: l10n.incrementPreferredTeamSizeTooltip,
+        showRangeHelp: false,
+        titleTrailing: _buildParticipantInputButton(context),
+      ),
+    ];
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final useTwoColumns = constraints.maxWidth >=
-            _leftColumnMinWidth + _rightColumnMinWidth + _columnGap;
+            (_numberFieldMinWidth * 2) + _numberFieldGap;
+        final itemWidth = useTwoColumns
+            ? (constraints.maxWidth - _numberFieldGap) / 2
+            : constraints.maxWidth;
 
-        if (!useTwoColumns) {
-          return Column(
-            children: [
-              _buildNumberFields(context),
-              const SizedBox(height: 16),
-              TeamParticipantNameInputCard(
-                participantNames: _participantNames,
-                participantCount: _participantCount,
-                maxParticipantCount: _maxParticipantCount,
-                onApply: _applyParticipantNames,
-              ),
-            ],
-          );
-        }
-
-        final leftColumnWidth = _leftColumnMinWidth;
-        final rightColumnWidth =
-            constraints.maxWidth - leftColumnWidth - _columnGap;
-
-        return IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+        return Wrap(
+          spacing: _numberFieldGap,
+          runSpacing: _numberFieldGap,
+          children: [
+            for (final field in fields)
               SizedBox(
-                width: _leftColumnMinWidth,
-                child: _buildNumberFields(context),
+                width: itemWidth,
+                child: field,
               ),
-              const SizedBox(width: _columnGap),
-              SizedBox(
-                width: rightColumnWidth,
-                child: TeamParticipantNameInputCard(
-                  participantNames: _participantNames,
-                  participantCount: _participantCount,
-                  maxParticipantCount: _maxParticipantCount,
-                  onApply: _applyParticipantNames,
-                  expandToFillHeight: true,
-                ),
-              ),
-            ],
-          ),
+          ],
         );
       },
     );
@@ -371,9 +388,20 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 16),
-              _buildSetupInputs(context),
-              const SizedBox(height: 16),
-              _buildSummaryCard(context),
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: _setupContentMaxWidth,
+                  ),
+                  child: Column(
+                    children: [
+                      _buildNumberFields(context),
+                      const SizedBox(height: 16),
+                      _buildSummaryCard(context),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
