@@ -1409,18 +1409,16 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
   }
 
   Widget _buildRoundCard(BuildContext context, _TeamRoundViewData round) {
-    final schedule = _schedule!;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    final isNextRound = round.roundNo == schedule.nextRoundNo;
 
     return Card(
       elevation: 0,
-      color: isNextRound ? Colors.blue.shade50 : Colors.white,
+      color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isNextRound ? Colors.blue.shade300 : Colors.transparent,
+          color: Colors.transparent,
         ),
       ),
       child: Padding(
@@ -1436,14 +1434,6 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (isNextRound) ...[
-                  const SizedBox(width: 8),
-                  Chip(
-                    label: Text(l10n.nextTeamMatchTitle),
-                    visualDensity: VisualDensity.compact,
-                    backgroundColor: Colors.blue.shade100,
-                  ),
-                ],
               ],
             ),
             const SizedBox(height: 12),
@@ -1461,47 +1451,130 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     BuildContext context,
     _TeamMatchViewData match,
   ) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final score = _scores.boccia.matchScore(match.matchNo);
     final hasScore = score?.hasAnyScore ?? false;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (_scores.selectedSport == TeamScheduleSport.boccia &&
-            score != null) ...[
-          Text(
-            l10n.bocciaScoreSummary(
-              redTeamName: _teamName(score.redTeamSlot),
-              redScore: score.totalRedScore,
-              blueTeamName: _teamName(score.blueTeamSlot),
-              blueScore: score.totalBlueScore,
-            ),
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
-        FilledButton.tonalIcon(
-          onPressed: _isSavingScores || _isRefreshingScores
-              ? null
-              : () {
-                  _openBocciaScoreDialog(match);
-                },
-          icon: const Icon(Icons.edit_note),
-          label: Text(
-            hasScore ? l10n.editBocciaScoreButton : l10n.inputBocciaScoreButton,
-          ),
+    return FilledButton.tonalIcon(
+      onPressed: _isSavingScores || _isRefreshingScores
+          ? null
+          : () {
+              _openBocciaScoreDialog(match);
+            },
+      icon: const Icon(Icons.edit_note),
+      label: Text(
+        hasScore ? l10n.editBocciaScoreButton : l10n.inputBocciaScoreButton,
+      ),
+    );
+  }
+
+  ({int firstTeamSlot, int secondTeamSlot, int? firstScore, int? secondScore})
+      _matchDisplayOrder(_TeamMatchViewData match) {
+    final score = _scores.boccia.matchScore(match.matchNo);
+
+    if (_scores.selectedSport == TeamScheduleSport.boccia &&
+        score != null &&
+        match.teamSlots.length == 2) {
+      return (
+        firstTeamSlot: score.redTeamSlot,
+        secondTeamSlot: score.blueTeamSlot,
+        firstScore: score.totalRedScore,
+        secondScore: score.totalBlueScore,
+      );
+    }
+
+    return (
+      firstTeamSlot: match.teamSlots[0],
+      secondTeamSlot:
+          match.teamSlots.length > 1 ? match.teamSlots[1] : match.teamSlots[0],
+      firstScore: null,
+      secondScore: null,
+    );
+  }
+
+  Widget _buildMatchTeamPill(
+    BuildContext context, {
+    required int teamSlot,
+  }) {
+    final theme = Theme.of(context);
+    final isSelected = teamSlot == _selectedTeamSlot;
+
+    return ActionChip(
+      label: Text(
+        _teamName(teamSlot),
+        overflow: TextOverflow.ellipsis,
+      ),
+      avatar: isSelected ? const Icon(Icons.check, size: 18) : null,
+      onPressed: () => _selectTeam(teamSlot),
+      backgroundColor: isSelected ? Colors.blue.shade50 : null,
+      side: BorderSide(
+        color: isSelected ? Colors.blue.shade300 : Colors.grey.shade300,
+      ),
+      labelStyle: theme.textTheme.bodyMedium?.copyWith(
+        fontWeight: isSelected ? FontWeight.w600 : null,
+      ),
+    );
+  }
+
+  Widget _buildMatchScorePill(
+    BuildContext context, {
+    required int? score,
+  }) {
+    final theme = Theme.of(context);
+
+    return Container(
+      constraints: const BoxConstraints(minWidth: 36),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        score?.toString() ?? '-',
+        style: theme.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.bold,
         ),
-      ],
+      ),
     );
   }
 
   Widget _buildMatchRow(BuildContext context, _TeamMatchViewData match) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
+    final display = _matchDisplayOrder(match);
+    final supportsInlineScore = match.teamSlots.length == 2;
+
+    if (!supportsInlineScore) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.teamCourtTitle(match.courtNo),
+            style: theme.textTheme.labelLarge,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _matchTitle(context, match),
+            style: theme.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final teamSlot in match.teamSlots)
+                _buildMatchTeamPill(context, teamSlot: teamSlot),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildMatchScoreAction(context, match),
+        ],
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1510,26 +1583,34 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           l10n.teamCourtTitle(match.courtNo),
           style: theme.textTheme.labelLarge,
         ),
-        const SizedBox(height: 6),
-        Text(
-          _matchTitle(context, match),
-          style: theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            for (final teamSlot in match.teamSlots)
-              ActionChip(
-                label: Text(_teamName(teamSlot)),
-                avatar: teamSlot == _selectedTeamSlot
-                    ? const Icon(Icons.check, size: 18)
-                    : null,
-                onPressed: () => _selectTeam(teamSlot),
+            _buildMatchTeamPill(
+              context,
+              teamSlot: display.firstTeamSlot,
+            ),
+            _buildMatchScorePill(
+              context,
+              score: display.firstScore,
+            ),
+            Text(
+              'vs',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
+            ),
+            _buildMatchScorePill(
+              context,
+              score: display.secondScore,
+            ),
+            _buildMatchTeamPill(
+              context,
+              teamSlot: display.secondTeamSlot,
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -1615,8 +1696,6 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
         _buildHeaderCard(context),
         const SizedBox(height: 12),
         _buildShareCard(context),
-        const SizedBox(height: 12),
-        _buildNextRoundCard(context),
         const SizedBox(height: 12),
         _buildTeamListCard(context),
         const SizedBox(height: 12),
