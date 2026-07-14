@@ -87,16 +87,20 @@ class TeamSetupNumberField extends StatelessWidget {
                   ),
                   icon: const Icon(Icons.remove_circle_outline),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
                 Expanded(
                   child: DropdownButtonFormField<int>(
                     initialValue: value,
+                    isExpanded: true,
+                    alignment: Alignment.center,
                     icon: const SizedBox.shrink(),
+                    iconSize: 0,
                     items: values
                         .map(
                           (item) => DropdownMenuItem<int>(
                             value: item,
-                            child: Center(child: Text(item.toString())),
+                            alignment: Alignment.center,
+                            child: Text(item.toString()),
                           ),
                         )
                         .toList(growable: false),
@@ -109,13 +113,13 @@ class TeamSetupNumberField extends StatelessWidget {
                       isDense: true,
                       helperText: helperText,
                       contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 10,
+                        horizontal: 0,
                         vertical: 12,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
                 IconButton(
                   onPressed: _canIncrement ? () => _setValue(value + 1) : null,
                   tooltip: tooltipIncrement,
