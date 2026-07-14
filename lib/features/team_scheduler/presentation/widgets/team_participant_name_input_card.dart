@@ -25,10 +25,16 @@ class TeamParticipantNameInputCard extends StatefulWidget {
 class _TeamParticipantNameInputCardState
     extends State<TeamParticipantNameInputCard> {
   late final TextEditingController _controller;
+  late List<String> _appliedParticipantNames;
+  late int _appliedParticipantCount;
+  String? _statusMessage;
+  bool _isStatusError = false;
 
   @override
   void initState() {
     super.initState();
+    _appliedParticipantNames = widget.participantNames;
+    _appliedParticipantCount = widget.participantCount;
     _controller = TextEditingController(
       text: widget.participantNames.join('\n'),
     );
@@ -39,10 +45,15 @@ class _TeamParticipantNameInputCardState
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.participantNames != widget.participantNames) {
+      _appliedParticipantNames = widget.participantNames;
       final nextText = widget.participantNames.join('\n');
       if (_controller.text != nextText) {
         _controller.text = nextText;
       }
+    }
+
+    if (oldWidget.participantCount != widget.participantCount) {
+      _appliedParticipantCount = widget.participantCount;
     }
   }
 
@@ -101,24 +112,23 @@ class _TeamParticipantNameInputCardState
 
   void _applyParticipantNames() {
     final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
     final rawText = _controller.text;
     final parsedCountBeforeLimit = _parsedCountBeforeLimit(rawText);
     final names = _parseParticipantNames(rawText);
 
-    messenger.hideCurrentSnackBar();
-
     if (rawText.trim().isEmpty) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.participantNamesEmptyMessage)),
-      );
+      setState(() {
+        _statusMessage = l10n.participantNamesEmptyMessage;
+        _isStatusError = true;
+      });
       return;
     }
 
     if (names.length < 2) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.participantNamesTooFewMessage)),
-      );
+      setState(() {
+        _statusMessage = l10n.participantNamesTooFewMessage;
+        _isStatusError = true;
+      });
       return;
     }
 
@@ -128,9 +138,12 @@ class _TeamParticipantNameInputCardState
         ? l10n.participantNamesTrimmedMessage(widget.maxParticipantCount)
         : l10n.participantNamesAppliedMessage(names.length);
 
-    messenger.showSnackBar(
-      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
-    );
+    setState(() {
+      _appliedParticipantNames = names;
+      _appliedParticipantCount = names.length;
+      _statusMessage = message;
+      _isStatusError = false;
+    });
   }
 
   String _participantInputTitle(AppLocalizations l10n) {
@@ -156,6 +169,23 @@ class _TeamParticipantNameInputCardState
         labelText: l10n.teamParticipantInputLabel,
         hintText: l10n.teamParticipantInputHint,
         alignLabelWithHint: true,
+      ),
+    );
+  }
+
+  Widget _buildStatusMessage(BuildContext context) {
+    final message = _statusMessage;
+    if (message == null || message.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final theme = Theme.of(context);
+
+    return Text(
+      message,
+      style: theme.textTheme.bodySmall?.copyWith(
+        color: _isStatusError ? theme.colorScheme.error : theme.colorScheme.primary,
+        fontWeight: FontWeight.w600,
       ),
     );
   }
@@ -187,11 +217,15 @@ class _TeamParticipantNameInputCardState
             const SizedBox(height: 8),
             Text(
               l10n.participantNameCountStatus(
-                widget.participantNames.length,
-                widget.participantCount,
+                _appliedParticipantNames.length,
+                _appliedParticipantCount,
               ),
               style: Theme.of(context).textTheme.bodySmall,
             ),
+            if (_statusMessage != null) ...[
+              const SizedBox(height: 4),
+              _buildStatusMessage(context),
+            ],
             const SizedBox(height: 12),
             Align(
               alignment: Alignment.centerRight,
