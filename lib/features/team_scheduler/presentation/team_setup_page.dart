@@ -273,6 +273,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
         tooltipDecrement: l10n.decrementParticipantCountTooltip,
         tooltipIncrement: l10n.incrementParticipantCountTooltip,
         showRangeHelp: false,
+        titleTrailing: _buildParticipantInputButton(context),
       ),
       TeamSetupNumberField(
         label: l10n.preferredTeamSizeLabel,
@@ -283,7 +284,6 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
         tooltipDecrement: l10n.decrementPreferredTeamSizeTooltip,
         tooltipIncrement: l10n.incrementPreferredTeamSizeTooltip,
         showRangeHelp: false,
-        titleTrailing: _buildParticipantInputButton(context),
       ),
     ];
 
