@@ -184,7 +184,9 @@ class _TeamParticipantNameInputCardState
     return Text(
       message,
       style: theme.textTheme.bodySmall?.copyWith(
-        color: _isStatusError ? theme.colorScheme.error : theme.colorScheme.primary,
+        color: _isStatusError
+            ? theme.colorScheme.error
+            : theme.colorScheme.primary,
         fontWeight: FontWeight.w600,
       ),
     );

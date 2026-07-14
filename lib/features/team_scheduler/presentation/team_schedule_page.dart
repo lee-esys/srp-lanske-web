@@ -1046,11 +1046,6 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
               ),
               style: theme.textTheme.bodyMedium,
             ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.teamScheduleBackendDataNotice,
-              style: theme.textTheme.bodySmall,
-            ),
             const SizedBox(height: 16),
             _buildSportSelector(context),
             if (_isSavingDisplay || _displaySaveErrorMessage != null) ...[
@@ -1155,36 +1150,40 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.teamScheduleSportSectionTitle,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<TeamScheduleSport>(
-          initialValue: _scores.selectedSport,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 10,
-            ),
-          ),
-          onChanged:
-              _isSavingScores || _isRefreshingScores ? null : _selectSport,
-          items: [
-            for (final sport in TeamScheduleSport.values)
-              DropdownMenuItem<TeamScheduleSport>(
-                value: sport,
-                child: Text(_sportLabel(sport)),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              l10n.teamScheduleSportSectionTitle,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: DropdownButtonFormField<TeamScheduleSport>(
+                initialValue: _scores.selectedSport,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                ),
+                onChanged: _isSavingScores || _isRefreshingScores
+                    ? null
+                    : _selectSport,
+                items: [
+                  for (final sport in TeamScheduleSport.values)
+                    DropdownMenuItem<TeamScheduleSport>(
+                      value: sport,
+                      child: Text(_sportLabel(sport)),
+                    ),
+                ],
+              ),
+            ),
           ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          l10n.teamScheduleSportHelp,
-          style: theme.textTheme.bodySmall,
         ),
         if (_isSavingScores ||
             _isRefreshingScores ||
@@ -1197,7 +1196,6 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
   }
 
   Widget _buildShareCard(BuildContext context) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final shareId = _shareId;
     final shareUrl = _shareUrl;
@@ -1210,43 +1208,20 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       elevation: 0,
       color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(12),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: [
-            Text(
-              l10n.teamScheduleShareTitle,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            FilledButton.tonalIcon(
+              onPressed: _copyShareUrl,
+              icon: const Icon(Icons.copy),
+              label: Text(l10n.copyTeamScheduleShareUrlButton),
             ),
-            const SizedBox(height: 8),
-            Text(l10n.teamScheduleShareDescription),
-            const SizedBox(height: 12),
-            SelectableText(
-              l10n.teamScheduleShareIdLabel(shareId),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            SelectableText(shareUrl),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                FilledButton.icon(
-                  onPressed: _copyShareUrl,
-                  icon: const Icon(Icons.copy),
-                  label: Text(l10n.copyTeamScheduleShareUrlButton),
-                ),
-                OutlinedButton.icon(
-                  onPressed: _isRefreshingScores ? null : _refreshScores,
-                  icon: const Icon(Icons.refresh),
-                  label: Text(l10n.refreshLatestTeamScheduleButton),
-                ),
-              ],
+            FilledButton.tonalIcon(
+              onPressed: _isRefreshingScores ? null : _refreshScores,
+              icon: const Icon(Icons.refresh),
+              label: Text(l10n.refreshLatestTeamScheduleButton),
             ),
           ],
         ),
