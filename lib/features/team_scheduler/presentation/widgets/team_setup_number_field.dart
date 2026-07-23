@@ -12,6 +12,8 @@ class TeamSetupNumberField extends StatelessWidget {
     required this.tooltipDecrement,
     required this.tooltipIncrement,
     this.helpText,
+    this.showRangeHelp = true,
+    this.titleTrailing,
   });
 
   final String label;
@@ -22,6 +24,8 @@ class TeamSetupNumberField extends StatelessWidget {
   final String tooltipDecrement;
   final String tooltipIncrement;
   final String? helpText;
+  final bool showRangeHelp;
+  final Widget? titleTrailing;
 
   bool get _canDecrement => value > minValue;
   bool get _canIncrement => value < maxValue;
@@ -41,17 +45,33 @@ class TeamSetupNumberField extends StatelessWidget {
       maxValue - minValue + 1,
       (index) => minValue + index,
     );
+    final helperText = helpText ??
+        (showRangeHelp ? l10n.teamSetupRangeHelp(minValue, maxValue) : null);
 
     return Card(
       elevation: 0,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                if (titleTrailing != null) ...[
+                  const SizedBox(width: 8),
+                  titleTrailing!,
+                ],
+              ],
             ),
             const SizedBox(height: 8),
             Row(
@@ -59,15 +79,27 @@ class TeamSetupNumberField extends StatelessWidget {
                 IconButton(
                   onPressed: _canDecrement ? () => _setValue(value - 1) : null,
                   tooltip: tooltipDecrement,
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
                   icon: const Icon(Icons.remove_circle_outline),
                 ),
+                const SizedBox(width: 4),
                 Expanded(
                   child: DropdownButtonFormField<int>(
                     initialValue: value,
+                    isExpanded: true,
+                    alignment: Alignment.center,
+                    icon: const SizedBox.shrink(),
+                    iconSize: 0,
                     items: values
                         .map(
                           (item) => DropdownMenuItem<int>(
                             value: item,
+                            alignment: Alignment.center,
                             child: Text(item.toString()),
                           ),
                         )
@@ -79,14 +111,24 @@ class TeamSetupNumberField extends StatelessWidget {
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
                       isDense: true,
-                      helperText: helpText ??
-                          l10n.teamSetupRangeHelp(minValue, maxValue),
+                      helperText: helperText,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 0,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                 ),
+                const SizedBox(width: 4),
                 IconButton(
                   onPressed: _canIncrement ? () => _setValue(value + 1) : null,
                   tooltip: tooltipIncrement,
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
                   icon: const Icon(Icons.add_circle_outline),
                 ),
               ],

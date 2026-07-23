@@ -835,6 +835,8 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     return showDialog<_TeamScheduleBulkEditResult>(
       context: context,
       builder: (context) {
+        final theme = Theme.of(context);
+
         return AlertDialog(
           title: Text(l10n.teamScheduleBulkEditTitle),
           content: SizedBox(
@@ -862,12 +864,14 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
                     maxLines: 6,
                   ),
                   const SizedBox(height: 24),
-                  Text(
-                    l10n.teamScheduleBulkEditTeamsSection,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 8),
                   for (final team in schedule.teams) ...[
+                    Text(
+                      _teamName(team.teamSlot),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     TextField(
                       controller: teamControllers[team.teamSlot],
                       decoration: InputDecoration(
@@ -878,22 +882,21 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
                       textInputAction: TextInputAction.next,
                     ),
                     const SizedBox(height: 12),
-                  ],
-                  const SizedBox(height: 12),
-                  Text(
-                    l10n.teamScheduleBulkEditMembersSection,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  for (final member in schedule.members) ...[
-                    TextField(
-                      controller: memberControllers[member.playerSlot],
-                      decoration: InputDecoration(
-                        labelText: member.displayName,
+                    for (final playerSlot in team.memberPlayerSlots) ...[
+                      TextField(
+                        controller: memberControllers[playerSlot],
+                        decoration: InputDecoration(
+                          labelText: _memberName(playerSlot),
+                        ),
+                        textInputAction: TextInputAction.next,
                       ),
-                      textInputAction: TextInputAction.next,
-                    ),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
+                    ],
+                    if (team != schedule.teams.last) ...[
+                      const SizedBox(height: 4),
+                      const Divider(),
+                      const SizedBox(height: 16),
+                    ],
                   ],
                 ],
               ),
@@ -1046,11 +1049,6 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
               ),
               style: theme.textTheme.bodyMedium,
             ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.teamScheduleBackendDataNotice,
-              style: theme.textTheme.bodySmall,
-            ),
             const SizedBox(height: 16),
             _buildSportSelector(context),
             if (_isSavingDisplay || _displaySaveErrorMessage != null) ...[
@@ -1155,36 +1153,40 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.teamScheduleSportSectionTitle,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<TeamScheduleSport>(
-          initialValue: _scores.selectedSport,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 10,
-            ),
-          ),
-          onChanged:
-              _isSavingScores || _isRefreshingScores ? null : _selectSport,
-          items: [
-            for (final sport in TeamScheduleSport.values)
-              DropdownMenuItem<TeamScheduleSport>(
-                value: sport,
-                child: Text(_sportLabel(sport)),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              l10n.teamScheduleSportSectionTitle,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: DropdownButtonFormField<TeamScheduleSport>(
+                initialValue: _scores.selectedSport,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                ),
+                onChanged: _isSavingScores || _isRefreshingScores
+                    ? null
+                    : _selectSport,
+                items: [
+                  for (final sport in TeamScheduleSport.values)
+                    DropdownMenuItem<TeamScheduleSport>(
+                      value: sport,
+                      child: Text(_sportLabel(sport)),
+                    ),
+                ],
+              ),
+            ),
           ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          l10n.teamScheduleSportHelp,
-          style: theme.textTheme.bodySmall,
         ),
         if (_isSavingScores ||
             _isRefreshingScores ||
@@ -1197,7 +1199,6 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
   }
 
   Widget _buildShareCard(BuildContext context) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final shareId = _shareId;
     final shareUrl = _shareUrl;
@@ -1210,91 +1211,21 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       elevation: 0,
       color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(12),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: [
-            Text(
-              l10n.teamScheduleShareTitle,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            FilledButton.tonalIcon(
+              onPressed: _copyShareUrl,
+              icon: const Icon(Icons.copy),
+              label: Text(l10n.copyTeamScheduleShareUrlButton),
             ),
-            const SizedBox(height: 8),
-            Text(l10n.teamScheduleShareDescription),
-            const SizedBox(height: 12),
-            SelectableText(
-              l10n.teamScheduleShareIdLabel(shareId),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+            FilledButton.tonalIcon(
+              onPressed: _isRefreshingScores ? null : _refreshScores,
+              icon: const Icon(Icons.refresh),
+              label: Text(l10n.refreshLatestTeamScheduleButton),
             ),
-            const SizedBox(height: 8),
-            SelectableText(shareUrl),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                FilledButton.icon(
-                  onPressed: _copyShareUrl,
-                  icon: const Icon(Icons.copy),
-                  label: Text(l10n.copyTeamScheduleShareUrlButton),
-                ),
-                OutlinedButton.icon(
-                  onPressed: _isRefreshingScores ? null : _refreshScores,
-                  icon: const Icon(Icons.refresh),
-                  label: Text(l10n.refreshLatestTeamScheduleButton),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNextRoundCard(BuildContext context) {
-    final schedule = _schedule!;
-    final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context);
-    final nextRound = schedule.rounds.firstWhere(
-      (round) => round.roundNo == schedule.nextRoundNo,
-      orElse: () => schedule.rounds.first,
-    );
-
-    return Card(
-      elevation: 0,
-      color: Colors.blue.shade100,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.nextTeamMatchTitle,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.teamRoundTitle(nextRound.roundNo),
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 8),
-            for (final match in nextRound.matches) ...[
-              Text(
-                l10n.teamCourtMatchTitle(
-                  courtNo: match.courtNo,
-                  matchTitle: _matchTitle(context, match),
-                ),
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              if (match != nextRound.matches.last) const SizedBox(height: 4),
-            ],
           ],
         ),
       ),
@@ -1434,19 +1365,14 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
   }
 
   Widget _buildRoundCard(BuildContext context, _TeamRoundViewData round) {
-    final schedule = _schedule!;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    final isNextRound = round.roundNo == schedule.nextRoundNo;
 
     return Card(
       elevation: 0,
-      color: isNextRound ? Colors.blue.shade50 : Colors.white,
+      color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: isNextRound ? Colors.blue.shade300 : Colors.transparent,
-        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -1461,14 +1387,6 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (isNextRound) ...[
-                  const SizedBox(width: 8),
-                  Chip(
-                    label: Text(l10n.nextTeamMatchTitle),
-                    visualDensity: VisualDensity.compact,
-                    backgroundColor: Colors.blue.shade100,
-                  ),
-                ],
               ],
             ),
             const SizedBox(height: 12),
@@ -1486,47 +1404,133 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     BuildContext context,
     _TeamMatchViewData match,
   ) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final score = _scores.boccia.matchScore(match.matchNo);
     final hasScore = score?.hasAnyScore ?? false;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (_scores.selectedSport == TeamScheduleSport.boccia &&
-            score != null) ...[
-          Text(
-            l10n.bocciaScoreSummary(
-              redTeamName: _teamName(score.redTeamSlot),
-              redScore: score.totalRedScore,
-              blueTeamName: _teamName(score.blueTeamSlot),
-              blueScore: score.totalBlueScore,
-            ),
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
-        FilledButton.tonalIcon(
-          onPressed: _isSavingScores || _isRefreshingScores
-              ? null
-              : () {
-                  _openBocciaScoreDialog(match);
-                },
-          icon: const Icon(Icons.edit_note),
-          label: Text(
-            hasScore ? l10n.editBocciaScoreButton : l10n.inputBocciaScoreButton,
+    return FilledButton.tonalIcon(
+      onPressed: _isSavingScores || _isRefreshingScores
+          ? null
+          : () {
+              _openBocciaScoreDialog(match);
+            },
+      icon: const Icon(Icons.edit_note),
+      label: Text(
+        hasScore ? l10n.editBocciaScoreButton : l10n.inputBocciaScoreButton,
+      ),
+    );
+  }
+
+  ({int firstTeamSlot, int secondTeamSlot, int? firstScore, int? secondScore})
+      _matchDisplayOrder(_TeamMatchViewData match) {
+    final score = _scores.boccia.matchScore(match.matchNo);
+
+    if (_scores.selectedSport == TeamScheduleSport.boccia &&
+        score != null &&
+        match.teamSlots.length == 2) {
+      return (
+        firstTeamSlot: score.redTeamSlot,
+        secondTeamSlot: score.blueTeamSlot,
+        firstScore: score.totalRedScore,
+        secondScore: score.totalBlueScore,
+      );
+    }
+
+    return (
+      firstTeamSlot: match.teamSlots[0],
+      secondTeamSlot:
+          match.teamSlots.length > 1 ? match.teamSlots[1] : match.teamSlots[0],
+      firstScore: null,
+      secondScore: null,
+    );
+  }
+
+  Widget _buildMatchTeamPill(
+    BuildContext context, {
+    required int teamSlot,
+  }) {
+    final theme = Theme.of(context);
+    final isSelected = teamSlot == _selectedTeamSlot;
+
+    return ActionChip(
+      label: Text(
+        _teamName(teamSlot),
+        overflow: TextOverflow.ellipsis,
+      ),
+      avatar: isSelected ? const Icon(Icons.check, size: 18) : null,
+      onPressed: () => _selectTeam(teamSlot),
+      backgroundColor: isSelected ? Colors.blue.shade50 : null,
+      side: BorderSide(
+        color: isSelected ? Colors.blue.shade300 : Colors.grey.shade300,
+      ),
+      labelStyle: theme.textTheme.bodyMedium?.copyWith(
+        fontWeight: isSelected ? FontWeight.w600 : null,
+      ),
+    );
+  }
+
+  Widget _buildMatchScorePill(
+    BuildContext context, {
+    required int? score,
+  }) {
+    final theme = Theme.of(context);
+
+    return Container(
+      constraints: const BoxConstraints(minWidth: 36),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Center(
+        widthFactor: 1,
+        heightFactor: 1,
+        child: Text(
+          score?.toString() ?? '-',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.bold,
           ),
         ),
-      ],
+      ),
     );
   }
 
   Widget _buildMatchRow(BuildContext context, _TeamMatchViewData match) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
+    final display = _matchDisplayOrder(match);
+    final supportsInlineScore = match.teamSlots.length == 2;
+
+    if (!supportsInlineScore) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.teamCourtTitle(match.courtNo),
+            style: theme.textTheme.labelLarge,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _matchTitle(context, match),
+            style: theme.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final teamSlot in match.teamSlots)
+                _buildMatchTeamPill(context, teamSlot: teamSlot),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildMatchScoreAction(context, match),
+        ],
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1535,26 +1539,34 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           l10n.teamCourtTitle(match.courtNo),
           style: theme.textTheme.labelLarge,
         ),
-        const SizedBox(height: 6),
-        Text(
-          _matchTitle(context, match),
-          style: theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            for (final teamSlot in match.teamSlots)
-              ActionChip(
-                label: Text(_teamName(teamSlot)),
-                avatar: teamSlot == _selectedTeamSlot
-                    ? const Icon(Icons.check, size: 18)
-                    : null,
-                onPressed: () => _selectTeam(teamSlot),
+            _buildMatchTeamPill(
+              context,
+              teamSlot: display.firstTeamSlot,
+            ),
+            _buildMatchScorePill(
+              context,
+              score: display.firstScore,
+            ),
+            Text(
+              'vs',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
+            ),
+            _buildMatchScorePill(
+              context,
+              score: display.secondScore,
+            ),
+            _buildMatchTeamPill(
+              context,
+              teamSlot: display.secondTeamSlot,
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -1640,8 +1652,6 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
         _buildHeaderCard(context),
         const SizedBox(height: 12),
         _buildShareCard(context),
-        const SizedBox(height: 12),
-        _buildNextRoundCard(context),
         const SizedBox(height: 12),
         _buildTeamListCard(context),
         const SizedBox(height: 12),

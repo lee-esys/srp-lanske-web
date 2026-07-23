@@ -24,6 +24,10 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
   static const _minTeamsPerMatch = 2;
   static const _maxTeamsPerMatch = 25;
 
+  static const _numberFieldMinWidth = 220.0;
+  static const _numberFieldGap = 12.0;
+  static const _setupContentMaxWidth = 560.0;
+
   int _concurrentMatchCount = 1;
   int _participantCount = 8;
   int _preferredTeamSize = 2;
@@ -186,67 +190,35 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
     );
   }
 
-  Widget _buildNumberFields(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+  String _participantInputButtonLabel(AppLocalizations l10n) {
+    if (l10n.localeName.startsWith('ja')) {
+      return '参加者入力';
+    }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final useTwoColumns = constraints.maxWidth >= 760;
-        final itemWidth = useTwoColumns
-            ? (constraints.maxWidth - 12) / 2
-            : constraints.maxWidth;
+    return l10n.teamParticipantInputTitle;
+  }
 
-        return Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            SizedBox(
-              width: itemWidth,
-              child: TeamSetupNumberField(
-                label: l10n.concurrentMatchCountLabel,
-                value: _concurrentMatchCount,
-                minValue: _minConcurrentMatchCount,
-                maxValue: _effectiveMaxConcurrentMatchCount,
-                onChanged: _setConcurrentMatchCount,
-                tooltipDecrement: l10n.decrementConcurrentMatchCountTooltip,
-                tooltipIncrement: l10n.incrementConcurrentMatchCountTooltip,
-              ),
+  Future<void> _showParticipantNameInputDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        final l10n = AppLocalizations.of(context);
+
+        return AlertDialog(
+          contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          content: SizedBox(
+            width: 520,
+            child: TeamParticipantNameInputCard(
+              participantNames: _participantNames,
+              participantCount: _participantCount,
+              maxParticipantCount: _maxParticipantCount,
+              onApply: _applyParticipantNames,
             ),
-            SizedBox(
-              width: itemWidth,
-              child: TeamSetupNumberField(
-                label: l10n.participantCountLabel,
-                value: _participantCount,
-                minValue: _minParticipantCount,
-                maxValue: _maxParticipantCount,
-                onChanged: _setParticipantCount,
-                tooltipDecrement: l10n.decrementParticipantCountTooltip,
-                tooltipIncrement: l10n.incrementParticipantCountTooltip,
-              ),
-            ),
-            SizedBox(
-              width: itemWidth,
-              child: TeamSetupNumberField(
-                label: l10n.preferredTeamSizeLabel,
-                value: _preferredTeamSize,
-                minValue: _minPreferredTeamSize,
-                maxValue: _effectiveMaxPreferredTeamSize,
-                onChanged: _setPreferredTeamSize,
-                tooltipDecrement: l10n.decrementPreferredTeamSizeTooltip,
-                tooltipIncrement: l10n.incrementPreferredTeamSizeTooltip,
-              ),
-            ),
-            SizedBox(
-              width: itemWidth,
-              child: TeamSetupNumberField(
-                label: l10n.teamsPerMatchLabel,
-                value: _teamsPerMatch,
-                minValue: _minTeamsPerMatch,
-                maxValue: _effectiveMaxTeamsPerMatch,
-                onChanged: _setTeamsPerMatch,
-                tooltipDecrement: l10n.decrementTeamsPerMatchTooltip,
-                tooltipIncrement: l10n.incrementTeamsPerMatchTooltip,
-              ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.cancel),
             ),
           ],
         );
@@ -254,55 +226,117 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
     );
   }
 
-  Widget _buildSummaryCards(BuildContext context) {
+  Widget _buildParticipantInputButton(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return Column(
-      children: [
-        Card(
-          elevation: 0,
-          color: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.teamCountSummary(_derivedTeamCount),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(l10n.teamCountSummaryHelp),
-              ],
+    return TextButton(
+      onPressed: _showParticipantNameInputDialog,
+      style: TextButton.styleFrom(
+        minimumSize: Size.zero,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        visualDensity: VisualDensity.compact,
+      ),
+      child: Text(_participantInputButtonLabel(l10n)),
+    );
+  }
+
+  Widget _buildNumberFields(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final fields = [
+      TeamSetupNumberField(
+        label: l10n.concurrentMatchCountLabel,
+        value: _concurrentMatchCount,
+        minValue: _minConcurrentMatchCount,
+        maxValue: _effectiveMaxConcurrentMatchCount,
+        onChanged: _setConcurrentMatchCount,
+        tooltipDecrement: l10n.decrementConcurrentMatchCountTooltip,
+        tooltipIncrement: l10n.incrementConcurrentMatchCountTooltip,
+        showRangeHelp: false,
+      ),
+      TeamSetupNumberField(
+        label: l10n.teamsPerMatchLabel,
+        value: _teamsPerMatch,
+        minValue: _minTeamsPerMatch,
+        maxValue: _effectiveMaxTeamsPerMatch,
+        onChanged: _setTeamsPerMatch,
+        tooltipDecrement: l10n.decrementTeamsPerMatchTooltip,
+        tooltipIncrement: l10n.incrementTeamsPerMatchTooltip,
+        showRangeHelp: false,
+      ),
+      TeamSetupNumberField(
+        label: l10n.participantCountLabel,
+        value: _participantCount,
+        minValue: _minParticipantCount,
+        maxValue: _maxParticipantCount,
+        onChanged: _setParticipantCount,
+        tooltipDecrement: l10n.decrementParticipantCountTooltip,
+        tooltipIncrement: l10n.incrementParticipantCountTooltip,
+        showRangeHelp: false,
+        titleTrailing: _buildParticipantInputButton(context),
+      ),
+      TeamSetupNumberField(
+        label: l10n.preferredTeamSizeLabel,
+        value: _preferredTeamSize,
+        minValue: _minPreferredTeamSize,
+        maxValue: _effectiveMaxPreferredTeamSize,
+        onChanged: _setPreferredTeamSize,
+        tooltipDecrement: l10n.decrementPreferredTeamSizeTooltip,
+        tooltipIncrement: l10n.incrementPreferredTeamSizeTooltip,
+        showRangeHelp: false,
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useTwoColumns = constraints.maxWidth >=
+            (_numberFieldMinWidth * 2) + _numberFieldGap;
+        final itemWidth = useTwoColumns
+            ? (constraints.maxWidth - _numberFieldGap) / 2
+            : constraints.maxWidth;
+
+        return Wrap(
+          spacing: _numberFieldGap,
+          runSpacing: _numberFieldGap,
+          children: [
+            for (final field in fields)
+              SizedBox(
+                width: itemWidth,
+                child: field,
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildSummaryCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    return Card(
+      elevation: 0,
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${l10n.teamCountSummary(_derivedTeamCount)} / ${l10n.teamDistributionSummary(_teamDistributionText)}',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Card(
-          elevation: 0,
-          color: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.teamDistributionSummary(_teamDistributionText),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(l10n.teamDistributionSummaryHelp),
-              ],
+            const SizedBox(height: 8),
+            Text(
+              l10n.teamCountSummaryHelp,
+              style: theme.textTheme.bodySmall,
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -354,34 +388,16 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 16),
-              _buildNumberFields(context),
-              const SizedBox(height: 16),
-              TeamParticipantNameInputCard(
-                participantNames: _participantNames,
-                participantCount: _participantCount,
-                maxParticipantCount: _maxParticipantCount,
-                onApply: _applyParticipantNames,
-              ),
-              const SizedBox(height: 16),
-              _buildSummaryCards(context),
-              const SizedBox(height: 16),
-              Card(
-                elevation: 0,
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: _setupContentMaxWidth,
+                  ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        l10n.teamSetupAlphaNoticeTitle,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(l10n.teamSetupAlphaNoticeBody),
+                      _buildNumberFields(context),
+                      const SizedBox(height: 16),
+                      _buildSummaryCard(context),
                     ],
                   ),
                 ),

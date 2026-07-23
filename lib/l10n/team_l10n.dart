@@ -28,10 +28,10 @@ extension TeamL10n on AppLocalizations {
   String get participantCountLabel => _isJapanese ? '参加人数' : 'Participants';
 
   String get preferredTeamSizeLabel =>
-      _isJapanese ? '1チームの目安人数' : 'Preferred team size';
+      _isJapanese ? 'チームの人数' : 'Preferred team size';
 
   String get teamsPerMatchLabel =>
-      _isJapanese ? '1試合で対戦するチーム数' : 'Teams per match';
+      _isJapanese ? '1試合の対戦チーム数' : 'Teams per match';
 
   String get decrementConcurrentMatchCountTooltip =>
       _isJapanese ? '同時進行試合数を減らす' : 'Decrease simultaneous match count';

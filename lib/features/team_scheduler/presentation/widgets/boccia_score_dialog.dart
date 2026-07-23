@@ -497,20 +497,30 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
   }
 
   Widget _buildOrderHeader(BuildContext context) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         FilledButton.tonalIcon(
+          style: FilledButton.styleFrom(
+            minimumSize: const Size(0, 32),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            backgroundColor: _bocciaButtonBackgroundColor,
+            foregroundColor: _bocciaButtonForegroundColor,
+            disabledBackgroundColor:
+                _bocciaButtonBackgroundColor.withValues(alpha: 0.45),
+            disabledForegroundColor:
+                _bocciaButtonForegroundColor.withValues(alpha: 0.5),
+          ),
           onPressed: _isBusy || !_draftScore.canEditThrowingBoxAssignments
               ? null
               : _swapOrder,
-          icon: const Icon(Icons.swap_horiz),
+          icon: const Icon(Icons.swap_horiz, size: 18),
           label: Text(l10n.swapBocciaOrderButton),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
@@ -534,17 +544,6 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          l10n.bocciaScoreDialogMatchTitle(
-            redTeamName: _redTeamName(_draftScore),
-            blueTeamName: _blueTeamName(_draftScore),
-          ),
-          textAlign: TextAlign.center,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
       ],
     );
   }
@@ -559,23 +558,24 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: backgroundColor,
         border: Border.all(color: borderColor),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         children: [
           Text(
             label,
-            style: theme.textTheme.labelLarge,
+            style: theme.textTheme.labelSmall,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             teamName,
             textAlign: TextAlign.center,
-            style: theme.textTheme.titleSmall?.copyWith(
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -603,15 +603,15 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
       onTap: () {
         _selectEnd(endNo);
       },
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(7),
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 6,
+          horizontal: 8,
+          vertical: 4,
         ),
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(7),
           border: Border.all(
             color: borderColor,
             width: isSelected ? 2 : 1,
@@ -619,7 +619,8 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
         ),
         child: Text(
           l10n.bocciaEndLabel(endNo),
-          style: theme.textTheme.bodyMedium?.copyWith(
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodySmall?.copyWith(
             color: textColor,
             fontWeight: isSelected ? FontWeight.bold : null,
           ),
@@ -630,28 +631,33 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
 
   Widget _buildScoreTable(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: DataTable(
-        headingRowHeight: 44,
-        dataRowMinHeight: 52,
-        dataRowMaxHeight: 56,
+        horizontalMargin: 4,
+        columnSpacing: 8,
+        headingRowHeight: 34,
+        dataRowMinHeight: 40,
+        dataRowMaxHeight: 42,
         columns: [
-          const DataColumn(label: SizedBox(width: 56)),
           for (final endScore in _draftScore.endScores)
             DataColumn(
               label: _buildEndHeader(context, endScore.endNo),
             ),
           DataColumn(
-            label: Text(l10n.bocciaTotalLabel),
+            label: Text(
+              l10n.bocciaTotalLabel,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall,
+            ),
           ),
         ],
         rows: [
           DataRow(
             color: WidgetStatePropertyAll(Colors.red.shade50),
             cells: [
-              const DataCell(SizedBox.shrink()),
               for (final endScore in _draftScore.endScores)
                 DataCell(
                   _buildScoreDropdown(
@@ -669,9 +675,13 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
                   ),
                 ),
               DataCell(
-                Text(
-                  _draftScore.totalRedScore.toString(),
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                SizedBox(
+                  width: 32,
+                  child: Text(
+                    _draftScore.totalRedScore.toString(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -679,7 +689,6 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
           DataRow(
             color: WidgetStatePropertyAll(Colors.blue.shade50),
             cells: [
-              const DataCell(SizedBox.shrink()),
               for (final endScore in _draftScore.endScores)
                 DataCell(
                   _buildScoreDropdown(
@@ -697,9 +706,13 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
                   ),
                 ),
               DataCell(
-                Text(
-                  _draftScore.totalBlueScore.toString(),
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                SizedBox(
+                  width: 32,
+                  child: Text(
+                    _draftScore.totalBlueScore.toString(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -713,17 +726,36 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
     required int value,
     required ValueChanged<int?> onChanged,
   }) {
-    return DropdownButton<int>(
-      value: value,
-      dropdownColor: _bocciaSectionBackgroundColor,
-      onChanged: _isBusy ? null : onChanged,
-      items: [
-        for (var score = 0; score <= 6; score += 1)
-          DropdownMenuItem<int>(
-            value: score,
-            child: Text(score.toString()),
-          ),
-      ],
+    return SizedBox(
+      width: 36,
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: value,
+          isDense: true,
+          isExpanded: true,
+          alignment: Alignment.center,
+          iconSize: 14,
+          dropdownColor: _bocciaSectionBackgroundColor,
+          onChanged: _isBusy ? null : onChanged,
+          selectedItemBuilder: (context) {
+            return [
+              for (var score = 0; score <= 6; score += 1)
+                Center(
+                  child: Text(score.toString()),
+                ),
+            ];
+          },
+          items: [
+            for (var score = 0; score <= 6; score += 1)
+              DropdownMenuItem<int>(
+                value: score,
+                child: Center(
+                  child: Text(score.toString()),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1181,23 +1213,32 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
     final dialogWidth = MediaQuery.sizeOf(context).width * 0.95;
 
     return AlertDialog(
       insetPadding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 24,
+        horizontal: 8,
+        vertical: 12,
       ),
-      title: Text(l10n.bocciaScoreDialogTitle),
+      titlePadding: const EdgeInsets.fromLTRB(20, 14, 20, 6),
+      contentPadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+      actionsPadding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+      title: Text(
+        l10n.bocciaScoreDialogTitle,
+        style: theme.textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
+      ),
       backgroundColor: _bocciaDialogBackgroundColor,
       content: SizedBox(
         width: dialogWidth,
         child: SingleChildScrollView(
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: _bocciaSectionBackgroundColor,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(color: _bocciaAccentBorderColor),
             ),
             child: Column(
@@ -1205,11 +1246,11 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildConcurrentEditNotice(context),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 _buildOrderHeader(context),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 _buildScoreTable(context),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 _buildThrowingBoxSection(context),
               ],
             ),
@@ -1229,21 +1270,43 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
               ),
               TextButton.icon(
                 style: TextButton.styleFrom(
+                  minimumSize: const Size(0, 32),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   foregroundColor: _bocciaButtonForegroundColor,
                 ),
                 onPressed: _isBusy || widget.onRefresh == null
                     ? null
                     : _refreshLatestScore,
-                icon: const Icon(Icons.refresh),
+                icon: const Icon(Icons.refresh, size: 18),
                 label: Text(l10n.refreshLatestTeamScheduleButton),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
               TextButton(
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(0, 32),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 onPressed: _isBusy ? null : _close,
                 child: Text(l10n.closeBocciaScoreDialogButton),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
               FilledButton(
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(0, 32),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 onPressed: _isBusy ? null : _save,
                 child: Text(l10n.saveBocciaScoreButton),
               ),
