@@ -1232,53 +1232,6 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     );
   }
 
-  Widget _buildNextRoundCard(BuildContext context) {
-    final schedule = _schedule!;
-    final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context);
-    final nextRound = schedule.rounds.firstWhere(
-      (round) => round.roundNo == schedule.nextRoundNo,
-      orElse: () => schedule.rounds.first,
-    );
-
-    return Card(
-      elevation: 0,
-      color: Colors.blue.shade100,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.nextTeamMatchTitle,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.teamRoundTitle(nextRound.roundNo),
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 8),
-            for (final match in nextRound.matches) ...[
-              Text(
-                l10n.teamCourtMatchTitle(
-                  courtNo: match.courtNo,
-                  matchTitle: _matchTitle(context, match),
-                ),
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              if (match != nextRound.matches.last) const SizedBox(height: 4),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildTeamListCard(BuildContext context) {
     final schedule = _schedule!;
     final theme = Theme.of(context);

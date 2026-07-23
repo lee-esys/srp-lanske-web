@@ -20,7 +20,8 @@ class TeamScheduleHistoryListView extends StatefulWidget {
       _TeamScheduleHistoryListViewState();
 }
 
-class _TeamScheduleHistoryListViewState extends State<TeamScheduleHistoryListView> {
+class _TeamScheduleHistoryListViewState
+    extends State<TeamScheduleHistoryListView> {
   final LocalTeamScheduleHistoryStore _historyStore =
       LocalTeamScheduleHistoryStore();
 
