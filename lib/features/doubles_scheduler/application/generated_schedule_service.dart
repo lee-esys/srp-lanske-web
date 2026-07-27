@@ -1,4 +1,4 @@
-import '../infrastructure/generated_schedule_api_client.dart';
+import 'package:srp_lanske/shared/infrastructure/generated_schedule_api_client.dart';
 import '../presentation/models/event_draft.dart';
 
 class GeneratedScheduleService {

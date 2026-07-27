@@ -15,7 +15,7 @@ import '../data/local_schedule_history_store.dart';
 import '../domain/player_draft.dart';
 import '../domain/public_id.dart';
 import '../domain/saved_event_models.dart';
-import '../infrastructure/generated_schedule_api_client.dart';
+import 'package:srp_lanske/shared/infrastructure/generated_schedule_api_client.dart';
 import 'event_list_page.dart';
 import 'models/event_draft.dart';
 import 'widgets/court_display_settings_dialog.dart';

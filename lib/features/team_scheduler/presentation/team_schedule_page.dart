@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/features/doubles_scheduler/domain/public_id.dart';
-import 'package:srp_lanske/features/doubles_scheduler/infrastructure/generated_schedule_api_client.dart';
+import 'package:srp_lanske/shared/infrastructure/generated_schedule_api_client.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
