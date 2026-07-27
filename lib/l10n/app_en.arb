@@ -451,5 +451,929 @@
   "scheduleHistoryClearedMessage": "Match table view history deleted",
   "@scheduleHistoryClearedMessage": {
     "description": "Snack bar message shown after local schedule view history was cleared."
+  },
+  "saveButton": "Save",
+  "@saveButton": {
+    "description": "Generic save button label."
+  },
+  "teamSetupMenuTitle": "Lanske: Team",
+  "@teamSetupMenuTitle": {
+    "description": "Team scheduler menu title."
+  },
+  "teamSetupMenuSubtitle": "Create a team match table",
+  "@teamSetupMenuSubtitle": {
+    "description": "Team scheduler menu subtitle."
+  },
+  "teamSetupTitle": "Lanske: Team",
+  "@teamSetupTitle": {
+    "description": "Title shown on the team setup page."
+  },
+  "teamSetupInstruction": "Set simultaneous matches, participants, and preferred team size to create a team match table.",
+  "@teamSetupInstruction": {
+    "description": "Instruction text shown on the team setup page."
+  },
+  "teamSetupSupportedConditions": "For the initial alpha, the backend API creates a 5-round team match table.",
+  "@teamSetupSupportedConditions": {
+    "description": "Short note about supported team scheduler conditions."
+  },
+  "teamSetupInputUpperLimitNote": "Input limits: 5 simultaneous matches / 50 participants / preferred team size 25 / 25 teams per match. Simultaneous matches are clamped to a safe range when needed.",
+  "@teamSetupInputUpperLimitNote": {
+    "description": "Note about team setup input limits."
+  },
+  "concurrentMatchCountLabel": "Simultaneous matches",
+  "@concurrentMatchCountLabel": {
+    "description": "Label for simultaneous match count input."
+  },
+  "participantCountLabel": "Participants",
+  "@participantCountLabel": {
+    "description": "Label for participant count input."
+  },
+  "preferredTeamSizeLabel": "Preferred team size",
+  "@preferredTeamSizeLabel": {
+    "description": "Label for preferred team size input."
+  },
+  "teamsPerMatchLabel": "Teams per match",
+  "@teamsPerMatchLabel": {
+    "description": "Label for teams per match input."
+  },
+  "decrementConcurrentMatchCountTooltip": "Decrease simultaneous match count",
+  "@decrementConcurrentMatchCountTooltip": {
+    "description": "Tooltip for decreasing simultaneous match count."
+  },
+  "incrementConcurrentMatchCountTooltip": "Increase simultaneous match count",
+  "@incrementConcurrentMatchCountTooltip": {
+    "description": "Tooltip for increasing simultaneous match count."
+  },
+  "decrementParticipantCountTooltip": "Decrease participant count",
+  "@decrementParticipantCountTooltip": {
+    "description": "Tooltip for decreasing participant count."
+  },
+  "incrementParticipantCountTooltip": "Increase participant count",
+  "@incrementParticipantCountTooltip": {
+    "description": "Tooltip for increasing participant count."
+  },
+  "decrementPreferredTeamSizeTooltip": "Decrease preferred team size",
+  "@decrementPreferredTeamSizeTooltip": {
+    "description": "Tooltip for decreasing preferred team size."
+  },
+  "incrementPreferredTeamSizeTooltip": "Increase preferred team size",
+  "@incrementPreferredTeamSizeTooltip": {
+    "description": "Tooltip for increasing preferred team size."
+  },
+  "decrementTeamsPerMatchTooltip": "Decrease teams per match",
+  "@decrementTeamsPerMatchTooltip": {
+    "description": "Tooltip for decreasing teams per match."
+  },
+  "incrementTeamsPerMatchTooltip": "Increase teams per match",
+  "@incrementTeamsPerMatchTooltip": {
+    "description": "Tooltip for increasing teams per match."
+  },
+  "teamSetupRangeHelp": "Select a value from {minValue} to {maxValue}.",
+  "@teamSetupRangeHelp": {
+    "description": "Help text showing the valid team setup input range.",
+    "placeholders": {
+      "minValue": {
+        "type": "int",
+        "example": "1"
+      },
+      "maxValue": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "teamCountSummary": "{teamCount} teams",
+  "@teamCountSummary": {
+    "description": "Summary showing the calculated team count.",
+    "placeholders": {
+      "teamCount": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "teamCountSummaryHelp": "Calculated automatically from participants and preferred team size.",
+  "@teamCountSummaryHelp": {
+    "description": "Help text for the calculated team count."
+  },
+  "teamDistributionSummary": "Distribution: {summary}",
+  "@teamDistributionSummary": {
+    "description": "Summary showing the team member distribution.",
+    "placeholders": {
+      "summary": {
+        "type": "String",
+        "example": "2人×4チーム"
+      }
+    }
+  },
+  "teamDistributionItem": "{teamCount} teams of {memberCount}",
+  "@teamDistributionItem": {
+    "description": "One item in the calculated team member distribution.",
+    "placeholders": {
+      "memberCount": {
+        "type": "int",
+        "example": "2"
+      },
+      "teamCount": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "teamDistributionSummaryHelp": "If there is a remainder, some teams will have one fewer member.",
+  "@teamDistributionSummaryHelp": {
+    "description": "Help text for uneven team member distribution."
+  },
+  "teamParticipantInputTitle": "Participant names",
+  "@teamParticipantInputTitle": {
+    "description": "Title for the participant name input card."
+  },
+  "teamParticipantInputButton": "Participant names",
+  "@teamParticipantInputButton": {
+    "description": "Short button and dialog heading for participant name input."
+  },
+  "teamParticipantInputDescription": "Paste participant names separated by new lines. Commas and tabs are also supported in a simple form.",
+  "@teamParticipantInputDescription": {
+    "description": "Description for participant name input."
+  },
+  "teamParticipantInputLabel": "Participant names",
+  "@teamParticipantInputLabel": {
+    "description": "Input label for participant names."
+  },
+  "teamParticipantInputHint": "Example:\nAlex\nBlair\nCasey",
+  "@teamParticipantInputHint": {
+    "description": "Example participant names shown in the input field."
+  },
+  "applyParticipantNamesButton": "Apply participant names",
+  "@applyParticipantNamesButton": {
+    "description": "Button label for applying participant names."
+  },
+  "participantNameCountStatus": "Names: {nameCount} / Participants: {participantCount}",
+  "@participantNameCountStatus": {
+    "description": "Status showing entered name count and participant count.",
+    "placeholders": {
+      "nameCount": {
+        "type": "int",
+        "example": "8"
+      },
+      "participantCount": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "participantNamesAppliedMessage": "Applied {nameCount} participant names.",
+  "@participantNamesAppliedMessage": {
+    "description": "Message shown after participant names are applied.",
+    "placeholders": {
+      "nameCount": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "participantNamesTrimmedMessage": "Applied up to {maxCount} participant names. Extra names were omitted.",
+  "@participantNamesTrimmedMessage": {
+    "description": "Message shown when extra participant names are omitted.",
+    "placeholders": {
+      "maxCount": {
+        "type": "int",
+        "example": "50"
+      }
+    }
+  },
+  "participantNamesTooFewMessage": "Enter at least two participant names.",
+  "@participantNamesTooFewMessage": {
+    "description": "Validation message for too few participant names."
+  },
+  "participantNamesEmptyMessage": "Enter participant names.",
+  "@participantNamesEmptyMessage": {
+    "description": "Validation message for empty participant names."
+  },
+  "resetTeamSetupButton": "Reset inputs",
+  "@resetTeamSetupButton": {
+    "description": "Button label for resetting team setup inputs."
+  },
+  "generateTeamScheduleButton": "Create team match table",
+  "@generateTeamScheduleButton": {
+    "description": "Button label for creating a team match table."
+  },
+  "teamSetupAlphaNoticeTitle": "Alpha flow",
+  "@teamSetupAlphaNoticeTitle": {
+    "description": "Title for the team alpha notice."
+  },
+  "teamSetupAlphaNoticeBody": "After creation, the backend API result is saved and can be reopened from a share URL. Team changes and score input are not implemented yet.",
+  "@teamSetupAlphaNoticeBody": {
+    "description": "Body for the team alpha notice."
+  },
+  "teamSetupCreatedMessage": "Team setup conditions were created.",
+  "@teamSetupCreatedMessage": {
+    "description": "Message shown after team setup conditions are created."
+  },
+  "teamScheduleTitle": "Team match table",
+  "@teamScheduleTitle": {
+    "description": "Title shown on the team match table page."
+  },
+  "teamScheduleListTitle": "Team match tables",
+  "@teamScheduleListTitle": {
+    "description": "Title shown on the team match table list."
+  },
+  "teamScheduleListEmptyTitle": "No team match tables yet",
+  "@teamScheduleListEmptyTitle": {
+    "description": "Title shown when the team schedule list is empty."
+  },
+  "teamScheduleListEmptyMessage": "Create a team match table or open one from a share URL to show it in this device list.",
+  "@teamScheduleListEmptyMessage": {
+    "description": "Message shown when the team schedule list is empty."
+  },
+  "teamScheduleListLoadErrorTitle": "Failed to load the list",
+  "@teamScheduleListLoadErrorTitle": {
+    "description": "Title shown when the team schedule list cannot be loaded."
+  },
+  "teamScheduleListLoadErrorMessage": "Could not read the saved history on this device. Please try again.",
+  "@teamScheduleListLoadErrorMessage": {
+    "description": "Message shown when the team schedule list cannot be loaded."
+  },
+  "teamScheduleUntitledEvent": "Untitled team match table",
+  "@teamScheduleUntitledEvent": {
+    "description": "Fallback title for a team schedule without an event title."
+  },
+  "teamScheduleListShareId": "Share ID: {shareId}",
+  "@teamScheduleListShareId": {
+    "description": "Label showing a team schedule share ID.",
+    "placeholders": {
+      "shareId": {
+        "type": "String",
+        "example": "ABCDEFGH"
+      }
+    }
+  },
+  "teamScheduleListTeamCount": "{teamCount} teams",
+  "@teamScheduleListTeamCount": {
+    "description": "Label showing team count in the schedule list.",
+    "placeholders": {
+      "teamCount": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "teamScheduleListMemberCount": "{memberCount} members",
+  "@teamScheduleListMemberCount": {
+    "description": "Label showing member count in the schedule list.",
+    "placeholders": {
+      "memberCount": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "teamScheduleListUpdatedAt": "Updated: {updatedAt}",
+  "@teamScheduleListUpdatedAt": {
+    "description": "Label showing when a team schedule was updated.",
+    "placeholders": {
+      "updatedAt": {
+        "type": "String",
+        "example": "2026/07/27 10:30"
+      }
+    }
+  },
+  "teamNavigationMenuTooltip": "Open team menu",
+  "@teamNavigationMenuTooltip": {
+    "description": "Tooltip for opening the team navigation menu."
+  },
+  "teamNavigationTitle": "Team scheduler",
+  "@teamNavigationTitle": {
+    "description": "Title in the team navigation drawer."
+  },
+  "teamNavigationSubtitle": "Team menu",
+  "@teamNavigationSubtitle": {
+    "description": "Subtitle in the team navigation drawer."
+  },
+  "teamNavigationHome": "Team setup",
+  "@teamNavigationHome": {
+    "description": "Navigation label for the team setup page."
+  },
+  "teamNavigationScheduleList": "Match table list",
+  "@teamNavigationScheduleList": {
+    "description": "Navigation label for the team schedule list."
+  },
+  "teamNavigationSupport": "Support",
+  "@teamNavigationSupport": {
+    "description": "Navigation label for support."
+  },
+  "teamNavigationServiceList": "Services",
+  "@teamNavigationServiceList": {
+    "description": "Section label for other services."
+  },
+  "teamNavigationDoublesScheduler": "Doubles scheduler",
+  "@teamNavigationDoublesScheduler": {
+    "description": "Navigation label for the doubles scheduler."
+  },
+  "defaultTeamScheduleEventTitle": "Team practice",
+  "@defaultTeamScheduleEventTitle": {
+    "description": "Default event title for a generated team schedule."
+  },
+  "teamScheduleBulkEditTitle": "Edit details",
+  "@teamScheduleBulkEditTitle": {
+    "description": "Dialog title for editing team schedule details."
+  },
+  "teamScheduleBulkEditButton": "Edit details",
+  "@teamScheduleBulkEditButton": {
+    "description": "Button label for editing team schedule details."
+  },
+  "teamScheduleEventTitleLabel": "Event title",
+  "@teamScheduleEventTitleLabel": {
+    "description": "Input label for the team schedule event title."
+  },
+  "teamScheduleMemoLabel": "Memo",
+  "@teamScheduleMemoLabel": {
+    "description": "Input label for the team schedule memo."
+  },
+  "teamScheduleHasMemoTooltip": "Has memo",
+  "@teamScheduleHasMemoTooltip": {
+    "description": "Tooltip indicating that a team schedule has a memo."
+  },
+  "teamScheduleBulkEditTeamsSection": "Team names",
+  "@teamScheduleBulkEditTeamsSection": {
+    "description": "Section title for team names in the bulk edit dialog."
+  },
+  "teamScheduleBulkEditMembersSection": "Member names",
+  "@teamScheduleBulkEditMembersSection": {
+    "description": "Section title for member names in the bulk edit dialog."
+  },
+  "teamScheduleTeamNameLabel": "Team {teamSlot}",
+  "@teamScheduleTeamNameLabel": {
+    "description": "Input label for a team display name.",
+    "placeholders": {
+      "teamSlot": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "defaultTeamMemberName": "Participant {memberNo}",
+  "@defaultTeamMemberName": {
+    "description": "Default team member display name.",
+    "placeholders": {
+      "memberNo": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "defaultTeamName": "Team {teamNo}",
+  "@defaultTeamName": {
+    "description": "Default team display name.",
+    "placeholders": {
+      "teamNo": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "teamScheduleSummary": "{teamCount} teams / {memberCount} members / {concurrentMatchCount} simultaneous matches",
+  "@teamScheduleSummary": {
+    "description": "Summary of a team schedule.",
+    "placeholders": {
+      "teamCount": {
+        "type": "int",
+        "example": "4"
+      },
+      "memberCount": {
+        "type": "int",
+        "example": "8"
+      },
+      "concurrentMatchCount": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "teamScheduleBackendDataNotice": "Showing the saved backend API result. Display names can be edited on this screen.",
+  "@teamScheduleBackendDataNotice": {
+    "description": "Notice about saved backend team schedule data."
+  },
+  "creatingTeamScheduleMessage": "Creating and saving team match table...",
+  "@creatingTeamScheduleMessage": {
+    "description": "Loading message while creating a team schedule."
+  },
+  "restoringTeamScheduleMessage": "Loading saved team match table...",
+  "@restoringTeamScheduleMessage": {
+    "description": "Loading message while restoring a team schedule."
+  },
+  "savingTeamScheduleDisplayMessage": "Saving display names...",
+  "@savingTeamScheduleDisplayMessage": {
+    "description": "Message shown while saving team schedule display data."
+  },
+  "teamScheduleGenerateFailedTitle": "Failed to create team match table",
+  "@teamScheduleGenerateFailedTitle": {
+    "description": "Title shown when team schedule generation fails."
+  },
+  "teamScheduleGenerateFailedBody": "Check the backend API or Firestore save response.",
+  "@teamScheduleGenerateFailedBody": {
+    "description": "Body shown when team schedule generation fails without details."
+  },
+  "teamScheduleGenerateFailedBodyWithDetail": "Check the backend API or Firestore save response.\n\n{detail}",
+  "@teamScheduleGenerateFailedBodyWithDetail": {
+    "description": "Body shown when team schedule generation fails with details.",
+    "placeholders": {
+      "detail": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
+  },
+  "teamScheduleRestoreFailedTitle": "Failed to load team match table",
+  "@teamScheduleRestoreFailedTitle": {
+    "description": "Title shown when team schedule restoration fails."
+  },
+  "teamScheduleRestoreFailedBody": "Check the share ID or saved data.",
+  "@teamScheduleRestoreFailedBody": {
+    "description": "Body shown when team schedule restoration fails without details."
+  },
+  "teamScheduleRestoreFailedBodyWithDetail": "Check the share ID or saved data.\n\n{detail}",
+  "@teamScheduleRestoreFailedBodyWithDetail": {
+    "description": "Body shown when team schedule restoration fails with details.",
+    "placeholders": {
+      "detail": {
+        "type": "String",
+        "example": "not found"
+      }
+    }
+  },
+  "teamScheduleDisplaySaveFailedMessage": "Failed to save display names: {detail}",
+  "@teamScheduleDisplaySaveFailedMessage": {
+    "description": "Message shown when team schedule display data cannot be saved.",
+    "placeholders": {
+      "detail": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
+  },
+  "retryTeamScheduleGenerateButton": "Try again",
+  "@retryTeamScheduleGenerateButton": {
+    "description": "Button label for retrying team schedule generation."
+  },
+  "retryTeamScheduleRestoreButton": "Reload",
+  "@retryTeamScheduleRestoreButton": {
+    "description": "Button label for retrying team schedule restoration."
+  },
+  "teamScheduleShareTitle": "Share URL",
+  "@teamScheduleShareTitle": {
+    "description": "Title for the team schedule share section."
+  },
+  "teamScheduleShareDescription": "Share this URL to reopen the saved team match table.",
+  "@teamScheduleShareDescription": {
+    "description": "Description for sharing a team schedule URL."
+  },
+  "teamScheduleShareIdLabel": "Share ID: {shareId}",
+  "@teamScheduleShareIdLabel": {
+    "description": "Label showing a team schedule share ID.",
+    "placeholders": {
+      "shareId": {
+        "type": "String",
+        "example": "ABCDEFGH"
+      }
+    }
+  },
+  "copyTeamScheduleShareUrlButton": "Copy share URL",
+  "@copyTeamScheduleShareUrlButton": {
+    "description": "Button label for copying the team schedule share URL."
+  },
+  "teamScheduleShareUrlCopiedMessage": "Copied share URL.",
+  "@teamScheduleShareUrlCopiedMessage": {
+    "description": "Message shown after copying the team schedule share URL."
+  },
+  "nextTeamMatchTitle": "Next match",
+  "@nextTeamMatchTitle": {
+    "description": "Title for the next team match section."
+  },
+  "teamRoundTitle": "Round {roundNo}",
+  "@teamRoundTitle": {
+    "description": "Title for a team schedule round.",
+    "placeholders": {
+      "roundNo": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "teamCourtTitle": "Court {courtNo}",
+  "@teamCourtTitle": {
+    "description": "Title for a team schedule court.",
+    "placeholders": {
+      "courtNo": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "teamCourtMatchTitle": "Court {courtNo}: {matchTitle}",
+  "@teamCourtMatchTitle": {
+    "description": "Title combining a court number and match title.",
+    "placeholders": {
+      "courtNo": {
+        "type": "int",
+        "example": "1"
+      },
+      "matchTitle": {
+        "type": "String",
+        "example": "Team 1 vs Team 2"
+      }
+    }
+  },
+  "teamListTitle": "Teams",
+  "@teamListTitle": {
+    "description": "Title for the team list."
+  },
+  "teamChoiceLabel": "{teamName} ({memberCount} members)",
+  "@teamChoiceLabel": {
+    "description": "Label for selecting a team.",
+    "placeholders": {
+      "teamName": {
+        "type": "String",
+        "example": "チーム1"
+      },
+      "memberCount": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "selectedTeamMembersTitle": "{teamName} members",
+  "@selectedTeamMembersTitle": {
+    "description": "Title for members of the selected team.",
+    "placeholders": {
+      "teamName": {
+        "type": "String",
+        "example": "チーム1"
+      }
+    }
+  },
+  "teamMatchVsSeparator": " vs ",
+  "@teamMatchVsSeparator": {
+    "description": "Separator between two team names."
+  },
+  "teamMatchGroupSeparator": " / ",
+  "@teamMatchGroupSeparator": {
+    "description": "Separator between multiple team names."
+  },
+  "teamMatchVsLabel": "vs",
+  "@teamMatchVsLabel": {
+    "description": "Standalone versus label shown between team scores."
+  },
+  "editTeamScheduleEventTitleTooltip": "Edit event title",
+  "@editTeamScheduleEventTitleTooltip": {
+    "description": "Tooltip for editing the event title."
+  },
+  "editTeamNameTooltip": "Edit team name",
+  "@editTeamNameTooltip": {
+    "description": "Tooltip for editing a team name."
+  },
+  "editTeamMemberNameTooltip": "Edit member display name",
+  "@editTeamMemberNameTooltip": {
+    "description": "Tooltip for editing a team member display name."
+  },
+  "editTeamScheduleEventTitleDialogTitle": "Edit event title",
+  "@editTeamScheduleEventTitleDialogTitle": {
+    "description": "Dialog title for editing the event title."
+  },
+  "editTeamNameDialogTitle": "Edit {teamName}",
+  "@editTeamNameDialogTitle": {
+    "description": "Dialog title for editing a team name.",
+    "placeholders": {
+      "teamName": {
+        "type": "String",
+        "example": "チーム1"
+      }
+    }
+  },
+  "editTeamMemberNameDialogTitle": "Edit {memberName}",
+  "@editTeamMemberNameDialogTitle": {
+    "description": "Dialog title for editing a team member name.",
+    "placeholders": {
+      "memberName": {
+        "type": "String",
+        "example": "参加者1"
+      }
+    }
+  },
+  "displayNameInputLabel": "Display name",
+  "@displayNameInputLabel": {
+    "description": "Input label for a display name."
+  },
+  "teamScheduleSportSectionTitle": "Score input",
+  "@teamScheduleSportSectionTitle": {
+    "description": "Title for the team schedule sport and score section."
+  },
+  "teamScheduleSportNoneLabel": "Not selected",
+  "@teamScheduleSportNoneLabel": {
+    "description": "Label for no selected sport."
+  },
+  "teamScheduleSportBocciaLabel": "Boccia",
+  "@teamScheduleSportBocciaLabel": {
+    "description": "Label for boccia."
+  },
+  "teamScheduleSportHelp": "Select a sport to enter scores from match cards.",
+  "@teamScheduleSportHelp": {
+    "description": "Help text for selecting a team schedule sport."
+  },
+  "savingTeamScheduleScoresMessage": "Saving scores...",
+  "@savingTeamScheduleScoresMessage": {
+    "description": "Message shown while saving team schedule scores."
+  },
+  "teamScheduleScoresSaveFailedMessage": "Failed to save scores: {detail}",
+  "@teamScheduleScoresSaveFailedMessage": {
+    "description": "Message shown when team schedule scores cannot be saved.",
+    "placeholders": {
+      "detail": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
+  },
+  "teamScheduleConcurrentEditNotice": "When editing from multiple devices at the same time, saved data may not be reflected as intended.",
+  "@teamScheduleConcurrentEditNotice": {
+    "description": "Notice about concurrent team schedule editing."
+  },
+  "refreshingTeamScheduleScoresMessage": "Refreshing latest score data...",
+  "@refreshingTeamScheduleScoresMessage": {
+    "description": "Message shown while refreshing team schedule scores."
+  },
+  "bocciaScoreRefreshedMessage": "Refreshed latest data",
+  "@bocciaScoreRefreshedMessage": {
+    "description": "Message shown after refreshing boccia score data."
+  },
+  "refreshBocciaScoreFailedMessage": "Failed to refresh latest data",
+  "@refreshBocciaScoreFailedMessage": {
+    "description": "Message shown when boccia score refresh fails."
+  },
+  "refreshBocciaScoreDiscardChangesTitle": "Discard unsaved changes and refresh?",
+  "@refreshBocciaScoreDiscardChangesTitle": {
+    "description": "Dialog title for refreshing while boccia changes are unsaved."
+  },
+  "refreshBocciaScoreDiscardChangesBody": "Refreshing latest data will discard unsaved changes.",
+  "@refreshBocciaScoreDiscardChangesBody": {
+    "description": "Dialog body for refreshing while boccia changes are unsaved."
+  },
+  "confirmRefreshBocciaScoreButton": "Refresh",
+  "@confirmRefreshBocciaScoreButton": {
+    "description": "Button label for confirming a boccia score refresh."
+  },
+  "selectSportBeforeScoreInputMessage": "Select a sport first.",
+  "@selectSportBeforeScoreInputMessage": {
+    "description": "Message shown when score input is opened before selecting a sport."
+  },
+  "unsupportedBocciaMatchMessage": "Boccia score input supports two-team matches only.",
+  "@unsupportedBocciaMatchMessage": {
+    "description": "Message shown for an unsupported boccia match shape."
+  },
+  "inputBocciaScoreButton": "Enter score",
+  "@inputBocciaScoreButton": {
+    "description": "Button label for entering a boccia score."
+  },
+  "editBocciaScoreButton": "Edit score",
+  "@editBocciaScoreButton": {
+    "description": "Button label for editing a boccia score."
+  },
+  "bocciaScoreSummary": "{redTeamName} {redScore} - {blueScore} {blueTeamName}",
+  "@bocciaScoreSummary": {
+    "description": "Summary of a boccia match score.",
+    "placeholders": {
+      "redTeamName": {
+        "type": "String",
+        "example": "Red"
+      },
+      "redScore": {
+        "type": "int",
+        "example": "3"
+      },
+      "blueScore": {
+        "type": "int",
+        "example": "2"
+      },
+      "blueTeamName": {
+        "type": "String",
+        "example": "Blue"
+      }
+    }
+  },
+  "bocciaScoreDialogTitle": "Boccia score input",
+  "@bocciaScoreDialogTitle": {
+    "description": "Title for the boccia score dialog."
+  },
+  "bocciaScoreDialogMatchTitle": "{redTeamName} vs {blueTeamName}",
+  "@bocciaScoreDialogMatchTitle": {
+    "description": "Match title shown in the boccia score dialog.",
+    "placeholders": {
+      "redTeamName": {
+        "type": "String",
+        "example": "Red"
+      },
+      "blueTeamName": {
+        "type": "String",
+        "example": "Blue"
+      }
+    }
+  },
+  "bocciaThrowLogTitle": "End {endNo} throw log",
+  "@bocciaThrowLogTitle": {
+    "description": "Title for a boccia end throw log.",
+    "placeholders": {
+      "endNo": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "bocciaThrowLogHelp": "Tap + for a participant assigned to a throwing box to add a throw log for this end.",
+  "@bocciaThrowLogHelp": {
+    "description": "Help text for adding boccia throw logs."
+  },
+  "bocciaThrowCountSummary": "Throws: Red {redCount} / Blue {blueCount}",
+  "@bocciaThrowCountSummary": {
+    "description": "Summary of red and blue boccia throw counts.",
+    "placeholders": {
+      "redCount": {
+        "type": "int",
+        "example": "3"
+      },
+      "blueCount": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "bocciaThrowCountProgress": "{count} / {maxCount} throws",
+  "@bocciaThrowCountProgress": {
+    "description": "Progress toward the maximum boccia throw count.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      },
+      "maxCount": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "bocciaFirstTeamLabel": "First",
+  "@bocciaFirstTeamLabel": {
+    "description": "Label for the first boccia team."
+  },
+  "bocciaSecondTeamLabel": "Second",
+  "@bocciaSecondTeamLabel": {
+    "description": "Label for the second boccia team."
+  },
+  "bocciaRedSideLabel": "Red",
+  "@bocciaRedSideLabel": {
+    "description": "Label for the red boccia side."
+  },
+  "bocciaBlueSideLabel": "Blue",
+  "@bocciaBlueSideLabel": {
+    "description": "Label for the blue boccia side."
+  },
+  "swapBocciaOrderButton": "Swap order",
+  "@swapBocciaOrderButton": {
+    "description": "Button label for swapping boccia team order."
+  },
+  "swapBocciaOrderTooltip": "Swap teams and their scores",
+  "@swapBocciaOrderTooltip": {
+    "description": "Tooltip for swapping boccia team order and scores."
+  },
+  "bocciaEndLabel": "E{endNo}",
+  "@bocciaEndLabel": {
+    "description": "Short label for a boccia end.",
+    "placeholders": {
+      "endNo": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "bocciaThrowingBoxSettingsButton": "Set throwing boxes",
+  "@bocciaThrowingBoxSettingsButton": {
+    "description": "Button label for editing boccia throwing boxes."
+  },
+  "bocciaReturnToThrowLogButton": "Back to throw log",
+  "@bocciaReturnToThrowLogButton": {
+    "description": "Button label for returning to the boccia throw log."
+  },
+  "bocciaThrowingBoxLockedMessage": "Throwing boxes cannot be changed after throw logs are entered.",
+  "@bocciaThrowingBoxLockedMessage": {
+    "description": "Message shown when boccia throwing boxes can no longer be edited."
+  },
+  "bocciaUnusedThrowingBoxLabel": "Unused",
+  "@bocciaUnusedThrowingBoxLabel": {
+    "description": "Label for an unused boccia throwing box."
+  },
+  "bocciaDefaultParticipantName": "Participant {playerSlot}",
+  "@bocciaDefaultParticipantName": {
+    "description": "Fallback participant name in the boccia score dialog.",
+    "placeholders": {
+      "playerSlot": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "bocciaThrowCountForBox": "Throws: {count}",
+  "@bocciaThrowCountForBox": {
+    "description": "Throw count shown for one boccia throwing box.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "bocciaAddThrowLogTooltip": "Add throw log",
+  "@bocciaAddThrowLogTooltip": {
+    "description": "Tooltip for adding a boccia throw log."
+  },
+  "bocciaThrowOrderTitle": "Throw order",
+  "@bocciaThrowOrderTitle": {
+    "description": "Title for the boccia throw order section."
+  },
+  "bocciaNoThrowLogsMessage": "No throw logs yet.",
+  "@bocciaNoThrowLogsMessage": {
+    "description": "Message shown when there are no boccia throw logs."
+  },
+  "clearBocciaEndThrowLogsButton": "Clear this end",
+  "@clearBocciaEndThrowLogsButton": {
+    "description": "Button label for clearing throw logs for one boccia end."
+  },
+  "bocciaThrowOrderItem": "{throwNo}. {playerName} ({sideLabel} / Box {boxNo})",
+  "@bocciaThrowOrderItem": {
+    "description": "One item in the boccia throw order.",
+    "placeholders": {
+      "throwNo": {
+        "type": "int",
+        "example": "1"
+      },
+      "playerName": {
+        "type": "String",
+        "example": "Participant 1"
+      },
+      "sideLabel": {
+        "type": "String",
+        "example": "Red"
+      },
+      "boxNo": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "removeLastBocciaThrowLogTooltip": "Undo last throw",
+  "@removeLastBocciaThrowLogTooltip": {
+    "description": "Tooltip for removing the last boccia throw log."
+  },
+  "bocciaTotalLabel": "Total",
+  "@bocciaTotalLabel": {
+    "description": "Label for total boccia score."
+  },
+  "bocciaScoreSavedMessage": "Saved.",
+  "@bocciaScoreSavedMessage": {
+    "description": "Message shown after a boccia score is saved."
+  },
+  "bocciaScoreUnsavedChangesMessage": "There are unsaved changes.",
+  "@bocciaScoreUnsavedChangesMessage": {
+    "description": "Status shown when the boccia score has unsaved changes."
+  },
+  "bocciaScoreDiscardChangesTitle": "Unsaved changes",
+  "@bocciaScoreDiscardChangesTitle": {
+    "description": "Dialog title for unsaved boccia score changes."
+  },
+  "bocciaScoreDiscardChangesBody": "There are unsaved score changes. Do you want to close?",
+  "@bocciaScoreDiscardChangesBody": {
+    "description": "Dialog body for unsaved boccia score changes."
+  },
+  "clearBocciaEndThrowLogsDialogTitle": "Clear throw logs for this end?",
+  "@clearBocciaEndThrowLogsDialogTitle": {
+    "description": "Dialog title for clearing boccia throw logs for one end."
+  },
+  "clearBocciaEndThrowLogsDialogBody": "This will delete the throw order and throw counts for the selected end. This action cannot be undone.",
+  "@clearBocciaEndThrowLogsDialogBody": {
+    "description": "Dialog body for clearing boccia throw logs for one end."
+  },
+  "confirmClearBocciaEndThrowLogsButton": "Clear",
+  "@confirmClearBocciaEndThrowLogsButton": {
+    "description": "Button label for confirming boccia throw log clearing."
+  },
+  "returnToBocciaScoreInputButton": "Back to input",
+  "@returnToBocciaScoreInputButton": {
+    "description": "Button label for returning to boccia score input."
+  },
+  "discardBocciaScoreChangesButton": "Close without saving",
+  "@discardBocciaScoreChangesButton": {
+    "description": "Button label for discarding boccia score changes."
+  },
+  "saveAndCloseBocciaScoreButton": "Save and close",
+  "@saveAndCloseBocciaScoreButton": {
+    "description": "Button label for saving and closing the boccia score dialog."
   }
 }

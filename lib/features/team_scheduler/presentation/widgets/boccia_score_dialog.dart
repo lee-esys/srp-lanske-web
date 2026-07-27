@@ -171,7 +171,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
                 onPressed: () {
                   Navigator.of(context).pop(false);
                 },
-                child: Text(l10n.cancelRefreshBocciaScoreButton),
+                child: Text(l10n.cancelButton),
               ),
               FilledButton(
                 onPressed: () {
@@ -389,7 +389,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
-              child: Text(l10n.cancelClearBocciaEndThrowLogsButton),
+              child: Text(l10n.cancelButton),
             ),
             FilledButton(
               onPressed: () {
@@ -817,10 +817,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
             ],
             const SizedBox(width: 12),
             Text(
-              l10n.bocciaThrowCountProgress(
-                count: selectedEndThrowCount,
-                maxCount: 12,
-              ),
+              l10n.bocciaThrowCountProgress(selectedEndThrowCount, 12),
               style: theme.textTheme.bodySmall,
             ),
           ],
@@ -837,10 +834,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
               ),
             ),
             Text(
-              l10n.bocciaThrowCountSummary(
-                redCount: redThrowCount,
-                blueCount: blueThrowCount,
-              ),
+              l10n.bocciaThrowCountSummary(redThrowCount, blueThrowCount),
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: _bocciaAccentTextColor,
@@ -1117,11 +1111,10 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
           Expanded(
             child: Text(
               l10n.bocciaThrowOrderItem(
-                throwNo: log.throwNo,
-                playerName: _playerNameForThrowLog(log, l10n),
-                sideLabel: _throwingSideLabel(log.side, l10n),
-                boxNo: log.boxNo,
-              ),
+                  log.throwNo,
+                  _playerNameForThrowLog(log, l10n),
+                  _throwingSideLabel(log.side, l10n),
+                  log.boxNo),
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.bodySmall,
             ),
@@ -1282,7 +1275,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
                     ? null
                     : _refreshLatestScore,
                 icon: const Icon(Icons.refresh, size: 18),
-                label: Text(l10n.refreshLatestTeamScheduleButton),
+                label: Text(l10n.refreshLatestButton),
               ),
               const SizedBox(width: 4),
               TextButton(
@@ -1295,7 +1288,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 onPressed: _isBusy ? null : _close,
-                child: Text(l10n.closeBocciaScoreDialogButton),
+                child: Text(l10n.closeButton),
               ),
               const SizedBox(width: 4),
               FilledButton(
@@ -1308,7 +1301,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 onPressed: _isBusy ? null : _save,
-                child: Text(l10n.saveBocciaScoreButton),
+                child: Text(l10n.saveButton),
               ),
             ],
           ),

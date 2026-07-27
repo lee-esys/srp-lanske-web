@@ -667,6 +667,975 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'対戦表表示履歴を削除しました'**
   String get scheduleHistoryClearedMessage;
+
+  /// Generic save button label.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存'**
+  String get saveButton;
+
+  /// Team scheduler menu title.
+  ///
+  /// In ja, this message translates to:
+  /// **'らんすけ：チーム'**
+  String get teamSetupMenuTitle;
+
+  /// Team scheduler menu subtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム用対戦表を作成'**
+  String get teamSetupMenuSubtitle;
+
+  /// Title shown on the team setup page.
+  ///
+  /// In ja, this message translates to:
+  /// **'らんすけ：チーム'**
+  String get teamSetupTitle;
+
+  /// Instruction text shown on the team setup page.
+  ///
+  /// In ja, this message translates to:
+  /// **'同時進行試合数・参加人数・1チームの目安人数を決めて、チーム用対戦表を作成します。'**
+  String get teamSetupInstruction;
+
+  /// Short note about supported team scheduler conditions.
+  ///
+  /// In ja, this message translates to:
+  /// **'初期alphaでは、backend APIで5ラウンド分のチーム対戦表を作成します。'**
+  String get teamSetupSupportedConditions;
+
+  /// Note about team setup input limits.
+  ///
+  /// In ja, this message translates to:
+  /// **'入力上限: 同時進行試合数5 / 参加人数50 / 1チームの目安人数25 / 1試合で対戦するチーム数25。条件により同時進行数は安全範囲に丸めます。'**
+  String get teamSetupInputUpperLimitNote;
+
+  /// Label for simultaneous match count input.
+  ///
+  /// In ja, this message translates to:
+  /// **'同時進行試合数'**
+  String get concurrentMatchCountLabel;
+
+  /// Label for participant count input.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加人数'**
+  String get participantCountLabel;
+
+  /// Label for preferred team size input.
+  ///
+  /// In ja, this message translates to:
+  /// **'チームの人数'**
+  String get preferredTeamSizeLabel;
+
+  /// Label for teams per match input.
+  ///
+  /// In ja, this message translates to:
+  /// **'1試合の対戦チーム数'**
+  String get teamsPerMatchLabel;
+
+  /// Tooltip for decreasing simultaneous match count.
+  ///
+  /// In ja, this message translates to:
+  /// **'同時進行試合数を減らす'**
+  String get decrementConcurrentMatchCountTooltip;
+
+  /// Tooltip for increasing simultaneous match count.
+  ///
+  /// In ja, this message translates to:
+  /// **'同時進行試合数を増やす'**
+  String get incrementConcurrentMatchCountTooltip;
+
+  /// Tooltip for decreasing participant count.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加人数を減らす'**
+  String get decrementParticipantCountTooltip;
+
+  /// Tooltip for increasing participant count.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加人数を増やす'**
+  String get incrementParticipantCountTooltip;
+
+  /// Tooltip for decreasing preferred team size.
+  ///
+  /// In ja, this message translates to:
+  /// **'1チームの目安人数を減らす'**
+  String get decrementPreferredTeamSizeTooltip;
+
+  /// Tooltip for increasing preferred team size.
+  ///
+  /// In ja, this message translates to:
+  /// **'1チームの目安人数を増やす'**
+  String get incrementPreferredTeamSizeTooltip;
+
+  /// Tooltip for decreasing teams per match.
+  ///
+  /// In ja, this message translates to:
+  /// **'1試合で対戦するチーム数を減らす'**
+  String get decrementTeamsPerMatchTooltip;
+
+  /// Tooltip for increasing teams per match.
+  ///
+  /// In ja, this message translates to:
+  /// **'1試合で対戦するチーム数を増やす'**
+  String get incrementTeamsPerMatchTooltip;
+
+  /// Help text showing the valid team setup input range.
+  ///
+  /// In ja, this message translates to:
+  /// **'{minValue}〜{maxValue} の範囲で選択できます。'**
+  String teamSetupRangeHelp(int minValue, int maxValue);
+
+  /// Summary showing the calculated team count.
+  ///
+  /// In ja, this message translates to:
+  /// **'{teamCount}チーム'**
+  String teamCountSummary(int teamCount);
+
+  /// Help text for the calculated team count.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加人数と1チームの目安人数から自動計算します。'**
+  String get teamCountSummaryHelp;
+
+  /// Summary showing the team member distribution.
+  ///
+  /// In ja, this message translates to:
+  /// **'内訳: {summary}'**
+  String teamDistributionSummary(String summary);
+
+  /// One item in the calculated team member distribution.
+  ///
+  /// In ja, this message translates to:
+  /// **'{memberCount}人×{teamCount}チーム'**
+  String teamDistributionItem(int memberCount, int teamCount);
+
+  /// Help text for uneven team member distribution.
+  ///
+  /// In ja, this message translates to:
+  /// **'余りがある場合は、一部チームの人数が1人少なくなります。'**
+  String get teamDistributionSummaryHelp;
+
+  /// Title for the participant name input card.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加者名の取り込み'**
+  String get teamParticipantInputTitle;
+
+  /// Short button and dialog heading for participant name input.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加者入力'**
+  String get teamParticipantInputButton;
+
+  /// Description for participant name input.
+  ///
+  /// In ja, this message translates to:
+  /// **'改行区切りで参加者名を貼り付けて反映できます。カンマ・読点・タブ区切りも簡易対応します。'**
+  String get teamParticipantInputDescription;
+
+  /// Input label for participant names.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加者名'**
+  String get teamParticipantInputLabel;
+
+  /// Example participant names shown in the input field.
+  ///
+  /// In ja, this message translates to:
+  /// **'例:\n田中\n佐藤\n鈴木'**
+  String get teamParticipantInputHint;
+
+  /// Button label for applying participant names.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加者名を反映'**
+  String get applyParticipantNamesButton;
+
+  /// Status showing entered name count and participant count.
+  ///
+  /// In ja, this message translates to:
+  /// **'入力済み: {nameCount}人 / 参加人数: {participantCount}人'**
+  String participantNameCountStatus(int nameCount, int participantCount);
+
+  /// Message shown after participant names are applied.
+  ///
+  /// In ja, this message translates to:
+  /// **'{nameCount}人の参加者名を反映しました'**
+  String participantNamesAppliedMessage(int nameCount);
+
+  /// Message shown when extra participant names are omitted.
+  ///
+  /// In ja, this message translates to:
+  /// **'{maxCount}人まで取り込みました。超過分は省略しました。'**
+  String participantNamesTrimmedMessage(int maxCount);
+
+  /// Validation message for too few participant names.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加者名は2人以上入力してください。'**
+  String get participantNamesTooFewMessage;
+
+  /// Validation message for empty participant names.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加者名を入力してください。'**
+  String get participantNamesEmptyMessage;
+
+  /// Button label for resetting team setup inputs.
+  ///
+  /// In ja, this message translates to:
+  /// **'入力項目のリセット'**
+  String get resetTeamSetupButton;
+
+  /// Button label for creating a team match table.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム対戦表を作成'**
+  String get generateTeamScheduleButton;
+
+  /// Title for the team alpha notice.
+  ///
+  /// In ja, this message translates to:
+  /// **'alpha確認中'**
+  String get teamSetupAlphaNoticeTitle;
+
+  /// Body for the team alpha notice.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成後、backend API の生成結果を保存し、共有URLから再表示できます。チーム変更・スコア入力はまだ未実装です。'**
+  String get teamSetupAlphaNoticeBody;
+
+  /// Message shown after team setup conditions are created.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム用セットアップ条件を作成しました'**
+  String get teamSetupCreatedMessage;
+
+  /// Title shown on the team match table page.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム対戦表'**
+  String get teamScheduleTitle;
+
+  /// Title shown on the team match table list.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム対戦表一覧'**
+  String get teamScheduleListTitle;
+
+  /// Title shown when the team schedule list is empty.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム対戦表はまだありません'**
+  String get teamScheduleListEmptyTitle;
+
+  /// Message shown when the team schedule list is empty.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム対戦表を作成または共有URLから開くと、この端末の一覧に表示されます。'**
+  String get teamScheduleListEmptyMessage;
+
+  /// Title shown when the team schedule list cannot be loaded.
+  ///
+  /// In ja, this message translates to:
+  /// **'一覧を読み込めませんでした'**
+  String get teamScheduleListLoadErrorTitle;
+
+  /// Message shown when the team schedule list cannot be loaded.
+  ///
+  /// In ja, this message translates to:
+  /// **'端末内の保存履歴を確認できませんでした。もう一度お試しください。'**
+  String get teamScheduleListLoadErrorMessage;
+
+  /// Fallback title for a team schedule without an event title.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイトル未設定のチーム対戦表'**
+  String get teamScheduleUntitledEvent;
+
+  /// Label showing a team schedule share ID.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有ID: {shareId}'**
+  String teamScheduleListShareId(String shareId);
+
+  /// Label showing team count in the schedule list.
+  ///
+  /// In ja, this message translates to:
+  /// **'{teamCount}チーム'**
+  String teamScheduleListTeamCount(int teamCount);
+
+  /// Label showing member count in the schedule list.
+  ///
+  /// In ja, this message translates to:
+  /// **'{memberCount}人'**
+  String teamScheduleListMemberCount(int memberCount);
+
+  /// Label showing when a team schedule was updated.
+  ///
+  /// In ja, this message translates to:
+  /// **'更新: {updatedAt}'**
+  String teamScheduleListUpdatedAt(String updatedAt);
+
+  /// Tooltip for opening the team navigation menu.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム用メニューを開く'**
+  String get teamNavigationMenuTooltip;
+
+  /// Title in the team navigation drawer.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム乱数表'**
+  String get teamNavigationTitle;
+
+  /// Subtitle in the team navigation drawer.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム用メニュー'**
+  String get teamNavigationSubtitle;
+
+  /// Navigation label for the team setup page.
+  ///
+  /// In ja, this message translates to:
+  /// **'チームTOP'**
+  String get teamNavigationHome;
+
+  /// Navigation label for the team schedule list.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表一覧'**
+  String get teamNavigationScheduleList;
+
+  /// Navigation label for support.
+  ///
+  /// In ja, this message translates to:
+  /// **'サポート'**
+  String get teamNavigationSupport;
+
+  /// Section label for other services.
+  ///
+  /// In ja, this message translates to:
+  /// **'サービス一覧'**
+  String get teamNavigationServiceList;
+
+  /// Navigation label for the doubles scheduler.
+  ///
+  /// In ja, this message translates to:
+  /// **'ダブルス乱数表'**
+  String get teamNavigationDoublesScheduler;
+
+  /// Default event title for a generated team schedule.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム練習会'**
+  String get defaultTeamScheduleEventTitle;
+
+  /// Dialog title for editing team schedule details.
+  ///
+  /// In ja, this message translates to:
+  /// **'まとめて編集'**
+  String get teamScheduleBulkEditTitle;
+
+  /// Button label for editing team schedule details.
+  ///
+  /// In ja, this message translates to:
+  /// **'まとめて編集'**
+  String get teamScheduleBulkEditButton;
+
+  /// Input label for the team schedule event title.
+  ///
+  /// In ja, this message translates to:
+  /// **'イベントタイトル'**
+  String get teamScheduleEventTitleLabel;
+
+  /// Input label for the team schedule memo.
+  ///
+  /// In ja, this message translates to:
+  /// **'メモ'**
+  String get teamScheduleMemoLabel;
+
+  /// Tooltip indicating that a team schedule has a memo.
+  ///
+  /// In ja, this message translates to:
+  /// **'メモあり'**
+  String get teamScheduleHasMemoTooltip;
+
+  /// Section title for team names in the bulk edit dialog.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム名'**
+  String get teamScheduleBulkEditTeamsSection;
+
+  /// Section title for member names in the bulk edit dialog.
+  ///
+  /// In ja, this message translates to:
+  /// **'メンバー名'**
+  String get teamScheduleBulkEditMembersSection;
+
+  /// Input label for a team display name.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム{teamSlot}'**
+  String teamScheduleTeamNameLabel(int teamSlot);
+
+  /// Default team member display name.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加者{memberNo}'**
+  String defaultTeamMemberName(int memberNo);
+
+  /// Default team display name.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム{teamNo}'**
+  String defaultTeamName(int teamNo);
+
+  /// Summary of a team schedule.
+  ///
+  /// In ja, this message translates to:
+  /// **'{teamCount}チーム / {memberCount}人 / {concurrentMatchCount}同時進行'**
+  String teamScheduleSummary(
+      int teamCount, int memberCount, int concurrentMatchCount);
+
+  /// Notice about saved backend team schedule data.
+  ///
+  /// In ja, this message translates to:
+  /// **'backend API の生成結果を保存して表示しています。表示名はこの画面内で編集できます。'**
+  String get teamScheduleBackendDataNotice;
+
+  /// Loading message while creating a team schedule.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム対戦表を作成・保存中です…'**
+  String get creatingTeamScheduleMessage;
+
+  /// Loading message while restoring a team schedule.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存済みのチーム対戦表を読み込み中です…'**
+  String get restoringTeamScheduleMessage;
+
+  /// Message shown while saving team schedule display data.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示名を保存中です…'**
+  String get savingTeamScheduleDisplayMessage;
+
+  /// Title shown when team schedule generation fails.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム対戦表の作成に失敗しました'**
+  String get teamScheduleGenerateFailedTitle;
+
+  /// Body shown when team schedule generation fails without details.
+  ///
+  /// In ja, this message translates to:
+  /// **'backend API または Firestore 保存の応答を確認してください。'**
+  String get teamScheduleGenerateFailedBody;
+
+  /// Body shown when team schedule generation fails with details.
+  ///
+  /// In ja, this message translates to:
+  /// **'backend API または Firestore 保存の応答を確認してください。\n\n{detail}'**
+  String teamScheduleGenerateFailedBodyWithDetail(String detail);
+
+  /// Title shown when team schedule restoration fails.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム対戦表の読み込みに失敗しました'**
+  String get teamScheduleRestoreFailedTitle;
+
+  /// Body shown when team schedule restoration fails without details.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有IDまたは保存済みデータを確認してください。'**
+  String get teamScheduleRestoreFailedBody;
+
+  /// Body shown when team schedule restoration fails with details.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有IDまたは保存済みデータを確認してください。\n\n{detail}'**
+  String teamScheduleRestoreFailedBodyWithDetail(String detail);
+
+  /// Message shown when team schedule display data cannot be saved.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示名の保存に失敗しました: {detail}'**
+  String teamScheduleDisplaySaveFailedMessage(String detail);
+
+  /// Button label for retrying team schedule generation.
+  ///
+  /// In ja, this message translates to:
+  /// **'もう一度作成'**
+  String get retryTeamScheduleGenerateButton;
+
+  /// Button label for retrying team schedule restoration.
+  ///
+  /// In ja, this message translates to:
+  /// **'もう一度読み込む'**
+  String get retryTeamScheduleRestoreButton;
+
+  /// Title for the team schedule share section.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有URL'**
+  String get teamScheduleShareTitle;
+
+  /// Description for sharing a team schedule URL.
+  ///
+  /// In ja, this message translates to:
+  /// **'このURLを共有すると、保存済みのチーム対戦表を開き直せます。'**
+  String get teamScheduleShareDescription;
+
+  /// Label showing a team schedule share ID.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有ID: {shareId}'**
+  String teamScheduleShareIdLabel(String shareId);
+
+  /// Button label for copying the team schedule share URL.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有URLをコピー'**
+  String get copyTeamScheduleShareUrlButton;
+
+  /// Message shown after copying the team schedule share URL.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有URLをコピーしました'**
+  String get teamScheduleShareUrlCopiedMessage;
+
+  /// Title for the next team match section.
+  ///
+  /// In ja, this message translates to:
+  /// **'次の対戦'**
+  String get nextTeamMatchTitle;
+
+  /// Title for a team schedule round.
+  ///
+  /// In ja, this message translates to:
+  /// **'第{roundNo}ラウンド'**
+  String teamRoundTitle(int roundNo);
+
+  /// Title for a team schedule court.
+  ///
+  /// In ja, this message translates to:
+  /// **'コート{courtNo}'**
+  String teamCourtTitle(int courtNo);
+
+  /// Title combining a court number and match title.
+  ///
+  /// In ja, this message translates to:
+  /// **'コート{courtNo}: {matchTitle}'**
+  String teamCourtMatchTitle(int courtNo, String matchTitle);
+
+  /// Title for the team list.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム一覧'**
+  String get teamListTitle;
+
+  /// Label for selecting a team.
+  ///
+  /// In ja, this message translates to:
+  /// **'{teamName} ({memberCount}人)'**
+  String teamChoiceLabel(String teamName, int memberCount);
+
+  /// Title for members of the selected team.
+  ///
+  /// In ja, this message translates to:
+  /// **'{teamName} のメンバー'**
+  String selectedTeamMembersTitle(String teamName);
+
+  /// Separator between two team names.
+  ///
+  /// In ja, this message translates to:
+  /// **' vs '**
+  String get teamMatchVsSeparator;
+
+  /// Separator between multiple team names.
+  ///
+  /// In ja, this message translates to:
+  /// **' / '**
+  String get teamMatchGroupSeparator;
+
+  /// Standalone versus label shown between team scores.
+  ///
+  /// In ja, this message translates to:
+  /// **'vs'**
+  String get teamMatchVsLabel;
+
+  /// Tooltip for editing the event title.
+  ///
+  /// In ja, this message translates to:
+  /// **'イベントタイトルを編集'**
+  String get editTeamScheduleEventTitleTooltip;
+
+  /// Tooltip for editing a team name.
+  ///
+  /// In ja, this message translates to:
+  /// **'チーム名を編集'**
+  String get editTeamNameTooltip;
+
+  /// Tooltip for editing a team member display name.
+  ///
+  /// In ja, this message translates to:
+  /// **'メンバー表示名を編集'**
+  String get editTeamMemberNameTooltip;
+
+  /// Dialog title for editing the event title.
+  ///
+  /// In ja, this message translates to:
+  /// **'イベントタイトルを編集'**
+  String get editTeamScheduleEventTitleDialogTitle;
+
+  /// Dialog title for editing a team name.
+  ///
+  /// In ja, this message translates to:
+  /// **'{teamName} を編集'**
+  String editTeamNameDialogTitle(String teamName);
+
+  /// Dialog title for editing a team member name.
+  ///
+  /// In ja, this message translates to:
+  /// **'{memberName} を編集'**
+  String editTeamMemberNameDialogTitle(String memberName);
+
+  /// Input label for a display name.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示名'**
+  String get displayNameInputLabel;
+
+  /// Title for the team schedule sport and score section.
+  ///
+  /// In ja, this message translates to:
+  /// **'スコア入力'**
+  String get teamScheduleSportSectionTitle;
+
+  /// Label for no selected sport.
+  ///
+  /// In ja, this message translates to:
+  /// **'未選択'**
+  String get teamScheduleSportNoneLabel;
+
+  /// Label for boccia.
+  ///
+  /// In ja, this message translates to:
+  /// **'ボッチャ'**
+  String get teamScheduleSportBocciaLabel;
+
+  /// Help text for selecting a team schedule sport.
+  ///
+  /// In ja, this message translates to:
+  /// **'競技を選択すると、対戦カードからスコアを入力できます。'**
+  String get teamScheduleSportHelp;
+
+  /// Message shown while saving team schedule scores.
+  ///
+  /// In ja, this message translates to:
+  /// **'スコアを保存中です…'**
+  String get savingTeamScheduleScoresMessage;
+
+  /// Message shown when team schedule scores cannot be saved.
+  ///
+  /// In ja, this message translates to:
+  /// **'スコアの保存に失敗しました: {detail}'**
+  String teamScheduleScoresSaveFailedMessage(String detail);
+
+  /// Notice about concurrent team schedule editing.
+  ///
+  /// In ja, this message translates to:
+  /// **'複数端末で同時に編集すると、保存内容が意図どおり反映されない場合があります。'**
+  String get teamScheduleConcurrentEditNotice;
+
+  /// Message shown while refreshing team schedule scores.
+  ///
+  /// In ja, this message translates to:
+  /// **'最新のスコア情報を取得しています...'**
+  String get refreshingTeamScheduleScoresMessage;
+
+  /// Message shown after refreshing boccia score data.
+  ///
+  /// In ja, this message translates to:
+  /// **'最新の情報に更新しました'**
+  String get bocciaScoreRefreshedMessage;
+
+  /// Message shown when boccia score refresh fails.
+  ///
+  /// In ja, this message translates to:
+  /// **'最新の情報を取得できませんでした'**
+  String get refreshBocciaScoreFailedMessage;
+
+  /// Dialog title for refreshing while boccia changes are unsaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'未保存の変更を破棄して更新しますか？'**
+  String get refreshBocciaScoreDiscardChangesTitle;
+
+  /// Dialog body for refreshing while boccia changes are unsaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'最新の情報に更新すると、保存していない入力内容は破棄されます。'**
+  String get refreshBocciaScoreDiscardChangesBody;
+
+  /// Button label for confirming a boccia score refresh.
+  ///
+  /// In ja, this message translates to:
+  /// **'更新する'**
+  String get confirmRefreshBocciaScoreButton;
+
+  /// Message shown when score input is opened before selecting a sport.
+  ///
+  /// In ja, this message translates to:
+  /// **'先に競技を選択してください。'**
+  String get selectSportBeforeScoreInputMessage;
+
+  /// Message shown for an unsupported boccia match shape.
+  ///
+  /// In ja, this message translates to:
+  /// **'ボッチャのスコア入力は2チーム対戦のみ対応しています。'**
+  String get unsupportedBocciaMatchMessage;
+
+  /// Button label for entering a boccia score.
+  ///
+  /// In ja, this message translates to:
+  /// **'スコア入力'**
+  String get inputBocciaScoreButton;
+
+  /// Button label for editing a boccia score.
+  ///
+  /// In ja, this message translates to:
+  /// **'スコア編集'**
+  String get editBocciaScoreButton;
+
+  /// Summary of a boccia match score.
+  ///
+  /// In ja, this message translates to:
+  /// **'{redTeamName} {redScore} - {blueScore} {blueTeamName}'**
+  String bocciaScoreSummary(
+      String redTeamName, int redScore, int blueScore, String blueTeamName);
+
+  /// Title for the boccia score dialog.
+  ///
+  /// In ja, this message translates to:
+  /// **'ボッチャ スコア入力'**
+  String get bocciaScoreDialogTitle;
+
+  /// Match title shown in the boccia score dialog.
+  ///
+  /// In ja, this message translates to:
+  /// **'{redTeamName} vs {blueTeamName}'**
+  String bocciaScoreDialogMatchTitle(String redTeamName, String blueTeamName);
+
+  /// Title for a boccia end throw log.
+  ///
+  /// In ja, this message translates to:
+  /// **'{endNo}E 投球ログ'**
+  String bocciaThrowLogTitle(int endNo);
+
+  /// Help text for adding boccia throw logs.
+  ///
+  /// In ja, this message translates to:
+  /// **'投球場所に設定された参加者の＋を押すと、このエンドの投球ログに追加します。'**
+  String get bocciaThrowLogHelp;
+
+  /// Summary of red and blue boccia throw counts.
+  ///
+  /// In ja, this message translates to:
+  /// **'投球数：赤：{redCount}　青：{blueCount}'**
+  String bocciaThrowCountSummary(int redCount, int blueCount);
+
+  /// Progress toward the maximum boccia throw count.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count} / {maxCount}投'**
+  String bocciaThrowCountProgress(int count, int maxCount);
+
+  /// Label for the first boccia team.
+  ///
+  /// In ja, this message translates to:
+  /// **'先攻'**
+  String get bocciaFirstTeamLabel;
+
+  /// Label for the second boccia team.
+  ///
+  /// In ja, this message translates to:
+  /// **'後攻'**
+  String get bocciaSecondTeamLabel;
+
+  /// Label for the red boccia side.
+  ///
+  /// In ja, this message translates to:
+  /// **'赤'**
+  String get bocciaRedSideLabel;
+
+  /// Label for the blue boccia side.
+  ///
+  /// In ja, this message translates to:
+  /// **'青'**
+  String get bocciaBlueSideLabel;
+
+  /// Button label for swapping boccia team order.
+  ///
+  /// In ja, this message translates to:
+  /// **'先攻 🔁 後攻'**
+  String get swapBocciaOrderButton;
+
+  /// Tooltip for swapping boccia team order and scores.
+  ///
+  /// In ja, this message translates to:
+  /// **'先攻と後攻をスコアごと入れ替える'**
+  String get swapBocciaOrderTooltip;
+
+  /// Short label for a boccia end.
+  ///
+  /// In ja, this message translates to:
+  /// **'{endNo} E'**
+  String bocciaEndLabel(int endNo);
+
+  /// Button label for editing boccia throwing boxes.
+  ///
+  /// In ja, this message translates to:
+  /// **'投球場所を設定する'**
+  String get bocciaThrowingBoxSettingsButton;
+
+  /// Button label for returning to the boccia throw log.
+  ///
+  /// In ja, this message translates to:
+  /// **'投球ログに戻る'**
+  String get bocciaReturnToThrowLogButton;
+
+  /// Message shown when boccia throwing boxes can no longer be edited.
+  ///
+  /// In ja, this message translates to:
+  /// **'投球ログ入力後は投球場所を変更できません'**
+  String get bocciaThrowingBoxLockedMessage;
+
+  /// Label for an unused boccia throwing box.
+  ///
+  /// In ja, this message translates to:
+  /// **'未使用'**
+  String get bocciaUnusedThrowingBoxLabel;
+
+  /// Fallback participant name in the boccia score dialog.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加者{playerSlot}'**
+  String bocciaDefaultParticipantName(int playerSlot);
+
+  /// Throw count shown for one boccia throwing box.
+  ///
+  /// In ja, this message translates to:
+  /// **'投球数：{count}'**
+  String bocciaThrowCountForBox(int count);
+
+  /// Tooltip for adding a boccia throw log.
+  ///
+  /// In ja, this message translates to:
+  /// **'投球ログを追加'**
+  String get bocciaAddThrowLogTooltip;
+
+  /// Title for the boccia throw order section.
+  ///
+  /// In ja, this message translates to:
+  /// **'投球順'**
+  String get bocciaThrowOrderTitle;
+
+  /// Message shown when there are no boccia throw logs.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ投球ログはありません。'**
+  String get bocciaNoThrowLogsMessage;
+
+  /// Button label for clearing throw logs for one boccia end.
+  ///
+  /// In ja, this message translates to:
+  /// **'このエンドの履歴をクリア'**
+  String get clearBocciaEndThrowLogsButton;
+
+  /// One item in the boccia throw order.
+  ///
+  /// In ja, this message translates to:
+  /// **'{throwNo}. {playerName}（{sideLabel} / Box {boxNo}）'**
+  String bocciaThrowOrderItem(
+      int throwNo, String playerName, String sideLabel, int boxNo);
+
+  /// Tooltip for removing the last boccia throw log.
+  ///
+  /// In ja, this message translates to:
+  /// **'最後の投球を取り消す'**
+  String get removeLastBocciaThrowLogTooltip;
+
+  /// Label for total boccia score.
+  ///
+  /// In ja, this message translates to:
+  /// **'合計'**
+  String get bocciaTotalLabel;
+
+  /// Message shown after a boccia score is saved.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存しました'**
+  String get bocciaScoreSavedMessage;
+
+  /// Status shown when the boccia score has unsaved changes.
+  ///
+  /// In ja, this message translates to:
+  /// **'未保存の変更があります'**
+  String get bocciaScoreUnsavedChangesMessage;
+
+  /// Dialog title for unsaved boccia score changes.
+  ///
+  /// In ja, this message translates to:
+  /// **'未保存の変更があります'**
+  String get bocciaScoreDiscardChangesTitle;
+
+  /// Dialog body for unsaved boccia score changes.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存していないスコア変更があります。閉じますか？'**
+  String get bocciaScoreDiscardChangesBody;
+
+  /// Dialog title for clearing boccia throw logs for one end.
+  ///
+  /// In ja, this message translates to:
+  /// **'このエンドの投球履歴をクリアしますか？'**
+  String get clearBocciaEndThrowLogsDialogTitle;
+
+  /// Dialog body for clearing boccia throw logs for one end.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択中エンドの投球順と投球数を削除します。この操作は元に戻せません。'**
+  String get clearBocciaEndThrowLogsDialogBody;
+
+  /// Button label for confirming boccia throw log clearing.
+  ///
+  /// In ja, this message translates to:
+  /// **'クリア'**
+  String get confirmClearBocciaEndThrowLogsButton;
+
+  /// Button label for returning to boccia score input.
+  ///
+  /// In ja, this message translates to:
+  /// **'入力に戻る'**
+  String get returnToBocciaScoreInputButton;
+
+  /// Button label for discarding boccia score changes.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存せず閉じる'**
+  String get discardBocciaScoreChangesButton;
+
+  /// Button label for saving and closing the boccia score dialog.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存して閉じる'**
+  String get saveAndCloseBocciaScoreButton;
 }
 
 class _AppLocalizationsDelegate
