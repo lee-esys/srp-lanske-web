@@ -329,4 +329,595 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get scheduleHistoryClearedMessage =>
       'Match table view history deleted';
+
+  @override
+  String get saveButton => 'Save';
+
+  @override
+  String get teamSetupMenuTitle => 'Lanske: Team';
+
+  @override
+  String get teamSetupMenuSubtitle => 'Create a team match table';
+
+  @override
+  String get teamSetupTitle => 'Lanske: Team';
+
+  @override
+  String get teamSetupInstruction =>
+      'Set simultaneous matches, participants, and preferred team size to create a team match table.';
+
+  @override
+  String get teamSetupSupportedConditions =>
+      'For the initial alpha, the backend API creates a 5-round team match table.';
+
+  @override
+  String get teamSetupInputUpperLimitNote =>
+      'Input limits: 5 simultaneous matches / 50 participants / preferred team size 25 / 25 teams per match. Simultaneous matches are clamped to a safe range when needed.';
+
+  @override
+  String get concurrentMatchCountLabel => 'Simultaneous matches';
+
+  @override
+  String get participantCountLabel => 'Participants';
+
+  @override
+  String get preferredTeamSizeLabel => 'Preferred team size';
+
+  @override
+  String get teamsPerMatchLabel => 'Teams per match';
+
+  @override
+  String get decrementConcurrentMatchCountTooltip =>
+      'Decrease simultaneous match count';
+
+  @override
+  String get incrementConcurrentMatchCountTooltip =>
+      'Increase simultaneous match count';
+
+  @override
+  String get decrementParticipantCountTooltip => 'Decrease participant count';
+
+  @override
+  String get incrementParticipantCountTooltip => 'Increase participant count';
+
+  @override
+  String get decrementPreferredTeamSizeTooltip =>
+      'Decrease preferred team size';
+
+  @override
+  String get incrementPreferredTeamSizeTooltip =>
+      'Increase preferred team size';
+
+  @override
+  String get decrementTeamsPerMatchTooltip => 'Decrease teams per match';
+
+  @override
+  String get incrementTeamsPerMatchTooltip => 'Increase teams per match';
+
+  @override
+  String teamSetupRangeHelp(int minValue, int maxValue) {
+    return 'Select a value from $minValue to $maxValue.';
+  }
+
+  @override
+  String teamCountSummary(int teamCount) {
+    return '$teamCount teams';
+  }
+
+  @override
+  String get teamCountSummaryHelp =>
+      'Calculated automatically from participants and preferred team size.';
+
+  @override
+  String teamDistributionSummary(String summary) {
+    return 'Distribution: $summary';
+  }
+
+  @override
+  String teamDistributionItem(int memberCount, int teamCount) {
+    return '$teamCount teams of $memberCount';
+  }
+
+  @override
+  String get teamDistributionSummaryHelp =>
+      'If there is a remainder, some teams will have one fewer member.';
+
+  @override
+  String get teamParticipantInputTitle => 'Participant names';
+
+  @override
+  String get teamParticipantInputButton => 'Participant names';
+
+  @override
+  String get teamParticipantInputDescription =>
+      'Paste participant names separated by new lines. Commas and tabs are also supported in a simple form.';
+
+  @override
+  String get teamParticipantInputLabel => 'Participant names';
+
+  @override
+  String get teamParticipantInputHint => 'Example:\nAlex\nBlair\nCasey';
+
+  @override
+  String get applyParticipantNamesButton => 'Apply participant names';
+
+  @override
+  String participantNameCountStatus(int nameCount, int participantCount) {
+    return 'Names: $nameCount / Participants: $participantCount';
+  }
+
+  @override
+  String participantNamesAppliedMessage(int nameCount) {
+    return 'Applied $nameCount participant names.';
+  }
+
+  @override
+  String participantNamesTrimmedMessage(int maxCount) {
+    return 'Applied up to $maxCount participant names. Extra names were omitted.';
+  }
+
+  @override
+  String get participantNamesTooFewMessage =>
+      'Enter at least two participant names.';
+
+  @override
+  String get participantNamesEmptyMessage => 'Enter participant names.';
+
+  @override
+  String get resetTeamSetupButton => 'Reset inputs';
+
+  @override
+  String get generateTeamScheduleButton => 'Create team match table';
+
+  @override
+  String get teamSetupAlphaNoticeTitle => 'Alpha flow';
+
+  @override
+  String get teamSetupAlphaNoticeBody =>
+      'After creation, the backend API result is saved and can be reopened from a share URL. Team changes and score input are not implemented yet.';
+
+  @override
+  String get teamSetupCreatedMessage => 'Team setup conditions were created.';
+
+  @override
+  String get teamScheduleTitle => 'Team match table';
+
+  @override
+  String get teamScheduleListTitle => 'Team match tables';
+
+  @override
+  String get teamScheduleListEmptyTitle => 'No team match tables yet';
+
+  @override
+  String get teamScheduleListEmptyMessage =>
+      'Create a team match table or open one from a share URL to show it in this device list.';
+
+  @override
+  String get teamScheduleListLoadErrorTitle => 'Failed to load the list';
+
+  @override
+  String get teamScheduleListLoadErrorMessage =>
+      'Could not read the saved history on this device. Please try again.';
+
+  @override
+  String get teamScheduleUntitledEvent => 'Untitled team match table';
+
+  @override
+  String teamScheduleListShareId(String shareId) {
+    return 'Share ID: $shareId';
+  }
+
+  @override
+  String teamScheduleListTeamCount(int teamCount) {
+    return '$teamCount teams';
+  }
+
+  @override
+  String teamScheduleListMemberCount(int memberCount) {
+    return '$memberCount members';
+  }
+
+  @override
+  String teamScheduleListUpdatedAt(String updatedAt) {
+    return 'Updated: $updatedAt';
+  }
+
+  @override
+  String get teamNavigationMenuTooltip => 'Open team menu';
+
+  @override
+  String get teamNavigationTitle => 'Team scheduler';
+
+  @override
+  String get teamNavigationSubtitle => 'Team menu';
+
+  @override
+  String get teamNavigationHome => 'Team setup';
+
+  @override
+  String get teamNavigationScheduleList => 'Match table list';
+
+  @override
+  String get teamNavigationSupport => 'Support';
+
+  @override
+  String get teamNavigationServiceList => 'Services';
+
+  @override
+  String get teamNavigationDoublesScheduler => 'Doubles scheduler';
+
+  @override
+  String get defaultTeamScheduleEventTitle => 'Team practice';
+
+  @override
+  String get teamScheduleBulkEditTitle => 'Edit details';
+
+  @override
+  String get teamScheduleBulkEditButton => 'Edit details';
+
+  @override
+  String get teamScheduleEventTitleLabel => 'Event title';
+
+  @override
+  String get teamScheduleMemoLabel => 'Memo';
+
+  @override
+  String get teamScheduleHasMemoTooltip => 'Has memo';
+
+  @override
+  String get teamScheduleBulkEditTeamsSection => 'Team names';
+
+  @override
+  String get teamScheduleBulkEditMembersSection => 'Member names';
+
+  @override
+  String teamScheduleTeamNameLabel(int teamSlot) {
+    return 'Team $teamSlot';
+  }
+
+  @override
+  String defaultTeamMemberName(int memberNo) {
+    return 'Participant $memberNo';
+  }
+
+  @override
+  String defaultTeamName(int teamNo) {
+    return 'Team $teamNo';
+  }
+
+  @override
+  String teamScheduleSummary(
+      int teamCount, int memberCount, int concurrentMatchCount) {
+    return '$teamCount teams / $memberCount members / $concurrentMatchCount simultaneous matches';
+  }
+
+  @override
+  String get teamScheduleBackendDataNotice =>
+      'Showing the saved backend API result. Display names can be edited on this screen.';
+
+  @override
+  String get creatingTeamScheduleMessage =>
+      'Creating and saving team match table...';
+
+  @override
+  String get restoringTeamScheduleMessage =>
+      'Loading saved team match table...';
+
+  @override
+  String get savingTeamScheduleDisplayMessage => 'Saving display names...';
+
+  @override
+  String get teamScheduleGenerateFailedTitle =>
+      'Failed to create team match table';
+
+  @override
+  String get teamScheduleGenerateFailedBody =>
+      'Check the backend API or Firestore save response.';
+
+  @override
+  String teamScheduleGenerateFailedBodyWithDetail(String detail) {
+    return 'Check the backend API or Firestore save response.\n\n$detail';
+  }
+
+  @override
+  String get teamScheduleRestoreFailedTitle =>
+      'Failed to load team match table';
+
+  @override
+  String get teamScheduleRestoreFailedBody =>
+      'Check the share ID or saved data.';
+
+  @override
+  String teamScheduleRestoreFailedBodyWithDetail(String detail) {
+    return 'Check the share ID or saved data.\n\n$detail';
+  }
+
+  @override
+  String teamScheduleDisplaySaveFailedMessage(String detail) {
+    return 'Failed to save display names: $detail';
+  }
+
+  @override
+  String get retryTeamScheduleGenerateButton => 'Try again';
+
+  @override
+  String get retryTeamScheduleRestoreButton => 'Reload';
+
+  @override
+  String get teamScheduleShareTitle => 'Share URL';
+
+  @override
+  String get teamScheduleShareDescription =>
+      'Share this URL to reopen the saved team match table.';
+
+  @override
+  String teamScheduleShareIdLabel(String shareId) {
+    return 'Share ID: $shareId';
+  }
+
+  @override
+  String get copyTeamScheduleShareUrlButton => 'Copy share URL';
+
+  @override
+  String get teamScheduleShareUrlCopiedMessage => 'Copied share URL.';
+
+  @override
+  String get nextTeamMatchTitle => 'Next match';
+
+  @override
+  String teamRoundTitle(int roundNo) {
+    return 'Round $roundNo';
+  }
+
+  @override
+  String teamCourtTitle(int courtNo) {
+    return 'Court $courtNo';
+  }
+
+  @override
+  String teamCourtMatchTitle(int courtNo, String matchTitle) {
+    return 'Court $courtNo: $matchTitle';
+  }
+
+  @override
+  String get teamListTitle => 'Teams';
+
+  @override
+  String teamChoiceLabel(String teamName, int memberCount) {
+    return '$teamName ($memberCount members)';
+  }
+
+  @override
+  String selectedTeamMembersTitle(String teamName) {
+    return '$teamName members';
+  }
+
+  @override
+  String get teamMatchVsSeparator => ' vs ';
+
+  @override
+  String get teamMatchGroupSeparator => ' / ';
+
+  @override
+  String get teamMatchVsLabel => 'vs';
+
+  @override
+  String get editTeamScheduleEventTitleTooltip => 'Edit event title';
+
+  @override
+  String get editTeamNameTooltip => 'Edit team name';
+
+  @override
+  String get editTeamMemberNameTooltip => 'Edit member display name';
+
+  @override
+  String get editTeamScheduleEventTitleDialogTitle => 'Edit event title';
+
+  @override
+  String editTeamNameDialogTitle(String teamName) {
+    return 'Edit $teamName';
+  }
+
+  @override
+  String editTeamMemberNameDialogTitle(String memberName) {
+    return 'Edit $memberName';
+  }
+
+  @override
+  String get displayNameInputLabel => 'Display name';
+
+  @override
+  String get teamScheduleSportSectionTitle => 'Score input';
+
+  @override
+  String get teamScheduleSportNoneLabel => 'Not selected';
+
+  @override
+  String get teamScheduleSportBocciaLabel => 'Boccia';
+
+  @override
+  String get teamScheduleSportHelp =>
+      'Select a sport to enter scores from match cards.';
+
+  @override
+  String get savingTeamScheduleScoresMessage => 'Saving scores...';
+
+  @override
+  String teamScheduleScoresSaveFailedMessage(String detail) {
+    return 'Failed to save scores: $detail';
+  }
+
+  @override
+  String get teamScheduleConcurrentEditNotice =>
+      'When editing from multiple devices at the same time, saved data may not be reflected as intended.';
+
+  @override
+  String get refreshingTeamScheduleScoresMessage =>
+      'Refreshing latest score data...';
+
+  @override
+  String get bocciaScoreRefreshedMessage => 'Refreshed latest data';
+
+  @override
+  String get refreshBocciaScoreFailedMessage => 'Failed to refresh latest data';
+
+  @override
+  String get refreshBocciaScoreDiscardChangesTitle =>
+      'Discard unsaved changes and refresh?';
+
+  @override
+  String get refreshBocciaScoreDiscardChangesBody =>
+      'Refreshing latest data will discard unsaved changes.';
+
+  @override
+  String get confirmRefreshBocciaScoreButton => 'Refresh';
+
+  @override
+  String get selectSportBeforeScoreInputMessage => 'Select a sport first.';
+
+  @override
+  String get unsupportedBocciaMatchMessage =>
+      'Boccia score input supports two-team matches only.';
+
+  @override
+  String get inputBocciaScoreButton => 'Enter score';
+
+  @override
+  String get editBocciaScoreButton => 'Edit score';
+
+  @override
+  String bocciaScoreSummary(
+      String redTeamName, int redScore, int blueScore, String blueTeamName) {
+    return '$redTeamName $redScore - $blueScore $blueTeamName';
+  }
+
+  @override
+  String get bocciaScoreDialogTitle => 'Boccia score input';
+
+  @override
+  String bocciaScoreDialogMatchTitle(String redTeamName, String blueTeamName) {
+    return '$redTeamName vs $blueTeamName';
+  }
+
+  @override
+  String bocciaThrowLogTitle(int endNo) {
+    return 'End $endNo throw log';
+  }
+
+  @override
+  String get bocciaThrowLogHelp =>
+      'Tap + for a participant assigned to a throwing box to add a throw log for this end.';
+
+  @override
+  String bocciaThrowCountSummary(int redCount, int blueCount) {
+    return 'Throws: Red $redCount / Blue $blueCount';
+  }
+
+  @override
+  String bocciaThrowCountProgress(int count, int maxCount) {
+    return '$count / $maxCount throws';
+  }
+
+  @override
+  String get bocciaFirstTeamLabel => 'First';
+
+  @override
+  String get bocciaSecondTeamLabel => 'Second';
+
+  @override
+  String get bocciaRedSideLabel => 'Red';
+
+  @override
+  String get bocciaBlueSideLabel => 'Blue';
+
+  @override
+  String get swapBocciaOrderButton => 'Swap order';
+
+  @override
+  String get swapBocciaOrderTooltip => 'Swap teams and their scores';
+
+  @override
+  String bocciaEndLabel(int endNo) {
+    return 'E$endNo';
+  }
+
+  @override
+  String get bocciaThrowingBoxSettingsButton => 'Set throwing boxes';
+
+  @override
+  String get bocciaReturnToThrowLogButton => 'Back to throw log';
+
+  @override
+  String get bocciaThrowingBoxLockedMessage =>
+      'Throwing boxes cannot be changed after throw logs are entered.';
+
+  @override
+  String get bocciaUnusedThrowingBoxLabel => 'Unused';
+
+  @override
+  String bocciaDefaultParticipantName(int playerSlot) {
+    return 'Participant $playerSlot';
+  }
+
+  @override
+  String bocciaThrowCountForBox(int count) {
+    return 'Throws: $count';
+  }
+
+  @override
+  String get bocciaAddThrowLogTooltip => 'Add throw log';
+
+  @override
+  String get bocciaThrowOrderTitle => 'Throw order';
+
+  @override
+  String get bocciaNoThrowLogsMessage => 'No throw logs yet.';
+
+  @override
+  String get clearBocciaEndThrowLogsButton => 'Clear this end';
+
+  @override
+  String bocciaThrowOrderItem(
+      int throwNo, String playerName, String sideLabel, int boxNo) {
+    return '$throwNo. $playerName ($sideLabel / Box $boxNo)';
+  }
+
+  @override
+  String get removeLastBocciaThrowLogTooltip => 'Undo last throw';
+
+  @override
+  String get bocciaTotalLabel => 'Total';
+
+  @override
+  String get bocciaScoreSavedMessage => 'Saved.';
+
+  @override
+  String get bocciaScoreUnsavedChangesMessage => 'There are unsaved changes.';
+
+  @override
+  String get bocciaScoreDiscardChangesTitle => 'Unsaved changes';
+
+  @override
+  String get bocciaScoreDiscardChangesBody =>
+      'There are unsaved score changes. Do you want to close?';
+
+  @override
+  String get clearBocciaEndThrowLogsDialogTitle =>
+      'Clear throw logs for this end?';
+
+  @override
+  String get clearBocciaEndThrowLogsDialogBody =>
+      'This will delete the throw order and throw counts for the selected end. This action cannot be undone.';
+
+  @override
+  String get confirmClearBocciaEndThrowLogsButton => 'Clear';
+
+  @override
+  String get returnToBocciaScoreInputButton => 'Back to input';
+
+  @override
+  String get discardBocciaScoreChangesButton => 'Close without saving';
+
+  @override
+  String get saveAndCloseBocciaScoreButton => 'Save and close';
 }

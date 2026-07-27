@@ -75,7 +75,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
     );
   }
 
-  String get _teamDistributionText {
+  String _teamDistributionText(AppLocalizations l10n) {
     final counts = _teamMemberCounts;
     final grouped = <int, int>{};
 
@@ -87,7 +87,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
       ..sort((a, b) => b.key.compareTo(a.key));
 
     return entries.map((entry) {
-      return '${entry.key}人×${entry.value}チーム';
+      return l10n.teamDistributionItem(entry.key, entry.value);
     }).join(' / ');
   }
 
@@ -190,14 +190,6 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
     );
   }
 
-  String _participantInputButtonLabel(AppLocalizations l10n) {
-    if (l10n.localeName.startsWith('ja')) {
-      return '参加者入力';
-    }
-
-    return l10n.teamParticipantInputTitle;
-  }
-
   Future<void> _showParticipantNameInputDialog() async {
     await showDialog<void>(
       context: context,
@@ -218,7 +210,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(l10n.cancel),
+              child: Text(l10n.cancelButton),
             ),
           ],
         );
@@ -237,7 +229,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         visualDensity: VisualDensity.compact,
       ),
-      child: Text(_participantInputButtonLabel(l10n)),
+      child: Text(l10n.teamParticipantInputButton),
     );
   }
 
@@ -324,7 +316,7 @@ class _TeamSetupPageState extends State<TeamSetupPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '${l10n.teamCountSummary(_derivedTeamCount)} / ${l10n.teamDistributionSummary(_teamDistributionText)}',
+              '${l10n.teamCountSummary(_derivedTeamCount)} / ${l10n.teamDistributionSummary(_teamDistributionText(l10n))}',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),

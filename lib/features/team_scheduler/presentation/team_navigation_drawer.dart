@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/shared/utils/external_link.dart';
 
-import '../../../l10n/app_localizations.dart';
-import '../../../l10n/team_l10n.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 import '../data/local_team_schedule_history_item.dart';
 import 'team_schedule_page.dart';
 import 'widgets/team_schedule_history_list_view.dart';
@@ -141,7 +140,7 @@ class _TeamNavigationDrawerState extends State<TeamNavigationDrawer> {
         if (widget.onRefreshLatestInfo != null)
           _TeamNavigationTile(
             icon: Icons.refresh,
-            label: l10n.refreshLatestInfo,
+            label: l10n.refreshLatestButton,
             onTap: () {
               Navigator.of(context).pop();
               widget.onRefreshLatestInfo!();

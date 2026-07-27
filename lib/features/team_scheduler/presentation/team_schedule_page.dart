@@ -448,13 +448,13 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
   String _teamName(int teamSlot) {
     return _teamDisplayNames[teamSlot] ??
         _teamBySlot[teamSlot]?.displayName ??
-        'Team $teamSlot';
+        AppLocalizations.of(context).defaultTeamName(teamSlot);
   }
 
   String _memberName(int playerSlot) {
     return _memberDisplayNames[playerSlot] ??
         _memberBySlot[playerSlot]?.displayName ??
-        'Participant $playerSlot';
+        AppLocalizations.of(context).defaultTeamMemberName(playerSlot);
   }
 
   _TeamViewData? _teamOrNull(int teamSlot) {
@@ -784,11 +784,11 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(l10n.cancelDisplayNameEditButton),
+              child: Text(l10n.cancelButton),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(controller.text),
-              child: Text(l10n.saveDisplayNameEditButton),
+              child: Text(l10n.saveButton),
             ),
           ],
         );
@@ -905,7 +905,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(l10n.cancel),
+              child: Text(l10n.cancelButton),
             ),
             FilledButton(
               onPressed: () {
@@ -924,7 +924,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
                   ),
                 );
               },
-              child: Text(l10n.save),
+              child: Text(l10n.saveButton),
             ),
           ],
         );
@@ -1042,11 +1042,8 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              l10n.teamScheduleSummary(
-                teamCount: schedule.teams.length,
-                memberCount: schedule.members.length,
-                concurrentMatchCount: schedule.concurrentMatchCount,
-              ),
+              l10n.teamScheduleSummary(schedule.teams.length,
+                  schedule.members.length, schedule.concurrentMatchCount),
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
@@ -1224,7 +1221,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
             FilledButton.tonalIcon(
               onPressed: _isRefreshingScores ? null : _refreshScores,
               icon: const Icon(Icons.refresh),
-              label: Text(l10n.refreshLatestTeamScheduleButton),
+              label: Text(l10n.refreshLatestButton),
             ),
           ],
         ),
@@ -1295,9 +1292,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
               ],
               Text(
                 l10n.teamChoiceLabel(
-                  teamName: _teamName(team.teamSlot),
-                  memberCount: team.memberPlayerSlots.length,
-                ),
+                    _teamName(team.teamSlot), team.memberPlayerSlots.length),
                 style: theme.textTheme.bodyMedium,
               ),
               IconButton(
@@ -1554,7 +1549,7 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
               score: display.firstScore,
             ),
             Text(
-              'vs',
+              l10n.teamMatchVsLabel,
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -1623,8 +1618,14 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
                 const SizedBox(height: 8),
                 Text(
                   _isRestoreMode
-                      ? l10n.teamScheduleRestoreFailedBody(message)
-                      : l10n.teamScheduleGenerateFailedBody(message),
+                      ? (message.isEmpty
+                          ? l10n.teamScheduleRestoreFailedBody
+                          : l10n
+                              .teamScheduleRestoreFailedBodyWithDetail(message))
+                      : (message.isEmpty
+                          ? l10n.teamScheduleGenerateFailedBody
+                          : l10n.teamScheduleGenerateFailedBodyWithDetail(
+                              message)),
                 ),
                 const SizedBox(height: 16),
                 FilledButton.icon(

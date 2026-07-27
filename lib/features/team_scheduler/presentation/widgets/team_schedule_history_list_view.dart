@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../l10n/app_localizations.dart';
-import '../../../../l10n/team_l10n.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 import '../../data/local_team_schedule_history_item.dart';
 import '../../data/local_team_schedule_history_store.dart';
 
@@ -55,7 +54,7 @@ class _TeamScheduleHistoryListViewState
             icon: Icons.error_outline,
             title: l10n.teamScheduleListLoadErrorTitle,
             message: l10n.teamScheduleListLoadErrorMessage,
-            actionLabel: l10n.refreshLatestInfo,
+            actionLabel: l10n.refreshLatestButton,
             onActionPressed: _reload,
           );
         }

@@ -451,5 +451,929 @@
   "scheduleHistoryClearedMessage": "対戦表表示履歴を削除しました",
   "@scheduleHistoryClearedMessage": {
     "description": "Snack bar message shown after local schedule view history was cleared."
+  },
+  "saveButton": "保存",
+  "@saveButton": {
+    "description": "Generic save button label."
+  },
+  "teamSetupMenuTitle": "らんすけ：チーム",
+  "@teamSetupMenuTitle": {
+    "description": "Team scheduler menu title."
+  },
+  "teamSetupMenuSubtitle": "チーム用対戦表を作成",
+  "@teamSetupMenuSubtitle": {
+    "description": "Team scheduler menu subtitle."
+  },
+  "teamSetupTitle": "らんすけ：チーム",
+  "@teamSetupTitle": {
+    "description": "Title shown on the team setup page."
+  },
+  "teamSetupInstruction": "同時進行試合数・参加人数・1チームの目安人数を決めて、チーム用対戦表を作成します。",
+  "@teamSetupInstruction": {
+    "description": "Instruction text shown on the team setup page."
+  },
+  "teamSetupSupportedConditions": "初期alphaでは、backend APIで5ラウンド分のチーム対戦表を作成します。",
+  "@teamSetupSupportedConditions": {
+    "description": "Short note about supported team scheduler conditions."
+  },
+  "teamSetupInputUpperLimitNote": "入力上限: 同時進行試合数5 / 参加人数50 / 1チームの目安人数25 / 1試合で対戦するチーム数25。条件により同時進行数は安全範囲に丸めます。",
+  "@teamSetupInputUpperLimitNote": {
+    "description": "Note about team setup input limits."
+  },
+  "concurrentMatchCountLabel": "同時進行試合数",
+  "@concurrentMatchCountLabel": {
+    "description": "Label for simultaneous match count input."
+  },
+  "participantCountLabel": "参加人数",
+  "@participantCountLabel": {
+    "description": "Label for participant count input."
+  },
+  "preferredTeamSizeLabel": "チームの人数",
+  "@preferredTeamSizeLabel": {
+    "description": "Label for preferred team size input."
+  },
+  "teamsPerMatchLabel": "1試合の対戦チーム数",
+  "@teamsPerMatchLabel": {
+    "description": "Label for teams per match input."
+  },
+  "decrementConcurrentMatchCountTooltip": "同時進行試合数を減らす",
+  "@decrementConcurrentMatchCountTooltip": {
+    "description": "Tooltip for decreasing simultaneous match count."
+  },
+  "incrementConcurrentMatchCountTooltip": "同時進行試合数を増やす",
+  "@incrementConcurrentMatchCountTooltip": {
+    "description": "Tooltip for increasing simultaneous match count."
+  },
+  "decrementParticipantCountTooltip": "参加人数を減らす",
+  "@decrementParticipantCountTooltip": {
+    "description": "Tooltip for decreasing participant count."
+  },
+  "incrementParticipantCountTooltip": "参加人数を増やす",
+  "@incrementParticipantCountTooltip": {
+    "description": "Tooltip for increasing participant count."
+  },
+  "decrementPreferredTeamSizeTooltip": "1チームの目安人数を減らす",
+  "@decrementPreferredTeamSizeTooltip": {
+    "description": "Tooltip for decreasing preferred team size."
+  },
+  "incrementPreferredTeamSizeTooltip": "1チームの目安人数を増やす",
+  "@incrementPreferredTeamSizeTooltip": {
+    "description": "Tooltip for increasing preferred team size."
+  },
+  "decrementTeamsPerMatchTooltip": "1試合で対戦するチーム数を減らす",
+  "@decrementTeamsPerMatchTooltip": {
+    "description": "Tooltip for decreasing teams per match."
+  },
+  "incrementTeamsPerMatchTooltip": "1試合で対戦するチーム数を増やす",
+  "@incrementTeamsPerMatchTooltip": {
+    "description": "Tooltip for increasing teams per match."
+  },
+  "teamSetupRangeHelp": "{minValue}〜{maxValue} の範囲で選択できます。",
+  "@teamSetupRangeHelp": {
+    "description": "Help text showing the valid team setup input range.",
+    "placeholders": {
+      "minValue": {
+        "type": "int",
+        "example": "1"
+      },
+      "maxValue": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "teamCountSummary": "{teamCount}チーム",
+  "@teamCountSummary": {
+    "description": "Summary showing the calculated team count.",
+    "placeholders": {
+      "teamCount": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "teamCountSummaryHelp": "参加人数と1チームの目安人数から自動計算します。",
+  "@teamCountSummaryHelp": {
+    "description": "Help text for the calculated team count."
+  },
+  "teamDistributionSummary": "内訳: {summary}",
+  "@teamDistributionSummary": {
+    "description": "Summary showing the team member distribution.",
+    "placeholders": {
+      "summary": {
+        "type": "String",
+        "example": "2人×4チーム"
+      }
+    }
+  },
+  "teamDistributionItem": "{memberCount}人×{teamCount}チーム",
+  "@teamDistributionItem": {
+    "description": "One item in the calculated team member distribution.",
+    "placeholders": {
+      "memberCount": {
+        "type": "int",
+        "example": "2"
+      },
+      "teamCount": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "teamDistributionSummaryHelp": "余りがある場合は、一部チームの人数が1人少なくなります。",
+  "@teamDistributionSummaryHelp": {
+    "description": "Help text for uneven team member distribution."
+  },
+  "teamParticipantInputTitle": "参加者名の取り込み",
+  "@teamParticipantInputTitle": {
+    "description": "Title for the participant name input card."
+  },
+  "teamParticipantInputButton": "参加者入力",
+  "@teamParticipantInputButton": {
+    "description": "Short button and dialog heading for participant name input."
+  },
+  "teamParticipantInputDescription": "改行区切りで参加者名を貼り付けて反映できます。カンマ・読点・タブ区切りも簡易対応します。",
+  "@teamParticipantInputDescription": {
+    "description": "Description for participant name input."
+  },
+  "teamParticipantInputLabel": "参加者名",
+  "@teamParticipantInputLabel": {
+    "description": "Input label for participant names."
+  },
+  "teamParticipantInputHint": "例:\n田中\n佐藤\n鈴木",
+  "@teamParticipantInputHint": {
+    "description": "Example participant names shown in the input field."
+  },
+  "applyParticipantNamesButton": "参加者名を反映",
+  "@applyParticipantNamesButton": {
+    "description": "Button label for applying participant names."
+  },
+  "participantNameCountStatus": "入力済み: {nameCount}人 / 参加人数: {participantCount}人",
+  "@participantNameCountStatus": {
+    "description": "Status showing entered name count and participant count.",
+    "placeholders": {
+      "nameCount": {
+        "type": "int",
+        "example": "8"
+      },
+      "participantCount": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "participantNamesAppliedMessage": "{nameCount}人の参加者名を反映しました",
+  "@participantNamesAppliedMessage": {
+    "description": "Message shown after participant names are applied.",
+    "placeholders": {
+      "nameCount": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "participantNamesTrimmedMessage": "{maxCount}人まで取り込みました。超過分は省略しました。",
+  "@participantNamesTrimmedMessage": {
+    "description": "Message shown when extra participant names are omitted.",
+    "placeholders": {
+      "maxCount": {
+        "type": "int",
+        "example": "50"
+      }
+    }
+  },
+  "participantNamesTooFewMessage": "参加者名は2人以上入力してください。",
+  "@participantNamesTooFewMessage": {
+    "description": "Validation message for too few participant names."
+  },
+  "participantNamesEmptyMessage": "参加者名を入力してください。",
+  "@participantNamesEmptyMessage": {
+    "description": "Validation message for empty participant names."
+  },
+  "resetTeamSetupButton": "入力項目のリセット",
+  "@resetTeamSetupButton": {
+    "description": "Button label for resetting team setup inputs."
+  },
+  "generateTeamScheduleButton": "チーム対戦表を作成",
+  "@generateTeamScheduleButton": {
+    "description": "Button label for creating a team match table."
+  },
+  "teamSetupAlphaNoticeTitle": "alpha確認中",
+  "@teamSetupAlphaNoticeTitle": {
+    "description": "Title for the team alpha notice."
+  },
+  "teamSetupAlphaNoticeBody": "作成後、backend API の生成結果を保存し、共有URLから再表示できます。チーム変更・スコア入力はまだ未実装です。",
+  "@teamSetupAlphaNoticeBody": {
+    "description": "Body for the team alpha notice."
+  },
+  "teamSetupCreatedMessage": "チーム用セットアップ条件を作成しました",
+  "@teamSetupCreatedMessage": {
+    "description": "Message shown after team setup conditions are created."
+  },
+  "teamScheduleTitle": "チーム対戦表",
+  "@teamScheduleTitle": {
+    "description": "Title shown on the team match table page."
+  },
+  "teamScheduleListTitle": "チーム対戦表一覧",
+  "@teamScheduleListTitle": {
+    "description": "Title shown on the team match table list."
+  },
+  "teamScheduleListEmptyTitle": "チーム対戦表はまだありません",
+  "@teamScheduleListEmptyTitle": {
+    "description": "Title shown when the team schedule list is empty."
+  },
+  "teamScheduleListEmptyMessage": "チーム対戦表を作成または共有URLから開くと、この端末の一覧に表示されます。",
+  "@teamScheduleListEmptyMessage": {
+    "description": "Message shown when the team schedule list is empty."
+  },
+  "teamScheduleListLoadErrorTitle": "一覧を読み込めませんでした",
+  "@teamScheduleListLoadErrorTitle": {
+    "description": "Title shown when the team schedule list cannot be loaded."
+  },
+  "teamScheduleListLoadErrorMessage": "端末内の保存履歴を確認できませんでした。もう一度お試しください。",
+  "@teamScheduleListLoadErrorMessage": {
+    "description": "Message shown when the team schedule list cannot be loaded."
+  },
+  "teamScheduleUntitledEvent": "タイトル未設定のチーム対戦表",
+  "@teamScheduleUntitledEvent": {
+    "description": "Fallback title for a team schedule without an event title."
+  },
+  "teamScheduleListShareId": "共有ID: {shareId}",
+  "@teamScheduleListShareId": {
+    "description": "Label showing a team schedule share ID.",
+    "placeholders": {
+      "shareId": {
+        "type": "String",
+        "example": "ABCDEFGH"
+      }
+    }
+  },
+  "teamScheduleListTeamCount": "{teamCount}チーム",
+  "@teamScheduleListTeamCount": {
+    "description": "Label showing team count in the schedule list.",
+    "placeholders": {
+      "teamCount": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "teamScheduleListMemberCount": "{memberCount}人",
+  "@teamScheduleListMemberCount": {
+    "description": "Label showing member count in the schedule list.",
+    "placeholders": {
+      "memberCount": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "teamScheduleListUpdatedAt": "更新: {updatedAt}",
+  "@teamScheduleListUpdatedAt": {
+    "description": "Label showing when a team schedule was updated.",
+    "placeholders": {
+      "updatedAt": {
+        "type": "String",
+        "example": "2026/07/27 10:30"
+      }
+    }
+  },
+  "teamNavigationMenuTooltip": "チーム用メニューを開く",
+  "@teamNavigationMenuTooltip": {
+    "description": "Tooltip for opening the team navigation menu."
+  },
+  "teamNavigationTitle": "チーム乱数表",
+  "@teamNavigationTitle": {
+    "description": "Title in the team navigation drawer."
+  },
+  "teamNavigationSubtitle": "チーム用メニュー",
+  "@teamNavigationSubtitle": {
+    "description": "Subtitle in the team navigation drawer."
+  },
+  "teamNavigationHome": "チームTOP",
+  "@teamNavigationHome": {
+    "description": "Navigation label for the team setup page."
+  },
+  "teamNavigationScheduleList": "対戦表一覧",
+  "@teamNavigationScheduleList": {
+    "description": "Navigation label for the team schedule list."
+  },
+  "teamNavigationSupport": "サポート",
+  "@teamNavigationSupport": {
+    "description": "Navigation label for support."
+  },
+  "teamNavigationServiceList": "サービス一覧",
+  "@teamNavigationServiceList": {
+    "description": "Section label for other services."
+  },
+  "teamNavigationDoublesScheduler": "ダブルス乱数表",
+  "@teamNavigationDoublesScheduler": {
+    "description": "Navigation label for the doubles scheduler."
+  },
+  "defaultTeamScheduleEventTitle": "チーム練習会",
+  "@defaultTeamScheduleEventTitle": {
+    "description": "Default event title for a generated team schedule."
+  },
+  "teamScheduleBulkEditTitle": "まとめて編集",
+  "@teamScheduleBulkEditTitle": {
+    "description": "Dialog title for editing team schedule details."
+  },
+  "teamScheduleBulkEditButton": "まとめて編集",
+  "@teamScheduleBulkEditButton": {
+    "description": "Button label for editing team schedule details."
+  },
+  "teamScheduleEventTitleLabel": "イベントタイトル",
+  "@teamScheduleEventTitleLabel": {
+    "description": "Input label for the team schedule event title."
+  },
+  "teamScheduleMemoLabel": "メモ",
+  "@teamScheduleMemoLabel": {
+    "description": "Input label for the team schedule memo."
+  },
+  "teamScheduleHasMemoTooltip": "メモあり",
+  "@teamScheduleHasMemoTooltip": {
+    "description": "Tooltip indicating that a team schedule has a memo."
+  },
+  "teamScheduleBulkEditTeamsSection": "チーム名",
+  "@teamScheduleBulkEditTeamsSection": {
+    "description": "Section title for team names in the bulk edit dialog."
+  },
+  "teamScheduleBulkEditMembersSection": "メンバー名",
+  "@teamScheduleBulkEditMembersSection": {
+    "description": "Section title for member names in the bulk edit dialog."
+  },
+  "teamScheduleTeamNameLabel": "チーム{teamSlot}",
+  "@teamScheduleTeamNameLabel": {
+    "description": "Input label for a team display name.",
+    "placeholders": {
+      "teamSlot": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "defaultTeamMemberName": "参加者{memberNo}",
+  "@defaultTeamMemberName": {
+    "description": "Default team member display name.",
+    "placeholders": {
+      "memberNo": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "defaultTeamName": "チーム{teamNo}",
+  "@defaultTeamName": {
+    "description": "Default team display name.",
+    "placeholders": {
+      "teamNo": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "teamScheduleSummary": "{teamCount}チーム / {memberCount}人 / {concurrentMatchCount}同時進行",
+  "@teamScheduleSummary": {
+    "description": "Summary of a team schedule.",
+    "placeholders": {
+      "teamCount": {
+        "type": "int",
+        "example": "4"
+      },
+      "memberCount": {
+        "type": "int",
+        "example": "8"
+      },
+      "concurrentMatchCount": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "teamScheduleBackendDataNotice": "backend API の生成結果を保存して表示しています。表示名はこの画面内で編集できます。",
+  "@teamScheduleBackendDataNotice": {
+    "description": "Notice about saved backend team schedule data."
+  },
+  "creatingTeamScheduleMessage": "チーム対戦表を作成・保存中です…",
+  "@creatingTeamScheduleMessage": {
+    "description": "Loading message while creating a team schedule."
+  },
+  "restoringTeamScheduleMessage": "保存済みのチーム対戦表を読み込み中です…",
+  "@restoringTeamScheduleMessage": {
+    "description": "Loading message while restoring a team schedule."
+  },
+  "savingTeamScheduleDisplayMessage": "表示名を保存中です…",
+  "@savingTeamScheduleDisplayMessage": {
+    "description": "Message shown while saving team schedule display data."
+  },
+  "teamScheduleGenerateFailedTitle": "チーム対戦表の作成に失敗しました",
+  "@teamScheduleGenerateFailedTitle": {
+    "description": "Title shown when team schedule generation fails."
+  },
+  "teamScheduleGenerateFailedBody": "backend API または Firestore 保存の応答を確認してください。",
+  "@teamScheduleGenerateFailedBody": {
+    "description": "Body shown when team schedule generation fails without details."
+  },
+  "teamScheduleGenerateFailedBodyWithDetail": "backend API または Firestore 保存の応答を確認してください。\n\n{detail}",
+  "@teamScheduleGenerateFailedBodyWithDetail": {
+    "description": "Body shown when team schedule generation fails with details.",
+    "placeholders": {
+      "detail": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
+  },
+  "teamScheduleRestoreFailedTitle": "チーム対戦表の読み込みに失敗しました",
+  "@teamScheduleRestoreFailedTitle": {
+    "description": "Title shown when team schedule restoration fails."
+  },
+  "teamScheduleRestoreFailedBody": "共有IDまたは保存済みデータを確認してください。",
+  "@teamScheduleRestoreFailedBody": {
+    "description": "Body shown when team schedule restoration fails without details."
+  },
+  "teamScheduleRestoreFailedBodyWithDetail": "共有IDまたは保存済みデータを確認してください。\n\n{detail}",
+  "@teamScheduleRestoreFailedBodyWithDetail": {
+    "description": "Body shown when team schedule restoration fails with details.",
+    "placeholders": {
+      "detail": {
+        "type": "String",
+        "example": "not found"
+      }
+    }
+  },
+  "teamScheduleDisplaySaveFailedMessage": "表示名の保存に失敗しました: {detail}",
+  "@teamScheduleDisplaySaveFailedMessage": {
+    "description": "Message shown when team schedule display data cannot be saved.",
+    "placeholders": {
+      "detail": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
+  },
+  "retryTeamScheduleGenerateButton": "もう一度作成",
+  "@retryTeamScheduleGenerateButton": {
+    "description": "Button label for retrying team schedule generation."
+  },
+  "retryTeamScheduleRestoreButton": "もう一度読み込む",
+  "@retryTeamScheduleRestoreButton": {
+    "description": "Button label for retrying team schedule restoration."
+  },
+  "teamScheduleShareTitle": "共有URL",
+  "@teamScheduleShareTitle": {
+    "description": "Title for the team schedule share section."
+  },
+  "teamScheduleShareDescription": "このURLを共有すると、保存済みのチーム対戦表を開き直せます。",
+  "@teamScheduleShareDescription": {
+    "description": "Description for sharing a team schedule URL."
+  },
+  "teamScheduleShareIdLabel": "共有ID: {shareId}",
+  "@teamScheduleShareIdLabel": {
+    "description": "Label showing a team schedule share ID.",
+    "placeholders": {
+      "shareId": {
+        "type": "String",
+        "example": "ABCDEFGH"
+      }
+    }
+  },
+  "copyTeamScheduleShareUrlButton": "共有URLをコピー",
+  "@copyTeamScheduleShareUrlButton": {
+    "description": "Button label for copying the team schedule share URL."
+  },
+  "teamScheduleShareUrlCopiedMessage": "共有URLをコピーしました",
+  "@teamScheduleShareUrlCopiedMessage": {
+    "description": "Message shown after copying the team schedule share URL."
+  },
+  "nextTeamMatchTitle": "次の対戦",
+  "@nextTeamMatchTitle": {
+    "description": "Title for the next team match section."
+  },
+  "teamRoundTitle": "第{roundNo}ラウンド",
+  "@teamRoundTitle": {
+    "description": "Title for a team schedule round.",
+    "placeholders": {
+      "roundNo": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "teamCourtTitle": "コート{courtNo}",
+  "@teamCourtTitle": {
+    "description": "Title for a team schedule court.",
+    "placeholders": {
+      "courtNo": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "teamCourtMatchTitle": "コート{courtNo}: {matchTitle}",
+  "@teamCourtMatchTitle": {
+    "description": "Title combining a court number and match title.",
+    "placeholders": {
+      "courtNo": {
+        "type": "int",
+        "example": "1"
+      },
+      "matchTitle": {
+        "type": "String",
+        "example": "Team 1 vs Team 2"
+      }
+    }
+  },
+  "teamListTitle": "チーム一覧",
+  "@teamListTitle": {
+    "description": "Title for the team list."
+  },
+  "teamChoiceLabel": "{teamName} ({memberCount}人)",
+  "@teamChoiceLabel": {
+    "description": "Label for selecting a team.",
+    "placeholders": {
+      "teamName": {
+        "type": "String",
+        "example": "チーム1"
+      },
+      "memberCount": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "selectedTeamMembersTitle": "{teamName} のメンバー",
+  "@selectedTeamMembersTitle": {
+    "description": "Title for members of the selected team.",
+    "placeholders": {
+      "teamName": {
+        "type": "String",
+        "example": "チーム1"
+      }
+    }
+  },
+  "teamMatchVsSeparator": " vs ",
+  "@teamMatchVsSeparator": {
+    "description": "Separator between two team names."
+  },
+  "teamMatchGroupSeparator": " / ",
+  "@teamMatchGroupSeparator": {
+    "description": "Separator between multiple team names."
+  },
+  "teamMatchVsLabel": "vs",
+  "@teamMatchVsLabel": {
+    "description": "Standalone versus label shown between team scores."
+  },
+  "editTeamScheduleEventTitleTooltip": "イベントタイトルを編集",
+  "@editTeamScheduleEventTitleTooltip": {
+    "description": "Tooltip for editing the event title."
+  },
+  "editTeamNameTooltip": "チーム名を編集",
+  "@editTeamNameTooltip": {
+    "description": "Tooltip for editing a team name."
+  },
+  "editTeamMemberNameTooltip": "メンバー表示名を編集",
+  "@editTeamMemberNameTooltip": {
+    "description": "Tooltip for editing a team member display name."
+  },
+  "editTeamScheduleEventTitleDialogTitle": "イベントタイトルを編集",
+  "@editTeamScheduleEventTitleDialogTitle": {
+    "description": "Dialog title for editing the event title."
+  },
+  "editTeamNameDialogTitle": "{teamName} を編集",
+  "@editTeamNameDialogTitle": {
+    "description": "Dialog title for editing a team name.",
+    "placeholders": {
+      "teamName": {
+        "type": "String",
+        "example": "チーム1"
+      }
+    }
+  },
+  "editTeamMemberNameDialogTitle": "{memberName} を編集",
+  "@editTeamMemberNameDialogTitle": {
+    "description": "Dialog title for editing a team member name.",
+    "placeholders": {
+      "memberName": {
+        "type": "String",
+        "example": "参加者1"
+      }
+    }
+  },
+  "displayNameInputLabel": "表示名",
+  "@displayNameInputLabel": {
+    "description": "Input label for a display name."
+  },
+  "teamScheduleSportSectionTitle": "スコア入力",
+  "@teamScheduleSportSectionTitle": {
+    "description": "Title for the team schedule sport and score section."
+  },
+  "teamScheduleSportNoneLabel": "未選択",
+  "@teamScheduleSportNoneLabel": {
+    "description": "Label for no selected sport."
+  },
+  "teamScheduleSportBocciaLabel": "ボッチャ",
+  "@teamScheduleSportBocciaLabel": {
+    "description": "Label for boccia."
+  },
+  "teamScheduleSportHelp": "競技を選択すると、対戦カードからスコアを入力できます。",
+  "@teamScheduleSportHelp": {
+    "description": "Help text for selecting a team schedule sport."
+  },
+  "savingTeamScheduleScoresMessage": "スコアを保存中です…",
+  "@savingTeamScheduleScoresMessage": {
+    "description": "Message shown while saving team schedule scores."
+  },
+  "teamScheduleScoresSaveFailedMessage": "スコアの保存に失敗しました: {detail}",
+  "@teamScheduleScoresSaveFailedMessage": {
+    "description": "Message shown when team schedule scores cannot be saved.",
+    "placeholders": {
+      "detail": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
+  },
+  "teamScheduleConcurrentEditNotice": "複数端末で同時に編集すると、保存内容が意図どおり反映されない場合があります。",
+  "@teamScheduleConcurrentEditNotice": {
+    "description": "Notice about concurrent team schedule editing."
+  },
+  "refreshingTeamScheduleScoresMessage": "最新のスコア情報を取得しています...",
+  "@refreshingTeamScheduleScoresMessage": {
+    "description": "Message shown while refreshing team schedule scores."
+  },
+  "bocciaScoreRefreshedMessage": "最新の情報に更新しました",
+  "@bocciaScoreRefreshedMessage": {
+    "description": "Message shown after refreshing boccia score data."
+  },
+  "refreshBocciaScoreFailedMessage": "最新の情報を取得できませんでした",
+  "@refreshBocciaScoreFailedMessage": {
+    "description": "Message shown when boccia score refresh fails."
+  },
+  "refreshBocciaScoreDiscardChangesTitle": "未保存の変更を破棄して更新しますか？",
+  "@refreshBocciaScoreDiscardChangesTitle": {
+    "description": "Dialog title for refreshing while boccia changes are unsaved."
+  },
+  "refreshBocciaScoreDiscardChangesBody": "最新の情報に更新すると、保存していない入力内容は破棄されます。",
+  "@refreshBocciaScoreDiscardChangesBody": {
+    "description": "Dialog body for refreshing while boccia changes are unsaved."
+  },
+  "confirmRefreshBocciaScoreButton": "更新する",
+  "@confirmRefreshBocciaScoreButton": {
+    "description": "Button label for confirming a boccia score refresh."
+  },
+  "selectSportBeforeScoreInputMessage": "先に競技を選択してください。",
+  "@selectSportBeforeScoreInputMessage": {
+    "description": "Message shown when score input is opened before selecting a sport."
+  },
+  "unsupportedBocciaMatchMessage": "ボッチャのスコア入力は2チーム対戦のみ対応しています。",
+  "@unsupportedBocciaMatchMessage": {
+    "description": "Message shown for an unsupported boccia match shape."
+  },
+  "inputBocciaScoreButton": "スコア入力",
+  "@inputBocciaScoreButton": {
+    "description": "Button label for entering a boccia score."
+  },
+  "editBocciaScoreButton": "スコア編集",
+  "@editBocciaScoreButton": {
+    "description": "Button label for editing a boccia score."
+  },
+  "bocciaScoreSummary": "{redTeamName} {redScore} - {blueScore} {blueTeamName}",
+  "@bocciaScoreSummary": {
+    "description": "Summary of a boccia match score.",
+    "placeholders": {
+      "redTeamName": {
+        "type": "String",
+        "example": "Red"
+      },
+      "redScore": {
+        "type": "int",
+        "example": "3"
+      },
+      "blueScore": {
+        "type": "int",
+        "example": "2"
+      },
+      "blueTeamName": {
+        "type": "String",
+        "example": "Blue"
+      }
+    }
+  },
+  "bocciaScoreDialogTitle": "ボッチャ スコア入力",
+  "@bocciaScoreDialogTitle": {
+    "description": "Title for the boccia score dialog."
+  },
+  "bocciaScoreDialogMatchTitle": "{redTeamName} vs {blueTeamName}",
+  "@bocciaScoreDialogMatchTitle": {
+    "description": "Match title shown in the boccia score dialog.",
+    "placeholders": {
+      "redTeamName": {
+        "type": "String",
+        "example": "Red"
+      },
+      "blueTeamName": {
+        "type": "String",
+        "example": "Blue"
+      }
+    }
+  },
+  "bocciaThrowLogTitle": "{endNo}E 投球ログ",
+  "@bocciaThrowLogTitle": {
+    "description": "Title for a boccia end throw log.",
+    "placeholders": {
+      "endNo": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "bocciaThrowLogHelp": "投球場所に設定された参加者の＋を押すと、このエンドの投球ログに追加します。",
+  "@bocciaThrowLogHelp": {
+    "description": "Help text for adding boccia throw logs."
+  },
+  "bocciaThrowCountSummary": "投球数：赤：{redCount}　青：{blueCount}",
+  "@bocciaThrowCountSummary": {
+    "description": "Summary of red and blue boccia throw counts.",
+    "placeholders": {
+      "redCount": {
+        "type": "int",
+        "example": "3"
+      },
+      "blueCount": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "bocciaThrowCountProgress": "{count} / {maxCount}投",
+  "@bocciaThrowCountProgress": {
+    "description": "Progress toward the maximum boccia throw count.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      },
+      "maxCount": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "bocciaFirstTeamLabel": "先攻",
+  "@bocciaFirstTeamLabel": {
+    "description": "Label for the first boccia team."
+  },
+  "bocciaSecondTeamLabel": "後攻",
+  "@bocciaSecondTeamLabel": {
+    "description": "Label for the second boccia team."
+  },
+  "bocciaRedSideLabel": "赤",
+  "@bocciaRedSideLabel": {
+    "description": "Label for the red boccia side."
+  },
+  "bocciaBlueSideLabel": "青",
+  "@bocciaBlueSideLabel": {
+    "description": "Label for the blue boccia side."
+  },
+  "swapBocciaOrderButton": "先攻 🔁 後攻",
+  "@swapBocciaOrderButton": {
+    "description": "Button label for swapping boccia team order."
+  },
+  "swapBocciaOrderTooltip": "先攻と後攻をスコアごと入れ替える",
+  "@swapBocciaOrderTooltip": {
+    "description": "Tooltip for swapping boccia team order and scores."
+  },
+  "bocciaEndLabel": "{endNo} E",
+  "@bocciaEndLabel": {
+    "description": "Short label for a boccia end.",
+    "placeholders": {
+      "endNo": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "bocciaThrowingBoxSettingsButton": "投球場所を設定する",
+  "@bocciaThrowingBoxSettingsButton": {
+    "description": "Button label for editing boccia throwing boxes."
+  },
+  "bocciaReturnToThrowLogButton": "投球ログに戻る",
+  "@bocciaReturnToThrowLogButton": {
+    "description": "Button label for returning to the boccia throw log."
+  },
+  "bocciaThrowingBoxLockedMessage": "投球ログ入力後は投球場所を変更できません",
+  "@bocciaThrowingBoxLockedMessage": {
+    "description": "Message shown when boccia throwing boxes can no longer be edited."
+  },
+  "bocciaUnusedThrowingBoxLabel": "未使用",
+  "@bocciaUnusedThrowingBoxLabel": {
+    "description": "Label for an unused boccia throwing box."
+  },
+  "bocciaDefaultParticipantName": "参加者{playerSlot}",
+  "@bocciaDefaultParticipantName": {
+    "description": "Fallback participant name in the boccia score dialog.",
+    "placeholders": {
+      "playerSlot": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "bocciaThrowCountForBox": "投球数：{count}",
+  "@bocciaThrowCountForBox": {
+    "description": "Throw count shown for one boccia throwing box.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "bocciaAddThrowLogTooltip": "投球ログを追加",
+  "@bocciaAddThrowLogTooltip": {
+    "description": "Tooltip for adding a boccia throw log."
+  },
+  "bocciaThrowOrderTitle": "投球順",
+  "@bocciaThrowOrderTitle": {
+    "description": "Title for the boccia throw order section."
+  },
+  "bocciaNoThrowLogsMessage": "まだ投球ログはありません。",
+  "@bocciaNoThrowLogsMessage": {
+    "description": "Message shown when there are no boccia throw logs."
+  },
+  "clearBocciaEndThrowLogsButton": "このエンドの履歴をクリア",
+  "@clearBocciaEndThrowLogsButton": {
+    "description": "Button label for clearing throw logs for one boccia end."
+  },
+  "bocciaThrowOrderItem": "{throwNo}. {playerName}（{sideLabel} / Box {boxNo}）",
+  "@bocciaThrowOrderItem": {
+    "description": "One item in the boccia throw order.",
+    "placeholders": {
+      "throwNo": {
+        "type": "int",
+        "example": "1"
+      },
+      "playerName": {
+        "type": "String",
+        "example": "Participant 1"
+      },
+      "sideLabel": {
+        "type": "String",
+        "example": "Red"
+      },
+      "boxNo": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "removeLastBocciaThrowLogTooltip": "最後の投球を取り消す",
+  "@removeLastBocciaThrowLogTooltip": {
+    "description": "Tooltip for removing the last boccia throw log."
+  },
+  "bocciaTotalLabel": "合計",
+  "@bocciaTotalLabel": {
+    "description": "Label for total boccia score."
+  },
+  "bocciaScoreSavedMessage": "保存しました",
+  "@bocciaScoreSavedMessage": {
+    "description": "Message shown after a boccia score is saved."
+  },
+  "bocciaScoreUnsavedChangesMessage": "未保存の変更があります",
+  "@bocciaScoreUnsavedChangesMessage": {
+    "description": "Status shown when the boccia score has unsaved changes."
+  },
+  "bocciaScoreDiscardChangesTitle": "未保存の変更があります",
+  "@bocciaScoreDiscardChangesTitle": {
+    "description": "Dialog title for unsaved boccia score changes."
+  },
+  "bocciaScoreDiscardChangesBody": "保存していないスコア変更があります。閉じますか？",
+  "@bocciaScoreDiscardChangesBody": {
+    "description": "Dialog body for unsaved boccia score changes."
+  },
+  "clearBocciaEndThrowLogsDialogTitle": "このエンドの投球履歴をクリアしますか？",
+  "@clearBocciaEndThrowLogsDialogTitle": {
+    "description": "Dialog title for clearing boccia throw logs for one end."
+  },
+  "clearBocciaEndThrowLogsDialogBody": "選択中エンドの投球順と投球数を削除します。この操作は元に戻せません。",
+  "@clearBocciaEndThrowLogsDialogBody": {
+    "description": "Dialog body for clearing boccia throw logs for one end."
+  },
+  "confirmClearBocciaEndThrowLogsButton": "クリア",
+  "@confirmClearBocciaEndThrowLogsButton": {
+    "description": "Button label for confirming boccia throw log clearing."
+  },
+  "returnToBocciaScoreInputButton": "入力に戻る",
+  "@returnToBocciaScoreInputButton": {
+    "description": "Button label for returning to boccia score input."
+  },
+  "discardBocciaScoreChangesButton": "保存せず閉じる",
+  "@discardBocciaScoreChangesButton": {
+    "description": "Button label for discarding boccia score changes."
+  },
+  "saveAndCloseBocciaScoreButton": "保存して閉じる",
+  "@saveAndCloseBocciaScoreButton": {
+    "description": "Button label for saving and closing the boccia score dialog."
   }
 }
