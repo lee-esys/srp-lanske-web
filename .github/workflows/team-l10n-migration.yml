@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - refactor/105-migrate-team-l10n-to-arb
-    paths:
-      - tools/migrate_team_l10n.py
-      - .github/workflows/team-l10n-migration.yml
 
 permissions:
   contents: write
