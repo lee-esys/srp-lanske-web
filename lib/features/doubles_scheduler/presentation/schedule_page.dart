@@ -12,7 +12,7 @@ import '../application/saved_event_aggregate_helpers.dart';
 import '../application/schedule_share_url.dart';
 import '../data/local_schedule_history_store.dart';
 import '../domain/saved_event_models.dart';
-import '../infrastructure/generated_schedule_api_client.dart';
+import 'package:srp_lanske/shared/infrastructure/generated_schedule_api_client.dart';
 import 'event_list_page.dart';
 import 'event_setup_page.dart';
 import 'models/event_draft.dart';

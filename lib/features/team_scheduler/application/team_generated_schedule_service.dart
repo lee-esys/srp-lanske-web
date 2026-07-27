@@ -1,4 +1,4 @@
-import 'package:srp_lanske/features/doubles_scheduler/infrastructure/generated_schedule_api_client.dart';
+import 'package:srp_lanske/shared/infrastructure/generated_schedule_api_client.dart';
 
 import '../domain/team_generated_schedule.dart';
 import '../presentation/models/team_setup_draft.dart';
