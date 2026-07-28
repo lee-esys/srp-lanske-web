@@ -109,11 +109,16 @@ ver0.1 には、以下の制限があります。
 
 ```text
 lib/
-├─ app/                # アプリ全体設定
+├─ app/                                # アプリ全体設定
 ├─ features/
-│  └─ doubles_scheduler/
-└─ shared/             # 共通部品
+│  ├─ doubles_scheduler/               # ダブルス対戦表の作成・表示・保存
+│  └─ team_scheduler/                  # チーム分け・チーム対戦表の作成・表示・保存
+└─ shared/
+   ├─ infrastructure/                  # 複数featureから使う外部API client
+   └─ repositories/                    # repository実装のアプリ全体での選択・公開
 ```
+
+詳細な責務と依存方針は [Architecture](docs/architecture.md) を参照してください。
 
 ---
 
