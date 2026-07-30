@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../application/schedule_progress_repository.dart';
 import '../domain/schedule_progress_models.dart';
+import '../domain/schedule_progress_transition.dart';
 
 class FirestoreScheduleProgressRepository
     implements ScheduleProgressRepository {
@@ -19,7 +20,7 @@ class FirestoreScheduleProgressRepository
     required ScheduleProgressScope scope,
     required int totalMatchCount,
   }) async {
-    _validateTotalMatchCount(totalMatchCount);
+    validateScheduleProgressTotalMatchCount(totalMatchCount);
 
     final progressReference = _progressDocument(scope);
     return _firestore.runTransaction((transaction) async {
@@ -27,24 +28,17 @@ class FirestoreScheduleProgressRepository
       final data = snapshot.data();
       if (snapshot.exists && data != null) {
         final current = ScheduleProgressSummary.fromJson(data);
-        _ensureTotalMatchCount(
+        ensureScheduleProgressTotalMatchCount(
           summary: current,
           totalMatchCount: totalMatchCount,
         );
         return current;
       }
 
-      final now = _clock();
-      final summary = ScheduleProgressSummary(
-        schemaVersion: ScheduleProgressSummary.currentSchemaVersion,
-        scheduleType: scope.scheduleType,
-        generatedScheduleId: scope.generatedScheduleId,
+      final summary = createInitialScheduleProgressSummary(
+        scope: scope,
         totalMatchCount: totalMatchCount,
-        completedMatchCount: 0,
-        inProgressMatchCount: 0,
-        createdAt: now,
-        updatedAt: now,
-        revision: 1,
+        now: _clock(),
       );
       transaction.set(progressReference, summary.toJson());
       return summary;
@@ -105,7 +99,7 @@ class FirestoreScheduleProgressRepository
     required int totalMatchCount,
     required int expectedRevision,
   }) async {
-    _validateSaveArguments(
+    validateScheduleProgressSaveArguments(
       totalMatchCount: totalMatchCount,
       expectedRevision: expectedRevision,
     );
@@ -135,29 +129,19 @@ class FirestoreScheduleProgressRepository
           progressSnapshot.exists && currentSummaryData != null
               ? ScheduleProgressSummary.fromJson(currentSummaryData)
               : null;
-      _ensureTotalMatchCount(
+      ensureScheduleProgressTotalMatchCount(
         summary: currentSummary,
         totalMatchCount: totalMatchCount,
       );
 
       final now = _clock();
-      final nextMatch = ScheduleMatchProgress(
-        schemaVersion: ScheduleMatchProgress.currentSchemaVersion,
-        scheduleType: scope.scheduleType,
-        generatedScheduleId: scope.generatedScheduleId,
-        roundNo: update.roundNo,
-        courtNo: update.courtNo,
-        matchNo: update.matchNo ?? currentMatch?.matchNo,
-        status: update.status,
-        result: update.result,
-        note: update.note,
-        startedAt: update.startedAt,
-        finishedAt: update.finishedAt,
-        createdAt: currentMatch?.createdAt ?? now,
-        updatedAt: now,
-        revision: actualRevision + 1,
+      final nextMatch = buildSavedScheduleMatchProgress(
+        scope: scope,
+        update: update,
+        current: currentMatch,
+        now: now,
       );
-      final nextSummary = _buildNextSummary(
+      final nextSummary = buildUpdatedScheduleProgressSummary(
         scope: scope,
         currentSummary: currentSummary,
         previousStatus:
@@ -198,77 +182,4 @@ String _rootCollectionPath(ScheduleProgressScheduleType scheduleType) {
     case ScheduleProgressScheduleType.team:
       return 'team_schedules';
   }
-}
-
-void _validateTotalMatchCount(int totalMatchCount) {
-  if (totalMatchCount <= 0) {
-    throw ArgumentError.value(
-      totalMatchCount,
-      'totalMatchCount',
-      'must be positive',
-    );
-  }
-}
-
-void _validateSaveArguments({
-  required int totalMatchCount,
-  required int expectedRevision,
-}) {
-  _validateTotalMatchCount(totalMatchCount);
-  if (expectedRevision < 0) {
-    throw ArgumentError.value(
-      expectedRevision,
-      'expectedRevision',
-      'must not be negative',
-    );
-  }
-}
-
-void _ensureTotalMatchCount({
-  required ScheduleProgressSummary? summary,
-  required int totalMatchCount,
-}) {
-  if (summary != null && summary.totalMatchCount != totalMatchCount) {
-    throw StateError(
-      'total match count mismatch: '
-      'expected ${summary.totalMatchCount}, actual $totalMatchCount',
-    );
-  }
-}
-
-ScheduleProgressSummary _buildNextSummary({
-  required ScheduleProgressScope scope,
-  required ScheduleProgressSummary? currentSummary,
-  required ScheduleMatchStatus previousStatus,
-  required ScheduleMatchStatus nextStatus,
-  required int totalMatchCount,
-  required DateTime now,
-}) {
-  final completedMatchCount =
-      (currentSummary?.completedMatchCount ?? 0) -
-          _statusCount(previousStatus, ScheduleMatchStatus.completed) +
-          _statusCount(nextStatus, ScheduleMatchStatus.completed);
-  final inProgressMatchCount =
-      (currentSummary?.inProgressMatchCount ?? 0) -
-          _statusCount(previousStatus, ScheduleMatchStatus.inProgress) +
-          _statusCount(nextStatus, ScheduleMatchStatus.inProgress);
-
-  return ScheduleProgressSummary(
-    schemaVersion: ScheduleProgressSummary.currentSchemaVersion,
-    scheduleType: scope.scheduleType,
-    generatedScheduleId: scope.generatedScheduleId,
-    totalMatchCount: totalMatchCount,
-    completedMatchCount: completedMatchCount,
-    inProgressMatchCount: inProgressMatchCount,
-    createdAt: currentSummary?.createdAt ?? now,
-    updatedAt: now,
-    revision: (currentSummary?.revision ?? 0) + 1,
-  );
-}
-
-int _statusCount(
-  ScheduleMatchStatus actual,
-  ScheduleMatchStatus target,
-) {
-  return actual == target ? 1 : 0;
 }
