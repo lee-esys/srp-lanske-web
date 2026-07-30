@@ -10,12 +10,32 @@ service cloud.firestore {
     match /events/{publicId} {
       allow read, create, update: if true;
       allow delete: if false;
+
+      match /schedule_progress/{generatedScheduleId} {
+        allow read, create, update: if true;
+        allow delete: if false;
+
+        match /matches/{matchKey} {
+          allow read, create, update: if true;
+          allow delete: if false;
+        }
+      }
     }
 
     // Public share documents used by team schedules, including boccia data.
     match /team_schedules/{shareId} {
       allow read, create, update: if true;
       allow delete: if false;
+
+      match /schedule_progress/{generatedScheduleId} {
+        allow read, create, update: if true;
+        allow delete: if false;
+
+        match /matches/{matchKey} {
+          allow read, create, update: if true;
+          allow delete: if false;
+        }
+      }
     }
 
     // Existing core-generated data is readable from the client,
