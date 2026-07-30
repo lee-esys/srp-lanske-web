@@ -88,14 +88,12 @@ ScheduleProgressSummary buildUpdatedScheduleProgressSummary({
   required int totalMatchCount,
   required DateTime now,
 }) {
-  final completedMatchCount =
-      (currentSummary?.completedMatchCount ?? 0) -
-          _statusCount(previousStatus, ScheduleMatchStatus.completed) +
-          _statusCount(nextStatus, ScheduleMatchStatus.completed);
-  final inProgressMatchCount =
-      (currentSummary?.inProgressMatchCount ?? 0) -
-          _statusCount(previousStatus, ScheduleMatchStatus.inProgress) +
-          _statusCount(nextStatus, ScheduleMatchStatus.inProgress);
+  final completedMatchCount = (currentSummary?.completedMatchCount ?? 0) -
+      _statusCount(previousStatus, ScheduleMatchStatus.completed) +
+      _statusCount(nextStatus, ScheduleMatchStatus.completed);
+  final inProgressMatchCount = (currentSummary?.inProgressMatchCount ?? 0) -
+      _statusCount(previousStatus, ScheduleMatchStatus.inProgress) +
+      _statusCount(nextStatus, ScheduleMatchStatus.inProgress);
 
   return ScheduleProgressSummary(
     schemaVersion: ScheduleProgressSummary.currentSchemaVersion,

@@ -144,8 +144,7 @@ class FirestoreScheduleProgressRepository
       final nextSummary = buildUpdatedScheduleProgressSummary(
         scope: scope,
         currentSummary: currentSummary,
-        previousStatus:
-            currentMatch?.status ?? ScheduleMatchStatus.scheduled,
+        previousStatus: currentMatch?.status ?? ScheduleMatchStatus.scheduled,
         nextStatus: nextMatch.status,
         totalMatchCount: totalMatchCount,
         now: now,

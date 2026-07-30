@@ -2,8 +2,7 @@ import '../application/schedule_progress_repository.dart';
 import '../domain/schedule_progress_models.dart';
 import '../domain/schedule_progress_transition.dart';
 
-class InMemoryScheduleProgressRepository
-    implements ScheduleProgressRepository {
+class InMemoryScheduleProgressRepository implements ScheduleProgressRepository {
   InMemoryScheduleProgressRepository({
     DateTime Function()? clock,
   }) : _clock = clock ?? DateTime.now;

@@ -2,7 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:srp_lanske/features/schedule_progress/application/schedule_progress_repository.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 
-typedef ScheduleProgressRepositoryFactory = ScheduleProgressRepository Function();
+typedef ScheduleProgressRepositoryFactory = ScheduleProgressRepository
+    Function();
 
 void runScheduleProgressRepositoryContractTests({
   required String name,
