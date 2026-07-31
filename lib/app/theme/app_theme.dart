@@ -32,4 +32,11 @@ final ThemeData appTheme = _baseTheme.copyWith(
       ),
     ),
   ),
+  snackBarTheme: SnackBarThemeData(
+    behavior: SnackBarBehavior.floating,
+    elevation: 6,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+    ),
+  ),
 );
