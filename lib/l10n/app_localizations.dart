@@ -1636,6 +1636,138 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'保存して閉じる'**
   String get saveAndCloseBocciaScoreButton;
+
+  /// Title for the doubles match status and final score dialog.
+  ///
+  /// In ja, this message translates to:
+  /// **'試合状態・最終スコア'**
+  String get doublesMatchEditTitle;
+
+  /// Label for a doubles match that has not started.
+  ///
+  /// In ja, this message translates to:
+  /// **'試合前'**
+  String get doublesMatchStatusScheduledLabel;
+
+  /// Label for a doubles match in progress.
+  ///
+  /// In ja, this message translates to:
+  /// **'試合中'**
+  String get doublesMatchStatusInProgressLabel;
+
+  /// Label for a completed doubles match.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了'**
+  String get doublesMatchStatusCompletedLabel;
+
+  /// Title for selecting a doubles match score.
+  ///
+  /// In ja, this message translates to:
+  /// **'スコアを選択'**
+  String get doublesMatchScorePickerTitle;
+
+  /// Button label for clearing both doubles match scores.
+  ///
+  /// In ja, this message translates to:
+  /// **'スコアを未入力に戻す'**
+  String get doublesMatchScoreUnsetLabel;
+
+  /// Label for a doubles match start time.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始時間'**
+  String get doublesMatchStartTimeLabel;
+
+  /// Label for a doubles match end time.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了時間'**
+  String get doublesMatchEndTimeLabel;
+
+  /// Tooltip for setting a match time to the current time.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在時刻を設定'**
+  String get doublesMatchSetCurrentTimeTooltip;
+
+  /// Input label for a doubles match note.
+  ///
+  /// In ja, this message translates to:
+  /// **'試合メモ'**
+  String get doublesMatchNoteLabel;
+
+  /// Button label for saving doubles match information.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存'**
+  String get doublesMatchSaveButton;
+
+  /// Label for the winning side of a completed doubles match.
+  ///
+  /// In ja, this message translates to:
+  /// **'勝ち'**
+  String get doublesMatchWinnerLabel;
+
+  /// Label for the losing side of a completed doubles match.
+  ///
+  /// In ja, this message translates to:
+  /// **'負け'**
+  String get doublesMatchLoserLabel;
+
+  /// Label for a drawn doubles match.
+  ///
+  /// In ja, this message translates to:
+  /// **'引き分け'**
+  String get doublesMatchDrawLabel;
+
+  /// Message shown after doubles match information is saved.
+  ///
+  /// In ja, this message translates to:
+  /// **'試合情報を保存しました'**
+  String get doublesMatchSavedMessage;
+
+  /// Message shown after doubles match information is refreshed.
+  ///
+  /// In ja, this message translates to:
+  /// **'試合情報を更新しました'**
+  String get doublesMatchRefreshedMessage;
+
+  /// Message shown when doubles match information has a revision conflict.
+  ///
+  /// In ja, this message translates to:
+  /// **'別の端末で試合情報が更新されています。最新情報を取得してください。'**
+  String get doublesMatchConflictMessage;
+
+  /// Validation message shown when only one doubles match score is entered.
+  ///
+  /// In ja, this message translates to:
+  /// **'両側のスコアを入力するか、両方とも未入力にしてください。'**
+  String get doublesMatchIncompleteScoreMessage;
+
+  /// Validation message shown when a match end time is earlier than its start time.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了時間は開始時間以降にしてください。'**
+  String get doublesMatchTimeOrderErrorMessage;
+
+  /// Message shown when required schedule information is unavailable for match editing.
+  ///
+  /// In ja, this message translates to:
+  /// **'この試合の入力に必要な対戦表情報がありません。'**
+  String get doublesMatchUnavailableMessage;
+
+  /// Message shown when the displayed schedule is stale before match editing.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表が別の端末で更新されています。最新の対戦表を読み込んでください。'**
+  String get doublesMatchScheduleChangedMessage;
+
+  /// Message shown when doubles match information cannot be saved.
+  ///
+  /// In ja, this message translates to:
+  /// **'試合情報を保存できませんでした: {error}'**
+  String doublesMatchSaveFailedMessage(String error);
 }
 
 class _AppLocalizationsDelegate

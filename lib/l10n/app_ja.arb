@@ -1375,5 +1375,99 @@
   "saveAndCloseBocciaScoreButton": "保存して閉じる",
   "@saveAndCloseBocciaScoreButton": {
     "description": "Button label for saving and closing the boccia score dialog."
+  },
+  "doublesMatchEditTitle": "試合状態・最終スコア",
+  "@doublesMatchEditTitle": {
+    "description": "Title for the doubles match status and final score dialog."
+  },
+  "doublesMatchStatusScheduledLabel": "試合前",
+  "@doublesMatchStatusScheduledLabel": {
+    "description": "Label for a doubles match that has not started."
+  },
+  "doublesMatchStatusInProgressLabel": "試合中",
+  "@doublesMatchStatusInProgressLabel": {
+    "description": "Label for a doubles match in progress."
+  },
+  "doublesMatchStatusCompletedLabel": "終了",
+  "@doublesMatchStatusCompletedLabel": {
+    "description": "Label for a completed doubles match."
+  },
+  "doublesMatchScorePickerTitle": "スコアを選択",
+  "@doublesMatchScorePickerTitle": {
+    "description": "Title for selecting a doubles match score."
+  },
+  "doublesMatchScoreUnsetLabel": "スコアを未入力に戻す",
+  "@doublesMatchScoreUnsetLabel": {
+    "description": "Button label for clearing both doubles match scores."
+  },
+  "doublesMatchStartTimeLabel": "開始時間",
+  "@doublesMatchStartTimeLabel": {
+    "description": "Label for a doubles match start time."
+  },
+  "doublesMatchEndTimeLabel": "終了時間",
+  "@doublesMatchEndTimeLabel": {
+    "description": "Label for a doubles match end time."
+  },
+  "doublesMatchSetCurrentTimeTooltip": "現在時刻を設定",
+  "@doublesMatchSetCurrentTimeTooltip": {
+    "description": "Tooltip for setting a match time to the current time."
+  },
+  "doublesMatchNoteLabel": "試合メモ",
+  "@doublesMatchNoteLabel": {
+    "description": "Input label for a doubles match note."
+  },
+  "doublesMatchSaveButton": "保存",
+  "@doublesMatchSaveButton": {
+    "description": "Button label for saving doubles match information."
+  },
+  "doublesMatchWinnerLabel": "勝ち",
+  "@doublesMatchWinnerLabel": {
+    "description": "Label for the winning side of a completed doubles match."
+  },
+  "doublesMatchLoserLabel": "負け",
+  "@doublesMatchLoserLabel": {
+    "description": "Label for the losing side of a completed doubles match."
+  },
+  "doublesMatchDrawLabel": "引き分け",
+  "@doublesMatchDrawLabel": {
+    "description": "Label for a drawn doubles match."
+  },
+  "doublesMatchSavedMessage": "試合情報を保存しました",
+  "@doublesMatchSavedMessage": {
+    "description": "Message shown after doubles match information is saved."
+  },
+  "doublesMatchRefreshedMessage": "試合情報を更新しました",
+  "@doublesMatchRefreshedMessage": {
+    "description": "Message shown after doubles match information is refreshed."
+  },
+  "doublesMatchConflictMessage": "別の端末で試合情報が更新されています。最新情報を取得してください。",
+  "@doublesMatchConflictMessage": {
+    "description": "Message shown when doubles match information has a revision conflict."
+  },
+  "doublesMatchIncompleteScoreMessage": "両側のスコアを入力するか、両方とも未入力にしてください。",
+  "@doublesMatchIncompleteScoreMessage": {
+    "description": "Validation message shown when only one doubles match score is entered."
+  },
+  "doublesMatchTimeOrderErrorMessage": "終了時間は開始時間以降にしてください。",
+  "@doublesMatchTimeOrderErrorMessage": {
+    "description": "Validation message shown when a match end time is earlier than its start time."
+  },
+  "doublesMatchUnavailableMessage": "この試合の入力に必要な対戦表情報がありません。",
+  "@doublesMatchUnavailableMessage": {
+    "description": "Message shown when required schedule information is unavailable for match editing."
+  },
+  "doublesMatchScheduleChangedMessage": "対戦表が別の端末で更新されています。最新の対戦表を読み込んでください。",
+  "@doublesMatchScheduleChangedMessage": {
+    "description": "Message shown when the displayed schedule is stale before match editing."
+  },
+  "doublesMatchSaveFailedMessage": "試合情報を保存できませんでした: {error}",
+  "@doublesMatchSaveFailedMessage": {
+    "description": "Message shown when doubles match information cannot be saved.",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
   }
 }

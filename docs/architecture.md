@@ -7,7 +7,7 @@
 責務は、大きく以下へ分離する。
 
 - `srp-lanske-web`
-  - UI、入力、表示、共有URL、保存状態などを扱う公開アプリケーション
+  - UI、入力、表示、共有URL、保存状態、試合進行状態などを扱う公開アプリケーション
 - `srp-lanske-core`
   - 対戦表生成と評価を扱う別リポジトリの core API
 
@@ -25,7 +25,7 @@ web 側には生成アルゴリズム本体を置かず、core API が返した�
       └──→ [ feature repository ] ─────→ [ Firestore / in-memory ]
 ```
 
-生成処理と、web 側の保存・共有状態は別の責務として扱う。
+生成処理と、web 側の保存・共有・進行状態は別の責務として扱う。
 
 - core API
   - 生成条件を受け取る
@@ -36,6 +36,7 @@ web 側には生成アルゴリズム本体を置かず、core API が返した�
   - core API request を組み立てる
   - response を feature 固有の表示モデルへ変換する
   - event / view state、表示名、共有URLなどを保存する
+  - 試合状態・結果・進行summaryを保存する
 
 ---
 
@@ -52,6 +53,10 @@ lib/
 │  │  ├─ domain/                      # ダブルス用ドメインモデル
 │  │  ├─ data/                        # Firestore / in-memory等のrepository実装
 │  │  └─ infrastructure/              # ダブルス固有の外部接続
+│  ├─ schedule_progress/
+│  │  ├─ application/                 # 進行状態repository interface
+│  │  ├─ domain/                      # 共通の試合状態・結果・summary・遷移
+│  │  └─ data/                        # Firestore / in-memory repository実装
 │  └─ team_scheduler/
 │     ├─ presentation/                # チーム用画面・widget・画面入力モデル
 │     ├─ application/                 # request構築、response変換、repository interface
@@ -63,7 +68,8 @@ lib/
 └─ l10n/                              # Flutter l10n生成物と参照入口
 ```
 
-feature 固有の処理は各 feature 配下へ置き、複数 feature に共通する外部接続のみ `shared/infrastructure` へ置く。
+feature 固有の処理は各 feature 配下へ置く。
+複数のschedule typeで共有する試合進行の保存モデルは `schedule_progress`、複数featureに共通する外部接続は `shared/infrastructure` へ置く。
 
 ---
 
@@ -112,8 +118,10 @@ feature 固有の画面状態や生成条件は置かない。
 
 - `GeneratedScheduleService`
 - `TeamGeneratedScheduleService`
+- `DoublesMatchProgressService`
 - `EventRepository`
 - `TeamScheduleRepository`
+- `ScheduleProgressRepository`
 
 ダブルスとチームで異なる生成条件・request shape・response変換は、この層を中心に各 feature 側で扱う。
 
@@ -121,8 +129,9 @@ feature 固有の画面状態や生成条件は置かない。
 
 役割:
 
-- feature固有のデータ構造を定義する
+- feature固有または共有対象が明確なデータ構造を定義する
 - 保存・表示・変換で利用するmodelを保持する
+- 状態遷移と保存時の不変条件を定義する
 
 生成アルゴリズム本体は持たない。
 
@@ -180,10 +189,31 @@ feature固有の外部接続を扱う。
 - ダブルス対戦表の表示
 - 採用状態・共有URL・表示名の管理
 - ダブルス用イベントの保存・復元
+- 採用後の試合状態・最終スコア・メモ入力
+- 保存前の最新revision確認と競合時の再取得案内
+- 保存成功後の進行summaryとローカル履歴の反映
 
 `GeneratedScheduleService` は、ダブルス用requestを構築して共通API clientへ渡す。
+`DoublesMatchProgressService` は、ダブルス用入力を共通の進行状態更新へ変換する。
 
-### 5.2 `team_scheduler`
+### 5.2 `schedule_progress`
+
+ダブルスとチームで共通利用できる、試合単位の進行状態と最終結果の保存基盤を扱う。
+
+- schedule typeとgenerated scheduleを識別するscope
+- `scheduled` / `inProgress` / `completed` の試合状態
+- 開始・終了時刻
+- 最終結果summary
+- 試合メモ
+- 試合ごとのrevision
+- 全試合数、終了数、進行中数を持つ進行summary
+- 状態遷移とsummary更新
+- Firestore / in-memory repository
+- expected revisionによる競合検知
+
+競技固有の詳細入力UIや、結果の意味づけは各feature側で扱う。
+
+### 5.3 `team_scheduler`
 
 - チーム用参加者・チーム条件入力
 - チーム生成requestの構築
@@ -193,7 +223,7 @@ feature固有の外部接続を扱う。
 
 `TeamGeneratedScheduleService` は、チーム固有のrequest構築とresponse変換を担当し、HTTP通信は共通API clientへ委譲する。
 
-### 5.3 `shared`
+### 5.4 `shared`
 
 - 複数featureで共通利用する外部API client
 - アプリ全体で利用するrepository実装の選択
@@ -262,14 +292,36 @@ web側 event / schedule document
 
 core generated schedule snapshotと、web側のevent / view stateは別に管理する。
 
+### 7.3 試合進行状態の保存
+
+```text
+試合カードを選択
+  ↓
+対象試合の最新情報を取得
+  ↓
+feature固有の入力を共通progress updateへ変換
+  ↓
+expected revisionを指定してrepositoryへ保存
+  ↓
+Firestore transaction
+  ├─ revision一致を確認
+  ├─ match documentを更新
+  └─ progress summaryを更新
+  ↓
+UIとローカル履歴へ反映
+```
+
+revisionが一致しない場合は保存せず、最新情報の再取得を案内する。
+
 ---
 
 ## 8. 依存方針
 
 ### 8.1 feature固有処理をfeature内に保つ
 
-- doubles用requestは `doubles_scheduler` で構築する
+- doubles用requestと試合入力UIは `doubles_scheduler` で扱う
 - team用request / response変換は `team_scheduler` で扱う
+- 共通の試合状態・結果・summaryは `schedule_progress` で扱う
 - 表示名、選択状態、画面固有modelは各featureに置く
 
 ### 8.2 feature間でinfrastructureを共有しない
@@ -277,6 +329,7 @@ core generated schedule snapshotと、web側のevent / view stateは別に管理
 `team_scheduler` がAPI接続のために `doubles_scheduler/infrastructure` をimportする、といった依存は作らない。
 
 複数featureから利用する外部接続は、共通部分だけを `shared/infrastructure` へ配置する。
+共通のdomain責務が明確な場合は、専用の共通featureとして切り出す。
 
 ### 8.3 共通clientをfeature非依存に保つ
 
@@ -288,7 +341,7 @@ core generated schedule snapshotと、web側のevent / view stateは別に管理
 
 単一featureでしか使わない処理は、そのfeature内へ置く。
 
-複数featureから参照されるようになった時点で、共通化する責務と依存方向を確認してからsharedへの移動を判断する。
+複数featureから参照されるようになった時点で、共通化する責務と依存方向を確認してからsharedまたは共通featureへの移動を判断する。
 
 ---
 
@@ -301,6 +354,9 @@ core generated schedule snapshotと、web側のevent / view stateは別に管理
 - team固有requestとresponse変換は `TeamGeneratedScheduleService` で扱う
 - 対戦表生成アルゴリズムは `srp-lanske-core` へ分離済み
 - web側のevent / schedule保存はFirestore repositoryで行える
+- 試合進行状態・最終結果・summaryは `schedule_progress` で共通保存できる
+- ダブルスでは試合状態・最終スコア・メモ入力を実装済み
+- 試合保存時はrevision競合を検知し、古い状態からの上書きを防ぐ
 - local確認用としてin-memory repositoryも維持する
 - 採用状態はweb側のevent / view stateとして扱う
 
@@ -315,6 +371,7 @@ mock / in-memory実装は開発・確認用の代替経路であり、生成ア�
 ```text
 features/
 ├─ doubles_scheduler/
+├─ schedule_progress/
 ├─ team_scheduler/
 ├─ round_robin/
 ├─ knockout/
@@ -326,6 +383,7 @@ features/
 - feature固有のUI・application・domain・dataをfeature内へ置く
 - core APIの共通通信処理は `shared/infrastructure` を再利用する
 - request / response shapeの差は各featureで吸収する
+- 試合状態・最終結果の共通部分は `schedule_progress` を再利用する
 - feature間の直接依存が必要になった場合は、共通責務として切り出せるか先に検討する
 
 ---
@@ -374,7 +432,36 @@ events/{publicId}
 `expiresAt` は作成から10日後を初期値として持つ。
 ただし、ver0.1.xでは期限切れによる非表示処理はまだ行わない。
 
-将来の試合カード進行状況・対戦成績は、event本体ではなく、試合カード単位のsubcollectionで扱う想定とする。
+### 11.3 試合進行状態の保存先
+
+試合進行状態はevent本体へ直接追加せず、generated schedule単位のsubcollectionへ保存する。
+
+```text
+events/{publicId}/schedule_progress/{generatedScheduleId}
+  totalMatchCount
+  completedMatchCount
+  inProgressMatchCount
+  revision
+  createdAt
+  updatedAt
+
+  matches/{matchKey}
+    roundNo
+    courtNo
+    status
+    result
+    note
+    startedAt
+    finishedAt
+    revision
+    createdAt
+    updatedAt
+```
+
+チーム側で共通progressを利用する場合は、root collectionを `team_schedules` として同じ構造を利用できる。
+
+match documentとsummary documentはFirestore transaction内で更新する。
+保存時は対象matchのexpected revisionを確認し、別端末による先行更新がある場合は競合として扱う。
 
 ---
 

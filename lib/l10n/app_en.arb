@@ -1375,5 +1375,99 @@
   "saveAndCloseBocciaScoreButton": "Save and close",
   "@saveAndCloseBocciaScoreButton": {
     "description": "Button label for saving and closing the boccia score dialog."
+  },
+  "doublesMatchEditTitle": "Match status and final score",
+  "@doublesMatchEditTitle": {
+    "description": "Title for the doubles match status and final score dialog."
+  },
+  "doublesMatchStatusScheduledLabel": "Scheduled",
+  "@doublesMatchStatusScheduledLabel": {
+    "description": "Label for a doubles match that has not started."
+  },
+  "doublesMatchStatusInProgressLabel": "In progress",
+  "@doublesMatchStatusInProgressLabel": {
+    "description": "Label for a doubles match in progress."
+  },
+  "doublesMatchStatusCompletedLabel": "Completed",
+  "@doublesMatchStatusCompletedLabel": {
+    "description": "Label for a completed doubles match."
+  },
+  "doublesMatchScorePickerTitle": "Select score",
+  "@doublesMatchScorePickerTitle": {
+    "description": "Title for selecting a doubles match score."
+  },
+  "doublesMatchScoreUnsetLabel": "Clear score",
+  "@doublesMatchScoreUnsetLabel": {
+    "description": "Button label for clearing both doubles match scores."
+  },
+  "doublesMatchStartTimeLabel": "Start time",
+  "@doublesMatchStartTimeLabel": {
+    "description": "Label for a doubles match start time."
+  },
+  "doublesMatchEndTimeLabel": "End time",
+  "@doublesMatchEndTimeLabel": {
+    "description": "Label for a doubles match end time."
+  },
+  "doublesMatchSetCurrentTimeTooltip": "Set current time",
+  "@doublesMatchSetCurrentTimeTooltip": {
+    "description": "Tooltip for setting a match time to the current time."
+  },
+  "doublesMatchNoteLabel": "Match note",
+  "@doublesMatchNoteLabel": {
+    "description": "Input label for a doubles match note."
+  },
+  "doublesMatchSaveButton": "Save",
+  "@doublesMatchSaveButton": {
+    "description": "Button label for saving doubles match information."
+  },
+  "doublesMatchWinnerLabel": "Winner",
+  "@doublesMatchWinnerLabel": {
+    "description": "Label for the winning side of a completed doubles match."
+  },
+  "doublesMatchLoserLabel": "Loser",
+  "@doublesMatchLoserLabel": {
+    "description": "Label for the losing side of a completed doubles match."
+  },
+  "doublesMatchDrawLabel": "Draw",
+  "@doublesMatchDrawLabel": {
+    "description": "Label for a drawn doubles match."
+  },
+  "doublesMatchSavedMessage": "Match information saved",
+  "@doublesMatchSavedMessage": {
+    "description": "Message shown after doubles match information is saved."
+  },
+  "doublesMatchRefreshedMessage": "Match information refreshed",
+  "@doublesMatchRefreshedMessage": {
+    "description": "Message shown after doubles match information is refreshed."
+  },
+  "doublesMatchConflictMessage": "This match was updated on another device. Refresh the latest information.",
+  "@doublesMatchConflictMessage": {
+    "description": "Message shown when doubles match information has a revision conflict."
+  },
+  "doublesMatchIncompleteScoreMessage": "Enter both scores or leave both scores unset.",
+  "@doublesMatchIncompleteScoreMessage": {
+    "description": "Validation message shown when only one doubles match score is entered."
+  },
+  "doublesMatchTimeOrderErrorMessage": "End time must not be earlier than start time.",
+  "@doublesMatchTimeOrderErrorMessage": {
+    "description": "Validation message shown when a match end time is earlier than its start time."
+  },
+  "doublesMatchUnavailableMessage": "Schedule information required to edit this match is unavailable.",
+  "@doublesMatchUnavailableMessage": {
+    "description": "Message shown when required schedule information is unavailable for match editing."
+  },
+  "doublesMatchScheduleChangedMessage": "The schedule was updated on another device. Reload the latest schedule.",
+  "@doublesMatchScheduleChangedMessage": {
+    "description": "Message shown when the displayed schedule is stale before match editing."
+  },
+  "doublesMatchSaveFailedMessage": "Could not save match information: {error}",
+  "@doublesMatchSaveFailedMessage": {
+    "description": "Message shown when doubles match information cannot be saved.",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
   }
 }
