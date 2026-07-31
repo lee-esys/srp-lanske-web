@@ -81,16 +81,13 @@ class JsonEventRepository implements EventRepository {
     );
 
     await _saveAggregate(aggregate);
-
     return aggregate;
   }
 
   @override
   Future<SavedEventAggregate?> findByPublicId(String publicId) async {
     final data = await _store.findByPublicId(publicId);
-    if (data == null) return null;
-
-    return SavedEventAggregate.fromJson(data);
+    return data == null ? null : SavedEventAggregate.fromJson(data);
   }
 
   @override
@@ -104,11 +101,7 @@ class JsonEventRepository implements EventRepository {
     required String eventId,
     required String generatedScheduleId,
   }) async {
-    final aggregate = await _findByEventId(eventId);
-    if (aggregate == null) {
-      throw StateError('event not found: $eventId');
-    }
-
+    final aggregate = await _requireEventById(eventId);
     final updatedData = await _store.updateByPublicId(
       publicId: aggregate.event.publicId,
       update: (currentData) {
@@ -118,24 +111,19 @@ class JsonEventRepository implements EventRepository {
           throw StateError('event already adopted: $eventId');
         }
 
-        final now = _clock();
         return _buildEventFieldsUpdate(
           currentData,
           <String, dynamic>{
             'status': SavedEventStatus.generated.name,
             'currentGeneratedScheduleId': generatedScheduleId,
             'revision': current.event.revision + 1,
-            'updatedAt': _dateTimeToJson(now),
+            'updatedAt': _dateTimeToJson(_clock()),
           },
         );
       },
     );
 
-    if (updatedData == null) {
-      throw StateError('event not found: $eventId');
-    }
-
-    return SavedEventAggregate.fromJson(updatedData).event;
+    return _requireUpdatedAggregate(updatedData, eventId).event;
   }
 
   @override
@@ -143,37 +131,29 @@ class JsonEventRepository implements EventRepository {
     required String eventId,
     required String generatedScheduleId,
   }) async {
-    final aggregate = await _findByEventId(eventId);
-    if (aggregate == null) {
-      throw StateError('event not found: $eventId');
-    }
-
+    final aggregate = await _requireEventById(eventId);
     final updatedData = await _store.updateByPublicId(
       publicId: aggregate.event.publicId,
       update: (currentData) {
         final current = SavedEventAggregate.fromJson(currentData);
         _ensureEventId(current, eventId);
+        final nowJson = _dateTimeToJson(_clock());
 
-        final now = _clock();
         return _buildEventFieldsUpdate(
           currentData,
           <String, dynamic>{
             'status': SavedEventStatus.adopted.name,
             'currentGeneratedScheduleId': generatedScheduleId,
             'adoptedGeneratedScheduleId': generatedScheduleId,
-            'adoptedAt': _dateTimeToJson(now),
+            'adoptedAt': nowJson,
             'revision': current.event.revision + 1,
-            'updatedAt': _dateTimeToJson(now),
+            'updatedAt': nowJson,
           },
         );
       },
     );
 
-    if (updatedData == null) {
-      throw StateError('event not found: $eventId');
-    }
-
-    return SavedEventAggregate.fromJson(updatedData).event;
+    return _requireUpdatedAggregate(updatedData, eventId).event;
   }
 
   @override
@@ -184,36 +164,10 @@ class JsonEventRepository implements EventRepository {
     required String memo,
     required Map<String, String> playerDisplayNamesById,
   }) async {
-    if (expectedRevision < 1) {
-      throw ArgumentError.value(
-        expectedRevision,
-        'expectedRevision',
-        'must be greater than or equal to 1',
-      );
-    }
-
-    final normalizedTitle = title.trim();
-    if (normalizedTitle.isEmpty) {
-      throw ArgumentError.value(title, 'title', 'must not be empty');
-    }
-
+    _validateExpectedRevision(expectedRevision);
+    final normalizedTitle = _requireNonEmpty(title, fieldName: 'title');
     final normalizedMemo = memo.trim();
-    final normalizedNames = <String, String>{};
-    for (final entry in playerDisplayNamesById.entries) {
-      final playerId = entry.key.trim();
-      final displayName = entry.value.trim();
-      if (playerId.isEmpty) {
-        throw ArgumentError.value(entry.key, 'playerId', 'must not be empty');
-      }
-      if (displayName.isEmpty) {
-        throw ArgumentError.value(
-          entry.value,
-          'playerDisplayNamesById[$playerId]',
-          'must not be empty',
-        );
-      }
-      normalizedNames[playerId] = displayName;
-    }
+    final normalizedNames = _normalizePlayerNames(playerDisplayNamesById);
 
     final updatedData = await _store.updateByPublicId(
       publicId: publicId,
@@ -221,26 +175,17 @@ class JsonEventRepository implements EventRepository {
         final current = SavedEventAggregate.fromJson(currentData);
         _ensurePlayerIdsMatch(current.players, normalizedNames.keys.toSet());
 
-        final displayIsUnchanged = current.event.title == normalizedTitle &&
+        final isUnchanged = current.event.title == normalizedTitle &&
             current.event.memo == normalizedMemo &&
             current.players.every(
-              (player) =>
-                  player.displayName == normalizedNames[player.id],
+              (player) => player.displayName == normalizedNames[player.id],
             );
-        if (displayIsUnchanged) {
+        if (isUnchanged) {
           return SavedEventJsonUpdate.noOp(currentData);
         }
 
-        if (current.event.revision != expectedRevision) {
-          throw EventRevisionConflictException(
-            eventId: current.event.id,
-            expectedRevision: expectedRevision,
-            actualRevision: current.event.revision,
-          );
-        }
-
-        final now = _clock();
-        final nowJson = _dateTimeToJson(now);
+        _ensureRevision(current.event, expectedRevision);
+        final nowJson = _dateTimeToJson(_clock());
         final rawPlayers = _asObjectList(
           currentData['players'] ?? currentData['participants'],
           fieldName: 'players',
@@ -288,11 +233,7 @@ class JsonEventRepository implements EventRepository {
       },
     );
 
-    if (updatedData == null) {
-      throw StateError('event not found: $publicId');
-    }
-
-    return SavedEventAggregate.fromJson(updatedData);
+    return _requireUpdatedAggregate(updatedData, publicId);
   }
 
   @override
@@ -300,11 +241,33 @@ class JsonEventRepository implements EventRepository {
     required String eventId,
     required List<SavedEventCourtSetting> courtSettings,
   }) async {
-    final aggregate = await _findByEventId(eventId);
-    if (aggregate == null) {
-      throw StateError('event not found: $eventId');
-    }
+    return _updateCourtSettings(
+      eventId: eventId,
+      expectedRevision: null,
+      courtSettings: courtSettings,
+    );
+  }
 
+  @override
+  Future<SavedEventAggregate> updateCourtSettingsWithRevision({
+    required String eventId,
+    required int expectedRevision,
+    required List<SavedEventCourtSetting> courtSettings,
+  }) async {
+    _validateExpectedRevision(expectedRevision);
+    return _updateCourtSettings(
+      eventId: eventId,
+      expectedRevision: expectedRevision,
+      courtSettings: courtSettings,
+    );
+  }
+
+  Future<SavedEventAggregate> _updateCourtSettings({
+    required String eventId,
+    required int? expectedRevision,
+    required List<SavedEventCourtSetting> courtSettings,
+  }) async {
+    final aggregate = await _requireEventById(eventId);
     final updatedData = await _store.updateByPublicId(
       publicId: aggregate.event.publicId,
       update: (currentData) {
@@ -317,13 +280,15 @@ class JsonEventRepository implements EventRepository {
         if (_courtSettingsEqual(current.courtSettings, courtSettings)) {
           return SavedEventJsonUpdate.noOp(currentData);
         }
+        if (expectedRevision != null) {
+          _ensureRevision(current.event, expectedRevision);
+        }
 
-        final now = _clock();
         final eventUpdate = _buildEventFieldsUpdate(
           currentData,
           <String, dynamic>{
             'revision': current.event.revision + 1,
-            'updatedAt': _dateTimeToJson(now),
+            'updatedAt': _dateTimeToJson(_clock()),
           },
         );
         final nextCourtSettings = courtSettings
@@ -343,17 +308,29 @@ class JsonEventRepository implements EventRepository {
       },
     );
 
-    if (updatedData == null) {
-      throw StateError('event not found: $eventId');
-    }
-
-    return SavedEventAggregate.fromJson(updatedData);
+    return _requireUpdatedAggregate(updatedData, eventId);
   }
 
   Future<SavedEventAggregate?> _findByEventId(String eventId) async {
     final data = await _store.findByEventId(eventId);
-    if (data == null) return null;
+    return data == null ? null : SavedEventAggregate.fromJson(data);
+  }
 
+  Future<SavedEventAggregate> _requireEventById(String eventId) async {
+    final aggregate = await _findByEventId(eventId);
+    if (aggregate == null) {
+      throw StateError('event not found: $eventId');
+    }
+    return aggregate;
+  }
+
+  SavedEventAggregate _requireUpdatedAggregate(
+    Map<String, dynamic>? data,
+    String identifier,
+  ) {
+    if (data == null) {
+      throw StateError('event not found: $identifier');
+    }
     return SavedEventAggregate.fromJson(data);
   }
 
@@ -372,15 +349,14 @@ class JsonEventRepository implements EventRepository {
       currentData['event'],
       fieldName: 'event',
     );
-    final nextEvent = <String, dynamic>{
-      ...currentEvent,
-      ...eventFields,
-    };
 
     return SavedEventJsonUpdate(
       data: <String, dynamic>{
         ...currentData,
-        'event': nextEvent,
+        'event': <String, dynamic>{
+          ...currentEvent,
+          ...eventFields,
+        },
       },
       fields: <String, dynamic>{
         for (final entry in eventFields.entries)
@@ -389,9 +365,51 @@ class JsonEventRepository implements EventRepository {
     );
   }
 
+  void _validateExpectedRevision(int expectedRevision) {
+    if (expectedRevision < 1) {
+      throw ArgumentError.value(
+        expectedRevision,
+        'expectedRevision',
+        'must be greater than or equal to 1',
+      );
+    }
+  }
+
+  String _requireNonEmpty(String value, {required String fieldName}) {
+    final normalized = value.trim();
+    if (normalized.isEmpty) {
+      throw ArgumentError.value(value, fieldName, 'must not be empty');
+    }
+    return normalized;
+  }
+
+  Map<String, String> _normalizePlayerNames(
+    Map<String, String> playerDisplayNamesById,
+  ) {
+    final normalized = <String, String>{};
+    for (final entry in playerDisplayNamesById.entries) {
+      final playerId = _requireNonEmpty(entry.key, fieldName: 'playerId');
+      normalized[playerId] = _requireNonEmpty(
+        entry.value,
+        fieldName: 'playerDisplayNamesById[$playerId]',
+      );
+    }
+    return normalized;
+  }
+
   void _ensureEventId(SavedEventAggregate aggregate, String eventId) {
     if (aggregate.event.id != eventId) {
       throw StateError('event id mismatch: $eventId');
+    }
+  }
+
+  void _ensureRevision(SavedEvent event, int expectedRevision) {
+    if (event.revision != expectedRevision) {
+      throw EventRevisionConflictException(
+        eventId: event.id,
+        expectedRevision: expectedRevision,
+        actualRevision: event.revision,
+      );
     }
   }
 
@@ -415,14 +433,12 @@ class JsonEventRepository implements EventRepository {
     List<SavedEventCourtSetting> right,
   ) {
     if (left.length != right.length) return false;
-
     for (var index = 0; index < left.length; index += 1) {
       if (left[index].courtNumber != right[index].courtNumber ||
           left[index].displayLabel != right[index].displayLabel) {
         return false;
       }
     }
-
     return true;
   }
 
@@ -433,7 +449,6 @@ class JsonEventRepository implements EventRepository {
     if (value is! Map) {
       throw FormatException('$fieldName must be an object');
     }
-
     return value.map(
       (key, value) => MapEntry(key.toString(), value),
     );
@@ -446,7 +461,6 @@ class JsonEventRepository implements EventRepository {
     if (value is! List) {
       throw FormatException('$fieldName must be a list');
     }
-
     return value.map((item) {
       return _asObjectMap(item, fieldName: '$fieldName item');
     }).toList(growable: false);
@@ -459,17 +473,14 @@ class JsonEventRepository implements EventRepository {
   Future<String> _generateUniquePublicId() async {
     for (var attempt = 0; attempt < 10; attempt += 1) {
       final candidate = _publicIdGenerator();
-
       if (!isValidPublicId(candidate)) {
         throw StateError('invalid public_id generated: $candidate');
       }
-
       final existing = await _store.findByPublicId(candidate);
       if (existing == null) {
         return candidate;
       }
     }
-
     throw StateError('failed to generate unique public_id');
   }
 }
