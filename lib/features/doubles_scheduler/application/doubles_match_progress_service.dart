@@ -83,12 +83,15 @@ ScheduleMatchProgressUpdate buildUpdate({
     case ScheduleMatchStatus.scheduled:
       startedAt = null;
       finishedAt = null;
+      break;
     case ScheduleMatchStatus.inProgress:
       startedAt = input.startedAt ?? current.startedAt ?? now;
       finishedAt = null;
+      break;
     case ScheduleMatchStatus.completed:
       startedAt = input.startedAt ?? current.startedAt;
       finishedAt = input.finishedAt ?? current.finishedAt ?? now;
+      break;
   }
 
   if (startedAt != null &&
