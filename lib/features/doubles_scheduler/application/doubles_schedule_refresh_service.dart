@@ -118,8 +118,12 @@ class DoublesScheduleRefreshService {
     final currentProgressRevision = current?.progressSummary?.revision;
     final eventChanged = current == null ||
         current.aggregate.event.revision != aggregate.event.revision;
+    final scheduleResponseMissing = generatedScheduleId != null &&
+        generatedScheduleId.isNotEmpty &&
+        currentScheduleResponse == null;
     final scheduleChanged = current == null ||
-        currentGeneratedScheduleId != generatedScheduleId;
+        currentGeneratedScheduleId != generatedScheduleId ||
+        scheduleResponseMissing;
 
     Map<String, dynamic>? scheduleResponse;
     ScheduleProgressScope? progressScope;
