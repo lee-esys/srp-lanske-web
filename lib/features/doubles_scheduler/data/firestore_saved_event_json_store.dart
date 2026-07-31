@@ -50,6 +50,31 @@ class FirestoreSavedEventJsonStore implements SavedEventJsonStore {
     return _copy(snapshot.docs.first.data());
   }
 
+  @override
+  Future<Map<String, dynamic>?> updateByPublicId({
+    required String publicId,
+    required SavedEventJsonUpdater update,
+  }) {
+    final reference = _collection.doc(publicId);
+
+    return _firestore.runTransaction<Map<String, dynamic>?>(
+      (transaction) async {
+        final snapshot = await transaction.get(reference);
+        final data = snapshot.data();
+        if (!snapshot.exists || data == null) {
+          return null;
+        }
+
+        final result = update(_copy(data));
+        if (!result.isNoOp) {
+          transaction.update(reference, _copy(result.fields));
+        }
+
+        return _copy(result.data);
+      },
+    );
+  }
+
   Map<String, dynamic> _copy(Map<String, dynamic> data) {
     return jsonDecode(jsonEncode(data)) as Map<String, dynamic>;
   }

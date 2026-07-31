@@ -263,8 +263,28 @@ class _FakeEventRepository implements EventRepository {
   }
 
   @override
+  Future<SavedEventAggregate> updateDisplayInfo({
+    required String publicId,
+    required int expectedRevision,
+    required String title,
+    required String memo,
+    required Map<String, String> playerDisplayNamesById,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<SavedEventAggregate> updateCourtSettings({
     required String eventId,
+    required List<SavedEventCourtSetting> courtSettings,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<SavedEventAggregate> updateCourtSettingsWithRevision({
+    required String eventId,
+    required int expectedRevision,
     required List<SavedEventCourtSetting> courtSettings,
   }) {
     throw UnimplementedError();

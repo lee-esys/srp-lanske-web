@@ -30,6 +30,7 @@ class SavedEvent {
     required this.status,
     required this.createdAt,
     required this.updatedAt,
+    this.memo = '',
     this.eventDate,
     this.startTime,
     this.endTime,
@@ -46,6 +47,7 @@ class SavedEvent {
   final String id;
   final String publicId;
   final String title;
+  final String memo;
   final DateTime? eventDate;
   final String? startTime;
   final String? endTime;
@@ -75,6 +77,7 @@ class SavedEvent {
 
   SavedEvent copyWith({
     String? title,
+    String? memo,
     DateTime? eventDate,
     String? startTime,
     String? endTime,
@@ -96,6 +99,7 @@ class SavedEvent {
       id: id,
       publicId: publicId,
       title: title ?? this.title,
+      memo: memo ?? this.memo,
       eventDate: eventDate ?? this.eventDate,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
@@ -123,6 +127,7 @@ class SavedEvent {
       'id': id,
       'publicId': publicId,
       'title': title,
+      'memo': memo,
       'eventDate': _nullableDateTimeToJson(eventDate),
       'startTime': startTime,
       'endTime': endTime,
@@ -150,6 +155,7 @@ class SavedEvent {
       id: json['id'].toString(),
       publicId: json['publicId'].toString(),
       title: json['title'].toString(),
+      memo: json['memo']?.toString() ?? '',
       eventDate: _nullableDateTimeFromJson(json['eventDate']),
       startTime: json['startTime']?.toString(),
       endTime: json['endTime']?.toString(),
@@ -183,11 +189,13 @@ class SavedEventPlayer {
     required this.status,
     required this.createdAt,
     required this.updatedAt,
+    String? initialDisplayName,
     this.sourceText,
-  });
+  }) : initialDisplayName = initialDisplayName ?? displayName;
 
   final String id;
   final String eventId;
+  final String initialDisplayName;
   final String displayName;
   final int orderNo;
   final String status;
@@ -195,10 +203,28 @@ class SavedEventPlayer {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  SavedEventPlayer copyWith({
+    String? displayName,
+    DateTime? updatedAt,
+  }) {
+    return SavedEventPlayer(
+      id: id,
+      eventId: eventId,
+      initialDisplayName: initialDisplayName,
+      displayName: displayName ?? this.displayName,
+      orderNo: orderNo,
+      status: status,
+      sourceText: sourceText,
+      createdAt: createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'eventId': eventId,
+      'initialDisplayName': initialDisplayName,
       'displayName': displayName,
       'orderNo': orderNo,
       'status': status,
@@ -209,10 +235,14 @@ class SavedEventPlayer {
   }
 
   factory SavedEventPlayer.fromJson(Map<String, dynamic> json) {
+    final displayName = json['displayName'].toString();
+
     return SavedEventPlayer(
       id: json['id'].toString(),
       eventId: json['eventId'].toString(),
-      displayName: json['displayName'].toString(),
+      initialDisplayName:
+          json['initialDisplayName']?.toString() ?? displayName,
+      displayName: displayName,
       orderNo: _intFromJson(json['orderNo']),
       status: json['status']?.toString() ?? 'active',
       sourceText: json['sourceText']?.toString(),
