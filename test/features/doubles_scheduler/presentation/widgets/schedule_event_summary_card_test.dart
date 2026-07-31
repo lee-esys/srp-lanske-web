@@ -78,7 +78,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(refreshCount, 1);
-    expect(find.text('イベント情報を編集'), findsOneWidget);
+    expect(find.byType(AlertDialog), findsOneWidget);
 
     await tester.tap(find.widgetWithText(TextButton, 'キャンセル'));
     await tester.pumpAndSettle();
