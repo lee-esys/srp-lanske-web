@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
+import 'package:srp_lanske/shared/presentation/app_message_type.dart';
+import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
 import 'package:srp_lanske/shared/utils/external_link.dart';
 import 'package:srp_lanske/shared/utils/number_label_mapper.dart';
 
@@ -130,14 +132,14 @@ class _EventSetupPageState extends State<EventSetupPage> {
     }
   }
 
-  void _showMessage(String message) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
+  void _showMessage(
+    String message, {
+    AppMessageType type = AppMessageType.info,
+  }) {
+    AppSnackBar.show(
+      context,
+      message: message,
+      type: type,
     );
   }
 
@@ -388,12 +390,18 @@ class _EventSetupPageState extends State<EventSetupPage> {
     final originalUrl = _urlController.text.trim();
     final parsedUrl = parseTennisbearEventUrl(originalUrl);
     if (originalUrl.isEmpty) {
-      _showMessage(l10n.enterUrlMessage);
+      _showMessage(
+        l10n.enterUrlMessage,
+        type: AppMessageType.warning,
+      );
       return;
     }
 
     if (parsedUrl == null) {
-      _showMessage(l10n.enterTennisbearEventUrlMessage);
+      _showMessage(
+        l10n.enterTennisbearEventUrlMessage,
+        type: AppMessageType.warning,
+      );
       return;
     }
 
@@ -459,9 +467,15 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
       final warnings = preview.warnings;
       if (warnings.isEmpty) {
-        _showMessage(l10n.eventInfoLoadedMessage);
+        _showMessage(
+          l10n.eventInfoLoadedMessage,
+          type: AppMessageType.success,
+        );
       } else {
-        _showMessage(l10n.eventInfoPartiallyLoadedMessage);
+        _showMessage(
+          l10n.eventInfoPartiallyLoadedMessage,
+          type: AppMessageType.warning,
+        );
       }
     } on TennisbearImportPreviewApiException catch (e) {
       final elapsed = DateTime.now().difference(startedAt);
@@ -471,7 +485,10 @@ class _EventSetupPageState extends State<EventSetupPage> {
       }
 
       if (!mounted) return;
-      _showMessage(e.message);
+      _showMessage(
+        e.message,
+        type: AppMessageType.error,
+      );
     } catch (_) {
       final elapsed = DateTime.now().difference(startedAt);
       const minLoading = Duration(milliseconds: 500);
@@ -481,7 +498,10 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
       if (!mounted) return;
       // TODO: イベント情報取得失敗時のエラーログを送る仕組みができたら、ここで例外内容も送る。adminにメール送信するのもあり。
-      _showMessage(l10n.eventInfoLoadFailedMessage);
+      _showMessage(
+        l10n.eventInfoLoadFailedMessage,
+        type: AppMessageType.error,
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -547,7 +567,10 @@ class _EventSetupPageState extends State<EventSetupPage> {
     final text = data?.text?.trim() ?? '';
 
     if (text.isEmpty) {
-      _showMessage(l10n.clipboardUrlNotFoundMessage);
+      _showMessage(
+        l10n.clipboardUrlNotFoundMessage,
+        type: AppMessageType.warning,
+      );
       return;
     }
 
@@ -561,7 +584,10 @@ class _EventSetupPageState extends State<EventSetupPage> {
     });
 
     if (parseTennisbearEventUrl(text) == null) {
-      _showMessage(l10n.pasteTennisbearEventUrlMessage);
+      _showMessage(
+        l10n.pasteTennisbearEventUrlMessage,
+        type: AppMessageType.warning,
+      );
     }
   }
 
