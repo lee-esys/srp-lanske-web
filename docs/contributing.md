@@ -15,6 +15,7 @@ docs 全体の入口は [Docs index](README.md) です。
 - アルゴリズムとアプリを分離する
 - 再現性のある実装を意識する
 - 公開ユーザー向け docs と開発者向け docs を混ぜすぎない
+- 実装と docs の前提を定期的に照合する
 
 ---
 
@@ -73,13 +74,54 @@ refactor/63-split-event-setup-ui
 
 1. `main` を最新化
 2. 作業ブランチを作成
-3. 実装または docs 更新
-4. コミット
-5. Push
-6. Pull Request 作成
-7. 動作確認
-8. `Squash and merge`
-9. ブランチ削除
+3. version開始時は既存docsの前提を確認する
+4. 実装または docs 更新
+5. コミット
+6. Push
+7. Pull Request 作成
+8. 動作確認
+9. `Squash and merge`
+10. ブランチ削除
+
+---
+
+## 📚 version開始時のdocs監査
+
+新しいversionの作業を始めるときは、実装Issueの着手前に既存docsを確認する。
+
+特に、以下のような将来・非対応を表す記述を検索する。
+
+```text
+未実装
+ありません
+できません
+対象外
+今後
+将来
+予定
+ver0.xでは
+```
+
+確認対象の例:
+
+- `README.md`
+- `docs/usage-*.md`
+- `docs/known-limitations-*.md`
+- `docs/architecture.md`
+- release checklist / roadmap / support docs
+
+確認時は、以下を照合する。
+
+- 現在の実装で、すでに対応済みになっていないか
+- 新versionのmilestoneやIssueで、従来の対象外を採用する予定がないか
+- 「できること」と「できないこと」が同じdocs内で矛盾していないか
+- version番号を伴う断定が現在も正しいか
+- 公開ユーザー向け説明と内部設計が一致しているか
+
+初期構想から方針を変更した場合は、現在の仕様だけでなく、必要に応じて変更理由も残す。
+実運用で重要度が判明した、前提条件が変わった、MVP範囲を見直した、といった判断経緯は、今後の設計判断に利用できる粒度で記録する。
+
+version終了時・リリース前にも同じ観点で再確認する。
 
 ---
 
@@ -182,6 +224,14 @@ flutter test
 docs のみの変更では、実装に影響しないことを確認したうえで、実行不要と判断してよい。
 その場合も、PR 本文や作業メモで「docs のみの変更のため未実行」と明記する。
 
+PR前には、変更した機能について以下も確認する。
+
+- READMEの機能一覧
+- 使い方
+- 既知の制限事項
+- Architecture
+- 「未実装」「今後」などの古い断定
+
 ---
 
 ## 📌 注意事項
@@ -198,9 +248,9 @@ docs のみの変更では、実装に影響しないことを確認したうえ
 
 - round_robin
 - knockout
-- score
+- detailed score / statistics
 
-機能単位で拡張していく
+機能単位で拡張していく。
 
 ---
 
