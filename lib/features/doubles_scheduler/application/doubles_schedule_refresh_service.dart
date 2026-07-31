@@ -114,6 +114,8 @@ class DoublesScheduleRefreshService {
 
     final generatedScheduleId = aggregate.event.displayGeneratedScheduleId;
     final currentGeneratedScheduleId = current?.generatedScheduleId;
+    final currentScheduleResponse = current?.scheduleResponse;
+    final currentProgressRevision = current?.progressSummary?.revision;
     final eventChanged = current == null ||
         current.aggregate.event.revision != aggregate.event.revision;
     final scheduleChanged = current == null ||
@@ -126,8 +128,8 @@ class DoublesScheduleRefreshService {
     var progressChanged = false;
 
     if (generatedScheduleId != null && generatedScheduleId.isNotEmpty) {
-      scheduleResponse = !scheduleChanged && current?.scheduleResponse != null
-          ? current!.scheduleResponse
+      scheduleResponse = !scheduleChanged && currentScheduleResponse != null
+          ? currentScheduleResponse
           : await _loadGeneratedSchedule(generatedScheduleId);
 
       progressScope = ScheduleProgressScope(
@@ -140,7 +142,7 @@ class DoublesScheduleRefreshService {
       final sameProgressScope =
           current?.progressScope?.storageKey == progressScope.storageKey;
       final sameProgressRevision = sameProgressScope &&
-          current?.progressSummary?.revision == progressSummary?.revision;
+          currentProgressRevision == progressSummary?.revision;
 
       if (progressSummary == null) {
         matches = const [];
@@ -152,7 +154,7 @@ class DoublesScheduleRefreshService {
 
       progressChanged = current == null ||
           !sameProgressScope ||
-          current.progressSummary?.revision != progressSummary?.revision;
+          currentProgressRevision != progressSummary?.revision;
     } else {
       progressChanged = current?.progressSummary != null ||
           (current?.matches.isNotEmpty ?? false);
