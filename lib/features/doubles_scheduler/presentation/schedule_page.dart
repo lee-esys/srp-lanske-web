@@ -47,6 +47,7 @@ class _SchedulePageState extends State<SchedulePage> {
   bool _isLoading = true;
   bool _isAdopting = false;
   bool _isRefreshing = false;
+  bool _isCheckingRegenerate = false;
   bool _isOpeningSharedDataDialog = false;
   int _refreshRequestSequence = 0;
   String? _errorMessage;
@@ -207,32 +208,21 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _requestGenerateSchedule() async {
-    final l10n = AppLocalizations.of(context);
-    final displayedGeneratedScheduleId = _generatedScheduleId;
-
-    if (_savedEvent != null) {
-      final refreshed = await _refreshLatestAll(showSuccess: false);
-      if (!mounted || !refreshed) return;
-
-      if (_hasAdoptedSchedule) {
-        _showMessage(
-          l10n.cannotRegenerateAdoptedScheduleMessage,
-          type: AppMessageType.warning,
-        );
-        return;
-      }
-
-      if (_generatedScheduleId != displayedGeneratedScheduleId) {
-        return;
-      }
-    }
+    if (_isCheckingRegenerate || _isLoading || _isAdopting) return;
 
     if (!_hasGeneratedSchedule) {
       await _generateSchedule();
       return;
     }
 
+    final l10n = AppLocalizations.of(context);
     final expectedGeneratedScheduleId = _generatedScheduleId;
+    if (expectedGeneratedScheduleId == null ||
+        expectedGeneratedScheduleId.isEmpty) {
+      await _generateSchedule();
+      return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
@@ -255,23 +245,117 @@ class _SchedulePageState extends State<SchedulePage> {
 
     if (!mounted || confirmed != true) return;
 
-    final refreshedBeforeGenerate =
-        await _refreshLatestAll(showSuccess: false);
-    if (!mounted || !refreshedBeforeGenerate) return;
-
-    if (_hasAdoptedSchedule) {
-      _showMessage(
-        l10n.cannotRegenerateAdoptedScheduleMessage,
-        type: AppMessageType.warning,
-      );
-      return;
-    }
-
-    if (_generatedScheduleId != expectedGeneratedScheduleId) {
-      return;
-    }
+    final canGenerate = await _refreshBeforeRegenerate(
+      expectedGeneratedScheduleId: expectedGeneratedScheduleId,
+    );
+    if (!mounted || !canGenerate) return;
 
     await _generateSchedule();
+  }
+
+  Future<bool> _refreshBeforeRegenerate({
+    required String expectedGeneratedScheduleId,
+  }) async {
+    final aggregate = _savedEvent;
+    if (aggregate == null) return false;
+
+    final l10n = AppLocalizations.of(context);
+    final requestSequence = ++_refreshRequestSequence;
+    final currentSnapshot = _currentRefreshSnapshot;
+
+    setState(() {
+      _isCheckingRegenerate = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final snapshot = await _refreshService.loadLatestByPublicId(
+        publicId: aggregate.event.publicId,
+        current: currentSnapshot,
+      );
+      if (!mounted || requestSequence != _refreshRequestSequence) {
+        return false;
+      }
+
+      final shouldApplySnapshot =
+          currentSnapshot == null || snapshot.hasChanges;
+      final latestPlayerIds =
+          snapshot.aggregate.players.map((player) => player.id).toSet();
+      final selectedPlayerId = _selectedPlayerId;
+
+      setState(() {
+        if (shouldApplySnapshot) {
+          _savedEvent = snapshot.aggregate;
+          _scheduleResponse = snapshot.scheduleResponse;
+          _generatedScheduleId = snapshot.generatedScheduleId;
+          _progressSummary = snapshot.progressSummary;
+          _matchProgresses = snapshot.matches;
+          if (selectedPlayerId != null &&
+              !latestPlayerIds.contains(selectedPlayerId)) {
+            _selectedPlayerId = null;
+          }
+        }
+      });
+
+      await _saveScheduleHistory(snapshot.aggregate);
+      if (!mounted || requestSequence != _refreshRequestSequence) {
+        return false;
+      }
+
+      if (snapshot.aggregate.event.hasAdoptedSchedule) {
+        _showMessage(
+          l10n.cannotRegenerateAdoptedScheduleMessage,
+          type: AppMessageType.warning,
+        );
+        return false;
+      }
+
+      if (snapshot.generatedScheduleId != expectedGeneratedScheduleId) {
+        _showMessage(
+          l10n.scheduleUpdatedReloadMessage,
+          type: AppMessageType.info,
+        );
+        return false;
+      }
+
+      return true;
+    } on DoublesScheduleNotFoundException {
+      if (!mounted || requestSequence != _refreshRequestSequence) {
+        return false;
+      }
+
+      setState(() {
+        _savedEvent = null;
+        _scheduleResponse = null;
+        _generatedScheduleId = null;
+        _selectedPlayerId = null;
+        _progressSummary = null;
+        _matchProgresses = const [];
+        _errorMessage = l10n.scheduleNotFoundMessage;
+      });
+      _showMessage(
+        l10n.scheduleNotFoundMessage,
+        type: AppMessageType.error,
+      );
+      return false;
+    } catch (e) {
+      if (!mounted || requestSequence != _refreshRequestSequence) {
+        return false;
+      }
+
+      final message = l10n.reloadScheduleFailedMessage(e.toString());
+      setState(() {
+        _errorMessage = message;
+      });
+      _showMessage(message, type: AppMessageType.error);
+      return false;
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCheckingRegenerate = false;
+        });
+      }
+    }
   }
 
   Future<SavedEventAggregate?> _refreshSavedEventForAction() async {
@@ -818,11 +902,14 @@ class _SchedulePageState extends State<SchedulePage> {
             canChangeCourtDisplay: !_hasAdoptedSchedule &&
                 _savedEvent != null &&
                 !_isRefreshing &&
+                !_isCheckingRegenerate &&
                 !_isOpeningSharedDataDialog,
             onChangeCourtDisplay: _changeCourtDisplay,
             showActionButtons: !_hasAdoptedSchedule,
-            isLoading:
-                _isLoading || _isRefreshing || _isOpeningSharedDataDialog,
+            isLoading: _isLoading ||
+                _isRefreshing ||
+                _isCheckingRegenerate ||
+                _isOpeningSharedDataDialog,
             isAdopting: _isAdopting,
             generateButtonLabel: _generateButtonLabel(l10n),
             canAdopt: _generatedScheduleId != null && _scheduleResponse != null,
