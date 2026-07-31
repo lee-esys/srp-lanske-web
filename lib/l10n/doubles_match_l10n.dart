@@ -21,11 +21,9 @@ extension DoublesMatchLocalizations on AppLocalizations {
   String get doublesMatchScoreUnsetLabel =>
       _isJapanese ? 'スコアを未入力に戻す' : 'Clear score';
 
-  String get doublesMatchStartTimeLabel =>
-      _isJapanese ? '開始時間' : 'Start time';
+  String get doublesMatchStartTimeLabel => _isJapanese ? '開始時間' : 'Start time';
 
-  String get doublesMatchEndTimeLabel =>
-      _isJapanese ? '終了時間' : 'End time';
+  String get doublesMatchEndTimeLabel => _isJapanese ? '終了時間' : 'End time';
 
   String get doublesMatchSetCurrentTimeTooltip =>
       _isJapanese ? '現在時刻を設定' : 'Set current time';

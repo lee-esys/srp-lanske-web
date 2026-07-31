@@ -23,8 +23,7 @@ class DoublesMatchResultDialog extends StatefulWidget {
       _DoublesMatchResultDialogState();
 }
 
-class _DoublesMatchResultDialogState
-    extends State<DoublesMatchResultDialog> {
+class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   late ScheduleMatchStatus _status;
   late int? _side1Score;
   late int? _side2Score;
@@ -36,11 +35,11 @@ class _DoublesMatchResultDialogState
   void initState() {
     super.initState();
     final progress = widget.initialProgress;
-    final scores = progress.result?.type ==
-                ScheduleMatchResultSummary.simpleScoreType &&
-            (progress.result?.sideScores.length ?? 0) >= 2
-        ? progress.result!.sideScores
-        : const <int>[];
+    final scores =
+        progress.result?.type == ScheduleMatchResultSummary.simpleScoreType &&
+                (progress.result?.sideScores.length ?? 0) >= 2
+            ? progress.result!.sideScores
+            : const <int>[];
 
     _status = progress.status;
     _side1Score = scores.length >= 2 && scores[0] <= 9 ? scores[0] : null;
@@ -248,12 +247,9 @@ class _DoublesMatchResultDialogState
 
   String _statusLabel(AppLocalizations l10n, ScheduleMatchStatus status) {
     return switch (status) {
-      ScheduleMatchStatus.scheduled =>
-        l10n.doublesMatchStatusScheduledLabel,
-      ScheduleMatchStatus.inProgress =>
-        l10n.doublesMatchStatusInProgressLabel,
-      ScheduleMatchStatus.completed =>
-        l10n.doublesMatchStatusCompletedLabel,
+      ScheduleMatchStatus.scheduled => l10n.doublesMatchStatusScheduledLabel,
+      ScheduleMatchStatus.inProgress => l10n.doublesMatchStatusInProgressLabel,
+      ScheduleMatchStatus.completed => l10n.doublesMatchStatusCompletedLabel,
     };
   }
 
@@ -326,9 +322,8 @@ class _DoublesMatchResultDialogState
             child: DropdownButton<int>(
               value: value?.hour,
               hint: const Text('－－'),
-              onChanged: enabled
-                  ? (hour) => _setHour(start: start, hour: hour)
-                  : null,
+              onChanged:
+                  enabled ? (hour) => _setHour(start: start, hour: hour) : null,
               items: [
                 for (var hour = 0; hour < 24; hour += 1)
                   DropdownMenuItem<int>(

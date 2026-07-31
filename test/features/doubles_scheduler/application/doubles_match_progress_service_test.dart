@@ -218,8 +218,12 @@ void main() {
       expect(
         countDoublesScheduleMatches(<String, dynamic>{
           'rounds': <Map<String, dynamic>>[
-            <String, dynamic>{'courts': <Object>[{}, {}]},
-            <String, dynamic>{'courts': <Object>[{}]},
+            <String, dynamic>{
+              'courts': <Object>[{}, {}]
+            },
+            <String, dynamic>{
+              'courts': <Object>[{}]
+            },
           ],
         }),
         3,

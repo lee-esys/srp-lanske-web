@@ -559,12 +559,10 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
     final progress = roundNo == null || courtNumber == null
         ? null
-        : _progressByKey[
-            ScheduleMatchKey(
-              roundNo: roundNo,
-              courtNo: courtNumber,
-            ).value
-          ];
+        : _progressByKey[ScheduleMatchKey(
+            roundNo: roundNo,
+            courtNo: courtNumber,
+          ).value];
 
     final selection = roundNo == null || courtNumber == null
         ? null
@@ -643,11 +641,11 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   }) {
     final l10n = AppLocalizations.of(context);
     final status = progress?.status ?? ScheduleMatchStatus.scheduled;
-    final scores = progress?.result?.type ==
-                ScheduleMatchResultSummary.simpleScoreType &&
-            (progress?.result?.sideScores.length ?? 0) >= 2
-        ? progress!.result!.sideScores
-        : const <int>[];
+    final scores =
+        progress?.result?.type == ScheduleMatchResultSummary.simpleScoreType &&
+                (progress?.result?.sideScores.length ?? 0) >= 2
+            ? progress!.result!.sideScores
+            : const <int>[];
     final outcomeScores =
         status == ScheduleMatchStatus.completed ? scores : const <int>[];
     final side1Outcome = _outcomeForSide(outcomeScores, sideIndex: 0);
@@ -719,12 +717,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
   String _statusLabel(AppLocalizations l10n, ScheduleMatchStatus status) {
     return switch (status) {
-      ScheduleMatchStatus.scheduled =>
-        l10n.doublesMatchStatusScheduledLabel,
-      ScheduleMatchStatus.inProgress =>
-        l10n.doublesMatchStatusInProgressLabel,
-      ScheduleMatchStatus.completed =>
-        l10n.doublesMatchStatusCompletedLabel,
+      ScheduleMatchStatus.scheduled => l10n.doublesMatchStatusScheduledLabel,
+      ScheduleMatchStatus.inProgress => l10n.doublesMatchStatusInProgressLabel,
+      ScheduleMatchStatus.completed => l10n.doublesMatchStatusCompletedLabel,
     };
   }
 
@@ -917,14 +912,11 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       return const [];
     }
 
-    return value
-        .whereType<Map>()
-        .map((item) {
-          return item.map(
-            (key, value) => MapEntry(key.toString(), value),
-          );
-        })
-        .toList(growable: false);
+    return value.whereType<Map>().map((item) {
+      return item.map(
+        (key, value) => MapEntry(key.toString(), value),
+      );
+    }).toList(growable: false);
   }
 
   List<int> _asIntList(Object? value) {
@@ -932,10 +924,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       return const [];
     }
 
-    return value
-        .map(_tryReadInt)
-        .whereType<int>()
-        .toList(growable: false);
+    return value.map(_tryReadInt).whereType<int>().toList(growable: false);
   }
 
   int? _tryReadInt(Object? value) {
