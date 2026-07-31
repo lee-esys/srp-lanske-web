@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_progress_ui_store.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
 class ScheduleEventSummaryCard extends StatelessWidget {
@@ -50,11 +51,21 @@ class ScheduleEventSummaryCard extends StatelessWidget {
                         : const Icon(Icons.sync),
                     label: Text(l10n.refreshLatestButton),
                   ),
-                if (progressText != null)
-                  Chip(
-                    avatar: const Icon(Icons.sports_score, size: 18),
-                    label: Text(progressText!),
-                  ),
+                ValueListenableBuilder<String?>(
+                  valueListenable: DoublesProgressUiStore.progressText,
+                  builder: (context, latestProgressText, child) {
+                    final displayProgressText =
+                        latestProgressText ?? progressText;
+                    if (displayProgressText == null) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Chip(
+                      avatar: const Icon(Icons.sports_score, size: 18),
+                      label: Text(displayProgressText),
+                    );
+                  },
+                ),
               ],
             ),
             const SizedBox(height: 4),
