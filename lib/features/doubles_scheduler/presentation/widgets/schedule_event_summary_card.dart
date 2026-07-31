@@ -5,6 +5,7 @@ import 'package:srp_lanske/shared/presentation/app_message_type.dart';
 import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
+import '../../application/event_repository.dart';
 import '../../domain/saved_event_models.dart';
 import 'doubles_event_info_dialog.dart';
 
@@ -12,6 +13,7 @@ class ScheduleEventSummaryCard extends StatefulWidget {
   const ScheduleEventSummaryCard({
     super.key,
     this.aggregate,
+    this.repository,
     this.onShareUrl,
     this.onRefresh,
     this.onRefreshForEdit,
@@ -21,6 +23,7 @@ class ScheduleEventSummaryCard extends StatefulWidget {
   });
 
   final SavedEventAggregate? aggregate;
+  final EventRepository? repository;
   final VoidCallback? onShareUrl;
   final Future<void> Function()? onRefresh;
   final Future<bool> Function()? onRefreshForEdit;
@@ -36,6 +39,10 @@ class ScheduleEventSummaryCard extends StatefulWidget {
 class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
   SavedEventAggregate? _loadedAggregate;
   bool _isEditingEventInfo = false;
+
+  EventRepository get _repository {
+    return widget.repository ?? appEventRepository;
+  }
 
   SavedEventAggregate? get _displayAggregate {
     return widget.aggregate ?? _loadedAggregate;
@@ -75,7 +82,7 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
     final publicId = _resolvePublicId();
     if (publicId == null) return null;
 
-    final latest = await appEventRepository.findByPublicId(publicId);
+    final latest = await _repository.findByPublicId(publicId);
     if (!mounted) return latest;
 
     if (latest != null) {
@@ -132,7 +139,7 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
         builder: (context) {
           return DoublesEventInfoDialog(
             initialAggregate: latest,
-            repository: appEventRepository,
+            repository: _repository,
           );
         },
       );
