@@ -184,15 +184,20 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
   Future<void> _requestGenerateSchedule() async {
     final l10n = AppLocalizations.of(context);
-    final latestEvent = await _refreshSavedEventForAction();
-    if (!mounted) return;
+    final displayedGeneratedScheduleId = _generatedScheduleId;
 
-    if (latestEvent?.event.hasAdoptedSchedule == true) {
+    final refreshed = await _refreshLatestAll(showSuccess: false);
+    if (!mounted || !refreshed) return;
+
+    if (_hasAdoptedSchedule) {
       _showMessage(
         l10n.cannotRegenerateAdoptedScheduleMessage,
         type: AppMessageType.warning,
       );
-      await _reloadSchedule(showSuccess: false);
+      return;
+    }
+
+    if (_generatedScheduleId != displayedGeneratedScheduleId) {
       return;
     }
 
@@ -201,6 +206,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       return;
     }
 
+    final expectedGeneratedScheduleId = _generatedScheduleId;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
@@ -223,15 +229,19 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
     if (!mounted || confirmed != true) return;
 
-    final latestBeforeGenerate = await _refreshSavedEventForAction();
-    if (!mounted) return;
+    final refreshedBeforeGenerate =
+        await _refreshLatestAll(showSuccess: false);
+    if (!mounted || !refreshedBeforeGenerate) return;
 
-    if (latestBeforeGenerate?.event.hasAdoptedSchedule == true) {
+    if (_hasAdoptedSchedule) {
       _showMessage(
         l10n.cannotRegenerateAdoptedScheduleMessage,
         type: AppMessageType.warning,
       );
-      await _reloadSchedule(showSuccess: false);
+      return;
+    }
+
+    if (_generatedScheduleId != expectedGeneratedScheduleId) {
       return;
     }
 
