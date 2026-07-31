@@ -366,6 +366,20 @@ class _DoublesMatchResultDialogState
     final l10n = AppLocalizations.of(context);
     final startEnabled = _status != ScheduleMatchStatus.scheduled;
     final finishEnabled = _status == ScheduleMatchStatus.completed;
+    final useHorizontalTimeLayout = MediaQuery.sizeOf(context).width >= 720;
+
+    final startTimeInput = _buildTimeInput(
+      label: l10n.doublesMatchStartTimeLabel,
+      value: _startedAt,
+      enabled: startEnabled,
+      start: true,
+    );
+    final finishTimeInput = _buildTimeInput(
+      label: l10n.doublesMatchEndTimeLabel,
+      value: _finishedAt,
+      enabled: finishEnabled,
+      start: false,
+    );
 
     return AlertDialog(
       title: Text(l10n.doublesMatchEditTitle),
@@ -422,43 +436,25 @@ class _DoublesMatchResultDialogState
                 ),
               ),
               const SizedBox(height: 20),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final start = _buildTimeInput(
-                    label: l10n.doublesMatchStartTimeLabel,
-                    value: _startedAt,
-                    enabled: startEnabled,
-                    start: true,
-                  );
-                  final finish = _buildTimeInput(
-                    label: l10n.doublesMatchEndTimeLabel,
-                    value: _finishedAt,
-                    enabled: finishEnabled,
-                    start: false,
-                  );
-
-                  if (constraints.maxWidth >= 560) {
-                    return Row(
-                      children: [
-                        Expanded(child: start),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Text('～'),
-                        ),
-                        Expanded(child: finish),
-                      ],
-                    );
-                  }
-
-                  return Column(
-                    children: [
-                      start,
-                      const SizedBox(height: 12),
-                      finish,
-                    ],
-                  );
-                },
-              ),
+              if (useHorizontalTimeLayout)
+                Row(
+                  children: [
+                    Expanded(child: startTimeInput),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Text('～'),
+                    ),
+                    Expanded(child: finishTimeInput),
+                  ],
+                )
+              else
+                Column(
+                  children: [
+                    startTimeInput,
+                    const SizedBox(height: 12),
+                    finishTimeInput,
+                  ],
+                ),
               const SizedBox(height: 20),
               TextField(
                 controller: _noteController,
