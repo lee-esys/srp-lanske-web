@@ -10,7 +10,8 @@ void main() {
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = size;
-    addTearDown(() {
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox.shrink());
       tester.view.resetDevicePixelRatio();
       tester.view.resetPhysicalSize();
     });
