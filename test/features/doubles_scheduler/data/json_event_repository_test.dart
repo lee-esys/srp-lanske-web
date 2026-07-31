@@ -66,7 +66,7 @@ void main() {
   });
 }
 
-class FakeSavedEventJsonStore implements SavedEventJsonStore {
+class FakeSavedEventJsonStore extends SavedEventJsonStore {
   final Map<String, Map<String, dynamic>> _dataByPublicId = {};
 
   @override
