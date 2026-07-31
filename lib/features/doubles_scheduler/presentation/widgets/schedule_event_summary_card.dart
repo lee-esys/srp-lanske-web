@@ -182,14 +182,7 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.eventSetupTitle,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-            ),
             if (event != null) ...[
-              const SizedBox(height: 6),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -221,8 +214,7 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
                 ),
               ],
               const SizedBox(height: 12),
-            ] else
-              const SizedBox(height: 8),
+            ],
             Wrap(
               spacing: 6,
               runSpacing: 4,
