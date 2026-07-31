@@ -190,7 +190,7 @@ EventDraft _buildDraft() {
   );
 }
 
-class _FakeSavedEventJsonStore implements SavedEventJsonStore {
+class _FakeSavedEventJsonStore extends SavedEventJsonStore {
   final Map<String, Map<String, dynamic>> _dataByPublicId = {};
 
   @override
