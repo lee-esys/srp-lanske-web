@@ -34,10 +34,73 @@ class ScheduleEventSummaryCard extends StatefulWidget {
 }
 
 class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
+  SavedEventAggregate? _loadedAggregate;
   bool _isEditingEventInfo = false;
 
+  SavedEventAggregate? get _displayAggregate {
+    return widget.aggregate ?? _loadedAggregate;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadedAggregate = widget.aggregate;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadLatestAggregate();
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant ScheduleEventSummaryCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.aggregate != null && widget.aggregate != oldWidget.aggregate) {
+      _loadedAggregate = widget.aggregate;
+    }
+  }
+
+  String? _resolvePublicId() {
+    final aggregatePublicId = _displayAggregate?.event.publicId.trim();
+    if (aggregatePublicId != null && aggregatePublicId.isNotEmpty) {
+      return aggregatePublicId;
+    }
+
+    final urlPublicId = Uri.base.queryParameters['sid']?.trim().toUpperCase();
+    if (urlPublicId == null || urlPublicId.isEmpty) return null;
+    return urlPublicId;
+  }
+
+  Future<SavedEventAggregate?> _loadLatestAggregate() async {
+    final publicId = _resolvePublicId();
+    if (publicId == null) return null;
+
+    final latest = await appEventRepository.findByPublicId(publicId);
+    if (!mounted) return latest;
+
+    if (latest != null) {
+      setState(() {
+        _loadedAggregate = latest;
+      });
+    }
+    return latest;
+  }
+
+  Future<bool> _refreshParentForEdit() async {
+    final refreshForEdit = widget.onRefreshForEdit;
+    if (refreshForEdit != null) {
+      return refreshForEdit();
+    }
+
+    final refresh = widget.onRefresh;
+    if (refresh != null) {
+      await refresh();
+    }
+    return true;
+  }
+
   Future<void> _editEventInfo() async {
-    if (_isEditingEventInfo || widget.aggregate == null) return;
+    if (_isEditingEventInfo) return;
 
     final l10n = AppLocalizations.of(context);
     var dialogOpened = false;
@@ -47,16 +110,10 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
     });
 
     try {
-      final refresh = widget.onRefreshForEdit;
-      if (refresh != null) {
-        final refreshed = await refresh();
-        if (!mounted || !refreshed) return;
-      }
+      final refreshed = await _refreshParentForEdit();
+      if (!mounted || !refreshed) return;
 
-      final publicId = widget.aggregate?.event.publicId;
-      if (publicId == null || publicId.isEmpty) return;
-
-      final latest = await appEventRepository.findByPublicId(publicId);
+      final latest = await _loadLatestAggregate();
       if (!mounted) return;
 
       if (latest == null) {
@@ -82,6 +139,9 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
 
       if (!mounted || updated == null) return;
 
+      setState(() {
+        _loadedAggregate = updated;
+      });
       AppSnackBar.show(
         context,
         message: l10n.doublesEventInfoSavedMessage,
@@ -96,7 +156,8 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
       );
     } finally {
       if (mounted && dialogOpened) {
-        await widget.onRefreshForEdit?.call();
+        await _refreshParentForEdit();
+        await _loadLatestAggregate();
       }
       if (mounted) {
         setState(() {
@@ -109,12 +170,11 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final aggregate = widget.aggregate;
-    final event = aggregate?.event;
+    final event = _displayAggregate?.event;
     final canEdit = event != null &&
         !_isEditingEventInfo &&
         !widget.isRefreshing &&
-        widget.onRefreshForEdit != null;
+        (widget.onRefreshForEdit != null || widget.onRefresh != null);
 
     return Card(
       child: Padding(
@@ -122,7 +182,14 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              l10n.eventSetupTitle,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+            ),
             if (event != null) ...[
+              const SizedBox(height: 6),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -154,7 +221,8 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
                 ),
               ],
               const SizedBox(height: 12),
-            ],
+            ] else
+              const SizedBox(height: 8),
             Wrap(
               spacing: 6,
               runSpacing: 4,
