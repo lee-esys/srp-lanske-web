@@ -45,21 +45,13 @@ void main() {
 }
 
 ScheduleMatchProgress _scheduledMatch() {
-  final now = DateTime.utc(2026, 7, 31, 1);
-  return ScheduleMatchProgress(
-    schemaVersion: ScheduleMatchProgress.currentSchemaVersion,
-    scheduleType: ScheduleProgressScheduleType.doubles,
-    generatedScheduleId: 'generated-1',
+  return ScheduleMatchProgress.scheduledPlaceholder(
+    scope: ScheduleProgressScope(
+      scheduleType: ScheduleProgressScheduleType.doubles,
+      shareId: 'ABC123',
+      generatedScheduleId: 'generated-1',
+    ),
     roundNo: 1,
     courtNo: 1,
-    matchNo: null,
-    status: ScheduleMatchStatus.scheduled,
-    result: null,
-    note: '',
-    startedAt: null,
-    finishedAt: null,
-    createdAt: now,
-    updatedAt: now,
-    revision: 0,
   );
 }
