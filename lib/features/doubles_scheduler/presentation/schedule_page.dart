@@ -446,6 +446,7 @@ class _SchedulePageState extends State<SchedulePage> {
 
     final l10n = AppLocalizations.of(context);
     final requestSequence = ++_refreshRequestSequence;
+    final currentSnapshot = _currentRefreshSnapshot;
     final previousGeneratedScheduleId = _generatedScheduleId;
     final hadExistingDisplay = _scheduleResponse != null;
 
@@ -460,25 +461,29 @@ class _SchedulePageState extends State<SchedulePage> {
     try {
       final snapshot = await _refreshService.loadLatestByPublicId(
         publicId: aggregate.event.publicId,
-        current: _currentRefreshSnapshot,
+        current: currentSnapshot,
       );
       if (!mounted || requestSequence != _refreshRequestSequence) {
         return false;
       }
 
+      final shouldApplySnapshot =
+          currentSnapshot == null || snapshot.hasChanges;
       final latestPlayerIds =
           snapshot.aggregate.players.map((player) => player.id).toSet();
       final selectedPlayerId = _selectedPlayerId;
 
       setState(() {
-        _savedEvent = snapshot.aggregate;
-        _scheduleResponse = snapshot.scheduleResponse;
-        _generatedScheduleId = snapshot.generatedScheduleId;
-        _progressSummary = snapshot.progressSummary;
-        _matchProgresses = snapshot.matches;
-        if (selectedPlayerId != null &&
-            !latestPlayerIds.contains(selectedPlayerId)) {
-          _selectedPlayerId = null;
+        if (shouldApplySnapshot) {
+          _savedEvent = snapshot.aggregate;
+          _scheduleResponse = snapshot.scheduleResponse;
+          _generatedScheduleId = snapshot.generatedScheduleId;
+          _progressSummary = snapshot.progressSummary;
+          _matchProgresses = snapshot.matches;
+          if (selectedPlayerId != null &&
+              !latestPlayerIds.contains(selectedPlayerId)) {
+            _selectedPlayerId = null;
+          }
         }
         if (snapshot.aggregate.players.isEmpty) {
           _errorMessage = l10n.noPlayersMessage;
@@ -507,7 +512,7 @@ class _SchedulePageState extends State<SchedulePage> {
         );
       } else if (showSuccess) {
         _showMessage(
-          l10n.eventInfoLoadedMessage,
+          l10n.bocciaScoreRefreshedMessage,
           type: AppMessageType.success,
         );
       }
