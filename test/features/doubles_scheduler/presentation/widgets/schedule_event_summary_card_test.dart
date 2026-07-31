@@ -75,7 +75,8 @@ void main() {
 
     expect(find.text('イベント'), findsOneWidget);
     await tester.tap(find.text('イベント情報を編集'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(refreshCount, 1);
     expect(find.byType(AlertDialog), findsOneWidget);
