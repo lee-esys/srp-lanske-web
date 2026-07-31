@@ -57,6 +57,7 @@ class _DoublesMatchResultDialogState
   }
 
   void _selectStatus(ScheduleMatchStatus status) {
+    final previousStatus = _status;
     final now = DateTime.now();
 
     setState(() {
@@ -71,7 +72,13 @@ class _DoublesMatchResultDialogState
           _finishedAt = null;
           break;
         case ScheduleMatchStatus.completed:
-          _finishedAt ??= now;
+          if (previousStatus == ScheduleMatchStatus.scheduled &&
+              _startedAt == null) {
+            _startedAt = now;
+            _finishedAt = now;
+          } else {
+            _finishedAt ??= now;
+          }
           break;
       }
     });
