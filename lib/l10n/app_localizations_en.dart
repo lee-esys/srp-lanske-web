@@ -920,4 +920,77 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saveAndCloseBocciaScoreButton => 'Save and close';
+
+  @override
+  String get doublesMatchEditTitle => 'Match status and final score';
+
+  @override
+  String get doublesMatchStatusScheduledLabel => 'Scheduled';
+
+  @override
+  String get doublesMatchStatusInProgressLabel => 'In progress';
+
+  @override
+  String get doublesMatchStatusCompletedLabel => 'Completed';
+
+  @override
+  String get doublesMatchScorePickerTitle => 'Select score';
+
+  @override
+  String get doublesMatchScoreUnsetLabel => 'Clear score';
+
+  @override
+  String get doublesMatchStartTimeLabel => 'Start time';
+
+  @override
+  String get doublesMatchEndTimeLabel => 'End time';
+
+  @override
+  String get doublesMatchSetCurrentTimeTooltip => 'Set current time';
+
+  @override
+  String get doublesMatchNoteLabel => 'Match note';
+
+  @override
+  String get doublesMatchSaveButton => 'Save';
+
+  @override
+  String get doublesMatchWinnerLabel => 'Winner';
+
+  @override
+  String get doublesMatchLoserLabel => 'Loser';
+
+  @override
+  String get doublesMatchDrawLabel => 'Draw';
+
+  @override
+  String get doublesMatchSavedMessage => 'Match information saved';
+
+  @override
+  String get doublesMatchRefreshedMessage => 'Match information refreshed';
+
+  @override
+  String get doublesMatchConflictMessage =>
+      'This match was updated on another device. Refresh the latest information.';
+
+  @override
+  String get doublesMatchIncompleteScoreMessage =>
+      'Enter both scores or leave both scores unset.';
+
+  @override
+  String get doublesMatchTimeOrderErrorMessage =>
+      'End time must not be earlier than start time.';
+
+  @override
+  String get doublesMatchUnavailableMessage =>
+      'Schedule information required to edit this match is unavailable.';
+
+  @override
+  String get doublesMatchScheduleChangedMessage =>
+      'The schedule was updated on another device. Reload the latest schedule.';
+
+  @override
+  String doublesMatchSaveFailedMessage(String error) {
+    return 'Could not save match information: $error';
+  }
 }

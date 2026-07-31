@@ -888,4 +888,74 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get saveAndCloseBocciaScoreButton => '保存して閉じる';
+
+  @override
+  String get doublesMatchEditTitle => '試合状態・最終スコア';
+
+  @override
+  String get doublesMatchStatusScheduledLabel => '試合前';
+
+  @override
+  String get doublesMatchStatusInProgressLabel => '試合中';
+
+  @override
+  String get doublesMatchStatusCompletedLabel => '終了';
+
+  @override
+  String get doublesMatchScorePickerTitle => 'スコアを選択';
+
+  @override
+  String get doublesMatchScoreUnsetLabel => 'スコアを未入力に戻す';
+
+  @override
+  String get doublesMatchStartTimeLabel => '開始時間';
+
+  @override
+  String get doublesMatchEndTimeLabel => '終了時間';
+
+  @override
+  String get doublesMatchSetCurrentTimeTooltip => '現在時刻を設定';
+
+  @override
+  String get doublesMatchNoteLabel => '試合メモ';
+
+  @override
+  String get doublesMatchSaveButton => '保存';
+
+  @override
+  String get doublesMatchWinnerLabel => '勝ち';
+
+  @override
+  String get doublesMatchLoserLabel => '負け';
+
+  @override
+  String get doublesMatchDrawLabel => '引き分け';
+
+  @override
+  String get doublesMatchSavedMessage => '試合情報を保存しました';
+
+  @override
+  String get doublesMatchRefreshedMessage => '試合情報を更新しました';
+
+  @override
+  String get doublesMatchConflictMessage => '別の端末で試合情報が更新されています。最新情報を取得してください。';
+
+  @override
+  String get doublesMatchIncompleteScoreMessage =>
+      '両側のスコアを入力するか、両方とも未入力にしてください。';
+
+  @override
+  String get doublesMatchTimeOrderErrorMessage => '終了時間は開始時間以降にしてください。';
+
+  @override
+  String get doublesMatchUnavailableMessage => 'この試合の入力に必要な対戦表情報がありません。';
+
+  @override
+  String get doublesMatchScheduleChangedMessage =>
+      '対戦表が別の端末で更新されています。最新の対戦表を読み込んでください。';
+
+  @override
+  String doublesMatchSaveFailedMessage(String error) {
+    return '試合情報を保存できませんでした: $error';
+  }
 }
