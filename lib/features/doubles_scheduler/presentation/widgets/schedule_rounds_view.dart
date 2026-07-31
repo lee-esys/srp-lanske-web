@@ -3,6 +3,7 @@ import 'package:srp_lanske/features/doubles_scheduler/application/doubles_match_
 import 'package:srp_lanske/features/doubles_scheduler/application/local_schedule_history_mapper.dart';
 import 'package:srp_lanske/features/doubles_scheduler/data/local_schedule_history_store.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_progress_ui_store.dart';
+import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_progress_visuals.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/models/doubles_match_editor_models.dart';
 import 'package:srp_lanske/features/schedule_progress/application/schedule_progress_repository.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
@@ -352,21 +353,29 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     final roundNumber = round['round_number']?.toString() ?? '-';
     final roundNumberValue = int.tryParse(roundNumber);
     final isEvenRound = roundNumberValue != null && roundNumberValue.isEven;
-
-    final colorScheme = Theme.of(context).colorScheme;
-    final roundCardColor = isEvenRound
-        ? colorScheme.surface.withValues(alpha: 0.92)
-        : colorScheme.primaryContainer.withValues(alpha: 0.92);
-
     final restSlotNumbers = _asIntList(round['rest_slot_numbers']);
     final hasSelectedRestPlayer = _hasSelectedRestPlayer(
       restSlotNumbers,
       slotToPlayerId,
     );
     final courts = _asObjectList(round['courts']);
+    final courtNumbers = courts
+        .map((court) => _tryReadInt(court['court_number']))
+        .whereType<int>();
+    final isRoundCompleted = isDoublesRoundCompleted(
+      roundNo: roundNumberValue,
+      courtNumbers: courtNumbers,
+      progressByKey: _progressByKey,
+    );
+    final roundCardColor = resolveDoublesRoundCardColor(
+      Theme.of(context).colorScheme,
+      isCompleted: isRoundCompleted,
+      isEvenRound: isEvenRound,
+    );
     final isRestExpanded = _expandedRestRoundNumbers.contains(roundNumber);
 
     return Card(
+      key: ValueKey('round-card-$roundNumber'),
       color: roundCardColor,
       margin: const EdgeInsets.only(bottom: 4),
       child: Padding(
@@ -563,6 +572,11 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
             roundNo: roundNo,
             courtNo: courtNumber,
           ).value];
+    final status = progress?.status ?? ScheduleMatchStatus.scheduled;
+    final visualStyle = resolveDoublesMatchVisualStyle(
+      Theme.of(context).colorScheme,
+      status,
+    );
 
     final selection = roundNo == null || courtNumber == null
         ? null
@@ -590,11 +604,13 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
               ? null
               : () => _openMatch(selection),
           child: Container(
+            key: ValueKey(
+              'match-card-${roundNo ?? 'unknown'}-${courtNumber ?? 'unknown'}',
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             decoration: BoxDecoration(
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outlineVariant,
-              ),
+              color: visualStyle.cardBackgroundColor,
+              border: Border.all(color: visualStyle.cardBorderColor),
               borderRadius: BorderRadius.circular(12),
             ),
             child: _buildCourtMatchContent(
@@ -604,6 +620,8 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
               side2Slots: side2Slots,
               slotToPlayerId: slotToPlayerId,
               progress: progress,
+              status: status,
+              visualStyle: visualStyle,
             ),
           ),
         ),
@@ -638,9 +656,10 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     required List<int> side2Slots,
     required Map<int, String> slotToPlayerId,
     required ScheduleMatchProgress? progress,
+    required ScheduleMatchStatus status,
+    required DoublesMatchVisualStyle visualStyle,
   }) {
     final l10n = AppLocalizations.of(context);
-    final status = progress?.status ?? ScheduleMatchStatus.scheduled;
     final scores =
         progress?.result?.type == ScheduleMatchResultSummary.simpleScoreType &&
                 (progress?.result?.sideScores.length ?? 0) >= 2
@@ -658,7 +677,14 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Chip(
+              key: ValueKey('match-status-${status.value}'),
               visualDensity: VisualDensity.compact,
+              backgroundColor: visualStyle.statusBackgroundColor,
+              side: BorderSide(color: visualStyle.statusBorderColor),
+              labelStyle: TextStyle(
+                color: visualStyle.statusForegroundColor,
+                fontWeight: FontWeight.w600,
+              ),
               label: Text(_statusLabel(l10n, status)),
             ),
             if (scores.length >= 2) ...[
