@@ -34,7 +34,20 @@ abstract class SavedEventJsonStore {
   Future<Map<String, dynamic>?> updateByPublicId({
     required String publicId,
     required SavedEventJsonUpdater update,
-  }) {
-    throw UnimplementedError('updateByPublicId is not implemented');
+  }) async {
+    final current = await findByPublicId(publicId);
+    if (current == null) {
+      return null;
+    }
+
+    final result = update(current);
+    if (!result.isNoOp) {
+      await saveByPublicId(
+        publicId: publicId,
+        data: result.data,
+      );
+    }
+
+    return result.data;
   }
 }
