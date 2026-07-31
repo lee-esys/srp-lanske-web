@@ -3,6 +3,8 @@ import 'package:srp_lanske/features/doubles_scheduler/application/doubles_match_
 import 'package:srp_lanske/features/doubles_scheduler/presentation/models/doubles_match_editor_models.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
+import 'package:srp_lanske/shared/presentation/app_message_type.dart';
+import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
 
 import 'schedule_player_chip.dart';
 
@@ -63,11 +65,14 @@ class _DoublesMatchResultDialogState
         case ScheduleMatchStatus.scheduled:
           _startedAt = null;
           _finishedAt = null;
+          break;
         case ScheduleMatchStatus.inProgress:
           _startedAt ??= now;
           _finishedAt = null;
+          break;
         case ScheduleMatchStatus.completed:
           _finishedAt ??= now;
+          break;
       }
     });
   }
@@ -83,7 +88,7 @@ class _DoublesMatchResultDialogState
         return;
       }
 
-      final next = ((current ?? 0) + delta).clamp(0, 9);
+      final next = ((current ?? 0) + delta).clamp(0, 9).toInt();
       if (side1) {
         _side1Score = next;
       } else {
@@ -214,8 +219,10 @@ class _DoublesMatchResultDialogState
     if (startedAt != null &&
         finishedAt != null &&
         finishedAt.isBefore(startedAt)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.doublesMatchTimeOrderErrorMessage)),
+      AppSnackBar.show(
+        context,
+        message: l10n.doublesMatchTimeOrderErrorMessage,
+        type: AppMessageType.warning,
       );
       return;
     }
