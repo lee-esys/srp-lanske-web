@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/event_setup_page.dart';
+import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
+import 'package:srp_lanske/shared/infrastructure/generated_schedule_api_client.dart';
+import 'package:srp_lanske/shared/presentation/app_message_type.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 import 'package:srp_lanske/shared/utils/browser_url.dart';
 import 'package:srp_lanske/shared/utils/external_link.dart';
 
+import '../application/doubles_schedule_refresh_service.dart';
 import '../application/generated_schedule_service.dart';
 import '../application/local_schedule_history_mapper.dart';
 import '../application/saved_event_aggregate_helpers.dart';
@@ -15,7 +19,6 @@ import '../data/local_schedule_history_store.dart';
 import '../domain/player_draft.dart';
 import '../domain/public_id.dart';
 import '../domain/saved_event_models.dart';
-import 'package:srp_lanske/shared/infrastructure/generated_schedule_api_client.dart';
 import 'event_list_page.dart';
 import 'models/event_draft.dart';
 import 'widgets/court_display_settings_dialog.dart';
@@ -44,15 +47,21 @@ enum _ScheduleMenuAction { top, list, support }
 
 class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   late final GeneratedScheduleService _service;
+  late final DoublesScheduleRefreshService _refreshService;
 
   bool _isLoading = true;
   bool _isAdopting = false;
+  bool _isRefreshing = false;
+  bool _isOpeningSharedDataDialog = false;
+  int _refreshRequestSequence = 0;
   String? _errorMessage;
 
   SavedEventAggregate? _savedEvent;
   String? _generatedScheduleId;
   String? _selectedPlayerId;
   Map<String, dynamic>? _scheduleResponse;
+  ScheduleProgressSummary? _progressSummary;
+  List<ScheduleMatchProgress> _matchProgresses = const [];
 
   @override
   void initState() {
@@ -62,6 +71,11 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       GeneratedScheduleApiClient(
         baseUrl: AppConfig.coreApiBaseUrl,
       ),
+    );
+    _refreshService = DoublesScheduleRefreshService(
+      eventRepository: appEventRepository,
+      progressRepository: appScheduleProgressRepository,
+      loadGeneratedSchedule: _service.getById,
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -99,7 +113,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     final players = _savedEvent?.players.toList() ?? const [];
     if (players.isEmpty) return const [];
 
-    return players.toList()..sort((a, b) => a.orderNo.compareTo(b.orderNo));
+    return players..sort((a, b) => a.orderNo.compareTo(b.orderNo));
   }
 
   Map<String, String> get _playerNameById {
@@ -120,9 +134,9 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
   List<SavedEventCourtSetting> get _courtSettings {
     return _savedEvent?.courtSettings ??
-        buildDefaultCourtSettings(_savedEvent?.courtSettings.length ??
-            _savedEvent?.event.courtCount ??
-            0);
+        buildDefaultCourtSettings(
+          _savedEvent?.event.courtCount ?? 0,
+        );
   }
 
   Map<int, String> get _courtLabelByNumber {
@@ -139,6 +153,29 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     return settings.map((setting) => setting.displayLabel).join(' / ');
   }
 
+  String get _progressText {
+    final summary = _progressSummary;
+    if (summary == null) {
+      return '- / -';
+    }
+
+    return '${summary.completedMatchCount} / ${summary.totalMatchCount}';
+  }
+
+  DoublesScheduleRefreshSnapshot? get _currentRefreshSnapshot {
+    final aggregate = _savedEvent;
+    if (aggregate == null) {
+      return null;
+    }
+
+    return DoublesScheduleRefreshSnapshot.fromCurrentState(
+      aggregate: aggregate,
+      scheduleResponse: _scheduleResponse,
+      progressSummary: _progressSummary,
+      matches: _matchProgresses,
+    );
+  }
+
   void _toggleSelectedPlayer(String playerId) {
     setState(() {
       _selectedPlayerId = _selectedPlayerId == playerId ? null : playerId;
@@ -151,8 +188,11 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     if (!mounted) return;
 
     if (latestEvent?.event.hasAdoptedSchedule == true) {
-      _showMessage(l10n.cannotRegenerateAdoptedScheduleMessage);
-      await _reloadSchedule();
+      _showMessage(
+        l10n.cannotRegenerateAdoptedScheduleMessage,
+        type: AppMessageType.warning,
+      );
+      await _reloadSchedule(showSuccess: false);
       return;
     }
 
@@ -187,8 +227,11 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     if (!mounted) return;
 
     if (latestBeforeGenerate?.event.hasAdoptedSchedule == true) {
-      _showMessage(l10n.cannotRegenerateAdoptedScheduleMessage);
-      await _reloadSchedule();
+      _showMessage(
+        l10n.cannotRegenerateAdoptedScheduleMessage,
+        type: AppMessageType.warning,
+      );
+      await _reloadSchedule(showSuccess: false);
       return;
     }
 
@@ -216,6 +259,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _scheduleResponse = null;
         _generatedScheduleId = null;
         _selectedPlayerId = null;
+        _progressSummary = null;
+        _matchProgresses = const [];
         _errorMessage = l10n.scheduleNotFoundMessage;
       });
       return null;
@@ -230,18 +275,10 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   }
 
   Future<void> _restore() async {
+    final publicId = widget.publicId.trim().toUpperCase();
     final l10n = AppLocalizations.of(context);
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    final publicId = widget.publicId.trim().toUpperCase();
-
     if (!isValidPublicId(publicId)) {
-      if (!mounted) return;
-
       setState(() {
         _isLoading = false;
         _errorMessage = l10n.scheduleNotFoundMessage;
@@ -249,171 +286,175 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       return;
     }
 
-    try {
-      final aggregate = await appEventRepository.findByPublicId(publicId);
-      if (!mounted) return;
+    await _refreshLatestAll(
+      publicId: publicId,
+      initialLoad: true,
+      showSuccess: false,
+    );
+  }
 
-      if (aggregate == null) {
+  Future<bool> _refreshLatestAll({
+    String? publicId,
+    bool showSuccess = false,
+    bool initialLoad = false,
+  }) async {
+    final normalizedPublicId = (publicId ??
+            _savedEvent?.event.publicId ??
+            widget.publicId)
+        .trim()
+        .toUpperCase();
+    final l10n = AppLocalizations.of(context);
+
+    if (!isValidPublicId(normalizedPublicId)) {
+      if (initialLoad || _savedEvent == null) {
         setState(() {
-          _savedEvent = null;
-          _scheduleResponse = null;
-          _generatedScheduleId = null;
-          _selectedPlayerId = null;
-          _errorMessage = l10n.scheduleNotFoundMessage;
           _isLoading = false;
+          _errorMessage = l10n.scheduleNotFoundMessage;
         });
-        return;
+      } else {
+        _showMessage(
+          l10n.scheduleNotFoundMessage,
+          type: AppMessageType.error,
+        );
+      }
+      return false;
+    }
+
+    final requestSequence = ++_refreshRequestSequence;
+    final previousGeneratedScheduleId = _generatedScheduleId;
+    final hadExistingDisplay = _scheduleResponse != null;
+
+    setState(() {
+      _isRefreshing = true;
+      if (initialLoad && !hadExistingDisplay) {
+        _isLoading = true;
+      }
+      _errorMessage = null;
+    });
+
+    try {
+      final snapshot = await _refreshService.loadLatestByPublicId(
+        publicId: normalizedPublicId,
+        current: _currentRefreshSnapshot,
+      );
+      if (!mounted || requestSequence != _refreshRequestSequence) {
+        return false;
       }
 
-      final generatedScheduleId = aggregate.event.displayGeneratedScheduleId;
+      final latestPlayerIds =
+          snapshot.aggregate.players.map((player) => player.id).toSet();
+      final selectedPlayerId = _selectedPlayerId;
 
       setState(() {
-        _savedEvent = aggregate;
-        _generatedScheduleId = generatedScheduleId;
+        _savedEvent = snapshot.aggregate;
+        _scheduleResponse = snapshot.scheduleResponse;
+        _generatedScheduleId = snapshot.generatedScheduleId;
+        _progressSummary = snapshot.progressSummary;
+        _matchProgresses = snapshot.matches;
+        if (selectedPlayerId != null &&
+            !latestPlayerIds.contains(selectedPlayerId)) {
+          _selectedPlayerId = null;
+        }
+        if (snapshot.aggregate.players.isEmpty) {
+          _errorMessage = l10n.noPlayersMessage;
+        } else if (snapshot.generatedScheduleId == null ||
+            snapshot.generatedScheduleId!.isEmpty) {
+          _errorMessage = l10n.scheduleNotLoadedMessage;
+        }
+        _isRefreshing = false;
+        _isLoading = false;
       });
 
-      if (aggregate.players.isEmpty) {
-        setState(() {
-          _selectedPlayerId = null;
-          _errorMessage = l10n.noPlayersMessage;
-          _isLoading = false;
-        });
-        return;
+      await _saveScheduleHistory(snapshot.aggregate);
+      if (!mounted || requestSequence != _refreshRequestSequence) {
+        return true;
       }
 
-      if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
-        setState(() {
-          _errorMessage = l10n.scheduleNotLoadedMessage;
-          _isLoading = false;
-        });
-        return;
+      final latestGeneratedScheduleId = snapshot.generatedScheduleId;
+      final scheduleWasReplaced = previousGeneratedScheduleId != null &&
+          previousGeneratedScheduleId.isNotEmpty &&
+          latestGeneratedScheduleId != previousGeneratedScheduleId;
+
+      if (scheduleWasReplaced) {
+        _showMessage(
+          l10n.scheduleUpdatedReloadMessage,
+          type: AppMessageType.info,
+        );
+      } else if (showSuccess) {
+        _showMessage(
+          l10n.eventInfoLoadedMessage,
+          type: AppMessageType.success,
+        );
       }
 
-      await _fetchSchedule(generatedScheduleId);
-    } catch (e, stackTrace) {
-      debugPrint('Failed to restore schedule: $e');
-      debugPrintStack(stackTrace: stackTrace);
-
-      if (!mounted) return;
+      return true;
+    } on DoublesScheduleNotFoundException {
+      if (!mounted || requestSequence != _refreshRequestSequence) {
+        return false;
+      }
 
       setState(() {
         _savedEvent = null;
         _scheduleResponse = null;
         _generatedScheduleId = null;
         _selectedPlayerId = null;
-        _errorMessage = l10n.reloadScheduleFailedMessage(e.toString());
+        _progressSummary = null;
+        _matchProgresses = const [];
+        _errorMessage = l10n.scheduleNotFoundMessage;
+        _isRefreshing = false;
         _isLoading = false;
       });
+      _showMessage(
+        l10n.scheduleNotFoundMessage,
+        type: AppMessageType.error,
+      );
+      return false;
+    } catch (e, stackTrace) {
+      debugPrint('Failed to refresh restored schedule: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted || requestSequence != _refreshRequestSequence) {
+        return false;
+      }
+
+      final message = l10n.reloadScheduleFailedMessage(e.toString());
+      setState(() {
+        _errorMessage = message;
+        _isRefreshing = false;
+        _isLoading = false;
+      });
+      _showMessage(message, type: AppMessageType.error);
+      return false;
     }
   }
 
-  Future<void> _fetchSchedule(String generatedScheduleId) async {
-    final l10n = AppLocalizations.of(context);
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final response = await _service.getById(generatedScheduleId);
-      if (!mounted) return;
-
-      setState(() {
-        _scheduleResponse = response;
-        _generatedScheduleId = response['generated_schedule_id']?.toString() ??
-            generatedScheduleId;
-        _isLoading = false;
-      });
-
-      final aggregate = _savedEvent;
-      if (aggregate != null) {
-        await _saveScheduleHistory(aggregate);
-      }
-    } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        _scheduleResponse = null;
-        _errorMessage = l10n.reloadScheduleFailedMessage(e.toString());
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _reloadSchedule() async {
-    final l10n = AppLocalizations.of(context);
-    final publicId =
-        (_savedEvent?.event.publicId ?? widget.publicId).trim().toUpperCase();
-
-    if (!isValidPublicId(publicId)) {
-      _showMessage(l10n.scheduleNotFoundMessage);
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final aggregate = await appEventRepository.findByPublicId(publicId);
-      if (!mounted) return;
-
-      if (aggregate == null) {
-        setState(() {
-          _savedEvent = null;
-          _scheduleResponse = null;
-          _generatedScheduleId = null;
-          _selectedPlayerId = null;
-          _errorMessage = l10n.scheduleNotFoundMessage;
-          _isLoading = false;
-        });
-        return;
-      }
-
-      final generatedScheduleId = aggregate.event.displayGeneratedScheduleId;
-
-      setState(() {
-        _savedEvent = aggregate;
-        _generatedScheduleId = generatedScheduleId;
-      });
-
-      if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
-        setState(() {
-          _scheduleResponse = null;
-          _errorMessage = l10n.scheduleNotLoadedMessage;
-          _isLoading = false;
-        });
-        return;
-      }
-
-      await _fetchSchedule(generatedScheduleId);
-    } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        _errorMessage = l10n.reloadScheduleFailedMessage(e.toString());
-        _isLoading = false;
-      });
-    }
+  Future<void> _reloadSchedule({bool showSuccess = true}) async {
+    await _refreshLatestAll(showSuccess: showSuccess);
   }
 
   Future<void> _generateSchedule() async {
     final l10n = AppLocalizations.of(context);
     final savedEvent = _savedEvent;
     if (savedEvent == null) {
-      _showMessage(l10n.adoptEventMissingMessage);
+      _showMessage(
+        l10n.adoptEventMissingMessage,
+        type: AppMessageType.error,
+      );
       return;
     }
 
     if (_hasAdoptedSchedule) {
-      _showMessage(l10n.cannotRegenerateAdoptedScheduleMessage);
+      _showMessage(
+        l10n.cannotRegenerateAdoptedScheduleMessage,
+        type: AppMessageType.warning,
+      );
       return;
     }
 
+    _refreshRequestSequence += 1;
     setState(() {
       _isLoading = true;
+      _isRefreshing = false;
       _errorMessage = null;
     });
 
@@ -441,6 +482,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _savedEvent = nextSavedEvent;
         _scheduleResponse = response;
         _generatedScheduleId = generatedScheduleId;
+        _progressSummary = null;
+        _matchProgresses = const [];
         _isLoading = false;
       });
 
@@ -461,7 +504,10 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
 
     if (displayedGeneratedScheduleId == null ||
         displayedGeneratedScheduleId.isEmpty) {
-      _showMessage(l10n.adoptScheduleMissingIdMessage);
+      _showMessage(
+        l10n.adoptScheduleMissingIdMessage,
+        type: AppMessageType.warning,
+      );
       return;
     }
 
@@ -477,13 +523,19 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       if (!mounted) return;
 
       if (latestEvent == null) {
-        _showMessage(l10n.adoptEventMissingMessage);
+        _showMessage(
+          l10n.adoptEventMissingMessage,
+          type: AppMessageType.error,
+        );
         return;
       }
 
       if (latestEvent.event.hasAdoptedSchedule) {
-        _showMessage(l10n.alreadyAdoptedScheduleMessage);
-        await _reloadSchedule();
+        _showMessage(
+          l10n.alreadyAdoptedScheduleMessage,
+          type: AppMessageType.info,
+        );
+        await _reloadSchedule(showSuccess: false);
         return;
       }
 
@@ -491,8 +543,11 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           latestEvent.event.currentGeneratedScheduleId;
 
       if (latestCurrentGeneratedScheduleId != displayedGeneratedScheduleId) {
-        _showMessage(l10n.scheduleUpdatedReloadMessage);
-        await _reloadSchedule();
+        _showMessage(
+          l10n.scheduleUpdatedReloadMessage,
+          type: AppMessageType.info,
+        );
+        await _reloadSchedule(showSuccess: false);
         return;
       }
 
@@ -515,8 +570,11 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       });
       await _saveScheduleHistory(nextSavedEvent);
 
-      _showMessage(l10n.adoptScheduleCompletedMessage);
-      await _reloadSchedule();
+      _showMessage(
+        l10n.adoptScheduleCompletedMessage,
+        type: AppMessageType.success,
+      );
+      await _reloadSchedule(showSuccess: false);
     } catch (e) {
       if (!mounted) return;
 
@@ -542,33 +600,70 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   }
 
   Future<void> _changeCourtDisplay() async {
-    final savedEvent = _savedEvent;
-    if (savedEvent == null || _hasAdoptedSchedule) return;
+    if (_isOpeningSharedDataDialog || _isRefreshing) {
+      return;
+    }
 
-    final nextSettings = await showDialog<List<SavedEventCourtSetting>>(
-      context: context,
-      builder: (context) {
-        return CourtDisplaySettingsDialog(
-          courtCount: savedEvent.event.courtCount,
-          initialSettings: _courtSettings,
-        );
-      },
-    );
-
-    if (!mounted || nextSettings == null) return;
-
-    final updatedAggregate = await appEventRepository.updateCourtSettings(
-      eventId: savedEvent.event.id,
-      courtSettings: nextSettings,
-    );
-
-    if (!mounted) return;
-
+    var dialogOpened = false;
     setState(() {
-      _savedEvent = updatedAggregate;
+      _isOpeningSharedDataDialog = true;
     });
 
-    await _saveScheduleHistory(updatedAggregate);
+    try {
+      final refreshed = await _refreshLatestAll(showSuccess: false);
+      if (!mounted || !refreshed) {
+        return;
+      }
+
+      final savedEvent = _savedEvent;
+      if (savedEvent == null || _hasAdoptedSchedule) {
+        return;
+      }
+
+      dialogOpened = true;
+      final nextSettings = await showDialog<List<SavedEventCourtSetting>>(
+        context: context,
+        builder: (context) {
+          return CourtDisplaySettingsDialog(
+            courtCount: savedEvent.event.courtCount,
+            initialSettings: _courtSettings,
+          );
+        },
+      );
+
+      if (!mounted || nextSettings == null) return;
+
+      final updatedAggregate = await appEventRepository.updateCourtSettings(
+        eventId: savedEvent.event.id,
+        courtSettings: nextSettings,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _savedEvent = updatedAggregate;
+      });
+
+      await _saveScheduleHistory(updatedAggregate);
+    } catch (e) {
+      if (!mounted) return;
+
+      final message =
+          AppLocalizations.of(context).reloadScheduleFailedMessage(e.toString());
+      setState(() {
+        _errorMessage = message;
+      });
+      _showMessage(message, type: AppMessageType.error);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isOpeningSharedDataDialog = false;
+        });
+      }
+      if (mounted && dialogOpened) {
+        await _refreshLatestAll(showSuccess: false);
+      }
+    }
   }
 
   void _handleMenu(_ScheduleMenuAction action) {
@@ -627,7 +722,10 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   Future<void> _copyShareUrl() async {
     final l10n = AppLocalizations.of(context);
     await Clipboard.setData(ClipboardData(text: _buildShareUrl()));
-    _showMessage(l10n.shareUrlCopiedMessage);
+    _showMessage(
+      l10n.shareUrlCopiedMessage,
+      type: AppMessageType.success,
+    );
   }
 
   void _showShareDialog() {
@@ -642,13 +740,23 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     );
   }
 
-  void _showMessage(String message) {
+  void _showMessage(
+    String message, {
+    AppMessageType type = AppMessageType.info,
+  }) {
+    var duration = const Duration(seconds: 2);
+    if (type == AppMessageType.warning) {
+      duration = const Duration(seconds: 3);
+    } else if (type == AppMessageType.error) {
+      duration = const Duration(seconds: 4);
+    }
+
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
         content: Text(message),
-        duration: const Duration(seconds: 2),
+        duration: duration,
       ),
     );
   }
@@ -682,8 +790,12 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         else ...[
           ScheduleEventSummaryCard(
             onShareUrl: _showShareDialog,
-            onRefresh: _reloadSchedule,
-            canRefresh: _generatedScheduleId != null,
+            onRefresh: () => _reloadSchedule(),
+            canRefresh: _generatedScheduleId != null &&
+                !_isLoading &&
+                !_isOpeningSharedDataDialog,
+            isRefreshing: _isRefreshing,
+            progressText: _progressText,
           ),
           const SizedBox(height: 12),
           SchedulePlayersCard(
@@ -699,11 +811,13 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           ScheduleSectionCard(
             child: ScheduleOperationPanel(
               courtDisplaySummary: _courtDisplaySummary,
-              canChangeCourtDisplay:
-                  !_hasAdoptedSchedule && _savedEvent != null,
+              canChangeCourtDisplay: !_hasAdoptedSchedule &&
+                  !_isRefreshing &&
+                  !_isOpeningSharedDataDialog,
               onChangeCourtDisplay: _changeCourtDisplay,
               showActionButtons: !_hasAdoptedSchedule,
-              isLoading: _isLoading,
+              isLoading:
+                  _isLoading || _isRefreshing || _isOpeningSharedDataDialog,
               isAdopting: _isAdopting,
               generateButtonLabel: _generateButtonLabel(l10n),
               canAdopt:
