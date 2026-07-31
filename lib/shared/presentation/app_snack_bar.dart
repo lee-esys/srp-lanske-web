@@ -219,43 +219,59 @@ class _AppMessageStyle {
   });
 
   factory _AppMessageStyle.resolve(
-    ColorScheme colors,
+    ColorScheme appColors,
     AppMessageType type,
   ) {
+    final semanticColors = switch (type) {
+      AppMessageType.success => ColorScheme.fromSeed(
+          seedColor: Colors.green,
+          brightness: appColors.brightness,
+        ),
+      AppMessageType.info => ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: appColors.brightness,
+        ),
+      AppMessageType.warning => ColorScheme.fromSeed(
+          seedColor: Colors.orange,
+          brightness: appColors.brightness,
+        ),
+      AppMessageType.error => appColors,
+    };
+
     return switch (type) {
       AppMessageType.success => _AppMessageStyle(
-          backgroundColor: colors.primaryContainer,
-          foregroundColor: colors.onPrimaryContainer,
-          iconColor: colors.primary,
-          actionColor: colors.primary,
-          borderColor: colors.primary.withAlpha(115),
+          backgroundColor: semanticColors.primaryContainer,
+          foregroundColor: semanticColors.onPrimaryContainer,
+          iconColor: semanticColors.primary,
+          actionColor: semanticColors.primary,
+          borderColor: semanticColors.primary.withAlpha(115),
           icon: Icons.check_circle_outline,
           borderRadius: 28,
         ),
       AppMessageType.info => _AppMessageStyle(
-          backgroundColor: colors.secondaryContainer,
-          foregroundColor: colors.onSecondaryContainer,
-          iconColor: colors.secondary,
-          actionColor: colors.secondary,
-          borderColor: colors.secondary.withAlpha(115),
+          backgroundColor: semanticColors.primaryContainer,
+          foregroundColor: semanticColors.onPrimaryContainer,
+          iconColor: semanticColors.primary,
+          actionColor: semanticColors.primary,
+          borderColor: semanticColors.primary.withAlpha(115),
           icon: Icons.info_outline,
           borderRadius: 20,
         ),
       AppMessageType.warning => _AppMessageStyle(
-          backgroundColor: colors.tertiaryContainer,
-          foregroundColor: colors.onTertiaryContainer,
-          iconColor: colors.tertiary,
-          actionColor: colors.tertiary,
-          borderColor: colors.tertiary.withAlpha(140),
+          backgroundColor: semanticColors.primaryContainer,
+          foregroundColor: semanticColors.onPrimaryContainer,
+          iconColor: semanticColors.primary,
+          actionColor: semanticColors.primary,
+          borderColor: semanticColors.primary.withAlpha(140),
           icon: Icons.warning_amber_rounded,
           borderRadius: 16,
         ),
       AppMessageType.error => _AppMessageStyle(
-          backgroundColor: colors.errorContainer,
-          foregroundColor: colors.onErrorContainer,
-          iconColor: colors.error,
-          actionColor: colors.error,
-          borderColor: colors.error.withAlpha(166),
+          backgroundColor: appColors.errorContainer,
+          foregroundColor: appColors.onErrorContainer,
+          iconColor: appColors.error,
+          actionColor: appColors.error,
+          borderColor: appColors.error.withAlpha(166),
           icon: Icons.error_outline,
           borderRadius: 12,
         ),
