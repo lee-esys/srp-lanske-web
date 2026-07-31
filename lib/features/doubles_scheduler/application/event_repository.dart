@@ -32,6 +32,16 @@ abstract class EventRepository {
     required String eventId,
     required List<SavedEventCourtSetting> courtSettings,
   });
+
+  Future<SavedEventAggregate> updateCourtSettingsWithRevision({
+    required String eventId,
+    required int expectedRevision,
+    required List<SavedEventCourtSetting> courtSettings,
+  }) {
+    throw UnimplementedError(
+      'updateCourtSettingsWithRevision is not implemented',
+    );
+  }
 }
 
 class EventRevisionConflictException implements Exception {
