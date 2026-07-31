@@ -47,8 +47,10 @@ void runEventRepositoryContractTests({
       expect(aggregate.event.adoptedAt, isNull);
       expect(aggregate.event.visibility, savedEventDefaultVisibility);
       expect(aggregate.event.visibleUntilRoundNo, isNull);
-      expect(aggregate.event.expiresAt,
-          defaultSavedEventExpiresAt(aggregate.event.createdAt));
+      expect(
+        aggregate.event.expiresAt,
+        defaultSavedEventExpiresAt(aggregate.event.createdAt),
+      );
       expect(aggregate.event.revision, 1);
 
       expect(aggregate.players, hasLength(6));
@@ -328,34 +330,45 @@ void runEventRepositoryContractTests({
       expect(adopted.courtSettings[1].displayLabel, '奥');
     });
 
-    test('throws when updating court settings for adopted event', () async {
+    test('updates and persists court settings for adopted event', () async {
       final repository = createRepository();
 
       final created = await repository.createFromDraft(
         buildDraft(courts: 2),
       );
 
-      await repository.updateAdoptedGeneratedScheduleId(
+      final adoptedEvent = await repository.updateAdoptedGeneratedScheduleId(
         eventId: created.event.id,
         generatedScheduleId: 'generated-1',
       );
 
-      expect(
-        () => repository.updateCourtSettings(
-          eventId: created.event.id,
-          courtSettings: [
-            SavedEventCourtSetting(
-              courtNumber: 1,
-              displayLabel: 'A',
-            ),
-            SavedEventCourtSetting(
-              courtNumber: 2,
-              displayLabel: 'B',
-            ),
-          ],
-        ),
-        throwsA(isA<StateError>()),
+      final updated = await repository.updateCourtSettings(
+        eventId: created.event.id,
+        courtSettings: [
+          SavedEventCourtSetting(
+            courtNumber: 1,
+            displayLabel: 'A',
+          ),
+          SavedEventCourtSetting(
+            courtNumber: 2,
+            displayLabel: 'B',
+          ),
+        ],
       );
+
+      expect(updated.event.hasAdoptedSchedule, isTrue);
+      expect(updated.event.adoptedGeneratedScheduleId, 'generated-1');
+      expect(updated.event.revision, adoptedEvent.revision + 1);
+      expect(updated.courtSettings[0].displayLabel, 'A');
+      expect(updated.courtSettings[1].displayLabel, 'B');
+
+      final found = await repository.findByPublicId(created.event.publicId);
+      expect(found, isNotNull);
+      expect(found!.event.hasAdoptedSchedule, isTrue);
+      expect(found.event.adoptedGeneratedScheduleId, 'generated-1');
+      expect(found.event.revision, updated.event.revision);
+      expect(found.courtSettings[0].displayLabel, 'A');
+      expect(found.courtSettings[1].displayLabel, 'B');
     });
 
     test('throws when updating court settings for missing event', () async {
