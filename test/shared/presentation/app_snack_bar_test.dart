@@ -95,8 +95,9 @@ void main() {
       find.byKey(const ValueKey<String>('app-snack-bar')),
     );
     expect(snackBar.duration, const Duration(seconds: 12));
+    expect(snackBar.action?.label, 'Retry');
 
-    await tester.tap(find.text('Retry'));
+    snackBar.action!.onPressed();
     expect(actionCount, 1);
   });
 
