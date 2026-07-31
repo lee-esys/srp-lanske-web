@@ -15,8 +15,7 @@ class DoublesEventInfoDialog extends StatefulWidget {
   final EventRepository repository;
 
   @override
-  State<DoublesEventInfoDialog> createState() =>
-      _DoublesEventInfoDialogState();
+  State<DoublesEventInfoDialog> createState() => _DoublesEventInfoDialogState();
 }
 
 class _DoublesEventInfoDialogState extends State<DoublesEventInfoDialog> {

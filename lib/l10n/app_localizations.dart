@@ -104,10 +104,10 @@ abstract class AppLocalizations {
   /// **'Lanske'**
   String get appTitle;
 
-  /// Title shown on the event setup page.
+  /// Title shown on doubles scheduler pages.
   ///
   /// In ja, this message translates to:
-  /// **'ダブルス乱数表 ver0.1'**
+  /// **'らんすけ：ダブルス乱数表'**
   String get eventSetupTitle;
 
   /// Menu item label for returning to the top page.
@@ -1768,6 +1768,72 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'試合情報を保存できませんでした: {error}'**
   String doublesMatchSaveFailedMessage(String error);
+
+  /// Common application footer with release version.
+  ///
+  /// In ja, this message translates to:
+  /// **'© 2026 S.R.P. · ver.{version}'**
+  String appFooterText(String version);
+
+  /// Button label for editing doubles event information.
+  ///
+  /// In ja, this message translates to:
+  /// **'イベント情報を編集'**
+  String get editDoublesEventInfoButton;
+
+  /// Dialog title for editing doubles event information.
+  ///
+  /// In ja, this message translates to:
+  /// **'イベント情報を編集'**
+  String get editDoublesEventInfoDialogTitle;
+
+  /// Input label for a doubles event title.
+  ///
+  /// In ja, this message translates to:
+  /// **'イベントタイトル'**
+  String get doublesEventTitleLabel;
+
+  /// Input label for a doubles event memo.
+  ///
+  /// In ja, this message translates to:
+  /// **'メモ'**
+  String get doublesEventMemoLabel;
+
+  /// Validation message for an empty doubles event title.
+  ///
+  /// In ja, this message translates to:
+  /// **'イベントタイトルを入力してください'**
+  String get doublesEventTitleRequiredMessage;
+
+  /// Validation message for an empty doubles player display name.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレイヤー表示名を入力してください'**
+  String get doublesPlayerDisplayNameRequiredMessage;
+
+  /// Message shown after doubles event information is saved.
+  ///
+  /// In ja, this message translates to:
+  /// **'イベント情報を保存しました'**
+  String get doublesEventInfoSavedMessage;
+
+  /// Message shown after a doubles event revision conflict.
+  ///
+  /// In ja, this message translates to:
+  /// **'別の端末でイベント情報が更新されていました。入力内容は保持しています。最新情報を確認して、もう一度保存してください。'**
+  String get doublesEventInfoConflictMessage;
+
+  /// Message shown when latest doubles event information cannot be loaded.
+  ///
+  /// In ja, this message translates to:
+  /// **'最新のイベント情報を取得できませんでした。画面を更新してから、もう一度お試しください。'**
+  String get doublesEventInfoLatestLoadFailedMessage;
+
+  /// Message shown when doubles event information cannot be saved.
+  ///
+  /// In ja, this message translates to:
+  /// **'イベント情報を保存できませんでした: {error}'**
+  String doublesEventInfoSaveFailedMessage(String error);
 }
 
 class _AppLocalizationsDelegate

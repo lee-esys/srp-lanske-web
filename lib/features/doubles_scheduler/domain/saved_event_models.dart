@@ -240,8 +240,7 @@ class SavedEventPlayer {
     return SavedEventPlayer(
       id: json['id'].toString(),
       eventId: json['eventId'].toString(),
-      initialDisplayName:
-          json['initialDisplayName']?.toString() ?? displayName,
+      initialDisplayName: json['initialDisplayName']?.toString() ?? displayName,
       displayName: displayName,
       orderNo: _intFromJson(json['orderNo']),
       status: json['status']?.toString() ?? 'active',

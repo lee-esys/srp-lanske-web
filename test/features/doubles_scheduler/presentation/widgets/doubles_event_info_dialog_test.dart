@@ -21,8 +21,7 @@ void main() {
     expect(find.text('現在名2'), findsOneWidget);
   });
 
-  testWidgets('saves title memo and every player display name',
-      (tester) async {
+  testWidgets('saves title memo and every player display name', (tester) async {
     final aggregate = _aggregate();
     final repository = _FakeEventRepository(aggregate);
     SavedEventAggregate? result;

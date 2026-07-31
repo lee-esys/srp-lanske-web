@@ -93,10 +93,6 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     return _isAdopted || (_savedEvent?.event.hasAdoptedSchedule ?? false);
   }
 
-  String _pageTitle(AppLocalizations l10n) {
-    return _savedEvent?.event.title ?? l10n.matchTableTitle;
-  }
-
   String _generateButtonLabel(AppLocalizations l10n) {
     final generatedScheduleId = _savedEvent?.event.displayGeneratedScheduleId;
     return generatedScheduleId == null || generatedScheduleId.isEmpty
@@ -880,8 +876,10 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           )
         else ...[
           ScheduleEventSummaryCard(
+            aggregate: savedEvent,
             onShareUrl: _showShareDialog,
             onRefresh: () => _reloadSchedule(),
+            onRefreshForEdit: () => _refreshLatestAll(showSuccess: false),
             canRefresh: _generatedScheduleId != null &&
                 !_isLoading &&
                 !_isOpeningSharedDataDialog,
@@ -960,10 +958,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(
-          _pageTitle(l10n),
-          overflow: TextOverflow.ellipsis,
-        ),
+        title: Text(l10n.eventSetupTitle),
         actions: [
           PopupMenuButton<_ScheduleMenuAction>(
             onSelected: _handleMenu,

@@ -88,10 +88,6 @@ class _SchedulePageState extends State<SchedulePage> {
     return _isAdopted || (_savedEvent?.event.hasAdoptedSchedule ?? false);
   }
 
-  String get _pageTitle {
-    return _savedEvent?.event.title ?? widget.draft.eventName;
-  }
-
   String _generateButtonLabel(AppLocalizations l10n) {
     final generatedScheduleId =
         _savedEvent?.event.displayGeneratedScheduleId ?? _generatedScheduleId;
@@ -870,8 +866,10 @@ class _SchedulePageState extends State<SchedulePage> {
       padding: const EdgeInsets.all(4),
       children: [
         ScheduleEventSummaryCard(
+          aggregate: _savedEvent,
           onShareUrl: _savedEvent == null ? null : _showShareDialog,
           onRefresh: () => _reloadSchedule(),
+          onRefreshForEdit: () => _refreshLatestAll(showSuccess: false),
           canRefresh: _generatedScheduleId != null &&
               !_isLoading &&
               !_isOpeningSharedDataDialog,
@@ -949,7 +947,7 @@ class _SchedulePageState extends State<SchedulePage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(_pageTitle),
+        title: Text(l10n.eventSetupTitle),
         actions: [
           PopupMenuButton<_ScheduleMenuAction>(
             onSelected: _handleMenu,

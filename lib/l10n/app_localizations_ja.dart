@@ -12,7 +12,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get appTitle => 'Lanske';
 
   @override
-  String get eventSetupTitle => 'ダブルス乱数表 ver0.1';
+  String get eventSetupTitle => 'らんすけ：ダブルス乱数表';
 
   @override
   String get topPageMenu => 'TOPへ';
@@ -957,5 +957,44 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String doublesMatchSaveFailedMessage(String error) {
     return '試合情報を保存できませんでした: $error';
+  }
+
+  @override
+  String appFooterText(String version) {
+    return '© 2026 S.R.P. · ver.$version';
+  }
+
+  @override
+  String get editDoublesEventInfoButton => 'イベント情報を編集';
+
+  @override
+  String get editDoublesEventInfoDialogTitle => 'イベント情報を編集';
+
+  @override
+  String get doublesEventTitleLabel => 'イベントタイトル';
+
+  @override
+  String get doublesEventMemoLabel => 'メモ';
+
+  @override
+  String get doublesEventTitleRequiredMessage => 'イベントタイトルを入力してください';
+
+  @override
+  String get doublesPlayerDisplayNameRequiredMessage => 'プレイヤー表示名を入力してください';
+
+  @override
+  String get doublesEventInfoSavedMessage => 'イベント情報を保存しました';
+
+  @override
+  String get doublesEventInfoConflictMessage =>
+      '別の端末でイベント情報が更新されていました。入力内容は保持しています。最新情報を確認して、もう一度保存してください。';
+
+  @override
+  String get doublesEventInfoLatestLoadFailedMessage =>
+      '最新のイベント情報を取得できませんでした。画面を更新してから、もう一度お試しください。';
+
+  @override
+  String doublesEventInfoSaveFailedMessage(String error) {
+    return 'イベント情報を保存できませんでした: $error';
   }
 }

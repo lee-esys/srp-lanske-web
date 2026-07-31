@@ -24,8 +24,7 @@ void main() {
         final created = await repository.createFromDraft(_draft());
 
         final displayNames = <String, String>{
-          for (final player in created.players)
-            player.id: player.displayName,
+          for (final player in created.players) player.id: player.displayName,
         };
         final updatedDisplay = await repository.updateDisplayInfo(
           publicId: created.event.publicId,

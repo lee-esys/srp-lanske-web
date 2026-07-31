@@ -200,9 +200,8 @@ class JsonEventRepository implements EventRepository {
 
           return <String, dynamic>{
             ...rawPlayer,
-            'initialDisplayName':
-                rawPlayer['initialDisplayName']?.toString() ??
-                    currentDisplayName,
+            'initialDisplayName': rawPlayer['initialDisplayName']?.toString() ??
+                currentDisplayName,
             'displayName': nextDisplayName,
             'updatedAt': currentDisplayName == nextDisplayName
                 ? rawPlayer['updatedAt']
