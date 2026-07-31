@@ -6,6 +6,7 @@ import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_m
 import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/infrastructure/generated_schedule_api_client.dart';
 import 'package:srp_lanske/shared/presentation/app_message_type.dart';
+import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 import 'package:srp_lanske/shared/utils/browser_url.dart';
 import 'package:srp_lanske/shared/utils/external_link.dart';
@@ -844,20 +845,10 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     String message, {
     AppMessageType type = AppMessageType.info,
   }) {
-    var duration = const Duration(seconds: 2);
-    if (type == AppMessageType.warning) {
-      duration = const Duration(seconds: 3);
-    } else if (type == AppMessageType.error) {
-      duration = const Duration(seconds: 4);
-    }
-
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: duration,
-      ),
+    AppSnackBar.show(
+      context,
+      message: message,
+      type: type,
     );
   }
 

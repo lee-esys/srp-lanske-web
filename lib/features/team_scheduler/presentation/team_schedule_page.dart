@@ -4,6 +4,8 @@ import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/features/doubles_scheduler/domain/public_id.dart';
 import 'package:srp_lanske/shared/infrastructure/generated_schedule_api_client.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
+import 'package:srp_lanske/shared/presentation/app_message_type.dart';
+import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
 import '../application/team_generated_schedule_service.dart';
@@ -662,22 +664,28 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     final l10n = AppLocalizations.of(context);
 
     if (_scores.selectedSport == TeamScheduleSport.none) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.selectSportBeforeScoreInputMessage)),
+      AppSnackBar.show(
+        context,
+        message: l10n.selectSportBeforeScoreInputMessage,
+        type: AppMessageType.warning,
       );
       return;
     }
 
     if (_scores.selectedSport != TeamScheduleSport.boccia) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.selectSportBeforeScoreInputMessage)),
+      AppSnackBar.show(
+        context,
+        message: l10n.selectSportBeforeScoreInputMessage,
+        type: AppMessageType.warning,
       );
       return;
     }
 
     if (match.teamSlots.length != 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.unsupportedBocciaMatchMessage)),
+      AppSnackBar.show(
+        context,
+        message: l10n.unsupportedBocciaMatchMessage,
+        type: AppMessageType.warning,
       );
       return;
     }
@@ -752,8 +760,10 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.teamScheduleShareUrlCopiedMessage)),
+    AppSnackBar.show(
+      context,
+      message: l10n.teamScheduleShareUrlCopiedMessage,
+      type: AppMessageType.success,
     );
   }
 
@@ -1042,8 +1052,11 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              l10n.teamScheduleSummary(schedule.teams.length,
-                  schedule.members.length, schedule.concurrentMatchCount),
+              l10n.teamScheduleSummary(
+                schedule.teams.length,
+                schedule.members.length,
+                schedule.concurrentMatchCount,
+              ),
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
@@ -1292,7 +1305,9 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
               ],
               Text(
                 l10n.teamChoiceLabel(
-                    _teamName(team.teamSlot), team.memberPlayerSlots.length),
+                  _teamName(team.teamSlot),
+                  team.memberPlayerSlots.length,
+                ),
                 style: theme.textTheme.bodyMedium,
               ),
               IconButton(

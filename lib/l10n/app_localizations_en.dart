@@ -184,7 +184,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduleUpdatedReloadMessage =>
-      'The match table has been updated. Loading the latest information.';
+      'The match table had been updated, so the latest version is now displayed.';
 
   @override
   String get adoptScheduleCompletedMessage => 'This match table was adopted.';
