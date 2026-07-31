@@ -190,28 +190,9 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (event != null) ...[
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      event.title,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    onPressed: canEdit ? _editEventInfo : null,
-                    icon: _isEditingEventInfo
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.edit),
-                    label: Text(l10n.editDoublesEventInfoButton),
-                  ),
-                ],
+              Text(
+                event.title,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
               if (event.memo.isNotEmpty) ...[
                 const SizedBox(height: 8),
@@ -264,6 +245,18 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
                     );
                   },
                 ),
+                if (event != null)
+                  OutlinedButton.icon(
+                    onPressed: canEdit ? _editEventInfo : null,
+                    icon: _isEditingEventInfo
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.edit),
+                    label: Text(l10n.editDoublesEventInfoButton),
+                  ),
               ],
             ),
             const SizedBox(height: 4),
