@@ -47,7 +47,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   Map<String, ScheduleMatchProgress> _progressByKey = const {};
   bool _isLoadingProgress = false;
   bool _isOpeningMatch = false;
-  String? _loadedScheduleIdentity;
+  int _progressRequestSequence = 0;
 
   @override
   void initState() {
@@ -55,6 +55,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     _progressService = DoublesMatchProgressService(
       repository: appScheduleProgressRepository,
     );
+    DoublesProgressUiStore.clearOverride();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _loadProgress();
@@ -65,15 +66,12 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   @override
   void didUpdateWidget(covariant ScheduleRoundsView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final oldGeneratedScheduleId =
-        oldWidget.scheduleResponse?['generated_schedule_id']?.toString();
-    if (oldGeneratedScheduleId != _generatedScheduleId) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _loadProgress();
-        }
-      });
-    }
+    DoublesProgressUiStore.clearOverride();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadProgress();
+      }
+    });
   }
 
   String? get _publicId {
@@ -105,13 +103,13 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   }
 
   Future<void> _loadProgress({bool showMessage = false}) async {
+    final requestSequence = ++_progressRequestSequence;
     final scope = _progressScope;
     if (scope == null || _totalMatchCount <= 0) {
-      if (mounted) {
+      if (mounted && requestSequence == _progressRequestSequence) {
         setState(() {
           _progressByKey = const {};
           _isLoadingProgress = false;
-          _loadedScheduleIdentity = null;
         });
       }
       DoublesProgressUiStore.setSummary(null);
@@ -128,7 +126,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       final matches = summary == null
           ? const <ScheduleMatchProgress>[]
           : await appScheduleProgressRepository.listMatches(scope);
-      if (!mounted || _progressScope?.storageKey != identity) {
+      if (!mounted ||
+          requestSequence != _progressRequestSequence ||
+          _progressScope?.storageKey != identity) {
         return;
       }
 
@@ -136,7 +136,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
         _progressByKey = Map<String, ScheduleMatchProgress>.unmodifiable({
           for (final match in matches) match.key.value: match,
         });
-        _loadedScheduleIdentity = identity;
         _isLoadingProgress = false;
       });
       DoublesProgressUiStore.setSummary(summary);
@@ -149,7 +148,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
         );
       }
     } catch (error) {
-      if (!mounted) {
+      if (!mounted || requestSequence != _progressRequestSequence) {
         return;
       }
 
@@ -250,7 +249,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
           ..._progressByKey,
           saved.match.key.value: saved.match,
         });
-        _loadedScheduleIdentity = scope.storageKey;
       });
       DoublesProgressUiStore.setSummary(saved.summary);
 
@@ -332,17 +330,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
     if (rounds.isEmpty) {
       return Text(l10n.scheduleDataEmptyMessage);
-    }
-
-    final scope = _progressScope;
-    if (scope != null &&
-        !_isLoadingProgress &&
-        _loadedScheduleIdentity != scope.storageKey) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_isLoadingProgress) {
-          _loadProgress();
-        }
-      });
     }
 
     return Column(
@@ -729,14 +716,18 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     };
   }
 
-  _MatchSideOutcome _outcomeForSide(List<int> scores, {required int sideIndex}) {
+  _MatchSideOutcome _outcomeForSide(
+    List<int> scores, {
+    required int sideIndex,
+  }) {
     if (scores.length < 2) {
       return _MatchSideOutcome.none;
     }
     if (scores[0] == scores[1]) {
       return _MatchSideOutcome.draw;
     }
-    final sideWon = sideIndex == 0 ? scores[0] > scores[1] : scores[1] > scores[0];
+    final sideWon =
+        sideIndex == 0 ? scores[0] > scores[1] : scores[1] > scores[0];
     return sideWon ? _MatchSideOutcome.winner : _MatchSideOutcome.loser;
   }
 
