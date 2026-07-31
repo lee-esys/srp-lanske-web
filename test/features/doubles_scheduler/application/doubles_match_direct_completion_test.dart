@@ -7,7 +7,7 @@ void main() {
     final now = DateTime(2026, 7, 31, 15, 41);
 
     final update = buildUpdate(
-      current: _scheduledMatch(),
+      current: _unpersistedScheduledMatch(),
       input: const DoublesMatchProgressInput(
         status: ScheduleMatchStatus.completed,
         side1Score: null,
@@ -27,7 +27,7 @@ void main() {
     final time = DateTime(2026, 7, 31, 15, 41);
 
     final update = buildUpdate(
-      current: _scheduledMatch(),
+      current: _unpersistedScheduledMatch(),
       input: DoublesMatchProgressInput(
         status: ScheduleMatchStatus.completed,
         side1Score: null,
@@ -44,7 +44,8 @@ void main() {
   });
 }
 
-ScheduleMatchProgress _scheduledMatch() {
+ScheduleMatchProgress _unpersistedScheduledMatch() {
+  // revision 0 matches must not carry createdAt / updatedAt or match timestamps.
   return ScheduleMatchProgress.scheduledPlaceholder(
     scope: ScheduleProgressScope(
       scheduleType: ScheduleProgressScheduleType.doubles,
