@@ -208,16 +208,23 @@ class _SchedulePageState extends State<SchedulePage> {
 
   Future<void> _requestGenerateSchedule() async {
     final l10n = AppLocalizations.of(context);
-    final latestEvent = await _refreshSavedEventForAction();
-    if (!mounted) return;
+    final displayedGeneratedScheduleId = _generatedScheduleId;
 
-    if (latestEvent?.event.hasAdoptedSchedule == true) {
-      _showMessage(
-        l10n.cannotRegenerateAdoptedScheduleMessage,
-        type: AppMessageType.warning,
-      );
-      await _reloadSchedule(showSuccess: false);
-      return;
+    if (_savedEvent != null) {
+      final refreshed = await _refreshLatestAll(showSuccess: false);
+      if (!mounted || !refreshed) return;
+
+      if (_hasAdoptedSchedule) {
+        _showMessage(
+          l10n.cannotRegenerateAdoptedScheduleMessage,
+          type: AppMessageType.warning,
+        );
+        return;
+      }
+
+      if (_generatedScheduleId != displayedGeneratedScheduleId) {
+        return;
+      }
     }
 
     if (!_hasGeneratedSchedule) {
@@ -225,6 +232,7 @@ class _SchedulePageState extends State<SchedulePage> {
       return;
     }
 
+    final expectedGeneratedScheduleId = _generatedScheduleId;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
@@ -247,15 +255,19 @@ class _SchedulePageState extends State<SchedulePage> {
 
     if (!mounted || confirmed != true) return;
 
-    final latestBeforeGenerate = await _refreshSavedEventForAction();
-    if (!mounted) return;
+    final refreshedBeforeGenerate =
+        await _refreshLatestAll(showSuccess: false);
+    if (!mounted || !refreshedBeforeGenerate) return;
 
-    if (latestBeforeGenerate?.event.hasAdoptedSchedule == true) {
+    if (_hasAdoptedSchedule) {
       _showMessage(
         l10n.cannotRegenerateAdoptedScheduleMessage,
         type: AppMessageType.warning,
       );
-      await _reloadSchedule(showSuccess: false);
+      return;
+    }
+
+    if (_generatedScheduleId != expectedGeneratedScheduleId) {
       return;
     }
 
