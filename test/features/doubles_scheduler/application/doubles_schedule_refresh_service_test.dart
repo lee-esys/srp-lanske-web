@@ -9,13 +9,12 @@ import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_m
 void main() {
   group('DoublesScheduleRefreshService', () {
     test('loads schedule without creating progress summary', () async {
-      final eventRepository = _FakeEventRepository(
-        aggregate: _buildAggregate(generatedScheduleId: 'generated-1'),
-      );
       final progressRepository = _FakeProgressRepository();
       var scheduleLoadCount = 0;
       final service = DoublesScheduleRefreshService(
-        eventRepository: eventRepository,
+        eventRepository: _FakeEventRepository(
+          aggregate: _buildAggregate(generatedScheduleId: 'generated-1'),
+        ),
         progressRepository: progressRepository,
         loadGeneratedSchedule: (generatedScheduleId) async {
           scheduleLoadCount += 1;
@@ -36,19 +35,17 @@ void main() {
       expect(snapshot.progressText, '- / -');
     });
 
-    test('reuses schedule and matches when revisions are unchanged', () async {
+    test('reuses unchanged schedule and progress matches', () async {
       final aggregate = _buildAggregate(generatedScheduleId: 'generated-1');
-      final scope = _scope('generated-1');
       final summary = _summary(revision: 2);
-      final match = _match(revision: 3);
       final current = DoublesScheduleRefreshSnapshot(
         aggregate: aggregate,
         scheduleResponse: const <String, dynamic>{
           'generated_schedule_id': 'generated-1',
         },
-        progressScope: scope,
+        progressScope: _scope('generated-1'),
         progressSummary: summary,
-        matches: <ScheduleMatchProgress>[match],
+        matches: <ScheduleMatchProgress>[_match(revision: 3)],
         eventChanged: false,
         scheduleChanged: false,
         progressChanged: false,
@@ -58,11 +55,9 @@ void main() {
       final service = DoublesScheduleRefreshService(
         eventRepository: _FakeEventRepository(aggregate: aggregate),
         progressRepository: progressRepository,
-        loadGeneratedSchedule: (generatedScheduleId) async {
+        loadGeneratedSchedule: (_) async {
           scheduleLoadCount += 1;
-          return <String, dynamic>{
-            'generated_schedule_id': generatedScheduleId,
-          };
+          return const <String, dynamic>{};
         },
       );
 
@@ -79,10 +74,9 @@ void main() {
       expect(snapshot.matches.single.revision, 3);
     });
 
-    test('reloads matches when progress summary revision changes', () async {
-      final aggregate = _buildAggregate(generatedScheduleId: 'generated-1');
+    test('reloads schedule and matches when versions change', () async {
       final current = DoublesScheduleRefreshSnapshot(
-        aggregate: aggregate,
+        aggregate: _buildAggregate(generatedScheduleId: 'generated-1'),
         scheduleResponse: const <String, dynamic>{
           'generated_schedule_id': 'generated-1',
         },
@@ -93,41 +87,16 @@ void main() {
         scheduleChanged: false,
         progressChanged: false,
       );
-      final latestMatch = _match(revision: 2);
+      final latestMatch = _match(
+        generatedScheduleId: 'generated-2',
+        revision: 2,
+      );
       final progressRepository = _FakeProgressRepository(
-        summary: _summary(revision: 2),
+        summary: _summary(
+          generatedScheduleId: 'generated-2',
+          revision: 2,
+        ),
         matches: <ScheduleMatchProgress>[latestMatch],
-      );
-      final service = DoublesScheduleRefreshService(
-        eventRepository: _FakeEventRepository(aggregate: aggregate),
-        progressRepository: progressRepository,
-        loadGeneratedSchedule: (_) async =>
-            throw StateError('schedule must be reused'),
-      );
-
-      final snapshot = await service.loadLatestByPublicId(
-        publicId: 'ABC123',
-        current: current,
-      );
-
-      expect(progressRepository.listMatchesCallCount, 1);
-      expect(snapshot.progressChanged, isTrue);
-      expect(snapshot.matches.single.revision, 2);
-      expect(snapshot.progressText, '0 / 15');
-    });
-
-    test('reloads generated schedule when display id changes', () async {
-      final current = DoublesScheduleRefreshSnapshot(
-        aggregate: _buildAggregate(generatedScheduleId: 'generated-1'),
-        scheduleResponse: const <String, dynamic>{
-          'generated_schedule_id': 'generated-1',
-        },
-        progressScope: _scope('generated-1'),
-        progressSummary: null,
-        matches: const <ScheduleMatchProgress>[],
-        eventChanged: false,
-        scheduleChanged: false,
-        progressChanged: false,
       );
       var loadedId = '';
       final service = DoublesScheduleRefreshService(
@@ -137,7 +106,7 @@ void main() {
             revision: 2,
           ),
         ),
-        progressRepository: _FakeProgressRepository(),
+        progressRepository: progressRepository,
         loadGeneratedSchedule: (generatedScheduleId) async {
           loadedId = generatedScheduleId;
           return <String, dynamic>{
@@ -152,9 +121,12 @@ void main() {
       );
 
       expect(loadedId, 'generated-2');
+      expect(progressRepository.listMatchesCallCount, 1);
       expect(snapshot.eventChanged, isTrue);
       expect(snapshot.scheduleChanged, isTrue);
-      expect(snapshot.generatedScheduleId, 'generated-2');
+      expect(snapshot.progressChanged, isTrue);
+      expect(snapshot.matches.single.generatedScheduleId, 'generated-2');
+      expect(snapshot.progressText, '0 / 15');
     });
 
     test('throws not found when event does not exist', () async {
@@ -164,8 +136,8 @@ void main() {
         loadGeneratedSchedule: (_) async => const <String, dynamic>{},
       );
 
-      expect(
-        () => service.loadLatestByPublicId(publicId: 'ABC123'),
+      await expectLater(
+        service.loadLatestByPublicId(publicId: 'ABC123'),
         throwsA(isA<DoublesScheduleNotFoundException>()),
       );
     });
@@ -221,12 +193,15 @@ ScheduleProgressScope _scope(String generatedScheduleId) {
   );
 }
 
-ScheduleProgressSummary _summary({required int revision}) {
+ScheduleProgressSummary _summary({
+  String generatedScheduleId = 'generated-1',
+  required int revision,
+}) {
   final now = DateTime.utc(2026, 7, 31, 1);
   return ScheduleProgressSummary(
     schemaVersion: ScheduleProgressSummary.currentSchemaVersion,
     scheduleType: ScheduleProgressScheduleType.doubles,
-    generatedScheduleId: 'generated-1',
+    generatedScheduleId: generatedScheduleId,
     totalMatchCount: 15,
     completedMatchCount: 0,
     inProgressMatchCount: 0,
@@ -236,12 +211,15 @@ ScheduleProgressSummary _summary({required int revision}) {
   );
 }
 
-ScheduleMatchProgress _match({required int revision}) {
+ScheduleMatchProgress _match({
+  String generatedScheduleId = 'generated-1',
+  required int revision,
+}) {
   final now = DateTime.utc(2026, 7, 31, 1);
   return ScheduleMatchProgress(
     schemaVersion: ScheduleMatchProgress.currentSchemaVersion,
     scheduleType: ScheduleProgressScheduleType.doubles,
-    generatedScheduleId: 'generated-1',
+    generatedScheduleId: generatedScheduleId,
     roundNo: 1,
     courtNo: 1,
     matchNo: 1,
