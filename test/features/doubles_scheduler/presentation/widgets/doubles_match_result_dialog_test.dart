@@ -7,7 +7,7 @@ import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_m
 import 'package:srp_lanske/l10n/l10n.dart';
 
 void main() {
-  testWidgets('selecting completed sets the finish time and saves scores', (
+  testWidgets('selecting completed sets equal start and finish times', (
     tester,
   ) async {
     DoublesMatchProgressInput? savedInput;
@@ -38,8 +38,8 @@ void main() {
     expect(savedInput!.status, ScheduleMatchStatus.completed);
     expect(savedInput!.side1Score, 1);
     expect(savedInput!.side2Score, 0);
-    expect(savedInput!.startedAt, isNull);
-    expect(savedInput!.finishedAt, isNotNull);
+    expect(savedInput!.startedAt, isNotNull);
+    expect(savedInput!.finishedAt, savedInput!.startedAt);
   });
 
   testWidgets('selecting in progress sets the start time', (tester) async {
