@@ -6,6 +6,10 @@ abstract final class DoublesProgressUiStore {
     null,
   );
 
+  static void clearOverride() {
+    progressText.value = null;
+  }
+
   static void setSummary(ScheduleProgressSummary? summary) {
     progressText.value = summary == null
         ? '- / -'
