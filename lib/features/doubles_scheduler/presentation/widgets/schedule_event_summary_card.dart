@@ -7,11 +7,15 @@ class ScheduleEventSummaryCard extends StatelessWidget {
     this.onShareUrl,
     this.onRefresh,
     this.canRefresh = true,
+    this.isRefreshing = false,
+    this.progressText,
   });
 
   final VoidCallback? onShareUrl;
   final VoidCallback? onRefresh;
   final bool canRefresh;
+  final bool isRefreshing;
+  final String? progressText;
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +40,20 @@ class ScheduleEventSummaryCard extends StatelessWidget {
                   ),
                 if (onRefresh != null)
                   FilledButton.tonalIcon(
-                    onPressed: canRefresh ? onRefresh : null,
-                    icon: const Icon(Icons.sync),
+                    onPressed: canRefresh && !isRefreshing ? onRefresh : null,
+                    icon: isRefreshing
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.sync),
                     label: Text(l10n.refreshLatestButton),
+                  ),
+                if (progressText != null)
+                  Chip(
+                    avatar: const Icon(Icons.sports_score, size: 18),
+                    label: Text(progressText!),
                   ),
               ],
             ),
