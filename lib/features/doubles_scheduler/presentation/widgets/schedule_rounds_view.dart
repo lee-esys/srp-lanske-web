@@ -1,6 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/features/doubles_scheduler/application/doubles_match_progress_service.dart';
+import 'package:srp_lanske/features/doubles_scheduler/application/local_schedule_history_mapper.dart';
+import 'package:srp_lanske/features/doubles_scheduler/data/local_schedule_history_store.dart';
+import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_progress_ui_store.dart';
+import 'package:srp_lanske/features/doubles_scheduler/presentation/models/doubles_match_editor_models.dart';
+import 'package:srp_lanske/features/schedule_progress/application/schedule_progress_repository.dart';
+import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
+import 'package:srp_lanske/shared/presentation/app_message_type.dart';
+import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
+import 'package:srp_lanske/shared/repositories/app_repositories.dart';
+import 'package:srp_lanske/shared/utils/browser_url.dart';
 
+import 'doubles_match_result_dialog.dart';
 import 'schedule_player_chip.dart';
 
 class ScheduleRoundsView extends StatefulWidget {
@@ -27,9 +39,285 @@ class ScheduleRoundsView extends StatefulWidget {
 
 class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   static const _courtAreaSpacing = 24.0;
-  static const _courtMatchCardWidth = 300.0;
+  static const _courtMatchCardWidth = 340.0;
 
   final Set<String> _expandedRestRoundNumbers = {};
+  late final DoublesMatchProgressService _progressService;
+
+  Map<String, ScheduleMatchProgress> _progressByKey = const {};
+  bool _isLoadingProgress = false;
+  bool _isOpeningMatch = false;
+  String? _loadedScheduleIdentity;
+
+  @override
+  void initState() {
+    super.initState();
+    _progressService = DoublesMatchProgressService(
+      repository: appScheduleProgressRepository,
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadProgress();
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant ScheduleRoundsView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldGeneratedScheduleId =
+        oldWidget.scheduleResponse?['generated_schedule_id']?.toString();
+    if (oldGeneratedScheduleId != _generatedScheduleId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _loadProgress();
+        }
+      });
+    }
+  }
+
+  String? get _publicId {
+    final value = Uri.base.queryParameters['sid']?.trim().toUpperCase();
+    return value == null || value.isEmpty ? null : value;
+  }
+
+  String? get _generatedScheduleId {
+    final value = widget.scheduleResponse?['generated_schedule_id']?.toString();
+    return value == null || value.isEmpty ? null : value;
+  }
+
+  int get _totalMatchCount {
+    return countDoublesScheduleMatches(widget.scheduleResponse);
+  }
+
+  ScheduleProgressScope? get _progressScope {
+    final publicId = _publicId;
+    final generatedScheduleId = _generatedScheduleId;
+    if (publicId == null || generatedScheduleId == null) {
+      return null;
+    }
+
+    return ScheduleProgressScope(
+      scheduleType: ScheduleProgressScheduleType.doubles,
+      shareId: publicId,
+      generatedScheduleId: generatedScheduleId,
+    );
+  }
+
+  Future<void> _loadProgress({bool showMessage = false}) async {
+    final scope = _progressScope;
+    if (scope == null || _totalMatchCount <= 0) {
+      if (mounted) {
+        setState(() {
+          _progressByKey = const {};
+          _isLoadingProgress = false;
+          _loadedScheduleIdentity = null;
+        });
+      }
+      DoublesProgressUiStore.setSummary(null);
+      return;
+    }
+
+    final identity = scope.storageKey;
+    setState(() {
+      _isLoadingProgress = true;
+    });
+
+    try {
+      final summary = await appScheduleProgressRepository.findSummary(scope);
+      final matches = summary == null
+          ? const <ScheduleMatchProgress>[]
+          : await appScheduleProgressRepository.listMatches(scope);
+      if (!mounted || _progressScope?.storageKey != identity) {
+        return;
+      }
+
+      setState(() {
+        _progressByKey = Map<String, ScheduleMatchProgress>.unmodifiable({
+          for (final match in matches) match.key.value: match,
+        });
+        _loadedScheduleIdentity = identity;
+        _isLoadingProgress = false;
+      });
+      DoublesProgressUiStore.setSummary(summary);
+
+      if (showMessage) {
+        AppSnackBar.show(
+          context,
+          message: AppLocalizations.of(context).doublesMatchRefreshedMessage,
+          type: AppMessageType.success,
+        );
+      }
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isLoadingProgress = false;
+      });
+      if (showMessage) {
+        AppSnackBar.show(
+          context,
+          message: AppLocalizations.of(context)
+              .reloadScheduleFailedMessage(error.toString()),
+          type: AppMessageType.error,
+        );
+      }
+    }
+  }
+
+  Future<void> _openMatch(DoublesMatchSelection selection) async {
+    if (_isOpeningMatch || _isLoadingProgress) {
+      return;
+    }
+
+    final scope = _progressScope;
+    final publicId = _publicId;
+    final generatedScheduleId = _generatedScheduleId;
+    final totalMatchCount = _totalMatchCount;
+    final l10n = AppLocalizations.of(context);
+    if (scope == null ||
+        publicId == null ||
+        generatedScheduleId == null ||
+        totalMatchCount <= 0) {
+      AppSnackBar.show(
+        context,
+        message: l10n.doublesMatchUnavailableMessage,
+        type: AppMessageType.warning,
+      );
+      return;
+    }
+
+    setState(() {
+      _isOpeningMatch = true;
+    });
+
+    try {
+      final aggregate = await appEventRepository.findByPublicId(publicId);
+      if (!mounted) {
+        return;
+      }
+
+      if (aggregate == null ||
+          aggregate.event.displayGeneratedScheduleId != generatedScheduleId) {
+        AppSnackBar.show(
+          context,
+          message: l10n.doublesMatchScheduleChangedMessage,
+          type: AppMessageType.info,
+          actionLabel: l10n.refreshLatestButton,
+          onAction: reloadPage,
+        );
+        return;
+      }
+
+      final latest = await appScheduleProgressRepository.findMatch(
+        scope: scope,
+        roundNo: selection.roundNo,
+        courtNo: selection.courtNo,
+        matchNo: selection.matchNo,
+      );
+      if (!mounted) {
+        return;
+      }
+
+      final input = await showDialog<DoublesMatchProgressInput>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return DoublesMatchResultDialog(
+            match: selection,
+            initialProgress: latest,
+          );
+        },
+      );
+      if (!mounted || input == null) {
+        return;
+      }
+
+      final saved = await _progressService.save(
+        scope: scope,
+        current: latest,
+        input: input,
+        totalMatchCount: totalMatchCount,
+      );
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _progressByKey = Map<String, ScheduleMatchProgress>.unmodifiable({
+          ..._progressByKey,
+          saved.match.key.value: saved.match,
+        });
+        _loadedScheduleIdentity = scope.storageKey;
+      });
+      DoublesProgressUiStore.setSummary(saved.summary);
+
+      await LocalScheduleHistoryStore().upsert(
+        buildLocalScheduleHistoryItem(
+          aggregate,
+          now: DateTime.now(),
+        ),
+      );
+      if (!mounted) {
+        return;
+      }
+
+      AppSnackBar.show(
+        context,
+        message: l10n.doublesMatchSavedMessage,
+        type: AppMessageType.success,
+      );
+    } on ScheduleProgressConflictException {
+      if (!mounted) {
+        return;
+      }
+
+      AppSnackBar.show(
+        context,
+        message: l10n.doublesMatchConflictMessage,
+        type: AppMessageType.warning,
+        actionLabel: l10n.refreshLatestButton,
+        onAction: () {
+          _loadProgress(showMessage: true);
+        },
+      );
+    } on DoublesMatchIncompleteScoreException {
+      if (!mounted) {
+        return;
+      }
+      AppSnackBar.show(
+        context,
+        message: l10n.doublesMatchIncompleteScoreMessage,
+        type: AppMessageType.warning,
+      );
+    } on DoublesMatchTimeOrderException {
+      if (!mounted) {
+        return;
+      }
+      AppSnackBar.show(
+        context,
+        message: l10n.doublesMatchTimeOrderErrorMessage,
+        type: AppMessageType.warning,
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      AppSnackBar.show(
+        context,
+        message: l10n.doublesMatchSaveFailedMessage(error.toString()),
+        type: AppMessageType.error,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isOpeningMatch = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +332,17 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
     if (rounds.isEmpty) {
       return Text(l10n.scheduleDataEmptyMessage);
+    }
+
+    final scope = _progressScope;
+    if (scope != null &&
+        !_isLoadingProgress &&
+        _loadedScheduleIdentity != scope.storageKey) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_isLoadingProgress) {
+          _loadProgress();
+        }
+      });
     }
 
     return Column(
@@ -120,6 +419,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildCourtArea(
+                    roundNo: roundNumberValue,
                     courts: courts,
                     slotToPlayerId: slotToPlayerId,
                   ),
@@ -140,6 +440,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   }
 
   Widget _buildCourtArea({
+    required int? roundNo,
     required List<Map<String, dynamic>> courts,
     required Map<int, String> slotToPlayerId,
   }) {
@@ -155,8 +456,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
           return SizedBox(
             width: maxWidth,
             child: _buildCourtMatchCard(
-              courts.first,
-              slotToPlayerId,
+              roundNo: roundNo,
+              court: courts.first,
+              slotToPlayerId: slotToPlayerId,
               alignment: Alignment.center,
             ),
           );
@@ -175,8 +477,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
                   SizedBox(
                     width: _courtMatchCardWidth,
                     child: _buildCourtMatchCard(
-                      courts[0],
-                      slotToPlayerId,
+                      roundNo: roundNo,
+                      court: courts[0],
+                      slotToPlayerId: slotToPlayerId,
                       alignment: Alignment.centerLeft,
                     ),
                   ),
@@ -184,8 +487,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
                   SizedBox(
                     width: _courtMatchCardWidth,
                     child: _buildCourtMatchCard(
-                      courts[1],
-                      slotToPlayerId,
+                      roundNo: roundNo,
+                      court: courts[1],
+                      slotToPlayerId: slotToPlayerId,
                       alignment: Alignment.centerLeft,
                     ),
                   ),
@@ -203,8 +507,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
                 child: SizedBox(
                   width: maxWidth,
                   child: _buildCourtMatchCard(
-                    court,
-                    slotToPlayerId,
+                    roundNo: roundNo,
+                    court: court,
+                    slotToPlayerId: slotToPlayerId,
                     alignment: Alignment.center,
                   ),
                 ),
@@ -224,8 +529,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
             return SizedBox(
               width: itemWidth,
               child: _buildCourtMatchCard(
-                court,
-                slotToPlayerId,
+                roundNo: roundNo,
+                court: court,
+                slotToPlayerId: slotToPlayerId,
                 alignment: Alignment.centerLeft,
               ),
             );
@@ -235,9 +541,10 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     );
   }
 
-  Widget _buildCourtMatchCard(
-    Map<String, dynamic> court,
-    Map<int, String> slotToPlayerId, {
+  Widget _buildCourtMatchCard({
+    required int? roundNo,
+    required Map<String, dynamic> court,
+    required Map<int, String> slotToPlayerId,
     Alignment alignment = Alignment.centerLeft,
   }) {
     final courtNumberText = court['court_number']?.toString() ?? '-';
@@ -253,17 +560,60 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
     final hasCustomCourtLabel = courtLabel != defaultCourtLabel;
     final showCourtLabel = widget.courtCount >= 2 || hasCustomCourtLabel;
-    final team1Slots = _asIntList(court['team1_player_slots']);
-    final team2Slots = _asIntList(court['team2_player_slots']);
+    final side1Slots = _asIntList(court['team1_player_slots']);
+    final side2Slots = _asIntList(court['team2_player_slots']);
+    final matchNo = _tryReadInt(court['match_number'] ?? court['match_no']);
+
+    final progress = roundNo == null || courtNumber == null
+        ? null
+        : _progressByKey[
+            ScheduleMatchKey(
+              roundNo: roundNo,
+              courtNo: courtNumber,
+            ).value
+          ];
+
+    final selection = roundNo == null || courtNumber == null
+        ? null
+        : DoublesMatchSelection(
+            roundNo: roundNo,
+            courtNo: courtNumber,
+            matchNo: matchNo,
+            side1Players: _buildParticipantViewModels(
+              side1Slots,
+              slotToPlayerId,
+            ),
+            side2Players: _buildParticipantViewModels(
+              side2Slots,
+              slotToPlayerId,
+            ),
+          );
 
     return _buildHorizontalScrollableContent(
       alignment: alignment,
-      child: _buildCourtMatchContent(
-        courtLabel: courtLabel,
-        showCourtLabel: showCourtLabel,
-        team1Slots: team1Slots,
-        team2Slots: team2Slots,
-        slotToPlayerId: slotToPlayerId,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: selection == null ? null : () => _openMatch(selection),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: _buildCourtMatchContent(
+              courtLabel: courtLabel,
+              showCourtLabel: showCourtLabel,
+              side1Slots: side1Slots,
+              side2Slots: side2Slots,
+              slotToPlayerId: slotToPlayerId,
+              progress: progress,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -291,30 +641,154 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   Widget _buildCourtMatchContent({
     required String courtLabel,
     required bool showCourtLabel,
-    required List<int> team1Slots,
-    required List<int> team2Slots,
+    required List<int> side1Slots,
+    required List<int> side2Slots,
     required Map<int, String> slotToPlayerId,
+    required ScheduleMatchProgress? progress,
   }) {
-    return Row(
+    final l10n = AppLocalizations.of(context);
+    final status = progress?.status ?? ScheduleMatchStatus.scheduled;
+    final scores = progress?.result?.type ==
+                ScheduleMatchResultSummary.simpleScoreType &&
+            (progress?.result?.sideScores.length ?? 0) >= 2
+        ? progress!.result!.sideScores
+        : const <int>[];
+    final side1Outcome = _outcomeForSide(scores, sideIndex: 0);
+    final side2Outcome = _outcomeForSide(scores, sideIndex: 1);
+
+    return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        if (showCourtLabel) ...[
-          Text(
-            courtLabel,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Chip(
+              visualDensity: VisualDensity.compact,
+              label: Text(_statusLabel(l10n, status)),
             ),
-          ),
-          const SizedBox(width: 8),
-        ],
-        _buildTeamGroup(team1Slots, slotToPlayerId),
-        const SizedBox(width: 6),
-        const Text('vs'),
-        const SizedBox(width: 6),
-        _buildTeamGroup(team2Slots, slotToPlayerId),
+            if (scores.length >= 2) ...[
+              const SizedBox(width: 8),
+              Text(
+                '${scores[0]} - ${scores[1]}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+            if (progress?.note.trim().isNotEmpty ?? false) ...[
+              const SizedBox(width: 6),
+              const Icon(Icons.note_alt_outlined, size: 18),
+            ],
+            const SizedBox(width: 4),
+            const Icon(Icons.edit_outlined, size: 17),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (showCourtLabel) ...[
+              Text(
+                courtLabel,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+            _buildOutcomeTeamGroup(
+              slotNumbers: side1Slots,
+              slotToPlayerId: slotToPlayerId,
+              outcome: side1Outcome,
+            ),
+            const SizedBox(width: 6),
+            const Text('vs'),
+            const SizedBox(width: 6),
+            _buildOutcomeTeamGroup(
+              slotNumbers: side2Slots,
+              slotToPlayerId: slotToPlayerId,
+              outcome: side2Outcome,
+            ),
+          ],
+        ),
       ],
+    );
+  }
+
+  String _statusLabel(AppLocalizations l10n, ScheduleMatchStatus status) {
+    return switch (status) {
+      ScheduleMatchStatus.scheduled =>
+        l10n.doublesMatchStatusScheduledLabel,
+      ScheduleMatchStatus.inProgress =>
+        l10n.doublesMatchStatusInProgressLabel,
+      ScheduleMatchStatus.completed =>
+        l10n.doublesMatchStatusCompletedLabel,
+    };
+  }
+
+  _MatchSideOutcome _outcomeForSide(List<int> scores, {required int sideIndex}) {
+    if (scores.length < 2) {
+      return _MatchSideOutcome.none;
+    }
+    if (scores[0] == scores[1]) {
+      return _MatchSideOutcome.draw;
+    }
+    final sideWon = sideIndex == 0 ? scores[0] > scores[1] : scores[1] > scores[0];
+    return sideWon ? _MatchSideOutcome.winner : _MatchSideOutcome.loser;
+  }
+
+  Widget _buildOutcomeTeamGroup({
+    required List<int> slotNumbers,
+    required Map<int, String> slotToPlayerId,
+    required _MatchSideOutcome outcome,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final backgroundColor = switch (outcome) {
+      _MatchSideOutcome.none => Colors.transparent,
+      _MatchSideOutcome.winner => colorScheme.tertiaryContainer,
+      _MatchSideOutcome.loser => colorScheme.surfaceContainerHighest,
+      _MatchSideOutcome.draw => colorScheme.secondaryContainer,
+    };
+    final borderColor = switch (outcome) {
+      _MatchSideOutcome.none => Colors.transparent,
+      _MatchSideOutcome.winner => colorScheme.tertiary,
+      _MatchSideOutcome.loser => colorScheme.outline,
+      _MatchSideOutcome.draw => colorScheme.secondary,
+    };
+    final label = switch (outcome) {
+      _MatchSideOutcome.none => null,
+      _MatchSideOutcome.winner => l10n.doublesMatchWinnerLabel,
+      _MatchSideOutcome.loser => l10n.doublesMatchLoserLabel,
+      _MatchSideOutcome.draw => l10n.doublesMatchDrawLabel,
+    };
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(5, 4, 5, 3),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: Border.all(color: borderColor),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildTeamGroup(slotNumbers, slotToPlayerId),
+          if (label != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -348,6 +822,22 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     );
   }
 
+  List<DoublesMatchParticipantViewModel> _buildParticipantViewModels(
+    List<int> slotNumbers,
+    Map<int, String> slotToPlayerId,
+  ) {
+    return slotNumbers.map((slotNumber) {
+      final playerId = slotToPlayerId[slotNumber];
+      return DoublesMatchParticipantViewModel(
+        slotNumber: slotNumber,
+        playerId: playerId,
+        displayName: playerId == null
+            ? 'slot:$slotNumber'
+            : widget.playerNameById[playerId] ?? playerId,
+      );
+    }).toList(growable: false);
+  }
+
   List<Widget> _buildTeamChips(
     List<int> slotNumbers,
     Map<int, String> slotToPlayerId,
@@ -376,9 +866,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        for (var i = 0; i < chips.length; i++) ...[
-          if (i > 0) const SizedBox(width: 6),
-          chips[i],
+        for (var index = 0; index < chips.length; index += 1) ...[
+          if (index > 0) const SizedBox(width: 6),
+          chips[index],
         ],
       ],
     );
@@ -410,7 +900,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     Map<int, String> slotToPlayerId,
   ) {
     final selectedPlayerId = widget.selectedPlayerId;
-    if (selectedPlayerId == null) return false;
+    if (selectedPlayerId == null) {
+      return false;
+    }
 
     return restSlotNumbers.any((slotNumber) {
       return slotToPlayerId[slotNumber] == selectedPlayerId;
@@ -418,24 +910,36 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   }
 
   List<Map<String, dynamic>> _asObjectList(Object? value) {
-    if (value is! List) return const [];
+    if (value is! List) {
+      return const [];
+    }
 
     return value
         .whereType<Map>()
-        .map((e) => e.map((key, value) => MapEntry(key.toString(), value)))
+        .map((item) {
+          return item.map(
+            (key, value) => MapEntry(key.toString(), value),
+          );
+        })
         .toList(growable: false);
   }
 
   List<int> _asIntList(Object? value) {
-    if (value is! List) return const [];
+    if (value is! List) {
+      return const [];
+    }
 
     return value
-        .map((e) {
-          if (e is int) return e;
-          return int.tryParse(e.toString());
-        })
+        .map(_tryReadInt)
         .whereType<int>()
         .toList(growable: false);
+  }
+
+  int? _tryReadInt(Object? value) {
+    if (value is int) {
+      return value;
+    }
+    return value == null ? null : int.tryParse(value.toString());
   }
 
   Map<int, String> _buildSlotToPlayerId(Map<String, dynamic> scheduleResponse) {
@@ -443,18 +947,24 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     final slotToPlayerId = <int, String>{};
 
     for (final row in assignment) {
-      final slotNumberValue = row['slot_number'];
-      final playerIdValue = row['player_id'];
-      if (slotNumberValue == null || playerIdValue == null) continue;
+      final slotNumber = _tryReadInt(row['slot_number']);
+      final playerId = row['player_id']?.toString();
+      if (slotNumber == null || playerId == null) {
+        continue;
+      }
 
-      final slotNumber = int.tryParse(slotNumberValue.toString());
-      if (slotNumber == null) continue;
-
-      slotToPlayerId[slotNumber] = playerIdValue.toString();
+      slotToPlayerId[slotNumber] = playerId;
     }
 
     return slotToPlayerId;
   }
+}
+
+enum _MatchSideOutcome {
+  none,
+  winner,
+  loser,
+  draw,
 }
 
 class _RestToggleButton extends StatelessWidget {
@@ -490,22 +1000,20 @@ class _RestToggleButton extends StatelessWidget {
           color: backgroundColor,
           border: Border.all(
             color: borderColor,
-            width: isHighlighted ? 2.0 : 1.0,
+            width: isHighlighted ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 l10n.restLabel,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 10,
-                  height: 1.0,
+                  height: 1,
                   fontWeight:
                       isHighlighted ? FontWeight.w700 : FontWeight.normal,
                   color: textColor,
@@ -516,7 +1024,7 @@ class _RestToggleButton extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 10,
-                  height: 1.0,
+                  height: 1,
                   fontWeight:
                       isHighlighted ? FontWeight.w700 : FontWeight.normal,
                   color: textColor,
