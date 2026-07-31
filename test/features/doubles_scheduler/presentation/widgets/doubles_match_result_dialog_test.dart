@@ -28,8 +28,8 @@ void main() {
     await tester.tap(find.byIcon(Icons.add).first);
     await tester.pump();
 
-    expect(find.text('1'), findsOneWidget);
-    expect(find.text('0'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, '1'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, '0'), findsOneWidget);
 
     await tester.tap(find.text('保存'));
     await tester.pumpAndSettle();
@@ -100,11 +100,11 @@ void main() {
     await tester.tap(find.text('開く'));
     await tester.pumpAndSettle();
 
-    expect(find.text('4'), findsOneWidget);
-    expect(find.text('2'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, '4'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, '2'), findsOneWidget);
     expect(find.text('接戦でした'), findsOneWidget);
 
-    await tester.tap(find.text('4'));
+    await tester.tap(find.widgetWithText(OutlinedButton, '4'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('スコアを未入力に戻す'));
     await tester.pumpAndSettle();
