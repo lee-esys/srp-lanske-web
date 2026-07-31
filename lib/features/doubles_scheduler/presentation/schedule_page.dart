@@ -156,7 +156,9 @@ class _SchedulePageState extends State<SchedulePage> {
 
   int get _displayPlayerCount {
     final savedPlayers = _orderedSavedPlayers;
-    return savedPlayers.isEmpty ? widget.draft.playerCount : savedPlayers.length;
+    return savedPlayers.isEmpty
+        ? widget.draft.playerCount
+        : savedPlayers.length;
   }
 
   List<SavedEventCourtSetting> get _courtSettings {
@@ -805,8 +807,8 @@ class _SchedulePageState extends State<SchedulePage> {
     } catch (e) {
       if (!mounted) return;
 
-      final message =
-          AppLocalizations.of(context).reloadScheduleFailedMessage(e.toString());
+      final message = AppLocalizations.of(context)
+          .reloadScheduleFailedMessage(e.toString());
       setState(() {
         _errorMessage = message;
       });

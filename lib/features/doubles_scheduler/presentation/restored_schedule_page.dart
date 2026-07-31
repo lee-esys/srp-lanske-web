@@ -394,11 +394,10 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     bool showSuccess = false,
     bool initialLoad = false,
   }) async {
-    final normalizedPublicId = (publicId ??
-            _savedEvent?.event.publicId ??
-            widget.publicId)
-        .trim()
-        .toUpperCase();
+    final normalizedPublicId =
+        (publicId ?? _savedEvent?.event.publicId ?? widget.publicId)
+            .trim()
+            .toUpperCase();
     final l10n = AppLocalizations.of(context);
 
     if (!isValidPublicId(normalizedPublicId)) {
@@ -749,8 +748,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     } catch (e) {
       if (!mounted) return;
 
-      final message =
-          AppLocalizations.of(context).reloadScheduleFailedMessage(e.toString());
+      final message = AppLocalizations.of(context)
+          .reloadScheduleFailedMessage(e.toString());
       setState(() {
         _errorMessage = message;
       });

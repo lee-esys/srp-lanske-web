@@ -36,14 +36,14 @@ class DoublesScheduleRefreshSnapshot {
     required List<ScheduleMatchProgress> matches,
   }) {
     final generatedScheduleId = aggregate.event.displayGeneratedScheduleId;
-    final progressScope = generatedScheduleId == null ||
-            generatedScheduleId.isEmpty
-        ? null
-        : ScheduleProgressScope(
-            scheduleType: ScheduleProgressScheduleType.doubles,
-            shareId: aggregate.event.publicId,
-            generatedScheduleId: generatedScheduleId,
-          );
+    final progressScope =
+        generatedScheduleId == null || generatedScheduleId.isEmpty
+            ? null
+            : ScheduleProgressScope(
+                scheduleType: ScheduleProgressScheduleType.doubles,
+                shareId: aggregate.event.publicId,
+                generatedScheduleId: generatedScheduleId,
+              );
 
     return DoublesScheduleRefreshSnapshot(
       aggregate: aggregate,
