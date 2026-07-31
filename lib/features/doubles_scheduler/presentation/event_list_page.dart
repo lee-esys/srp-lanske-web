@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
+import 'package:srp_lanske/shared/presentation/app_message_type.dart';
+import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
 import 'package:srp_lanske/shared/utils/browser_url.dart';
 
 import '../data/local_schedule_history_item.dart';
@@ -133,13 +135,10 @@ class _EventListPageState extends State<EventListPage> {
   }
 
   void _showMessage(String message) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
+    AppSnackBar.show(
+      context,
+      message: message,
+      type: AppMessageType.success,
     );
   }
 
