@@ -45,6 +45,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   late final DoublesMatchProgressService _progressService;
 
   Map<String, ScheduleMatchProgress> _progressByKey = const {};
+  bool _canEditMatches = false;
   bool _isLoadingProgress = false;
   bool _isOpeningMatch = false;
   int _progressRequestSequence = 0;
@@ -109,6 +110,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       if (mounted && requestSequence == _progressRequestSequence) {
         setState(() {
           _progressByKey = const {};
+          _canEditMatches = false;
           _isLoadingProgress = false;
         });
       }
@@ -122,6 +124,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     });
 
     try {
+      final aggregate = await appEventRepository.findByPublicId(scope.shareId);
       final summary = await appScheduleProgressRepository.findSummary(scope);
       final matches = summary == null
           ? const <ScheduleMatchProgress>[]
@@ -136,6 +139,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
         _progressByKey = Map<String, ScheduleMatchProgress>.unmodifiable({
           for (final match in matches) match.key.value: match,
         });
+        _canEditMatches = aggregate?.event.hasAdoptedSchedule ?? false;
         _isLoadingProgress = false;
       });
       DoublesProgressUiStore.setSummary(summary);
@@ -153,6 +157,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       }
 
       setState(() {
+        _canEditMatches = false;
         _isLoadingProgress = false;
       });
       if (showMessage) {
@@ -167,7 +172,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   }
 
   Future<void> _openMatch(DoublesMatchSelection selection) async {
-    if (_isOpeningMatch || _isLoadingProgress) {
+    if (!_canEditMatches || _isOpeningMatch || _isLoadingProgress) {
       return;
     }
 
@@ -199,6 +204,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       }
 
       if (aggregate == null ||
+          !aggregate.event.hasAdoptedSchedule ||
           aggregate.event.displayGeneratedScheduleId != generatedScheduleId) {
         AppSnackBar.show(
           context,
@@ -582,7 +588,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: selection == null ? null : () => _openMatch(selection),
+          onTap: !_canEditMatches || selection == null
+              ? null
+              : () => _openMatch(selection),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             decoration: BoxDecoration(
@@ -640,8 +648,10 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
             (progress?.result?.sideScores.length ?? 0) >= 2
         ? progress!.result!.sideScores
         : const <int>[];
-    final side1Outcome = _outcomeForSide(scores, sideIndex: 0);
-    final side2Outcome = _outcomeForSide(scores, sideIndex: 1);
+    final outcomeScores =
+        status == ScheduleMatchStatus.completed ? scores : const <int>[];
+    final side1Outcome = _outcomeForSide(outcomeScores, sideIndex: 0);
+    final side2Outcome = _outcomeForSide(outcomeScores, sideIndex: 1);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -667,8 +677,10 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
               const SizedBox(width: 6),
               const Icon(Icons.note_alt_outlined, size: 18),
             ],
-            const SizedBox(width: 4),
-            const Icon(Icons.edit_outlined, size: 17),
+            if (_canEditMatches) ...[
+              const SizedBox(width: 4),
+              const Icon(Icons.edit_outlined, size: 17),
+            ],
           ],
         ),
         const SizedBox(height: 6),
