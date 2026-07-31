@@ -149,8 +149,7 @@ void main() {
     expect(snackBar.showCloseIcon, isTrue);
   });
 
-  testWidgets('replaces a persistent warning with a new error',
-      (tester) async {
+  testWidgets('replaces a persistent warning with a new error', (tester) async {
     final context = await pumpHost(tester);
 
     AppSnackBar.show(

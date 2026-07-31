@@ -78,9 +78,7 @@ abstract final class AppSnackBar {
         key: const ValueKey<String>('app-snack-bar'),
         behavior: SnackBarBehavior.floating,
         width: useFixedWidth ? 560 : null,
-        margin: useFixedWidth
-            ? null
-            : const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        margin: useFixedWidth ? null : const EdgeInsets.fromLTRB(12, 0, 12, 12),
         elevation: 6,
         backgroundColor: style.backgroundColor,
         shape: RoundedRectangleBorder(

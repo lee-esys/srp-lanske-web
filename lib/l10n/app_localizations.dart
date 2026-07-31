@@ -413,7 +413,7 @@ abstract class AppLocalizations {
   /// Message shown when the displayed schedule is outdated.
   ///
   /// In ja, this message translates to:
-  /// **'対戦表が更新されています。最新の情報に更新します'**
+  /// **'対戦表が更新されていたため、最新の対戦表を表示しました。'**
   String get scheduleUpdatedReloadMessage;
 
   /// Message shown when schedule adoption completed.

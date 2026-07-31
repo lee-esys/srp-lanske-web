@@ -240,7 +240,7 @@
   "@alreadyAdoptedScheduleMessage": {
     "description": "Message shown when the schedule has already been adopted."
   },
-  "scheduleUpdatedReloadMessage": "対戦表が更新されています。最新の情報に更新します",
+  "scheduleUpdatedReloadMessage": "対戦表が更新されていたため、最新の対戦表を表示しました。",
   "@scheduleUpdatedReloadMessage": {
     "description": "Message shown when the displayed schedule is outdated."
   },

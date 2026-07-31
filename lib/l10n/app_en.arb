@@ -240,7 +240,7 @@
   "@alreadyAdoptedScheduleMessage": {
     "description": "Message shown when the schedule has already been adopted."
   },
-  "scheduleUpdatedReloadMessage": "The match table has been updated. Loading the latest information.",
+  "scheduleUpdatedReloadMessage": "The match table had been updated, so the latest version is now displayed.",
   "@scheduleUpdatedReloadMessage": {
     "description": "Message shown when the displayed schedule is outdated."
   },

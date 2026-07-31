@@ -178,7 +178,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get alreadyAdoptedScheduleMessage => 'すでに採用済みです';
 
   @override
-  String get scheduleUpdatedReloadMessage => '対戦表が更新されています。最新の情報に更新します';
+  String get scheduleUpdatedReloadMessage => '対戦表が更新されていたため、最新の対戦表を表示しました。';
 
   @override
   String get adoptScheduleCompletedMessage => 'この対戦表を採用しました';
