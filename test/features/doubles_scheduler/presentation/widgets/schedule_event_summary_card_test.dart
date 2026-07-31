@@ -15,7 +15,7 @@ void main() {
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: ScheduleEventSummaryCard(
-            onRefresh: () {
+            onRefresh: () async {
               refreshCount += 1;
             },
             isRefreshing: true,
@@ -42,7 +42,7 @@ void main() {
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: ScheduleEventSummaryCard(
-            onRefresh: () {
+            onRefresh: () async {
               refreshCount += 1;
             },
             progressText: '3 / 15',
@@ -55,6 +55,7 @@ void main() {
     expect(find.byIcon(Icons.sync), findsOneWidget);
 
     await tester.tap(find.byType(FilledButton));
+    await tester.pump();
     expect(refreshCount, 1);
   });
 }
