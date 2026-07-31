@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'app_message_type.dart';
 
+/// Displays application messages with shared styling and queue rules.
+///
+/// The newest message replaces the current message. Identical messages shown
+/// within two seconds are suppressed. While a persistent message is visible,
+/// lightweight success and info messages are discarded instead of queued.
 abstract final class AppSnackBar {
   static const Duration _duplicateWindow = Duration(seconds: 2);
-  static const Duration _persistentDuration = Duration(days: 1);
+  static const Duration _persistentDuration = Duration(days: 365);
   static final Expando<_AppSnackBarState> _states =
       Expando<_AppSnackBarState>('appSnackBarState');
 
@@ -58,11 +63,10 @@ abstract final class AppSnackBar {
     final style = _AppMessageStyle.resolve(theme.colorScheme, type);
     final mediaWidth = MediaQuery.sizeOf(context).width;
     final useFixedWidth = mediaWidth >= 640;
+    final defaultShowCloseIcon =
+        type == AppMessageType.warning || type == AppMessageType.error;
     final shouldShowCloseIcon =
-        showCloseIcon ??
-        persistent ||
-        type == AppMessageType.warning ||
-        type == AppMessageType.error;
+        persistent || (showCloseIcon ?? defaultShowCloseIcon);
 
     state
       ..lastSignature = signature
