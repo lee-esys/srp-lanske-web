@@ -4,9 +4,9 @@
   "@appTitle": {
     "description": "Application title."
   },
-  "eventSetupTitle": "Doubles Match Table ver0.1",
+  "eventSetupTitle": "Lanske: Doubles Scheduler",
   "@eventSetupTitle": {
-    "description": "Title shown on the event setup page."
+    "description": "Title shown on doubles scheduler pages."
   },
   "topPageMenu": "Top",
   "@topPageMenu": {
@@ -1463,6 +1463,62 @@
   "doublesMatchSaveFailedMessage": "Could not save match information: {error}",
   "@doublesMatchSaveFailedMessage": {
     "description": "Message shown when doubles match information cannot be saved.",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
+  },
+  "appFooterText": "© 2026 S.R.P. · ver.{version}",
+  "@appFooterText": {
+    "description": "Common application footer with release version.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "0.1.5"
+      }
+    }
+  },
+  "editDoublesEventInfoButton": "Edit event information",
+  "@editDoublesEventInfoButton": {
+    "description": "Button label for editing doubles event information."
+  },
+  "editDoublesEventInfoDialogTitle": "Edit event information",
+  "@editDoublesEventInfoDialogTitle": {
+    "description": "Dialog title for editing doubles event information."
+  },
+  "doublesEventTitleLabel": "Event title",
+  "@doublesEventTitleLabel": {
+    "description": "Input label for a doubles event title."
+  },
+  "doublesEventMemoLabel": "Memo",
+  "@doublesEventMemoLabel": {
+    "description": "Input label for a doubles event memo."
+  },
+  "doublesEventTitleRequiredMessage": "Enter an event title.",
+  "@doublesEventTitleRequiredMessage": {
+    "description": "Validation message for an empty doubles event title."
+  },
+  "doublesPlayerDisplayNameRequiredMessage": "Enter a player display name.",
+  "@doublesPlayerDisplayNameRequiredMessage": {
+    "description": "Validation message for an empty doubles player display name."
+  },
+  "doublesEventInfoSavedMessage": "Event information saved.",
+  "@doublesEventInfoSavedMessage": {
+    "description": "Message shown after doubles event information is saved."
+  },
+  "doublesEventInfoConflictMessage": "Event information was updated on another device. Your input has been kept. Review the latest information and save again.",
+  "@doublesEventInfoConflictMessage": {
+    "description": "Message shown after a doubles event revision conflict."
+  },
+  "doublesEventInfoLatestLoadFailedMessage": "Could not load the latest event information. Refresh the page and try again.",
+  "@doublesEventInfoLatestLoadFailedMessage": {
+    "description": "Message shown when latest doubles event information cannot be loaded."
+  },
+  "doublesEventInfoSaveFailedMessage": "Could not save event information: {error}",
+  "@doublesEventInfoSaveFailedMessage": {
+    "description": "Message shown when doubles event information cannot be saved.",
     "placeholders": {
       "error": {
         "type": "String",

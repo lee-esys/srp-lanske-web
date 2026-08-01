@@ -6,6 +6,7 @@ import '../features/doubles_scheduler/presentation/restored_schedule_page.dart';
 import '../features/team_scheduler/presentation/team_schedule_list_page.dart';
 import '../features/team_scheduler/presentation/team_schedule_page.dart';
 import '../features/team_scheduler/presentation/team_setup_page.dart';
+import '../shared/presentation/app_footer.dart';
 import 'theme/app_theme.dart';
 
 class App extends StatelessWidget {
@@ -27,6 +28,14 @@ class App extends StatelessWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       locale: const Locale('ja'),
       theme: appTheme,
+      builder: (context, child) {
+        return Column(
+          children: [
+            Expanded(child: child ?? const SizedBox.shrink()),
+            const AppFooter(),
+          ],
+        );
+      },
       home: home,
     );
   }

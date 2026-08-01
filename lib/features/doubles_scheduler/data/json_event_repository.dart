@@ -200,9 +200,8 @@ class JsonEventRepository implements EventRepository {
 
           return <String, dynamic>{
             ...rawPlayer,
-            'initialDisplayName':
-                rawPlayer['initialDisplayName']?.toString() ??
-                    currentDisplayName,
+            'initialDisplayName': rawPlayer['initialDisplayName']?.toString() ??
+                currentDisplayName,
             'displayName': nextDisplayName,
             'updatedAt': currentDisplayName == nextDisplayName
                 ? rawPlayer['updatedAt']
@@ -273,9 +272,6 @@ class JsonEventRepository implements EventRepository {
       update: (currentData) {
         final current = SavedEventAggregate.fromJson(currentData);
         _ensureEventId(current, eventId);
-        if (current.event.hasAdoptedSchedule) {
-          throw StateError('event already adopted: $eventId');
-        }
 
         if (_courtSettingsEqual(current.courtSettings, courtSettings)) {
           return SavedEventJsonUpdate.noOp(currentData);

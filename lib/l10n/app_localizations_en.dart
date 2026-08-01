@@ -12,7 +12,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Lanske';
 
   @override
-  String get eventSetupTitle => 'Doubles Match Table ver0.1';
+  String get eventSetupTitle => 'Lanske: Doubles Scheduler';
 
   @override
   String get topPageMenu => 'Top';
@@ -992,5 +992,45 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String doublesMatchSaveFailedMessage(String error) {
     return 'Could not save match information: $error';
+  }
+
+  @override
+  String appFooterText(String version) {
+    return '© 2026 S.R.P. · ver.$version';
+  }
+
+  @override
+  String get editDoublesEventInfoButton => 'Edit event information';
+
+  @override
+  String get editDoublesEventInfoDialogTitle => 'Edit event information';
+
+  @override
+  String get doublesEventTitleLabel => 'Event title';
+
+  @override
+  String get doublesEventMemoLabel => 'Memo';
+
+  @override
+  String get doublesEventTitleRequiredMessage => 'Enter an event title.';
+
+  @override
+  String get doublesPlayerDisplayNameRequiredMessage =>
+      'Enter a player display name.';
+
+  @override
+  String get doublesEventInfoSavedMessage => 'Event information saved.';
+
+  @override
+  String get doublesEventInfoConflictMessage =>
+      'Event information was updated on another device. Your input has been kept. Review the latest information and save again.';
+
+  @override
+  String get doublesEventInfoLatestLoadFailedMessage =>
+      'Could not load the latest event information. Refresh the page and try again.';
+
+  @override
+  String doublesEventInfoSaveFailedMessage(String error) {
+    return 'Could not save event information: $error';
   }
 }

@@ -24,8 +24,7 @@ void main() {
         final created = await repository.createFromDraft(_draft());
 
         final displayNames = <String, String>{
-          for (final player in created.players)
-            player.id: player.displayName,
+          for (final player in created.players) player.id: player.displayName,
         };
         final updatedDisplay = await repository.updateDisplayInfo(
           publicId: created.event.publicId,
@@ -75,6 +74,29 @@ void main() {
 
         expect(noOp.event.revision, first.event.revision);
         expect(noOp.courtSettings.single.displayLabel, 'A');
+      });
+
+      test('allows a revision-aware update after the schedule is adopted',
+          () async {
+        final repository = entry.value();
+        final created = await repository.createFromDraft(_draft());
+        final adoptedEvent =
+            await repository.updateAdoptedGeneratedScheduleId(
+          eventId: created.event.id,
+          generatedScheduleId: 'generated-1',
+        );
+
+        final updated = await repository.updateCourtSettingsWithRevision(
+          eventId: created.event.id,
+          expectedRevision: adoptedEvent.revision,
+          courtSettings: [
+            SavedEventCourtSetting(courtNumber: 1, displayLabel: '左'),
+          ],
+        );
+
+        expect(updated.event.hasAdoptedSchedule, isTrue);
+        expect(updated.event.revision, adoptedEvent.revision + 1);
+        expect(updated.courtSettings.single.displayLabel, '左');
       });
     });
   }

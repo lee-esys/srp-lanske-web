@@ -220,9 +220,6 @@ class InMemoryEventRepository implements EventRepository {
     required List<SavedEventCourtSetting> courtSettings,
   }) async {
     final event = _requireEvent(eventId);
-    if (event.hasAdoptedSchedule) {
-      throw StateError('event already adopted: $eventId');
-    }
 
     final currentSettings = _courtSettingsByEventId[eventId] ??
         buildDefaultCourtSettings(event.courtCount);

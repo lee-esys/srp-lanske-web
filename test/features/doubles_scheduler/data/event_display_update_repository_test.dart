@@ -83,8 +83,7 @@ void main() {
         final repository = entry.value();
         final created = await repository.createFromDraft(_buildDraft());
         final initialNames = <String, String>{
-          for (final player in created.players)
-            player.id: player.displayName,
+          for (final player in created.players) player.id: player.displayName,
         };
 
         final first = await repository.updateDisplayInfo(

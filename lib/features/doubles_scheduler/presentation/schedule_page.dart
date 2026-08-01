@@ -11,6 +11,7 @@ import 'package:srp_lanske/shared/utils/browser_url.dart';
 import 'package:srp_lanske/shared/utils/external_link.dart';
 
 import '../application/doubles_schedule_refresh_service.dart';
+import '../application/event_repository.dart';
 import '../application/generated_schedule_service.dart';
 import '../application/local_schedule_history_mapper.dart';
 import '../application/saved_event_aggregate_helpers.dart';
@@ -86,10 +87,6 @@ class _SchedulePageState extends State<SchedulePage> {
 
   bool get _hasAdoptedSchedule {
     return _isAdopted || (_savedEvent?.event.hasAdoptedSchedule ?? false);
-  }
-
-  String get _pageTitle {
-    return _savedEvent?.event.title ?? widget.draft.eventName;
   }
 
   String _generateButtonLabel(AppLocalizations l10n) {
@@ -766,7 +763,7 @@ class _SchedulePageState extends State<SchedulePage> {
       }
 
       final savedEvent = _savedEvent;
-      if (savedEvent == null || _hasAdoptedSchedule) {
+      if (savedEvent == null) {
         return;
       }
 
@@ -783,8 +780,10 @@ class _SchedulePageState extends State<SchedulePage> {
 
       if (!mounted || nextSettings == null) return;
 
-      final updatedAggregate = await appEventRepository.updateCourtSettings(
+      final updatedAggregate =
+          await appEventRepository.updateCourtSettingsWithRevision(
         eventId: savedEvent.event.id,
+        expectedRevision: savedEvent.event.revision,
         courtSettings: nextSettings,
       );
 
@@ -795,6 +794,12 @@ class _SchedulePageState extends State<SchedulePage> {
       });
 
       await _saveScheduleHistory(updatedAggregate);
+    } on EventRevisionConflictException {
+      if (!mounted) return;
+      _showMessage(
+        AppLocalizations.of(context).scheduleUpdatedReloadMessage,
+        type: AppMessageType.info,
+      );
     } catch (e) {
       if (!mounted) return;
 
@@ -870,8 +875,10 @@ class _SchedulePageState extends State<SchedulePage> {
       padding: const EdgeInsets.all(4),
       children: [
         ScheduleEventSummaryCard(
+          aggregate: _savedEvent,
           onShareUrl: _savedEvent == null ? null : _showShareDialog,
           onRefresh: () => _reloadSchedule(),
+          onRefreshForEdit: () => _refreshLatestAll(showSuccess: false),
           canRefresh: _generatedScheduleId != null &&
               !_isLoading &&
               !_isOpeningSharedDataDialog,
@@ -892,8 +899,7 @@ class _SchedulePageState extends State<SchedulePage> {
         ScheduleSectionCard(
           child: ScheduleOperationPanel(
             courtDisplaySummary: _courtDisplaySummary,
-            canChangeCourtDisplay: !_hasAdoptedSchedule &&
-                _savedEvent != null &&
+            canChangeCourtDisplay: _savedEvent != null &&
                 !_isRefreshing &&
                 !_isCheckingRegenerate &&
                 !_isOpeningSharedDataDialog,
@@ -949,7 +955,7 @@ class _SchedulePageState extends State<SchedulePage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(_pageTitle),
+        title: Text(l10n.eventSetupTitle),
         actions: [
           PopupMenuButton<_ScheduleMenuAction>(
             onSelected: _handleMenu,
