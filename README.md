@@ -141,6 +141,8 @@ flutter pub get
 flutter run -d web-server --web-hostname 0.0.0.0 --web-port 3000
 ```
 
+Codespaces で起動した開発中の画面をスマートフォンやタブレットから確認する場合は、[Codespaces での実機表示確認](docs/codespaces-device-testing.md) を参照してください。
+
 ---
 
 ## 🔌 core API URL の指定
@@ -207,6 +209,7 @@ flutter run -d chrome \
 
 - [Architecture](docs/architecture.md)
 - [Contributing Guide](docs/contributing.md)
+- [Codespaces での実機表示確認](docs/codespaces-device-testing.md)
 - [Firebase Hosting deploy memo](docs/firebase-hosting-deploy.md)
 - [ver0.1 リリース前チェックリスト](docs/release-checklist-ver0.1.md)
 
