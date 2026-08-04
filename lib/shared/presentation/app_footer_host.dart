@@ -4,11 +4,33 @@ import 'package:flutter/material.dart';
 
 import 'app_footer.dart';
 
-class AppFooterResetController extends ChangeNotifier {
+class AppFooterController extends ChangeNotifier {
   bool _isDisposed = false;
+  int _resetRevision = 0;
+  int _suspensionDepth = 0;
+
+  int get resetRevision => _resetRevision;
+  bool get isSuspended => _suspensionDepth > 0;
 
   void reset() {
     if (_isDisposed) return;
+
+    _resetRevision += 1;
+    _suspensionDepth = 0;
+    notifyListeners();
+  }
+
+  void suspend() {
+    if (_isDisposed) return;
+
+    _suspensionDepth += 1;
+    notifyListeners();
+  }
+
+  void resume() {
+    if (_isDisposed || _suspensionDepth == 0) return;
+
+    _suspensionDepth -= 1;
     notifyListeners();
   }
 
@@ -22,33 +44,42 @@ class AppFooterResetController extends ChangeNotifier {
 class AppFooterNavigatorObserver extends NavigatorObserver {
   AppFooterNavigatorObserver(this.controller);
 
-  final AppFooterResetController controller;
+  final AppFooterController controller;
 
-  void _scheduleReset() {
-    scheduleMicrotask(controller.reset);
+  void _schedule(VoidCallback action) {
+    scheduleMicrotask(action);
   }
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPush(route, previousRoute);
+
     if (route is PageRoute<dynamic>) {
-      _scheduleReset();
+      _schedule(controller.reset);
+    } else if (route is PopupRoute<dynamic>) {
+      _schedule(controller.suspend);
     }
   }
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
+
     if (route is PageRoute<dynamic>) {
-      _scheduleReset();
+      _schedule(controller.reset);
+    } else if (route is PopupRoute<dynamic>) {
+      _schedule(controller.resume);
     }
   }
 
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didRemove(route, previousRoute);
+
     if (route is PageRoute<dynamic>) {
-      _scheduleReset();
+      _schedule(controller.reset);
+    } else if (route is PopupRoute<dynamic>) {
+      _schedule(controller.resume);
     }
   }
 
@@ -58,8 +89,21 @@ class AppFooterNavigatorObserver extends NavigatorObserver {
     Route<dynamic>? oldRoute,
   }) {
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+
     if (newRoute is PageRoute<dynamic> || oldRoute is PageRoute<dynamic>) {
-      _scheduleReset();
+      _schedule(controller.reset);
+      return;
+    }
+
+    final replacesPopupWithPopup =
+        newRoute is PopupRoute<dynamic> && oldRoute is PopupRoute<dynamic>;
+    if (replacesPopupWithPopup) return;
+
+    if (oldRoute is PopupRoute<dynamic>) {
+      _schedule(controller.resume);
+    }
+    if (newRoute is PopupRoute<dynamic>) {
+      _schedule(controller.suspend);
     }
   }
 }
@@ -68,11 +112,11 @@ class AppFooterHost extends StatefulWidget {
   const AppFooterHost({
     super.key,
     required this.child,
-    required this.resetListenable,
+    required this.controller,
   });
 
   final Widget child;
-  final Listenable resetListenable;
+  final AppFooterController controller;
 
   @override
   State<AppFooterHost> createState() => _AppFooterHostState();
@@ -85,27 +129,38 @@ class _AppFooterHostState extends State<AppFooterHost> {
   bool _showFooter = true;
   bool _revealedAtScrollableEnd = false;
   bool _suppressReveal = false;
+  late int _lastResetRevision;
 
   @override
   void initState() {
     super.initState();
-    widget.resetListenable.addListener(_resetFooter);
+    _lastResetRevision = widget.controller.resetRevision;
+    widget.controller.addListener(_handleControllerChanged);
   }
 
   @override
   void didUpdateWidget(AppFooterHost oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.resetListenable == widget.resetListenable) return;
+    if (oldWidget.controller == widget.controller) return;
 
-    oldWidget.resetListenable.removeListener(_resetFooter);
-    widget.resetListenable.addListener(_resetFooter);
+    oldWidget.controller.removeListener(_handleControllerChanged);
+    _lastResetRevision = widget.controller.resetRevision;
+    widget.controller.addListener(_handleControllerChanged);
     _resetFooter();
   }
 
   @override
   void dispose() {
-    widget.resetListenable.removeListener(_resetFooter);
+    widget.controller.removeListener(_handleControllerChanged);
     super.dispose();
+  }
+
+  void _handleControllerChanged() {
+    final resetRevision = widget.controller.resetRevision;
+    if (_lastResetRevision == resetRevision) return;
+
+    _lastResetRevision = resetRevision;
+    _resetFooter();
   }
 
   void _resetFooter() {
@@ -119,13 +174,19 @@ class _AppFooterHostState extends State<AppFooterHost> {
   bool _handleScrollMetricsNotification(
     ScrollMetricsNotification notification,
   ) {
-    if (notification.depth != 0) return false;
+    if (widget.controller.isSuspended || notification.depth != 0) {
+      return false;
+    }
+
     _updateFromMetrics(notification.metrics, isScrollEvent: false);
     return false;
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {
-    if (notification.depth != 0) return false;
+    if (widget.controller.isSuspended || notification.depth != 0) {
+      return false;
+    }
+
     _updateFromMetrics(notification.metrics, isScrollEvent: true);
     return false;
   }
