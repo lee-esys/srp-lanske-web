@@ -6,12 +6,12 @@ import 'package:srp_lanske/shared/presentation/app_footer_host.dart';
 
 void main() {
   testWidgets('shows the footer when the page does not scroll', (tester) async {
-    final resetController = AppFooterResetController();
-    addTearDown(resetController.dispose);
+    final footerController = AppFooterController();
+    addTearDown(footerController.dispose);
 
     await tester.pumpWidget(
       _testApp(
-        resetController: resetController,
+        footerController: footerController,
         child: const Center(child: Text('short page')),
       ),
     );
@@ -21,14 +21,14 @@ void main() {
 
   testWidgets('shows the footer only near the end of a long page',
       (tester) async {
-    final resetController = AppFooterResetController();
+    final footerController = AppFooterController();
     final scrollController = ScrollController();
-    addTearDown(resetController.dispose);
+    addTearDown(footerController.dispose);
     addTearDown(scrollController.dispose);
 
     await tester.pumpWidget(
       _testApp(
-        resetController: resetController,
+        footerController: footerController,
         child: ListView(
           controller: scrollController,
           children: const [
@@ -56,10 +56,47 @@ void main() {
 
     expect(find.byType(AppFooter), findsNothing);
   });
+
+  testWidgets('ignores scroll notifications while a popup is active',
+      (tester) async {
+    final footerController = AppFooterController();
+    final scrollController = ScrollController();
+    addTearDown(footerController.dispose);
+    addTearDown(scrollController.dispose);
+
+    await tester.pumpWidget(
+      _testApp(
+        footerController: footerController,
+        child: ListView(
+          controller: scrollController,
+          children: const [
+            SizedBox(height: 1600),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AppFooter), findsNothing);
+
+    footerController.suspend();
+    scrollController.jumpTo(scrollController.position.maxScrollExtent);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byType(AppFooter), findsNothing);
+
+    footerController.resume();
+    scrollController.jumpTo(scrollController.position.maxScrollExtent);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byType(AppFooter), findsOneWidget);
+  });
 }
 
 Widget _testApp({
-  required AppFooterResetController resetController,
+  required AppFooterController footerController,
   required Widget child,
 }) {
   return MaterialApp(
@@ -68,7 +105,7 @@ Widget _testApp({
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: AppFooterHost(
-        resetListenable: resetController,
+        controller: footerController,
         child: child,
       ),
     ),
