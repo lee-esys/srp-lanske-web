@@ -47,8 +47,9 @@ void main() {
 
     expect(find.byType(AppFooter), findsOneWidget);
 
-    final awayFromEnd =
-        (scrollController.position.maxScrollExtent - 100).clamp(0.0, double.infinity);
+    final awayFromEnd = (scrollController.position.maxScrollExtent - 100)
+        .clamp(0.0, double.infinity)
+        .toDouble();
     scrollController.jumpTo(awayFromEnd);
     await tester.pump();
     await tester.pump();
