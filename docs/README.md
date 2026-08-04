@@ -23,6 +23,7 @@ Lanske を使う人が、機能・使い方・注意点を確認するための�
 
 - [Architecture](architecture.md)
 - [Contributing Guide](contributing.md)
+- [Codespaces での実機表示確認](codespaces-device-testing.md)
 - [Firebase Hosting deploy memo](firebase-hosting-deploy.md)
 - [ver0.1 リリース前チェックリスト](release-checklist-ver0.1.md)
 
@@ -45,6 +46,7 @@ docs/
 ├─ known-limitations-ver0.1.md     # 公開ユーザー向けの制限事項
 ├─ architecture.md                 # 開発者向け設計メモ
 ├─ contributing.md                 # 開発ルール・運用方針
+├─ codespaces-device-testing.md    # Codespaces での実機表示確認
 ├─ firebase-hosting-deploy.md      # Firebase Hosting deploy memo
 ├─ release-checklist-ver0.1.md     # リリース前確認
 ├─ support/
