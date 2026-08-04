@@ -87,6 +87,11 @@ void main() {
     expect(find.byType(AppFooter), findsNothing);
 
     footerController.resume();
+    final awayFromEnd = (scrollController.position.maxScrollExtent - 100)
+        .clamp(0.0, double.infinity)
+        .toDouble();
+    scrollController.jumpTo(awayFromEnd);
+    await tester.pump();
     scrollController.jumpTo(scrollController.position.maxScrollExtent);
     await tester.pump();
     await tester.pump();
