@@ -17,20 +17,19 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  late final AppFooterResetController _footerResetController;
+  late final AppFooterController _footerController;
   late final AppFooterNavigatorObserver _footerNavigatorObserver;
 
   @override
   void initState() {
     super.initState();
-    _footerResetController = AppFooterResetController();
-    _footerNavigatorObserver =
-        AppFooterNavigatorObserver(_footerResetController);
+    _footerController = AppFooterController();
+    _footerNavigatorObserver = AppFooterNavigatorObserver(_footerController);
   }
 
   @override
   void dispose() {
-    _footerResetController.dispose();
+    _footerController.dispose();
     super.dispose();
   }
 
@@ -53,7 +52,7 @@ class _AppState extends State<App> {
       navigatorObservers: [_footerNavigatorObserver],
       builder: (context, child) {
         return AppFooterHost(
-          resetListenable: _footerResetController,
+          controller: _footerController,
           child: child ?? const SizedBox.shrink(),
         );
       },
