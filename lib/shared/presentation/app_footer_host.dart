@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'app_footer.dart';
@@ -23,27 +25,31 @@ class AppFooterNavigatorObserver extends NavigatorObserver {
   final AppFooterResetController controller;
 
   void _scheduleReset() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.reset();
-    });
+    scheduleMicrotask(controller.reset);
   }
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPush(route, previousRoute);
-    _scheduleReset();
+    if (route is PageRoute<dynamic>) {
+      _scheduleReset();
+    }
   }
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
-    _scheduleReset();
+    if (route is PageRoute<dynamic>) {
+      _scheduleReset();
+    }
   }
 
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didRemove(route, previousRoute);
-    _scheduleReset();
+    if (route is PageRoute<dynamic>) {
+      _scheduleReset();
+    }
   }
 
   @override
@@ -52,7 +58,9 @@ class AppFooterNavigatorObserver extends NavigatorObserver {
     Route<dynamic>? oldRoute,
   }) {
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
-    _scheduleReset();
+    if (newRoute is PageRoute<dynamic> || oldRoute is PageRoute<dynamic>) {
+      _scheduleReset();
+    }
   }
 }
 
