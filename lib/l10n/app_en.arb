@@ -164,10 +164,6 @@
   "@regenerateButton": {
     "description": "Short button label for regenerating a schedule."
   },
-  "adoptingScheduleButton": "Adopting",
-  "@adoptingScheduleButton": {
-    "description": "Button label shown while adopting a schedule."
-  },
   "processingButton": "Processing...",
   "@processingButton": {
     "description": "Generic button label shown while an operation is in progress."
