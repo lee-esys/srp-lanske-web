@@ -57,7 +57,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('試合状態・最終スコア'), findsOneWidget);
-    expect(find.text('保存しました'), findsOneWidget);
+    expect(find.text('試合情報を保存しました'), findsOneWidget);
     expect(_saveButton(tester).onPressed, isNull);
     expect(_closeButton(tester).onPressed, isNotNull);
   });
