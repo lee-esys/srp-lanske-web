@@ -7,13 +7,13 @@ void main() {
   final colorScheme = ColorScheme.fromSeed(seedColor: Colors.blue);
 
   group('doubles match visual styles', () {
-    test('keeps scheduled matches on the normal surface', () {
+    test('lets scheduled matches inherit the round background', () {
       final style = resolveDoublesMatchVisualStyle(
         colorScheme,
         ScheduleMatchStatus.scheduled,
       );
 
-      expect(style.cardBackgroundColor, colorScheme.surface);
+      expect(style.cardBackgroundColor, Colors.transparent);
       expect(style.cardBorderColor, colorScheme.outlineVariant);
     });
 
