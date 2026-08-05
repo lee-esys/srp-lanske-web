@@ -509,37 +509,34 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   Widget _buildScoreInputs() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final side1 = _buildScoreControl(side1: true);
-        final side2 = _buildScoreControl(side1: false);
+    final side1 = _buildScoreControl(side1: true);
+    final side2 = _buildScoreControl(side1: false);
+    final useHorizontalLayout = MediaQuery.sizeOf(context).width >= 400;
 
-        if (constraints.maxWidth >= 350) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              side1,
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Text('vs'),
-              ),
-              side2,
-            ],
-          );
-        }
+    if (useHorizontalLayout) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          side1,
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            child: Text('vs'),
+          ),
+          side2,
+        ],
+      );
+    }
 
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            side1,
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 2),
-              child: Text('vs'),
-            ),
-            side2,
-          ],
-        );
-      },
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        side1,
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 2),
+          child: Text('vs'),
+        ),
+        side2,
+      ],
     );
   }
 
@@ -766,39 +763,23 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
                     border: const OutlineInputBorder(),
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
-        actionsPadding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-        actions: [
-          SizedBox(
-            width: double.maxFinite,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
+                const SizedBox(height: 12),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: _buildSaveStatus(l10n),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: _isSaving ? null : _close,
-                      child: Text(l10n.closeButton),
-                    ),
-                    const SizedBox(width: 8),
-                    FilledButton(
-                      onPressed: _isSaving || !_isDirty ? null : _save,
-                      child: Text(l10n.doublesMatchSaveButton),
-                    ),
-                  ],
-                ),
               ],
             ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: _isSaving ? null : _close,
+            child: Text(l10n.closeButton),
+          ),
+          FilledButton(
+            onPressed: _isSaving || !_isDirty ? null : _save,
+            child: Text(l10n.doublesMatchSaveButton),
           ),
         ],
       ),
