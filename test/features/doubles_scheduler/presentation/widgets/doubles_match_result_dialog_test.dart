@@ -1,55 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:srp_lanske/features/doubles_scheduler/application/doubles_match_progress_service.dart';
+import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_match_save_registry.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/models/doubles_match_editor_models.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/widgets/doubles_match_result_dialog.dart';
+import 'package:srp_lanske/features/schedule_progress/application/schedule_progress_repository.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
 void main() {
-  testWidgets('selecting completed sets equal start and finish times', (
+  testWidgets('save keeps the dialog open and advances the baseline revision', (
     tester,
   ) async {
-    DoublesMatchProgressInput? savedInput;
+    final usedRevisions = <int>[];
+    final savedInputs = <DoublesMatchProgressInput>[];
 
     await tester.pumpWidget(
       _TestApp(
         progress: _placeholder(),
-        onSaved: (input) {
-          savedInput = input;
+        onSave: ({required current, required input}) async {
+          usedRevisions.add(current.revision);
+          savedInputs.add(input);
+          final saved = _savedProgress(current: current, input: input);
+          return DoublesMatchProgressSaveResult(
+            match: saved,
+            summary: _summary(saved),
+          );
         },
       ),
     );
 
     await tester.tap(find.text('開く'));
     await tester.pumpAndSettle();
+
+    expect(find.text('R 1 / C 1 / M 1'), findsOneWidget);
+    expect(_saveButton(tester).onPressed, isNull);
+
     await tester.tap(find.text('終了'));
     await tester.pump();
     await tester.tap(find.byIcon(Icons.add).first);
     await tester.pump();
 
-    expect(find.widgetWithText(OutlinedButton, '1'), findsOneWidget);
-    expect(find.widgetWithText(OutlinedButton, '0'), findsOneWidget);
+    expect(find.text('未保存の変更があります'), findsOneWidget);
+    expect(_saveButton(tester).onPressed, isNotNull);
 
-    await tester.tap(find.text('保存'));
+    await tester.tap(find.widgetWithText(FilledButton, '保存'));
     await tester.pumpAndSettle();
 
-    expect(savedInput, isNotNull);
-    expect(savedInput!.status, ScheduleMatchStatus.completed);
-    expect(savedInput!.side1Score, 1);
-    expect(savedInput!.side2Score, 0);
-    expect(savedInput!.startedAt, isNotNull);
-    expect(savedInput!.finishedAt, savedInput!.startedAt);
+    expect(usedRevisions, <int>[0]);
+    expect(savedInputs.single.status, ScheduleMatchStatus.completed);
+    expect(savedInputs.single.side1Score, 1);
+    expect(savedInputs.single.side2Score, 0);
+    expect(savedInputs.single.startedAt, isNotNull);
+    expect(savedInputs.single.finishedAt, savedInputs.single.startedAt);
+    expect(find.text('試合状態・最終スコア'), findsOneWidget);
+    expect(find.text('保存しました'), findsOneWidget);
+    expect(_saveButton(tester).onPressed, isNull);
+
+    await tester.enterText(find.byType(TextField), 'after first save');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, '保存'));
+    await tester.pumpAndSettle();
+
+    expect(usedRevisions, <int>[0, 1]);
+    expect(savedInputs.last.note, 'after first save');
+    expect(find.text('試合状態・最終スコア'), findsOneWidget);
   });
 
-  testWidgets('selecting in progress sets the start time', (tester) async {
-    DoublesMatchProgressInput? savedInput;
-
+  testWidgets('revision conflict keeps the draft and supports discard close', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _TestApp(
         progress: _placeholder(),
-        onSaved: (input) {
-          savedInput = input;
+        onSave: ({required current, required input}) async {
+          throw ScheduleProgressConflictException(
+            matchKey: current.key,
+            expectedRevision: current.revision,
+            actualRevision: current.revision + 1,
+          );
         },
       ),
     );
@@ -58,41 +87,52 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('試合中'));
     await tester.pump();
-    await tester.tap(find.text('保存'));
+    await tester.enterText(find.byType(TextField), 'keep this draft');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, '保存'));
     await tester.pumpAndSettle();
 
-    expect(savedInput, isNotNull);
-    expect(savedInput!.status, ScheduleMatchStatus.inProgress);
-    expect(savedInput!.startedAt, isNotNull);
-    expect(savedInput!.finishedAt, isNull);
+    expect(find.text('ほかの端末で更新されています。最新の情報に更新してください'),
+        findsOneWidget);
+    expect(find.text('keep this draft'), findsOneWidget);
+    expect(find.text('試合状態・最終スコア'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(TextButton, '閉じる'));
+    await tester.pumpAndSettle();
+    expect(find.text('未保存の変更があります'), findsWidgets);
+
+    await tester.tap(find.widgetWithText(TextButton, 'キャンセル'));
+    await tester.pumpAndSettle();
+    expect(find.text('試合状態・最終スコア'), findsOneWidget);
+    expect(find.text('keep this draft'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(TextButton, '閉じる'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('保存せず閉じる'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('試合状態・最終スコア'), findsNothing);
   });
 
-  testWidgets('restores saved score and note and can clear both scores', (
+  testWidgets('saved scores can be cleared without horizontal overflow', (
     tester,
   ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 760));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final progress = _persistedProgress();
     DoublesMatchProgressInput? savedInput;
-    final now = DateTime(2026, 7, 31, 15, 41);
 
     await tester.pumpWidget(
       _TestApp(
-        progress: ScheduleMatchProgress(
-          schemaVersion: ScheduleMatchProgress.currentSchemaVersion,
-          scheduleType: ScheduleProgressScheduleType.doubles,
-          generatedScheduleId: 'generated-1',
-          roundNo: 1,
-          courtNo: 1,
-          matchNo: null,
-          status: ScheduleMatchStatus.completed,
-          result: ScheduleMatchResultSummary.simpleScore(<int>[4, 2]),
-          note: '接戦でした',
-          startedAt: DateTime(2026, 7, 31, 15, 24),
-          finishedAt: now,
-          createdAt: now,
-          updatedAt: now,
-          revision: 1,
-        ),
-        onSaved: (input) {
+        progress: progress,
+        onSave: ({required current, required input}) async {
           savedInput = input;
+          final saved = _savedProgress(current: current, input: input);
+          return DoublesMatchProgressSaveResult(
+            match: saved,
+            summary: _summary(saved),
+          );
         },
       ),
     );
@@ -100,6 +140,7 @@ void main() {
     await tester.tap(find.text('開く'));
     await tester.pumpAndSettle();
 
+    expect(tester.takeException(), isNull);
     expect(find.widgetWithText(OutlinedButton, '4'), findsOneWidget);
     expect(find.widgetWithText(OutlinedButton, '2'), findsOneWidget);
     expect(find.text('接戦でした'), findsOneWidget);
@@ -108,13 +149,20 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('スコアを未入力に戻す'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('保存'));
+    await tester.tap(find.widgetWithText(FilledButton, '保存'));
     await tester.pumpAndSettle();
 
     expect(savedInput, isNotNull);
     expect(savedInput!.side1Score, isNull);
     expect(savedInput!.side2Score, isNull);
+    expect(tester.takeException(), isNull);
   });
+}
+
+FilledButton _saveButton(WidgetTester tester) {
+  return tester.widget<FilledButton>(
+    find.widgetWithText(FilledButton, '保存'),
+  );
 }
 
 ScheduleMatchProgress _placeholder() {
@@ -126,17 +174,84 @@ ScheduleMatchProgress _placeholder() {
     ),
     roundNo: 1,
     courtNo: 1,
+    matchNo: 1,
+  );
+}
+
+ScheduleMatchProgress _persistedProgress() {
+  final now = DateTime(2026, 8, 6, 9, 41);
+  return ScheduleMatchProgress(
+    schemaVersion: ScheduleMatchProgress.currentSchemaVersion,
+    scheduleType: ScheduleProgressScheduleType.doubles,
+    generatedScheduleId: 'generated-1',
+    roundNo: 1,
+    courtNo: 1,
+    matchNo: 1,
+    status: ScheduleMatchStatus.completed,
+    result: ScheduleMatchResultSummary.simpleScore(<int>[4, 2]),
+    note: '接戦でした',
+    startedAt: DateTime(2026, 8, 6, 9, 24),
+    finishedAt: now,
+    createdAt: now,
+    updatedAt: now,
+    revision: 1,
+  );
+}
+
+ScheduleMatchProgress _savedProgress({
+  required ScheduleMatchProgress current,
+  required DoublesMatchProgressInput input,
+}) {
+  final now = DateTime(2026, 8, 6, 10, current.revision);
+  final hasScores = input.side1Score != null && input.side2Score != null;
+  return ScheduleMatchProgress(
+    schemaVersion: ScheduleMatchProgress.currentSchemaVersion,
+    scheduleType: current.scheduleType,
+    generatedScheduleId: current.generatedScheduleId,
+    roundNo: current.roundNo,
+    courtNo: current.courtNo,
+    matchNo: current.matchNo,
+    status: input.status,
+    result: hasScores
+        ? ScheduleMatchResultSummary.simpleScore(<int>[
+            input.side1Score!,
+            input.side2Score!,
+          ])
+        : null,
+    note: input.note.trim(),
+    startedAt: input.startedAt,
+    finishedAt: input.finishedAt,
+    createdAt: current.createdAt ?? now,
+    updatedAt: now,
+    revision: current.revision + 1,
+  );
+}
+
+ScheduleProgressSummary _summary(ScheduleMatchProgress match) {
+  final now = match.updatedAt!;
+  return ScheduleProgressSummary(
+    schemaVersion: ScheduleProgressSummary.currentSchemaVersion,
+    scheduleType: match.scheduleType,
+    generatedScheduleId: match.generatedScheduleId,
+    totalMatchCount: 1,
+    completedMatchCount:
+        match.status == ScheduleMatchStatus.completed ? 1 : 0,
+    inProgressMatchCount:
+        match.status == ScheduleMatchStatus.inProgress ? 1 : 0,
+    createdAt: now,
+    updatedAt: now,
+    revision: match.revision,
   );
 }
 
 class _TestApp extends StatelessWidget {
   const _TestApp({
     required this.progress,
-    required this.onSaved,
+    required this.onSave,
   });
 
   final ScheduleMatchProgress progress;
-  final ValueChanged<DoublesMatchProgressInput> onSaved;
+  final DoublesMatchSaveCallback onSave;
 
   @override
   Widget build(BuildContext context) {
@@ -149,14 +264,16 @@ class _TestApp extends StatelessWidget {
           builder: (context) {
             return Center(
               child: FilledButton(
-                onPressed: () async {
-                  final input = await showDialog<DoublesMatchProgressInput>(
+                onPressed: () {
+                  showDialog<void>(
                     context: context,
+                    barrierDismissible: false,
                     builder: (context) {
                       return DoublesMatchResultDialog(
                         match: const DoublesMatchSelection(
                           roundNo: 1,
                           courtNo: 1,
+                          matchNo: 1,
                           side1Players: <DoublesMatchParticipantViewModel>[
                             DoublesMatchParticipantViewModel(
                               slotNumber: 1,
@@ -183,12 +300,10 @@ class _TestApp extends StatelessWidget {
                           ],
                         ),
                         initialProgress: progress,
+                        onSave: onSave,
                       );
                     },
                   );
-                  if (input != null) {
-                    onSaved(input);
-                  }
                 },
                 child: const Text('開く'),
               ),
