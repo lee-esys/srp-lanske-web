@@ -125,21 +125,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get regenerateButton => 'Regenerate';
 
   @override
-  String get adoptingScheduleButton => 'Adopting';
+  String get processingButton => 'Processing...';
 
   @override
-  String get adoptScheduleButton => 'Use this table';
+  String get adoptScheduleButton => 'Confirm this table';
 
   @override
   String get cannotRegenerateAdoptedScheduleMessage =>
-      'This table has already been adopted and cannot be regenerated.';
+      'This table has already been confirmed and cannot be regenerated.';
 
   @override
   String get regenerateConfirmTitle => 'Regenerate?';
 
   @override
   String get regenerateConfirmBody =>
-      'The currently displayed match table will be replaced.\nUnadopted tables shown from the share URL will also be updated.';
+      'The currently displayed match table will be replaced.\nUnconfirmed tables shown from the share URL will also be updated.';
 
   @override
   String get cancelButton => 'Cancel';
@@ -172,26 +172,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adoptScheduleMissingIdMessage =>
-      'No generated_schedule_id is available for adoption.';
+      'No generated_schedule_id is available for confirmation.';
 
   @override
   String get adoptEventMissingMessage =>
-      'No event information is available for adoption.';
+      'No event information is available for confirmation.';
 
   @override
   String get alreadyAdoptedScheduleMessage =>
-      'This table has already been adopted.';
+      'This table has already been confirmed.';
 
   @override
   String get scheduleUpdatedReloadMessage =>
       'The match table had been updated, so the latest version is now displayed.';
 
   @override
-  String get adoptScheduleCompletedMessage => 'This match table was adopted.';
+  String get adoptScheduleCompletedMessage => 'This match table was confirmed.';
 
   @override
   String adoptScheduleFailedMessage(String error) {
-    return 'Could not adopt the match table: $error';
+    return 'Could not confirm the match table: $error';
   }
 
   @override
@@ -923,6 +923,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get doublesMatchEditTitle => 'Match status and final score';
+
+  @override
+  String get doublesMatchInputAvailableAfterAdoptionHint =>
+      'Confirm the match table to enter match status and final scores.';
+
+  @override
+  String get doublesMatchInputHint =>
+      'Select a match card to enter its status and final score.';
 
   @override
   String get doublesMatchStatusScheduledLabel => 'Scheduled';

@@ -345,8 +345,8 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     }
 
     final inputHint = _hasAdoptedSchedule
-        ? l10n.doublesMatchEditTitle
-        : '${l10n.adoptScheduleButton} → ${l10n.doublesMatchEditTitle}';
+        ? l10n.doublesMatchInputHint
+        : l10n.doublesMatchInputAvailableAfterAdoptionHint;
 
     return Column(
       children: [

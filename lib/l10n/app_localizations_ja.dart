@@ -123,20 +123,20 @@ class AppLocalizationsJa extends AppLocalizations {
   String get regenerateButton => '再生成';
 
   @override
-  String get adoptingScheduleButton => '採用中';
+  String get processingButton => '処理中…';
 
   @override
-  String get adoptScheduleButton => 'この対戦表を採用';
+  String get adoptScheduleButton => 'この対戦表で確定';
 
   @override
-  String get cannotRegenerateAdoptedScheduleMessage => '採用済みのため再生成できません';
+  String get cannotRegenerateAdoptedScheduleMessage => '確定済みのため再生成できません';
 
   @override
   String get regenerateConfirmTitle => '再生成しますか？';
 
   @override
   String get regenerateConfirmBody =>
-      '現在表示している対戦表を新しい対戦表に差し替えます。\n共有URLから表示される未採用の対戦表も、再生成後の内容に更新されます。';
+      '現在表示している対戦表を新しい対戦表に差し替えます。\n共有URLから表示される未確定の対戦表も、再生成後の内容に更新されます。';
 
   @override
   String get cancelButton => 'キャンセル';
@@ -169,23 +169,23 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get adoptScheduleMissingIdMessage =>
-      '採用する generated_schedule_id がありません';
+      '確定する generated_schedule_id がありません';
 
   @override
-  String get adoptEventMissingMessage => '採用するイベント情報がありません';
+  String get adoptEventMissingMessage => '確定するイベント情報がありません';
 
   @override
-  String get alreadyAdoptedScheduleMessage => 'すでに採用済みです';
+  String get alreadyAdoptedScheduleMessage => 'すでに確定済みです';
 
   @override
   String get scheduleUpdatedReloadMessage => '対戦表が更新されていたため、最新の対戦表を表示しました。';
 
   @override
-  String get adoptScheduleCompletedMessage => 'この対戦表を採用しました';
+  String get adoptScheduleCompletedMessage => 'この対戦表を確定しました';
 
   @override
   String adoptScheduleFailedMessage(String error) {
-    return '対戦表を採用できませんでした: $error';
+    return '対戦表を確定できませんでした: $error';
   }
 
   @override
@@ -891,6 +891,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get doublesMatchEditTitle => '試合状態・最終スコア';
+
+  @override
+  String get doublesMatchInputAvailableAfterAdoptionHint =>
+      '対戦表を確定すると、試合状態・最終スコアを入力できます';
+
+  @override
+  String get doublesMatchInputHint => '試合カードを選ぶと、状態・最終スコアを入力できます';
 
   @override
   String get doublesMatchStatusScheduledLabel => '試合前';

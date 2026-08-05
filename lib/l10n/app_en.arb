@@ -168,11 +168,15 @@
   "@adoptingScheduleButton": {
     "description": "Button label shown while adopting a schedule."
   },
-  "adoptScheduleButton": "Use this table",
+  "processingButton": "Processing...",
+  "@processingButton": {
+    "description": "Generic button label shown while an operation is in progress."
+  },
+  "adoptScheduleButton": "Confirm this table",
   "@adoptScheduleButton": {
     "description": "Button label for adopting the currently displayed schedule."
   },
-  "cannotRegenerateAdoptedScheduleMessage": "This table has already been adopted and cannot be regenerated.",
+  "cannotRegenerateAdoptedScheduleMessage": "This table has already been confirmed and cannot be regenerated.",
   "@cannotRegenerateAdoptedScheduleMessage": {
     "description": "Message shown when regeneration is blocked because the schedule was adopted."
   },
@@ -180,7 +184,7 @@
   "@regenerateConfirmTitle": {
     "description": "Dialog title for confirming schedule regeneration."
   },
-  "regenerateConfirmBody": "The currently displayed match table will be replaced.\nUnadopted tables shown from the share URL will also be updated.",
+  "regenerateConfirmBody": "The currently displayed match table will be replaced.\nUnconfirmed tables shown from the share URL will also be updated.",
   "@regenerateConfirmBody": {
     "description": "Dialog body for confirming schedule regeneration."
   },
@@ -228,15 +232,15 @@
       }
     }
   },
-  "adoptScheduleMissingIdMessage": "No generated_schedule_id is available for adoption.",
+  "adoptScheduleMissingIdMessage": "No generated_schedule_id is available for confirmation.",
   "@adoptScheduleMissingIdMessage": {
     "description": "Message shown when no generated schedule id is available for adoption."
   },
-  "adoptEventMissingMessage": "No event information is available for adoption.",
+  "adoptEventMissingMessage": "No event information is available for confirmation.",
   "@adoptEventMissingMessage": {
     "description": "Message shown when event information for adoption is missing."
   },
-  "alreadyAdoptedScheduleMessage": "This table has already been adopted.",
+  "alreadyAdoptedScheduleMessage": "This table has already been confirmed.",
   "@alreadyAdoptedScheduleMessage": {
     "description": "Message shown when the schedule has already been adopted."
   },
@@ -244,11 +248,11 @@
   "@scheduleUpdatedReloadMessage": {
     "description": "Message shown when the displayed schedule is outdated."
   },
-  "adoptScheduleCompletedMessage": "This match table was adopted.",
+  "adoptScheduleCompletedMessage": "This match table was confirmed.",
   "@adoptScheduleCompletedMessage": {
     "description": "Message shown when schedule adoption completed."
   },
-  "adoptScheduleFailedMessage": "Could not adopt the match table: {error}",
+  "adoptScheduleFailedMessage": "Could not confirm the match table: {error}",
   "@adoptScheduleFailedMessage": {
     "description": "Error message shown when schedule adoption failed.",
     "placeholders": {
@@ -1379,6 +1383,14 @@
   "doublesMatchEditTitle": "Match status and final score",
   "@doublesMatchEditTitle": {
     "description": "Title for the doubles match status and final score dialog."
+  },
+  "doublesMatchInputAvailableAfterAdoptionHint": "Confirm the match table to enter match status and final scores.",
+  "@doublesMatchInputAvailableAfterAdoptionHint": {
+    "description": "Hint shown before adoption explaining that match input becomes available after confirmation."
+  },
+  "doublesMatchInputHint": "Select a match card to enter its status and final score.",
+  "@doublesMatchInputHint": {
+    "description": "Hint shown after adoption explaining how to open match input."
   },
   "doublesMatchStatusScheduledLabel": "Scheduled",
   "@doublesMatchStatusScheduledLabel": {
