@@ -10,6 +10,7 @@ import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 import 'schedule_rounds_view_impl.dart' as impl;
 
 export 'doubles_match_card.dart';
+export 'schedule_rounds_view_impl.dart' hide ScheduleRoundsView;
 
 class ScheduleRoundsView extends StatefulWidget {
   const ScheduleRoundsView({
