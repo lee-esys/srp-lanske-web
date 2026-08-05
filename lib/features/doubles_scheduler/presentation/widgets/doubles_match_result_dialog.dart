@@ -83,7 +83,6 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     if (_suppressNoteListener || !mounted) {
       return;
     }
-
     setState(_clearFeedback);
   }
 
@@ -446,7 +445,8 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   String _statusLabel(AppLocalizations l10n, ScheduleMatchStatus status) {
     return switch (status) {
       ScheduleMatchStatus.scheduled => l10n.doublesMatchStatusScheduledLabel,
-      ScheduleMatchStatus.inProgress => l10n.doublesMatchStatusInProgressLabel,
+      ScheduleMatchStatus.inProgress =>
+        l10n.doublesMatchStatusInProgressLabel,
       ScheduleMatchStatus.completed => l10n.doublesMatchStatusCompletedLabel,
     };
   }
@@ -509,33 +509,14 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   Widget _buildScoreInputs() {
-    final side1 = _buildScoreControl(side1: true);
-    final side2 = _buildScoreControl(side1: false);
-    final useHorizontalLayout = MediaQuery.sizeOf(context).width >= 400;
-
-    if (useHorizontalLayout) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          side1,
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Text('vs'),
-          ),
-          side2,
-        ],
-      );
-    }
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 24,
+      runSpacing: 6,
       children: [
-        side1,
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 2),
-          child: Text('vs'),
-        ),
-        side2,
+        _buildScoreControl(side1: true),
+        _buildScoreControl(side1: false),
       ],
     );
   }
@@ -561,6 +542,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
         children: [
           DropdownButtonHideUnderline(
             child: DropdownButton<int>(
+              isDense: true,
               value: value?.hour,
               hint: const Text('－－'),
               onChanged:
@@ -580,6 +562,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
           ),
           DropdownButtonHideUnderline(
             child: DropdownButton<int>(
+              isDense: true,
               value: value?.minute,
               hint: const Text('－－'),
               onChanged: canEdit
@@ -601,6 +584,27 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTimeInputs({
+    required Widget startTimeInput,
+    required Widget finishTimeInput,
+  }) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 300),
+          child: startTimeInput,
+        ),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 300),
+          child: finishTimeInput,
+        ),
+      ],
     );
   }
 
@@ -651,7 +655,6 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     final l10n = AppLocalizations.of(context);
     final startEnabled = _status != ScheduleMatchStatus.scheduled;
     final finishEnabled = _status == ScheduleMatchStatus.completed;
-    final useHorizontalTimeLayout = MediaQuery.sizeOf(context).width >= 720;
     final matchPosition = widget.match.matchNo == null
         ? 'R ${widget.match.roundNo} / C ${widget.match.courtNo}'
         : 'R ${widget.match.roundNo} / C ${widget.match.courtNo} / '
@@ -732,25 +735,10 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
                 const SizedBox(height: 12),
                 _buildScoreInputs(),
                 const SizedBox(height: 20),
-                if (useHorizontalTimeLayout)
-                  Row(
-                    children: [
-                      Expanded(child: startTimeInput),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: Text('～'),
-                      ),
-                      Expanded(child: finishTimeInput),
-                    ],
-                  )
-                else
-                  Column(
-                    children: [
-                      startTimeInput,
-                      const SizedBox(height: 12),
-                      finishTimeInput,
-                    ],
-                  ),
+                _buildTimeInputs(
+                  startTimeInput: startTimeInput,
+                  finishTimeInput: finishTimeInput,
+                ),
                 const SizedBox(height: 20),
                 TextField(
                   controller: _noteController,
