@@ -673,7 +673,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
       start: false,
     );
 
-    return PopScope<void>(
+    return PopScope<Object?>(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop && !_isSaving) {
