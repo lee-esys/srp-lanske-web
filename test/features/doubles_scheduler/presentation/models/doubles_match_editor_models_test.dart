@@ -26,12 +26,13 @@ void main() {
   });
 
   test('compares all draft fields with the saved baseline', () {
+    final startedAt = DateTime.utc(2026, 8, 6, 0, 15);
     final baseline = DoublesMatchProgressInput(
       status: ScheduleMatchStatus.inProgress,
       side1Score: 2,
       side2Score: 1,
       note: 'note',
-      startedAt: DateTime.utc(2026, 8, 6, 0, 15),
+      startedAt: startedAt,
       finishedAt: null,
     );
     final sameInstant = DoublesMatchProgressInput(
@@ -39,7 +40,7 @@ void main() {
       side1Score: 2,
       side2Score: 1,
       note: 'note',
-      startedAt: DateTime(2026, 8, 6, 9, 15),
+      startedAt: startedAt.toLocal(),
       finishedAt: null,
     );
     final changed = DoublesMatchProgressInput(
@@ -47,7 +48,7 @@ void main() {
       side1Score: 2,
       side2Score: 1,
       note: 'changed',
-      startedAt: DateTime(2026, 8, 6, 9, 15),
+      startedAt: startedAt.toLocal(),
       finishedAt: null,
     );
 
