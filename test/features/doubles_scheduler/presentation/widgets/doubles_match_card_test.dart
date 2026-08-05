@@ -74,7 +74,19 @@ void main() {
     expect(completedSize.height, scheduledSize.height);
   });
 
-  testWidgets('draw is shown once in place of vs', (tester) async {
+  testWidgets('draw overlays without changing the center width',
+      (tester) async {
+    await tester.pumpWidget(
+      const _TestApp(
+        hasAdoptedSchedule: true,
+        status: ScheduleMatchStatus.scheduled,
+      ),
+    );
+
+    final scheduledSize = tester.getSize(
+      find.byType(DoublesMatchCardContent),
+    );
+
     await tester.pumpWidget(
       _TestApp(
         hasAdoptedSchedule: true,
@@ -86,10 +98,15 @@ void main() {
       ),
     );
 
+    final drawSize = tester.getSize(
+      find.byType(DoublesMatchCardContent),
+    );
+
     expect(find.text('DRAW'), findsOneWidget);
-    expect(find.text('vs'), findsNothing);
+    expect(find.text('vs'), findsOneWidget);
     expect(find.text('WIN'), findsNothing);
     expect(find.text('LOSE'), findsNothing);
+    expect(drawSize.width, scheduledSize.width);
   });
 
   testWidgets('in-progress score does not show a provisional outcome', (
@@ -127,6 +144,37 @@ void main() {
     expect(find.text('WIN'), findsNothing);
     expect(find.text('LOSE'), findsNothing);
     expect(find.text('DRAW'), findsNothing);
+  });
+
+  testWidgets('draw overlays without changing the center width',
+      (tester) async {
+    await tester.pumpWidget(
+      const _TestApp(
+        hasAdoptedSchedule: true,
+        status: ScheduleMatchStatus.scheduled,
+      ),
+    );
+    final scheduledSize = tester.getSize(
+      find.byType(DoublesMatchCardContent),
+    );
+
+    await tester.pumpWidget(
+      _TestApp(
+        hasAdoptedSchedule: true,
+        status: ScheduleMatchStatus.completed,
+        progress: _progress(
+          status: ScheduleMatchStatus.completed,
+          scores: const <int>[2, 2],
+        ),
+      ),
+    );
+    final drawSize = tester.getSize(
+      find.byType(DoublesMatchCardContent),
+    );
+
+    expect(find.text('DRAW'), findsOneWidget);
+    expect(find.text('vs'), findsOneWidget);
+    expect(drawSize.width, scheduledSize.width);
   });
 }
 

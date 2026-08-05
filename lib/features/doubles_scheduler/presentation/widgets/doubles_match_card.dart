@@ -109,7 +109,10 @@ class DoublesMatchCardContent extends StatelessWidget {
               child: side1,
             ),
             const SizedBox(width: 6),
-            if (isDraw) _DrawBadge(label: drawLabel) else const Text('vs'),
+            _DrawCenterLabel(
+              isDraw: isDraw,
+              drawLabel: drawLabel,
+            ),
             const SizedBox(width: 6),
             _OutcomeTeamFrame(
               outcome: side2Outcome,
@@ -264,6 +267,35 @@ class _OutcomeTeamFrame extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _DrawCenterLabel extends StatelessWidget {
+  const _DrawCenterLabel({
+    required this.isDraw,
+    required this.drawLabel,
+  });
+
+  final bool isDraw;
+  final String drawLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 24,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          const Text('vs'),
+          if (isDraw)
+            Positioned(
+              top: -14,
+              child: _DrawBadge(label: drawLabel),
+            ),
+        ],
+      ),
     );
   }
 }

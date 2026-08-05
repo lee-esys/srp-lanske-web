@@ -80,8 +80,7 @@ void main() {
           () async {
         final repository = entry.value();
         final created = await repository.createFromDraft(_draft());
-        final adoptedEvent =
-            await repository.updateAdoptedGeneratedScheduleId(
+        final adoptedEvent = await repository.updateAdoptedGeneratedScheduleId(
           eventId: created.event.id,
           generatedScheduleId: 'generated-1',
         );
