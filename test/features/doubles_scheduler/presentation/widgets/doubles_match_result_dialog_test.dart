@@ -54,7 +54,7 @@ void main() {
     expect(savedInputs.single.startedAt, isNotNull);
     expect(savedInputs.single.finishedAt, savedInputs.single.startedAt);
     expect(find.text('試合状態・最終スコア'), findsOneWidget);
-    expect(find.text('保存しました'), findsOneWidget);
+    expect(find.text('試合情報を保存しました'), findsOneWidget);
     expect(_saveButton(tester).onPressed, isNull);
 
     await tester.enterText(find.byType(TextField), 'after first save');
