@@ -314,22 +314,22 @@ abstract class AppLocalizations {
   /// **'再生成'**
   String get regenerateButton;
 
-  /// Button label shown while adopting a schedule.
+  /// Generic button label shown while an operation is in progress.
   ///
   /// In ja, this message translates to:
-  /// **'採用中'**
-  String get adoptingScheduleButton;
+  /// **'処理中…'**
+  String get processingButton;
 
   /// Button label for adopting the currently displayed schedule.
   ///
   /// In ja, this message translates to:
-  /// **'この対戦表を採用'**
+  /// **'この対戦表で確定'**
   String get adoptScheduleButton;
 
   /// Message shown when regeneration is blocked because the schedule was adopted.
   ///
   /// In ja, this message translates to:
-  /// **'採用済みのため再生成できません'**
+  /// **'確定済みのため再生成できません'**
   String get cannotRegenerateAdoptedScheduleMessage;
 
   /// Dialog title for confirming schedule regeneration.
@@ -341,7 +341,7 @@ abstract class AppLocalizations {
   /// Dialog body for confirming schedule regeneration.
   ///
   /// In ja, this message translates to:
-  /// **'現在表示している対戦表を新しい対戦表に差し替えます。\n共有URLから表示される未採用の対戦表も、再生成後の内容に更新されます。'**
+  /// **'現在表示している対戦表を新しい対戦表に差し替えます。\n共有URLから表示される未確定の対戦表も、再生成後の内容に更新されます。'**
   String get regenerateConfirmBody;
 
   /// Generic cancel button label.
@@ -395,19 +395,19 @@ abstract class AppLocalizations {
   /// Message shown when no generated schedule id is available for adoption.
   ///
   /// In ja, this message translates to:
-  /// **'採用する generated_schedule_id がありません'**
+  /// **'確定する generated_schedule_id がありません'**
   String get adoptScheduleMissingIdMessage;
 
   /// Message shown when event information for adoption is missing.
   ///
   /// In ja, this message translates to:
-  /// **'採用するイベント情報がありません'**
+  /// **'確定するイベント情報がありません'**
   String get adoptEventMissingMessage;
 
   /// Message shown when the schedule has already been adopted.
   ///
   /// In ja, this message translates to:
-  /// **'すでに採用済みです'**
+  /// **'すでに確定済みです'**
   String get alreadyAdoptedScheduleMessage;
 
   /// Message shown when the displayed schedule is outdated.
@@ -419,13 +419,13 @@ abstract class AppLocalizations {
   /// Message shown when schedule adoption completed.
   ///
   /// In ja, this message translates to:
-  /// **'この対戦表を採用しました'**
+  /// **'この対戦表を確定しました'**
   String get adoptScheduleCompletedMessage;
 
   /// Error message shown when schedule adoption failed.
   ///
   /// In ja, this message translates to:
-  /// **'対戦表を採用できませんでした: {error}'**
+  /// **'対戦表を確定できませんでした: {error}'**
   String adoptScheduleFailedMessage(String error);
 
   /// Title for player list showing court count and player count.
@@ -1643,6 +1643,18 @@ abstract class AppLocalizations {
   /// **'試合状態・最終スコア'**
   String get doublesMatchEditTitle;
 
+  /// Hint shown before adoption explaining that match input becomes available after confirmation.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表を確定すると、試合状態・最終スコアを入力できます'**
+  String get doublesMatchInputAvailableAfterAdoptionHint;
+
+  /// Hint shown after adoption explaining how to open match input.
+  ///
+  /// In ja, this message translates to:
+  /// **'試合カードを選ぶと、状態・最終スコアを入力できます'**
+  String get doublesMatchInputHint;
+
   /// Label for a doubles match that has not started.
   ///
   /// In ja, this message translates to:
@@ -1706,19 +1718,19 @@ abstract class AppLocalizations {
   /// Label for the winning side of a completed doubles match.
   ///
   /// In ja, this message translates to:
-  /// **'勝ち'**
+  /// **'WIN'**
   String get doublesMatchWinnerLabel;
 
   /// Label for the losing side of a completed doubles match.
   ///
   /// In ja, this message translates to:
-  /// **'負け'**
+  /// **'LOSE'**
   String get doublesMatchLoserLabel;
 
   /// Label for a drawn doubles match.
   ///
   /// In ja, this message translates to:
-  /// **'引き分け'**
+  /// **'DRAW'**
   String get doublesMatchDrawLabel;
 
   /// Message shown after doubles match information is saved.

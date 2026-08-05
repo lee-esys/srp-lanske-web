@@ -164,15 +164,15 @@
   "@regenerateButton": {
     "description": "Short button label for regenerating a schedule."
   },
-  "adoptingScheduleButton": "採用中",
-  "@adoptingScheduleButton": {
-    "description": "Button label shown while adopting a schedule."
+  "processingButton": "処理中…",
+  "@processingButton": {
+    "description": "Generic button label shown while an operation is in progress."
   },
-  "adoptScheduleButton": "この対戦表を採用",
+  "adoptScheduleButton": "この対戦表で確定",
   "@adoptScheduleButton": {
     "description": "Button label for adopting the currently displayed schedule."
   },
-  "cannotRegenerateAdoptedScheduleMessage": "採用済みのため再生成できません",
+  "cannotRegenerateAdoptedScheduleMessage": "確定済みのため再生成できません",
   "@cannotRegenerateAdoptedScheduleMessage": {
     "description": "Message shown when regeneration is blocked because the schedule was adopted."
   },
@@ -180,7 +180,7 @@
   "@regenerateConfirmTitle": {
     "description": "Dialog title for confirming schedule regeneration."
   },
-  "regenerateConfirmBody": "現在表示している対戦表を新しい対戦表に差し替えます。\n共有URLから表示される未採用の対戦表も、再生成後の内容に更新されます。",
+  "regenerateConfirmBody": "現在表示している対戦表を新しい対戦表に差し替えます。\n共有URLから表示される未確定の対戦表も、再生成後の内容に更新されます。",
   "@regenerateConfirmBody": {
     "description": "Dialog body for confirming schedule regeneration."
   },
@@ -228,15 +228,15 @@
       }
     }
   },
-  "adoptScheduleMissingIdMessage": "採用する generated_schedule_id がありません",
+  "adoptScheduleMissingIdMessage": "確定する generated_schedule_id がありません",
   "@adoptScheduleMissingIdMessage": {
     "description": "Message shown when no generated schedule id is available for adoption."
   },
-  "adoptEventMissingMessage": "採用するイベント情報がありません",
+  "adoptEventMissingMessage": "確定するイベント情報がありません",
   "@adoptEventMissingMessage": {
     "description": "Message shown when event information for adoption is missing."
   },
-  "alreadyAdoptedScheduleMessage": "すでに採用済みです",
+  "alreadyAdoptedScheduleMessage": "すでに確定済みです",
   "@alreadyAdoptedScheduleMessage": {
     "description": "Message shown when the schedule has already been adopted."
   },
@@ -244,11 +244,11 @@
   "@scheduleUpdatedReloadMessage": {
     "description": "Message shown when the displayed schedule is outdated."
   },
-  "adoptScheduleCompletedMessage": "この対戦表を採用しました",
+  "adoptScheduleCompletedMessage": "この対戦表を確定しました",
   "@adoptScheduleCompletedMessage": {
     "description": "Message shown when schedule adoption completed."
   },
-  "adoptScheduleFailedMessage": "対戦表を採用できませんでした: {error}",
+  "adoptScheduleFailedMessage": "対戦表を確定できませんでした: {error}",
   "@adoptScheduleFailedMessage": {
     "description": "Error message shown when schedule adoption failed.",
     "placeholders": {
@@ -1380,6 +1380,14 @@
   "@doublesMatchEditTitle": {
     "description": "Title for the doubles match status and final score dialog."
   },
+  "doublesMatchInputAvailableAfterAdoptionHint": "対戦表を確定すると、試合状態・最終スコアを入力できます",
+  "@doublesMatchInputAvailableAfterAdoptionHint": {
+    "description": "Hint shown before adoption explaining that match input becomes available after confirmation."
+  },
+  "doublesMatchInputHint": "試合カードを選ぶと、状態・最終スコアを入力できます",
+  "@doublesMatchInputHint": {
+    "description": "Hint shown after adoption explaining how to open match input."
+  },
   "doublesMatchStatusScheduledLabel": "試合前",
   "@doublesMatchStatusScheduledLabel": {
     "description": "Label for a doubles match that has not started."
@@ -1420,15 +1428,15 @@
   "@doublesMatchSaveButton": {
     "description": "Button label for saving doubles match information."
   },
-  "doublesMatchWinnerLabel": "勝ち",
+  "doublesMatchWinnerLabel": "WIN",
   "@doublesMatchWinnerLabel": {
     "description": "Label for the winning side of a completed doubles match."
   },
-  "doublesMatchLoserLabel": "負け",
+  "doublesMatchLoserLabel": "LOSE",
   "@doublesMatchLoserLabel": {
     "description": "Label for the losing side of a completed doubles match."
   },
-  "doublesMatchDrawLabel": "引き分け",
+  "doublesMatchDrawLabel": "DRAW",
   "@doublesMatchDrawLabel": {
     "description": "Label for a drawn doubles match."
   },
