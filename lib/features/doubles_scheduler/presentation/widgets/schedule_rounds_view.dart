@@ -38,7 +38,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   late final DoublesMatchProgressService _progressService;
 
   DoublesMatchSaveRegistration? _saveRegistration;
-  int _contentRevision = 0;
 
   @override
   void initState() {
@@ -128,9 +127,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
     DoublesProgressUiStore.setSummary(saved.summary);
     if (mounted) {
-      setState(() {
-        _contentRevision += 1;
-      });
+      setState(() {});
     }
 
     try {
@@ -154,9 +151,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   @override
   Widget build(BuildContext context) {
     return impl.ScheduleRoundsView(
-      key: ValueKey<String>(
-        'schedule-rounds-${_generatedScheduleId ?? 'none'}-$_contentRevision',
-      ),
       scheduleResponse: widget.scheduleResponse,
       playerNameById: widget.playerNameById,
       courtCount: widget.courtCount,
