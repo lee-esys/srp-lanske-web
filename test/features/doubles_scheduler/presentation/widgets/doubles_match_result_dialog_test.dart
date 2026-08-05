@@ -92,8 +92,10 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, '保存'));
     await tester.pumpAndSettle();
 
-    expect(find.text('ほかの端末で更新されています。最新の情報に更新してください'),
-        findsOneWidget);
+    expect(
+      find.text('別の端末で試合情報が更新されています。最新情報を取得してください。'),
+      findsOneWidget,
+    );
     expect(find.text('keep this draft'), findsOneWidget);
     expect(find.text('試合状態・最終スコア'), findsOneWidget);
 
