@@ -23,7 +23,7 @@ DoublesMatchVisualStyle resolveDoublesMatchVisualStyle(
 ) {
   return switch (status) {
     ScheduleMatchStatus.scheduled => DoublesMatchVisualStyle(
-        cardBackgroundColor: colorScheme.surface,
+        cardBackgroundColor: Colors.transparent,
         cardBorderColor: colorScheme.outlineVariant,
         statusBackgroundColor: colorScheme.surface,
         statusForegroundColor: colorScheme.onSurfaceVariant,
