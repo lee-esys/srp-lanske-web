@@ -14,7 +14,8 @@ void main() {
       ),
     );
 
-    expect(find.byKey(const ValueKey('doubles-match-input-hint')), findsOneWidget);
+    expect(
+        find.byKey(const ValueKey('doubles-match-input-hint')), findsOneWidget);
     expect(find.text(message), findsOneWidget);
     expect(find.byIcon(Icons.info_outline), findsOneWidget);
   });

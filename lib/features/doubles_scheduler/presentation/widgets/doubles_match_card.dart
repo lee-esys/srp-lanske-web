@@ -109,10 +109,7 @@ class DoublesMatchCardContent extends StatelessWidget {
               child: side1,
             ),
             const SizedBox(width: 6),
-            if (isDraw)
-              _DrawBadge(label: drawLabel)
-            else
-              const Text('vs'),
+            if (isDraw) _DrawBadge(label: drawLabel) else const Text('vs'),
             const SizedBox(width: 6),
             _OutcomeTeamFrame(
               outcome: side2Outcome,

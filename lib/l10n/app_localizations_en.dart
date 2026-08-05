@@ -955,13 +955,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get doublesMatchSaveButton => 'Save';
 
   @override
-  String get doublesMatchWinnerLabel => 'Winner';
+  String get doublesMatchWinnerLabel => 'WIN';
 
   @override
-  String get doublesMatchLoserLabel => 'Loser';
+  String get doublesMatchLoserLabel => 'LOSE';
 
   @override
-  String get doublesMatchDrawLabel => 'Draw';
+  String get doublesMatchDrawLabel => 'DRAW';
 
   @override
   String get doublesMatchSavedMessage => 'Match information saved';

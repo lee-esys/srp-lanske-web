@@ -1420,15 +1420,15 @@
   "@doublesMatchSaveButton": {
     "description": "Button label for saving doubles match information."
   },
-  "doublesMatchWinnerLabel": "Winner",
+  "doublesMatchWinnerLabel": "WIN",
   "@doublesMatchWinnerLabel": {
     "description": "Label for the winning side of a completed doubles match."
   },
-  "doublesMatchLoserLabel": "Loser",
+  "doublesMatchLoserLabel": "LOSE",
   "@doublesMatchLoserLabel": {
     "description": "Label for the losing side of a completed doubles match."
   },
-  "doublesMatchDrawLabel": "Draw",
+  "doublesMatchDrawLabel": "DRAW",
   "@doublesMatchDrawLabel": {
     "description": "Label for a drawn doubles match."
   },

@@ -1706,19 +1706,19 @@ abstract class AppLocalizations {
   /// Label for the winning side of a completed doubles match.
   ///
   /// In ja, this message translates to:
-  /// **'勝ち'**
+  /// **'WIN'**
   String get doublesMatchWinnerLabel;
 
   /// Label for the losing side of a completed doubles match.
   ///
   /// In ja, this message translates to:
-  /// **'負け'**
+  /// **'LOSE'**
   String get doublesMatchLoserLabel;
 
   /// Label for a drawn doubles match.
   ///
   /// In ja, this message translates to:
-  /// **'引き分け'**
+  /// **'DRAW'**
   String get doublesMatchDrawLabel;
 
   /// Message shown after doubles match information is saved.

@@ -39,7 +39,8 @@ void main() {
     expect(find.text('DRAW'), findsNothing);
   });
 
-  testWidgets('completed card overlays one WIN and one LOSE without added height', (
+  testWidgets(
+      'completed card overlays one WIN and one LOSE without added height', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -143,9 +144,8 @@ ScheduleMatchProgress _progress({
     courtNo: 1,
     matchNo: 1,
     status: status,
-    result: scores == null
-        ? null
-        : ScheduleMatchResultSummary.simpleScore(scores),
+    result:
+        scores == null ? null : ScheduleMatchResultSummary.simpleScore(scores),
     note: '',
     startedAt: status == ScheduleMatchStatus.scheduled ? null : now,
     finishedAt: status == ScheduleMatchStatus.completed ? now : null,

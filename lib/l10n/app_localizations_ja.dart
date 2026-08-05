@@ -923,13 +923,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get doublesMatchSaveButton => '保存';
 
   @override
-  String get doublesMatchWinnerLabel => '勝ち';
+  String get doublesMatchWinnerLabel => 'WIN';
 
   @override
-  String get doublesMatchLoserLabel => '負け';
+  String get doublesMatchLoserLabel => 'LOSE';
 
   @override
-  String get doublesMatchDrawLabel => '引き分け';
+  String get doublesMatchDrawLabel => 'DRAW';
 
   @override
   String get doublesMatchSavedMessage => '試合情報を保存しました';
