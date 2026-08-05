@@ -10,7 +10,8 @@ import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_m
 import 'package:srp_lanske/l10n/l10n.dart';
 
 void main() {
-  testWidgets('saving disables duplicate save and close actions', (tester) async {
+  testWidgets('saving disables duplicate save and close actions',
+      (tester) async {
     final completer = Completer<DoublesMatchProgressSaveResult>();
     var saveCallCount = 0;
 
@@ -136,8 +137,7 @@ ScheduleProgressSummary _summary(ScheduleMatchProgress match) {
     scheduleType: match.scheduleType,
     generatedScheduleId: match.generatedScheduleId,
     totalMatchCount: 1,
-    completedMatchCount:
-        match.status == ScheduleMatchStatus.completed ? 1 : 0,
+    completedMatchCount: match.status == ScheduleMatchStatus.completed ? 1 : 0,
     inProgressMatchCount:
         match.status == ScheduleMatchStatus.inProgress ? 1 : 0,
     createdAt: now,
@@ -192,7 +192,8 @@ class _TestApp extends StatelessWidget {
                           ),
                         ],
                       ),
-                      initialProgress: ScheduleMatchProgress.scheduledPlaceholder(
+                      initialProgress:
+                          ScheduleMatchProgress.scheduledPlaceholder(
                         scope: ScheduleProgressScope(
                           scheduleType: ScheduleProgressScheduleType.doubles,
                           shareId: 'ABC123',

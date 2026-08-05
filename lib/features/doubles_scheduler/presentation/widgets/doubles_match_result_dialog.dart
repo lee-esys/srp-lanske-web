@@ -445,8 +445,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   String _statusLabel(AppLocalizations l10n, ScheduleMatchStatus status) {
     return switch (status) {
       ScheduleMatchStatus.scheduled => l10n.doublesMatchStatusScheduledLabel,
-      ScheduleMatchStatus.inProgress =>
-        l10n.doublesMatchStatusInProgressLabel,
+      ScheduleMatchStatus.inProgress => l10n.doublesMatchStatusInProgressLabel,
       ScheduleMatchStatus.completed => l10n.doublesMatchStatusCompletedLabel,
     };
   }
@@ -470,9 +469,8 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
 
   Widget _buildScoreControl({required bool side1}) {
     final score = side1 ? _side1Score : _side2Score;
-    final onDecrease = _isSaving
-        ? null
-        : () => _adjustScore(side1: side1, delta: -1);
+    final onDecrease =
+        _isSaving ? null : () => _adjustScore(side1: side1, delta: -1);
     final onIncrease =
         _isSaving ? null : () => _adjustScore(side1: side1, delta: 1);
 

@@ -73,9 +73,8 @@ ScheduleMatchProgress _progress({
     courtNo: 1,
     matchNo: 1,
     status: status,
-    result: scores == null
-        ? null
-        : ScheduleMatchResultSummary.simpleScore(scores),
+    result:
+        scores == null ? null : ScheduleMatchResultSummary.simpleScore(scores),
     note: note,
     startedAt: startedAt,
     finishedAt: finishedAt,

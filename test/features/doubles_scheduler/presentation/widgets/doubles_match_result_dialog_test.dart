@@ -236,8 +236,7 @@ ScheduleProgressSummary _summary(ScheduleMatchProgress match) {
     scheduleType: match.scheduleType,
     generatedScheduleId: match.generatedScheduleId,
     totalMatchCount: 1,
-    completedMatchCount:
-        match.status == ScheduleMatchStatus.completed ? 1 : 0,
+    completedMatchCount: match.status == ScheduleMatchStatus.completed ? 1 : 0,
     inProgressMatchCount:
         match.status == ScheduleMatchStatus.inProgress ? 1 : 0,
     createdAt: now,

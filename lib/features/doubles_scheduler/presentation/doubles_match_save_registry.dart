@@ -1,8 +1,8 @@
 import 'package:srp_lanske/features/doubles_scheduler/application/doubles_match_progress_service.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 
-typedef DoublesMatchSaveCallback =
-    Future<DoublesMatchProgressSaveResult> Function({
+typedef DoublesMatchSaveCallback = Future<DoublesMatchProgressSaveResult>
+    Function({
   required ScheduleMatchProgress current,
   required DoublesMatchProgressInput input,
 });
