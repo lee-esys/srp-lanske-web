@@ -337,7 +337,7 @@ class _DrawCenterLabel extends StatelessWidget {
 class _DrawBadge extends StatelessWidget {
   const _DrawBadge({required this.label});
 
-  final String drawLabel;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -352,7 +352,7 @@ class _DrawBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        drawLabel,
+        label,
         style: TextStyle(
           color: colorScheme.onSecondaryContainer,
           fontSize: 9,
