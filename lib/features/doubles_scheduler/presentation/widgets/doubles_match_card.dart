@@ -50,6 +50,9 @@ class DoublesMatchCardContent extends StatelessWidget {
       sideIndex: 1,
     );
     final isDraw = side1Outcome == DoublesMatchSideOutcome.draw;
+    final displayPositionLabel = formatDoublesMatchPositionLabel(
+      matchPositionLabel,
+    );
 
     final statusSummary = hasAdoptedSchedule
         ? Row(
@@ -98,8 +101,8 @@ class DoublesMatchCardContent extends StatelessWidget {
                 child: SizedBox(
                   width: headerTrailing == null ? 120 : 92,
                   child: Text(
-                    matchPositionLabel,
-                    key: ValueKey('match-position-$matchPositionLabel'),
+                    displayPositionLabel,
+                    key: ValueKey('match-position-$displayPositionLabel'),
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
@@ -163,6 +166,18 @@ class DoublesMatchCardContent extends StatelessWidget {
       ],
     );
   }
+}
+
+String formatDoublesMatchPositionLabel(String value) {
+  final trimmed = value.trim();
+  final match = RegExp(r'^R\s*(.+?)\s*/\s*C\s*(.+)$').firstMatch(trimmed);
+  if (match == null) {
+    return trimmed;
+  }
+
+  final roundLabel = match.group(1)!.trim();
+  final courtLabel = match.group(2)!.trim();
+  return 'R$roundLabel・${courtLabel}コート';
 }
 
 enum DoublesMatchSideOutcome {
