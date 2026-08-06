@@ -119,8 +119,7 @@ void main() {
   testWidgets('saved scores can be cleared without horizontal overflow', (
     tester,
   ) async {
-    await tester.binding.setSurfaceSize(const Size(320, 760));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+    _setLogicalViewSize(tester, const Size(320, 760));
 
     final progress = _persistedProgress();
     DoublesMatchProgressInput? savedInput;
@@ -165,8 +164,7 @@ void main() {
   });
 
   testWidgets('score layout switches at 400 logical pixels', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(399, 760));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+    _setLogicalViewSize(tester, const Size(399, 760));
 
     await tester.pumpWidget(
       _TestApp(
@@ -194,7 +192,7 @@ void main() {
     );
     expect(tester.takeException(), isNull);
 
-    await tester.binding.setSurfaceSize(const Size(400, 760));
+    tester.view.physicalSize = const Size(400, 760);
     await tester.pumpAndSettle();
 
     expect(
@@ -207,6 +205,13 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+}
+
+void _setLogicalViewSize(WidgetTester tester, Size size) {
+  tester.view.devicePixelRatio = 1.0;
+  tester.view.physicalSize = size;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
 }
 
 FilledButton _saveButton(WidgetTester tester) {
