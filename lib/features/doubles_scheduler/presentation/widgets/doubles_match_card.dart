@@ -298,18 +298,18 @@ class _OutcomeTeamFrame extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         Positioned(
-          left: -2,
-          top: -2,
-          right: -2,
-          bottom: -2,
+          left: -3,
+          top: -5,
+          right: -3,
+          bottom: -5,
           child: DecoratedBox(decoration: frameDecoration),
         ),
         child,
         Positioned(
-          left: -2,
-          top: -2,
-          right: -2,
-          bottom: -2,
+          left: -3,
+          top: -5,
+          right: -3,
+          bottom: -5,
           child: IgnorePointer(
             child: DecoratedBox(
               key: ValueKey('match-outcome-outline-${outcome.name}'),
