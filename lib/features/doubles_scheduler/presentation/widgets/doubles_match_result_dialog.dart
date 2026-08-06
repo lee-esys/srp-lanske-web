@@ -450,6 +450,56 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     };
   }
 
+  Widget _buildStatusSelector(AppLocalizations l10n) {
+    return SegmentedButton<ScheduleMatchStatus>(
+      showSelectedIcon: false,
+      segments: [
+        for (final status in ScheduleMatchStatus.values)
+          ButtonSegment<ScheduleMatchStatus>(
+            value: status,
+            label: Text(_statusLabel(l10n, status)),
+          ),
+      ],
+      selected: <ScheduleMatchStatus>{_status},
+      onSelectionChanged: _isSaving
+          ? null
+          : (selected) {
+              _selectStatus(selected.single);
+            },
+    );
+  }
+
+  Widget _buildMatchPositionAndStatus({
+    required AppLocalizations l10n,
+    required String matchPosition,
+  }) {
+    final statusSelector = _buildStatusSelector(l10n);
+    final position = Text(
+      matchPosition,
+      style: Theme.of(context).textTheme.bodySmall,
+    );
+
+    if (MediaQuery.sizeOf(context).width >= 350) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          position,
+          const SizedBox(width: 12),
+          statusSelector,
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        position,
+        const SizedBox(height: 8),
+        Center(child: statusSelector),
+      ],
+    );
+  }
+
   Widget _buildPlayers(List<DoublesMatchParticipantViewModel> players) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -506,15 +556,65 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     );
   }
 
-  Widget _buildScoreInputs() {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      spacing: 24,
-      runSpacing: 6,
+  Widget _buildWideMatchInputs() {
+    return Column(
+      key: const Key('doubles-match-wide-score-layout'),
+      mainAxisSize: MainAxisSize.min,
       children: [
-        _buildScoreControl(side1: true),
-        _buildScoreControl(side1: false),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildPlayers(widget.match.side1Players),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Text('vs'),
+              ),
+              _buildPlayers(widget.match.side2Players),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildScoreControl(side1: true),
+            const SizedBox(width: 24),
+            _buildScoreControl(side1: false),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNarrowSideRow({required bool side1}) {
+    final players = side1
+        ? widget.match.side1Players
+        : widget.match.side2Players;
+
+    return Row(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: _buildPlayers(players),
+          ),
+        ),
+        const SizedBox(width: 8),
+        _buildScoreControl(side1: side1),
+      ],
+    );
+  }
+
+  Widget _buildNarrowMatchInputs() {
+    return Column(
+      key: const Key('doubles-match-narrow-score-layout'),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildNarrowSideRow(side1: true),
+        const Divider(height: 16, thickness: 1),
+        _buildNarrowSideRow(side1: false),
       ],
     );
   }
@@ -653,6 +753,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     final l10n = AppLocalizations.of(context);
     final startEnabled = _status != ScheduleMatchStatus.scheduled;
     final finishEnabled = _status == ScheduleMatchStatus.completed;
+    final useWideScoreLayout = MediaQuery.sizeOf(context).width >= 400;
     final matchPosition = widget.match.matchNo == null
         ? 'R ${widget.match.roundNo} / C ${widget.match.courtNo}'
         : 'R ${widget.match.roundNo} / C ${widget.match.courtNo} / '
@@ -680,58 +781,22 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
       },
       child: AlertDialog(
         insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.doublesMatchEditTitle),
-            const SizedBox(height: 2),
-            Text(
-              matchPosition,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
+        title: Text(l10n.doublesMatchEditTitle),
         content: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 680),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Center(
-                  child: SegmentedButton<ScheduleMatchStatus>(
-                    showSelectedIcon: false,
-                    segments: [
-                      for (final status in ScheduleMatchStatus.values)
-                        ButtonSegment<ScheduleMatchStatus>(
-                          value: status,
-                          label: Text(_statusLabel(l10n, status)),
-                        ),
-                    ],
-                    selected: <ScheduleMatchStatus>{_status},
-                    onSelectionChanged: _isSaving
-                        ? null
-                        : (selected) {
-                            _selectStatus(selected.single);
-                          },
-                  ),
+                _buildMatchPositionAndStatus(
+                  l10n: l10n,
+                  matchPosition: matchPosition,
                 ),
                 const SizedBox(height: 20),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildPlayers(widget.match.side1Players),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: Text('vs'),
-                      ),
-                      _buildPlayers(widget.match.side2Players),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _buildScoreInputs(),
+                if (useWideScoreLayout)
+                  _buildWideMatchInputs()
+                else
+                  _buildNarrowMatchInputs(),
                 const SizedBox(height: 20),
                 _buildTimeInputs(
                   startTimeInput: startTimeInput,
