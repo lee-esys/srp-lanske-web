@@ -472,6 +472,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   Widget _buildMatchPositionAndStatus({
     required AppLocalizations l10n,
     required String matchPosition,
+    required double availableWidth,
   }) {
     final statusSelector = _buildStatusSelector(l10n);
     final position = Text(
@@ -479,36 +480,32 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
       style: Theme.of(context).textTheme.bodySmall,
     );
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth >= 280) {
-          return Row(
-            children: [
-              position,
-              const SizedBox(width: 12),
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: statusSelector,
-                  ),
-                ),
+    if (availableWidth >= 280) {
+      return Row(
+        children: [
+          position,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: statusSelector,
               ),
-            ],
-          );
-        }
+            ),
+          ),
+        ],
+      );
+    }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            position,
-            const SizedBox(height: 8),
-            Center(child: statusSelector),
-          ],
-        );
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        position,
+        const SizedBox(height: 8),
+        Center(child: statusSelector),
+      ],
     );
   }
 
@@ -764,6 +761,9 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     final l10n = AppLocalizations.of(context);
     final startEnabled = _status != ScheduleMatchStatus.scheduled;
     final finishEnabled = _status == ScheduleMatchStatus.completed;
+    final availableContentWidth =
+        (MediaQuery.sizeOf(context).width - 72).clamp(0.0, 680.0).toDouble();
+    final useWideScoreLayout = availableContentWidth >= 328;
     final matchPosition = widget.match.matchNo == null
         ? 'R ${widget.match.roundNo} / C ${widget.match.courtNo}'
         : 'R ${widget.match.roundNo} / C ${widget.match.courtNo} / '
@@ -791,52 +791,48 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
       },
       child: AlertDialog(
         insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
         title: Text(l10n.doublesMatchEditTitle),
         content: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 680),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final useWideScoreLayout = constraints.maxWidth >= 328;
-
-              return SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildMatchPositionAndStatus(
-                      l10n: l10n,
-                      matchPosition: matchPosition,
-                    ),
-                    const SizedBox(height: 20),
-                    if (useWideScoreLayout)
-                      _buildWideMatchInputs()
-                    else
-                      _buildNarrowMatchInputs(),
-                    const SizedBox(height: 20),
-                    _buildTimeInputs(
-                      startTimeInput: startTimeInput,
-                      finishTimeInput: finishTimeInput,
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _noteController,
-                      enabled: !_isSaving,
-                      minLines: 2,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        labelText: l10n.doublesMatchNoteLabel,
-                        alignLabelWithHint: true,
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: _buildSaveStatus(l10n),
-                    ),
-                  ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildMatchPositionAndStatus(
+                  l10n: l10n,
+                  matchPosition: matchPosition,
+                  availableWidth: availableContentWidth,
                 ),
-              );
-            },
+                const SizedBox(height: 20),
+                if (useWideScoreLayout)
+                  _buildWideMatchInputs()
+                else
+                  _buildNarrowMatchInputs(),
+                const SizedBox(height: 20),
+                _buildTimeInputs(
+                  startTimeInput: startTimeInput,
+                  finishTimeInput: finishTimeInput,
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _noteController,
+                  enabled: !_isSaving,
+                  minLines: 2,
+                  maxLines: 4,
+                  decoration: InputDecoration(
+                    labelText: l10n.doublesMatchNoteLabel,
+                    alignLabelWithHint: true,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: _buildSaveStatus(l10n),
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
