@@ -55,8 +55,8 @@ void main() {
     );
   });
 
-  testWidgets(
-      'completed card overlays one WIN and one LOSE without added size', (
+  testWidgets('completed card overlays one WIN and one LOSE without added size',
+      (
     tester,
   ) async {
     await tester.pumpWidget(

@@ -177,7 +177,7 @@ String formatDoublesMatchPositionLabel(String value) {
 
   final roundLabel = match.group(1)!.trim();
   final courtLabel = match.group(2)!.trim();
-  return 'R$roundLabel・${courtLabel}コート';
+  return 'R$roundLabel・$courtLabelコート';
 }
 
 enum DoublesMatchSideOutcome {

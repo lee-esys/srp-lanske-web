@@ -630,8 +630,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   String _statusLabel(AppLocalizations l10n, ScheduleMatchStatus status) {
     return switch (status) {
       ScheduleMatchStatus.scheduled => l10n.doublesMatchStatusScheduledLabel,
-      ScheduleMatchStatus.inProgress =>
-        l10n.doublesMatchStatusInProgressLabel,
+      ScheduleMatchStatus.inProgress => l10n.doublesMatchStatusInProgressLabel,
       ScheduleMatchStatus.completed => l10n.doublesMatchStatusCompletedLabel,
     };
   }
@@ -843,8 +842,7 @@ class _RestToggleButton extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 height: 1,
-                fontWeight:
-                    isHighlighted ? FontWeight.w700 : FontWeight.normal,
+                fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.normal,
                 color: textColor,
               ),
             ),

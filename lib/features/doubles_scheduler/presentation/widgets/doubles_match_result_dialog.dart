@@ -589,9 +589,8 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   Widget _buildNarrowSideRow({required bool side1}) {
-    final players = side1
-        ? widget.match.side1Players
-        : widget.match.side2Players;
+    final players =
+        side1 ? widget.match.side1Players : widget.match.side2Players;
 
     return Row(
       children: [
