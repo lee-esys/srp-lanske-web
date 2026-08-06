@@ -58,7 +58,7 @@ Color resolveDoublesRoundCardColor(
   required bool isEvenRound,
 }) {
   if (isCompleted) {
-    return colorScheme.surfaceContainer;
+    return colorScheme.surfaceContainerHighest;
   }
 
   return isEvenRound
