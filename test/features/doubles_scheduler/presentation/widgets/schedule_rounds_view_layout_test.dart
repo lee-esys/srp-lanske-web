@@ -14,8 +14,8 @@ void main() {
     await tester.pumpWidget(const _TestApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('R 1 / C A'), findsOneWidget);
-    expect(find.text('R 1 / C B'), findsOneWidget);
+    expect(find.text('R1・Aコート'), findsOneWidget);
+    expect(find.text('R1・Bコート'), findsOneWidget);
     expect(find.text('R 1'), findsNothing);
     expect(find.text('試合前'), findsNWidgets(2));
     expect(
@@ -25,7 +25,7 @@ void main() {
     expect(find.text('休憩：3人'), findsOneWidget);
 
     final positionCenter = tester.getCenter(
-      find.byKey(const ValueKey('match-position-R 1 / C A')),
+      find.byKey(const ValueKey('match-position-R1・Aコート')),
     );
     final statusCenter = tester.getCenter(
       find.byKey(const ValueKey('match-status-scheduled')).first,
