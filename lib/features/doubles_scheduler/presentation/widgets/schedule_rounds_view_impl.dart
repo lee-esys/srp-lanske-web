@@ -385,6 +385,21 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       isEvenRound: isEvenRound,
     );
     final isRestExpanded = _expandedRestRoundNumbers.contains(roundNumber);
+    final restToggle = _RestToggleButton(
+      key: ValueKey('round-rest-toggle-$roundNumber'),
+      restCount: restSlotNumbers.length,
+      isExpanded: isRestExpanded,
+      isHighlighted: hasSelectedRestPlayer,
+      onTap: () {
+        setState(() {
+          if (isRestExpanded) {
+            _expandedRestRoundNumbers.remove(roundNumber);
+          } else {
+            _expandedRestRoundNumbers.add(roundNumber);
+          }
+        });
+      },
+    );
 
     return Card(
       key: ValueKey('round-card-$roundNumber'),
@@ -392,61 +407,23 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       margin: const EdgeInsets.only(bottom: 4),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: 40,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    'R $roundNumber',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _RestToggleButton(
-                    restCount: restSlotNumbers.length,
-                    isExpanded: isRestExpanded,
-                    isHighlighted: hasSelectedRestPlayer,
-                    onTap: () {
-                      setState(() {
-                        if (isRestExpanded) {
-                          _expandedRestRoundNumbers.remove(roundNumber);
-                        } else {
-                          _expandedRestRoundNumbers.add(roundNumber);
-                        }
-                      });
-                    },
-                  ),
-                ],
-              ),
+            _buildCourtArea(
+              roundNo: roundNumberValue,
+              roundLabel: roundNumber,
+              courts: courts,
+              slotToPlayerId: slotToPlayerId,
+              roundAction: restToggle,
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildCourtArea(
-                    roundNo: roundNumberValue,
-                    courts: courts,
-                    slotToPlayerId: slotToPlayerId,
-                  ),
-                  if (isRestExpanded) ...[
-                    const Divider(),
-                    _buildRestPlayersRow(
-                      restSlotNumbers: restSlotNumbers,
-                      slotToPlayerId: slotToPlayerId,
-                    ),
-                  ],
-                ],
+            if (isRestExpanded) ...[
+              const Divider(),
+              _buildRestPlayersRow(
+                restSlotNumbers: restSlotNumbers,
+                slotToPlayerId: slotToPlayerId,
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -455,8 +432,10 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
   Widget _buildCourtArea({
     required int? roundNo,
+    required String roundLabel,
     required List<Map<String, dynamic>> courts,
     required Map<int, String> slotToPlayerId,
+    required Widget roundAction,
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -467,13 +446,15 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
             maxWidth >= (_courtMatchCardWidth * 2 + _courtAreaSpacing);
 
         if (courts.length == 1) {
-          return SizedBox(
-            width: maxWidth,
+          return Align(
+            alignment: Alignment.center,
             child: _buildCourtMatchCard(
               roundNo: roundNo,
+              roundLabel: roundLabel,
               court: courts.first,
               slotToPlayerId: slotToPlayerId,
-              alignment: Alignment.center,
+              cardWidth: courtItemWidth,
+              headerTrailing: roundAction,
             ),
           );
         }
@@ -488,24 +469,21 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  SizedBox(
-                    width: _courtMatchCardWidth,
-                    child: _buildCourtMatchCard(
-                      roundNo: roundNo,
-                      court: courts[0],
-                      slotToPlayerId: slotToPlayerId,
-                      alignment: Alignment.centerLeft,
-                    ),
+                  _buildCourtMatchCard(
+                    roundNo: roundNo,
+                    roundLabel: roundLabel,
+                    court: courts[0],
+                    slotToPlayerId: slotToPlayerId,
+                    cardWidth: _courtMatchCardWidth,
+                    headerTrailing: roundAction,
                   ),
                   const SizedBox(width: _courtAreaSpacing),
-                  SizedBox(
-                    width: _courtMatchCardWidth,
-                    child: _buildCourtMatchCard(
-                      roundNo: roundNo,
-                      court: courts[1],
-                      slotToPlayerId: slotToPlayerId,
-                      alignment: Alignment.centerLeft,
-                    ),
+                  _buildCourtMatchCard(
+                    roundNo: roundNo,
+                    roundLabel: roundLabel,
+                    court: courts[1],
+                    slotToPlayerId: slotToPlayerId,
+                    cardWidth: _courtMatchCardWidth,
                   ),
                 ],
               ),
@@ -515,16 +493,20 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
         if (courts.length == 2) {
           return Column(
-            children: courts.map((court) {
+            children: courts.asMap().entries.map((entry) {
               return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: SizedBox(
-                  width: maxWidth,
+                padding: EdgeInsets.only(
+                  bottom: entry.key == courts.length - 1 ? 0 : 8,
+                ),
+                child: Align(
+                  alignment: Alignment.center,
                   child: _buildCourtMatchCard(
                     roundNo: roundNo,
-                    court: court,
+                    roundLabel: roundLabel,
+                    court: entry.value,
                     slotToPlayerId: slotToPlayerId,
-                    alignment: Alignment.center,
+                    cardWidth: courtItemWidth,
+                    headerTrailing: entry.key == 0 ? roundAction : null,
                   ),
                 ),
               );
@@ -539,15 +521,14 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
           alignment: WrapAlignment.start,
           spacing: _courtAreaSpacing,
           runSpacing: 8,
-          children: courts.map((court) {
-            return SizedBox(
-              width: itemWidth,
-              child: _buildCourtMatchCard(
-                roundNo: roundNo,
-                court: court,
-                slotToPlayerId: slotToPlayerId,
-                alignment: Alignment.centerLeft,
-              ),
+          children: courts.asMap().entries.map((entry) {
+            return _buildCourtMatchCard(
+              roundNo: roundNo,
+              roundLabel: roundLabel,
+              court: entry.value,
+              slotToPlayerId: slotToPlayerId,
+              cardWidth: itemWidth,
+              headerTrailing: entry.key == 0 ? roundAction : null,
             );
           }).toList(growable: false),
         );
@@ -557,9 +538,11 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
   Widget _buildCourtMatchCard({
     required int? roundNo,
+    required String roundLabel,
     required Map<String, dynamic> court,
     required Map<int, String> slotToPlayerId,
-    Alignment alignment = Alignment.centerLeft,
+    required double cardWidth,
+    Widget? headerTrailing,
   }) {
     final l10n = AppLocalizations.of(context);
     final courtNumberText = court['court_number']?.toString() ?? '-';
@@ -573,8 +556,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
             ? defaultCourtLabel
             : configuredCourtLabel.trim();
 
-    final hasCustomCourtLabel = courtLabel != defaultCourtLabel;
-    final showCourtLabel = widget.courtCount >= 2 || hasCustomCourtLabel;
     final side1Slots = _asIntList(court['team1_player_slots']);
     final side2Slots = _asIntList(court['team2_player_slots']);
     final matchNo = _tryReadInt(court['match_number'] ?? court['match_no']);
@@ -607,8 +588,8 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
             ),
           );
 
-    return _buildHorizontalScrollableContent(
-      alignment: alignment,
+    return SizedBox(
+      width: cardWidth,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -628,8 +609,8 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
             ),
             child: DoublesMatchCardContent(
               hasAdoptedSchedule: _hasAdoptedSchedule,
-              courtLabel: courtLabel,
-              showCourtLabel: showCourtLabel,
+              matchPositionLabel: 'R $roundLabel / C $courtLabel',
+              headerTrailing: headerTrailing,
               side1: _buildTeamGroup(side1Slots, slotToPlayerId),
               side2: _buildTeamGroup(side2Slots, slotToPlayerId),
               progress: progress,
@@ -646,30 +627,11 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     );
   }
 
-  Widget _buildHorizontalScrollableContent({
-    required Widget child,
-    required Alignment alignment,
-  }) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minWidth: constraints.maxWidth),
-            child: Align(
-              alignment: alignment,
-              child: child,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   String _statusLabel(AppLocalizations l10n, ScheduleMatchStatus status) {
     return switch (status) {
       ScheduleMatchStatus.scheduled => l10n.doublesMatchStatusScheduledLabel,
-      ScheduleMatchStatus.inProgress => l10n.doublesMatchStatusInProgressLabel,
+      ScheduleMatchStatus.inProgress =>
+        l10n.doublesMatchStatusInProgressLabel,
       ScheduleMatchStatus.completed => l10n.doublesMatchStatusCompletedLabel,
     };
   }
@@ -838,6 +800,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
 class _RestToggleButton extends StatelessWidget {
   const _RestToggleButton({
+    super.key,
     required this.restCount,
     required this.isExpanded,
     required this.onTap,
@@ -863,8 +826,7 @@ class _RestToggleButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       onTap: onTap,
       child: Container(
-        width: 40,
-        padding: const EdgeInsets.symmetric(vertical: 5),
+        padding: const EdgeInsets.fromLTRB(8, 5, 4, 5),
         decoration: BoxDecoration(
           color: backgroundColor,
           border: Border.all(
@@ -873,39 +835,25 @@ class _RestToggleButton extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                l10n.restLabel,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 10,
-                  height: 1,
-                  fontWeight:
-                      isHighlighted ? FontWeight.w700 : FontWeight.normal,
-                  color: textColor,
-                ),
-              ),
-              Text(
-                l10n.restCountLabel(restCount),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 10,
-                  height: 1,
-                  fontWeight:
-                      isHighlighted ? FontWeight.w700 : FontWeight.normal,
-                  color: textColor,
-                ),
-              ),
-              Icon(
-                isExpanded ? Icons.expand_less : Icons.expand_more,
-                size: 14,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${l10n.restLabel}：${l10n.restCountLabel(restCount)}',
+              style: TextStyle(
+                fontSize: 11,
+                height: 1,
+                fontWeight:
+                    isHighlighted ? FontWeight.w700 : FontWeight.normal,
                 color: textColor,
               ),
-            ],
-          ),
+            ),
+            Icon(
+              isExpanded ? Icons.expand_less : Icons.expand_more,
+              size: 16,
+              color: textColor,
+            ),
+          ],
         ),
       ),
     );
