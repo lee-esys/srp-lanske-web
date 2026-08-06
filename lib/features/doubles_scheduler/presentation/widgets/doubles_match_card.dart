@@ -88,32 +88,42 @@ class DoublesMatchCardContent extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
-            Flexible(
-              child: Align(
+        SizedBox(
+          height: 40,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Align(
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  matchPositionLabel,
-                  key: ValueKey('match-position-$matchPositionLabel'),
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
+                child: SizedBox(
+                  width: headerTrailing == null ? 120 : 92,
+                  child: Text(
+                    matchPositionLabel,
+                    key: ValueKey('match-position-$matchPositionLabel'),
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ),
-            ),
-            if (headerTrailing != null) ...[
-              const SizedBox(width: 8),
-              headerTrailing!,
+              if (statusSummary != null)
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 132),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: statusSummary,
+                  ),
+                ),
+              if (headerTrailing != null)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: headerTrailing,
+                ),
             ],
-          ],
+          ),
         ),
-        if (statusSummary != null) ...[
-          const SizedBox(height: 4),
-          statusSummary,
-        ],
         const SizedBox(height: 6),
         LayoutBuilder(
           builder: (context, constraints) {
