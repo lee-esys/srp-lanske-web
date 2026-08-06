@@ -5,7 +5,7 @@ import 'package:srp_lanske/features/doubles_scheduler/presentation/widgets/sched
 import 'package:srp_lanske/l10n/l10n.dart';
 
 void main() {
-  testWidgets('round metadata moves into match headers on mobile width', (
+  testWidgets('round metadata shares one match header row on mobile width', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(375, 900));
@@ -23,6 +23,19 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('休憩：3人'), findsOneWidget);
+
+    final positionCenter = tester.getCenter(
+      find.byKey(const ValueKey('match-position-R 1 / C A')),
+    );
+    final statusCenter = tester.getCenter(
+      find.byKey(const ValueKey('match-status-scheduled')).first,
+    );
+    final restCenter = tester.getCenter(
+      find.byKey(const ValueKey('round-rest-toggle-1')),
+    );
+
+    expect((positionCenter.dy - statusCenter.dy).abs(), lessThan(1));
+    expect((positionCenter.dy - restCenter.dy).abs(), lessThan(1));
     expect(tester.takeException(), isNull);
 
     await tester.tap(find.byKey(const ValueKey('round-rest-toggle-1')));
