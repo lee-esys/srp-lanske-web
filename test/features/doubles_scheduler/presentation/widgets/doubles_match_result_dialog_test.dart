@@ -143,6 +143,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+    expect(
+      find.byKey(const Key('doubles-match-narrow-score-layout')),
+      findsOneWidget,
+    );
     expect(find.widgetWithText(OutlinedButton, '4'), findsOneWidget);
     expect(find.widgetWithText(OutlinedButton, '2'), findsOneWidget);
     expect(find.text('接戦でした'), findsOneWidget);
@@ -157,6 +161,50 @@ void main() {
     expect(savedInput, isNotNull);
     expect(savedInput!.side1Score, isNull);
     expect(savedInput!.side2Score, isNull);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('score layout switches at 400 logical pixels', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(399, 760));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      _TestApp(
+        progress: _placeholder(),
+        onSave: ({required current, required input}) async {
+          final saved = _savedProgress(current: current, input: input);
+          return DoublesMatchProgressSaveResult(
+            match: saved,
+            summary: _summary(saved),
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('開く'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('doubles-match-narrow-score-layout')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('doubles-match-wide-score-layout')),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+
+    await tester.binding.setSurfaceSize(const Size(400, 760));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('doubles-match-wide-score-layout')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('doubles-match-narrow-score-layout')),
+      findsNothing,
+    );
     expect(tester.takeException(), isNull);
   });
 }
