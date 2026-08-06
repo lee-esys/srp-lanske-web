@@ -272,25 +272,43 @@ class _OutcomeTeamFrame extends StatelessWidget {
       DoublesMatchSideOutcome.none => colorScheme.onSurface,
       DoublesMatchSideOutcome.draw => colorScheme.onSurface,
     };
+    final frameDecoration = BoxDecoration(
+      color: backgroundColor,
+      border: Border.all(color: borderColor),
+      borderRadius: BorderRadius.circular(12),
+    );
 
     return Stack(
       key: ValueKey('match-outcome-frame-${outcome.name}'),
       clipBehavior: Clip.none,
       children: [
-        Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              border: Border.all(color: borderColor),
-              borderRadius: BorderRadius.circular(12),
+        Positioned(
+          left: -2,
+          top: -2,
+          right: -2,
+          bottom: -2,
+          child: DecoratedBox(decoration: frameDecoration),
+        ),
+        child,
+        Positioned(
+          left: -2,
+          top: -2,
+          right: -2,
+          bottom: -2,
+          child: IgnorePointer(
+            child: DecoratedBox(
+              key: ValueKey('match-outcome-outline-${outcome.name}'),
+              decoration: BoxDecoration(
+                border: Border.all(color: borderColor),
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ),
-        child,
         if (label != null)
           Positioned(
             top: -8,
-            right: 6,
+            right: 4,
             child: Container(
               key: ValueKey('match-outcome-$label'),
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
