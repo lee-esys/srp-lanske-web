@@ -5,6 +5,13 @@ import 'package:srp_lanske/features/doubles_scheduler/presentation/widgets/doubl
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 
 void main() {
+  test('formats round and one-character court labels clearly', () {
+    expect(formatDoublesMatchPositionLabel('R 1 / C 1'), 'R1・1コート');
+    expect(formatDoublesMatchPositionLabel('R 2 / C A'), 'R2・Aコート');
+    expect(formatDoublesMatchPositionLabel('R 3 / C 右'), 'R3・右コート');
+    expect(formatDoublesMatchPositionLabel('custom label'), 'custom label');
+  });
+
   testWidgets('unadopted card hides repeated match status and result details', (
     tester,
   ) async {
@@ -15,7 +22,7 @@ void main() {
       ),
     );
 
-    expect(find.text('R 1 / C A'), findsOneWidget);
+    expect(find.text('R1・Aコート'), findsOneWidget);
     expect(find.text('試合前'), findsNothing);
     expect(find.byKey(const ValueKey('match-score')), findsNothing);
     expect(find.byIcon(Icons.note_alt_outlined), findsNothing);
