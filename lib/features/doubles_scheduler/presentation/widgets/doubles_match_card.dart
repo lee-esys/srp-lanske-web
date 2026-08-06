@@ -6,8 +6,8 @@ class DoublesMatchCardContent extends StatelessWidget {
   const DoublesMatchCardContent({
     super.key,
     required this.hasAdoptedSchedule,
-    required this.courtLabel,
-    required this.showCourtLabel,
+    required this.matchPositionLabel,
+    this.headerTrailing,
     required this.side1,
     required this.side2,
     required this.progress,
@@ -20,8 +20,8 @@ class DoublesMatchCardContent extends StatelessWidget {
   });
 
   final bool hasAdoptedSchedule;
-  final String courtLabel;
-  final bool showCourtLabel;
+  final String matchPositionLabel;
+  final Widget? headerTrailing;
   final Widget side1;
   final Widget side2;
   final ScheduleMatchProgress? progress;
@@ -51,11 +51,8 @@ class DoublesMatchCardContent extends StatelessWidget {
     );
     final isDraw = side1Outcome == DoublesMatchSideOutcome.draw;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (hasAdoptedSchedule) ...[
-          Row(
+    final statusSummary = hasAdoptedSchedule
+        ? Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Chip(
@@ -85,42 +82,73 @@ class DoublesMatchCardContent extends StatelessWidget {
                 const Icon(Icons.note_alt_outlined, size: 18),
               ],
             ],
-          ),
-          const SizedBox(height: 6),
-        ],
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            if (showCourtLabel) ...[
-              Text(
-                courtLabel,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
+          )
+        : null;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: 40,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  matchPositionLabel,
+                  key: const ValueKey('match-position-label'),
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               ),
-              const SizedBox(width: 8),
+              if (statusSummary != null) statusSummary,
+              if (headerTrailing != null)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: headerTrailing,
+                ),
             ],
-            _OutcomeTeamFrame(
-              outcome: side1Outcome,
-              winnerLabel: winnerLabel,
-              loserLabel: loserLabel,
-              child: side1,
-            ),
-            const SizedBox(width: 6),
-            _DrawCenterLabel(
-              isDraw: isDraw,
-              drawLabel: drawLabel,
-            ),
-            const SizedBox(width: 6),
-            _OutcomeTeamFrame(
-              outcome: side2Outcome,
-              winnerLabel: winnerLabel,
-              loserLabel: loserLabel,
-              child: side2,
-            ),
-          ],
+          ),
+        ),
+        const SizedBox(height: 6),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _OutcomeTeamFrame(
+                      outcome: side1Outcome,
+                      winnerLabel: winnerLabel,
+                      loserLabel: loserLabel,
+                      child: side1,
+                    ),
+                    const SizedBox(width: 6),
+                    _DrawCenterLabel(
+                      isDraw: isDraw,
+                      drawLabel: drawLabel,
+                    ),
+                    const SizedBox(width: 6),
+                    _OutcomeTeamFrame(
+                      outcome: side2Outcome,
+                      winnerLabel: winnerLabel,
+                      loserLabel: loserLabel,
+                      child: side2,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ],
     );
@@ -205,6 +233,10 @@ class _OutcomeTeamFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (outcome == DoublesMatchSideOutcome.none) {
+      return child;
+    }
+
     final colorScheme = Theme.of(context).colorScheme;
     final backgroundColor = switch (outcome) {
       DoublesMatchSideOutcome.none => Colors.transparent,
@@ -232,17 +264,19 @@ class _OutcomeTeamFrame extends StatelessWidget {
     };
 
     return Stack(
+      key: ValueKey('match-outcome-frame-${outcome.name}'),
       clipBehavior: Clip.none,
       children: [
-        Container(
-          padding: const EdgeInsets.fromLTRB(5, 4, 5, 3),
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            border: Border.all(color: borderColor),
-            borderRadius: BorderRadius.circular(12),
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              border: Border.all(color: borderColor),
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
-          child: child,
         ),
+        child,
         if (label != null)
           Positioned(
             top: -8,
