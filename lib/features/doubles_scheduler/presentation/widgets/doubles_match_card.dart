@@ -88,16 +88,14 @@ class DoublesMatchCardContent extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
-          height: 40,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Align(
+        Row(
+          children: [
+            Flexible(
+              child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   matchPositionLabel,
-                  key: const ValueKey('match-position-label'),
+                  key: ValueKey('match-position-$matchPositionLabel'),
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
@@ -105,15 +103,17 @@ class DoublesMatchCardContent extends StatelessWidget {
                   ),
                 ),
               ),
-              if (statusSummary != null) statusSummary,
-              if (headerTrailing != null)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: headerTrailing,
-                ),
+            ),
+            if (headerTrailing != null) ...[
+              const SizedBox(width: 8),
+              headerTrailing!,
             ],
-          ),
+          ],
         ),
+        if (statusSummary != null) ...[
+          const SizedBox(height: 4),
+          statusSummary,
+        ],
         const SizedBox(height: 6),
         LayoutBuilder(
           builder: (context, constraints) {
@@ -337,7 +337,7 @@ class _DrawCenterLabel extends StatelessWidget {
 class _DrawBadge extends StatelessWidget {
   const _DrawBadge({required this.label});
 
-  final String label;
+  final String drawLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -352,7 +352,7 @@ class _DrawBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        label,
+        drawLabel,
         style: TextStyle(
           color: colorScheme.onSecondaryContainer,
           fontSize: 9,
