@@ -8,7 +8,7 @@ void main() {
   testWidgets('round metadata moves into match headers on mobile width', (
     tester,
   ) async {
-    await tester.binding.setSurfaceSize(const Size(393, 900));
+    await tester.binding.setSurfaceSize(const Size(375, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(const _TestApp());
@@ -17,6 +17,7 @@ void main() {
     expect(find.text('R 1 / C A'), findsOneWidget);
     expect(find.text('R 1 / C B'), findsOneWidget);
     expect(find.text('R 1'), findsNothing);
+    expect(find.text('試合前'), findsNWidgets(2));
     expect(
       find.byKey(const ValueKey('round-rest-toggle-1')),
       findsOneWidget,
@@ -71,7 +72,7 @@ const _playerNameById = <String, String>{
 
 const _scheduleResponse = <String, dynamic>{
   'generated_schedule_id': 'generated-1',
-  'adopted': false,
+  'adopted': true,
   'assignment': <Map<String, dynamic>>[
     {'slot_number': 1, 'player_id': 'player-1'},
     {'slot_number': 2, 'player_id': 'player-2'},
