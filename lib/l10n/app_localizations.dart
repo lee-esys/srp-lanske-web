@@ -1224,7 +1224,7 @@ abstract class AppLocalizations {
   /// Title for a team schedule court.
   ///
   /// In ja, this message translates to:
-  /// **'コート{courtNo}'**
+  /// **'{courtNo}コート'**
   String teamCourtTitle(int courtNo);
 
   /// Title combining a court number and match title.

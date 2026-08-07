@@ -960,7 +960,7 @@
       }
     }
   },
-  "teamCourtTitle": "コート{courtNo}",
+  "teamCourtTitle": "{courtNo}コート",
   "@teamCourtTitle": {
     "description": "Title for a team schedule court.",
     "placeholders": {

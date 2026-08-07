@@ -1,6 +1,6 @@
 class AppConfig {
   static const String appName = 'Lanske';
-  static const String releaseVersion = '0.1.5';
+  static const String releaseVersion = '0.1.6+2';
 
   static const String coreApiBaseUrl = String.fromEnvironment(
     'LANSKE_CORE_API_BASE_URL',
