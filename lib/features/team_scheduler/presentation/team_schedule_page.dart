@@ -1375,9 +1375,6 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
   }
 
   Widget _buildRoundCard(BuildContext context, _TeamRoundViewData round) {
-    final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context);
-
     return Card(
       elevation: 0,
       color: Colors.white,
@@ -1389,19 +1386,12 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Text(
-                  l10n.teamRoundTitle(round.roundNo),
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
             for (final match in round.matches) ...[
-              _buildMatchRow(context, match),
+              _buildMatchRow(
+                context,
+                roundNo: round.roundNo,
+                match: match,
+              ),
               if (match != round.matches.last) const Divider(height: 24),
             ],
           ],
@@ -1427,6 +1417,45 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       icon: const Icon(Icons.edit_note),
       label: Text(
         hasScore ? l10n.editBocciaScoreButton : l10n.inputBocciaScoreButton,
+      ),
+    );
+  }
+
+  Widget _buildMatchHeader(
+    BuildContext context, {
+    required int roundNo,
+    required _TeamMatchViewData match,
+  }) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+
+    return SizedBox(
+      width: double.infinity,
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        runSpacing: 8,
+        children: [
+          Wrap(
+            spacing: 12,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                l10n.teamRoundTitle(roundNo),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                l10n.teamCourtTitle(match.courtNo),
+                style: theme.textTheme.labelLarge,
+              ),
+            ],
+          ),
+          _buildMatchScoreAction(context, match),
+        ],
       ),
     );
   }
@@ -1506,7 +1535,11 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     );
   }
 
-  Widget _buildMatchRow(BuildContext context, _TeamMatchViewData match) {
+  Widget _buildMatchRow(
+    BuildContext context, {
+    required int roundNo,
+    required _TeamMatchViewData match,
+  }) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final display = _matchDisplayOrder(match);
@@ -1516,11 +1549,12 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.teamCourtTitle(match.courtNo),
-            style: theme.textTheme.labelLarge,
+          _buildMatchHeader(
+            context,
+            roundNo: roundNo,
+            match: match,
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             _matchTitle(context, match),
             style: theme.textTheme.bodyLarge?.copyWith(
@@ -1536,8 +1570,6 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
                 _buildMatchTeamPill(context, teamSlot: teamSlot),
             ],
           ),
-          const SizedBox(height: 12),
-          _buildMatchScoreAction(context, match),
         ],
       );
     }
@@ -1545,9 +1577,10 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.teamCourtTitle(match.courtNo),
-          style: theme.textTheme.labelLarge,
+        _buildMatchHeader(
+          context,
+          roundNo: roundNo,
+          match: match,
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -1579,8 +1612,6 @@ class _TeamSchedulePageState extends State<TeamSchedulePage> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        _buildMatchScoreAction(context, match),
       ],
     );
   }
