@@ -202,7 +202,7 @@
   },
   "shareUrlCopiedMessage": "URLをコピーしました",
   "@shareUrlCopiedMessage": {
-    "description": "Snack bar message shown when the share URL was copied."
+    "description": "Message shown when the share URL was copied."
   },
   "generateScheduleFailedMessage": "対戦表を生成できませんでした: {error}",
   "@generateScheduleFailedMessage": {
@@ -360,7 +360,7 @@
   },
   "courtDisplaySectionTitle": "コート表示",
   "@courtDisplaySectionTitle": {
-    "description": "Section title for display settings."
+    "description": "Section title for court display settings."
   },
   "courtDisplayPresetNumbers": "1 / 2",
   "@courtDisplayPresetNumbers": {
@@ -394,7 +394,7 @@
   },
   "courtDisplayEmptyError": "コート表示を入力してください",
   "@courtDisplayEmptyError": {
-    "description": "Validation error shown when court display label is empty."
+    "description": "Validation error shown when a court display label is empty."
   },
   "courtDisplayDuplicateError": "コート表示が重複しています",
   "@courtDisplayDuplicateError": {
