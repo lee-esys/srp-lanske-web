@@ -874,13 +874,13 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
             const minCardWidth = 92.0;
             const maxCardWidth = 120.0;
             final cardCount = assignments.length;
-            final spacingWidth = cardCount > 1 ? spacing * (cardCount - 1) : 0.0;
+            final spacingWidth =
+                cardCount > 1 ? spacing * (cardCount - 1) : 0.0;
             final fittedWidth = cardCount == 0
                 ? minCardWidth
                 : (constraints.maxWidth - spacingWidth) / cardCount;
-            final cardWidth = fittedWidth
-                .clamp(minCardWidth, maxCardWidth)
-                .toDouble();
+            final cardWidth =
+                fittedWidth.clamp(minCardWidth, maxCardWidth).toDouble();
             final rowWidth = cardCount * cardWidth + spacingWidth;
             final contentWidth = rowWidth < constraints.maxWidth
                 ? constraints.maxWidth
