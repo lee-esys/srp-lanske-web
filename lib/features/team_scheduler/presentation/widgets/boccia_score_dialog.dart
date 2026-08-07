@@ -868,21 +868,49 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
           style: theme.textTheme.bodySmall,
         ),
         const SizedBox(height: 8),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              for (final assignment in assignments) ...[
-                _buildThrowingBoxCard(
-                  context,
-                  assignment,
-                  isEditing:
-                      _isEditingThrowingBoxAssignments && canEditAssignments,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const spacing = 8.0;
+            const minCardWidth = 92.0;
+            const maxCardWidth = 120.0;
+            final cardCount = assignments.length;
+            final spacingWidth = cardCount > 1 ? spacing * (cardCount - 1) : 0.0;
+            final fittedWidth = cardCount == 0
+                ? minCardWidth
+                : (constraints.maxWidth - spacingWidth) / cardCount;
+            final cardWidth = fittedWidth
+                .clamp(minCardWidth, maxCardWidth)
+                .toDouble();
+            final rowWidth = cardCount * cardWidth + spacingWidth;
+            final contentWidth = rowWidth < constraints.maxWidth
+                ? constraints.maxWidth
+                : rowWidth;
+
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: contentWidth,
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final assignment in assignments) ...[
+                        _buildThrowingBoxCard(
+                          context,
+                          assignment,
+                          width: cardWidth,
+                          isEditing: _isEditingThrowingBoxAssignments &&
+                              canEditAssignments,
+                        ),
+                        if (assignment != assignments.last)
+                          const SizedBox(width: spacing),
+                      ],
+                    ],
+                  ),
                 ),
-                if (assignment != assignments.last) const SizedBox(width: 8),
-              ],
-            ],
-          ),
+              ),
+            );
+          },
         ),
         const SizedBox(height: 16),
         _buildThrowOrderSection(context),
@@ -893,6 +921,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
   Widget _buildThrowingBoxCard(
     BuildContext context,
     BocciaThrowingBoxAssignment assignment, {
+    required double width,
     required bool isEditing,
   }) {
     final theme = Theme.of(context);
@@ -916,7 +945,7 @@ class _BocciaScoreDialogState extends State<BocciaScoreDialog> {
         !isEditing;
 
     return Container(
-      width: 92,
+      width: width,
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: isRed ? Colors.red.shade50 : Colors.blue.shade50,
