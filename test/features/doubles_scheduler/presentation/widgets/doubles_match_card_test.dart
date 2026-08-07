@@ -5,6 +5,13 @@ import 'package:srp_lanske/features/doubles_scheduler/presentation/widgets/doubl
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 
 void main() {
+  test('formats round and one-character court labels clearly', () {
+    expect(formatDoublesMatchPositionLabel('R 1 / C 1'), 'R1・1コート');
+    expect(formatDoublesMatchPositionLabel('R 2 / C A'), 'R2・Aコート');
+    expect(formatDoublesMatchPositionLabel('R 3 / C 右'), 'R3・右コート');
+    expect(formatDoublesMatchPositionLabel('custom label'), 'custom label');
+  });
+
   testWidgets('unadopted card hides repeated match status and result details', (
     tester,
   ) async {
@@ -15,11 +22,16 @@ void main() {
       ),
     );
 
+    expect(find.text('R1・Aコート'), findsOneWidget);
     expect(find.text('試合前'), findsNothing);
     expect(find.byKey(const ValueKey('match-score')), findsNothing);
     expect(find.byIcon(Icons.note_alt_outlined), findsNothing);
     expect(find.text('ペアA'), findsOneWidget);
     expect(find.text('ペアB'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('match-outcome-frame-none')),
+      findsNothing,
+    );
   });
 
   testWidgets('adopted scheduled card keeps the pre-match status', (
@@ -37,10 +49,14 @@ void main() {
     expect(find.text('WIN'), findsNothing);
     expect(find.text('LOSE'), findsNothing);
     expect(find.text('DRAW'), findsNothing);
+    expect(
+      find.byKey(const ValueKey('match-outcome-frame-none')),
+      findsNothing,
+    );
   });
 
-  testWidgets(
-      'completed card overlays one WIN and one LOSE without added height', (
+  testWidgets('completed card overlays one WIN and one LOSE without added size',
+      (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -71,11 +87,18 @@ void main() {
     expect(find.text('WIN'), findsOneWidget);
     expect(find.text('LOSE'), findsOneWidget);
     expect(find.text('DRAW'), findsNothing);
-    expect(completedSize.height, scheduledSize.height);
+    expect(
+      find.byKey(const ValueKey('match-outcome-frame-winner')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('match-outcome-frame-loser')),
+      findsOneWidget,
+    );
+    expect(completedSize, scheduledSize);
   });
 
-  testWidgets('draw overlays without changing the center width',
-      (tester) async {
+  testWidgets('draw overlays without changing the card size', (tester) async {
     await tester.pumpWidget(
       const _TestApp(
         hasAdoptedSchedule: true,
@@ -106,7 +129,11 @@ void main() {
     expect(find.text('vs'), findsOneWidget);
     expect(find.text('WIN'), findsNothing);
     expect(find.text('LOSE'), findsNothing);
-    expect(drawSize.width, scheduledSize.width);
+    expect(
+      find.byKey(const ValueKey('match-outcome-frame-draw')),
+      findsNWidgets(2),
+    );
+    expect(drawSize, scheduledSize);
   });
 
   testWidgets('in-progress score does not show a provisional outcome', (
@@ -127,6 +154,10 @@ void main() {
     expect(find.text('WIN'), findsNothing);
     expect(find.text('LOSE'), findsNothing);
     expect(find.text('DRAW'), findsNothing);
+    expect(
+      find.byKey(const ValueKey('match-outcome-frame-none')),
+      findsNothing,
+    );
   });
 
   testWidgets('completed match without scores has no outcome label', (
@@ -144,37 +175,10 @@ void main() {
     expect(find.text('WIN'), findsNothing);
     expect(find.text('LOSE'), findsNothing);
     expect(find.text('DRAW'), findsNothing);
-  });
-
-  testWidgets('draw overlays without changing the center width',
-      (tester) async {
-    await tester.pumpWidget(
-      const _TestApp(
-        hasAdoptedSchedule: true,
-        status: ScheduleMatchStatus.scheduled,
-      ),
+    expect(
+      find.byKey(const ValueKey('match-outcome-frame-none')),
+      findsNothing,
     );
-    final scheduledSize = tester.getSize(
-      find.byType(DoublesMatchCardContent),
-    );
-
-    await tester.pumpWidget(
-      _TestApp(
-        hasAdoptedSchedule: true,
-        status: ScheduleMatchStatus.completed,
-        progress: _progress(
-          status: ScheduleMatchStatus.completed,
-          scores: const <int>[2, 2],
-        ),
-      ),
-    );
-    final drawSize = tester.getSize(
-      find.byType(DoublesMatchCardContent),
-    );
-
-    expect(find.text('DRAW'), findsOneWidget);
-    expect(find.text('vs'), findsOneWidget);
-    expect(drawSize.width, scheduledSize.width);
   });
 }
 
@@ -219,38 +223,40 @@ class _TestApp extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         body: Center(
-          child: Builder(
-            builder: (context) {
-              return DoublesMatchCardContent(
-                hasAdoptedSchedule: hasAdoptedSchedule,
-                courtLabel: '1',
-                showCourtLabel: false,
-                side1: const SizedBox(
-                  width: 120,
-                  height: 56,
-                  child: Center(child: Text('ペアA')),
-                ),
-                side2: const SizedBox(
-                  width: 120,
-                  height: 56,
-                  child: Center(child: Text('ペアB')),
-                ),
-                progress: progress,
-                status: status,
-                visualStyle: resolveDoublesMatchVisualStyle(
-                  Theme.of(context).colorScheme,
-                  status,
-                ),
-                statusLabel: switch (status) {
-                  ScheduleMatchStatus.scheduled => '試合前',
-                  ScheduleMatchStatus.inProgress => '試合中',
-                  ScheduleMatchStatus.completed => '終了',
-                },
-                winnerLabel: 'WIN',
-                loserLabel: 'LOSE',
-                drawLabel: 'DRAW',
-              );
-            },
+          child: SizedBox(
+            width: 340,
+            child: Builder(
+              builder: (context) {
+                return DoublesMatchCardContent(
+                  hasAdoptedSchedule: hasAdoptedSchedule,
+                  matchPositionLabel: 'R 1 / C A',
+                  side1: const SizedBox(
+                    width: 120,
+                    height: 56,
+                    child: Center(child: Text('ペアA')),
+                  ),
+                  side2: const SizedBox(
+                    width: 120,
+                    height: 56,
+                    child: Center(child: Text('ペアB')),
+                  ),
+                  progress: progress,
+                  status: status,
+                  visualStyle: resolveDoublesMatchVisualStyle(
+                    Theme.of(context).colorScheme,
+                    status,
+                  ),
+                  statusLabel: switch (status) {
+                    ScheduleMatchStatus.scheduled => '試合前',
+                    ScheduleMatchStatus.inProgress => '試合中',
+                    ScheduleMatchStatus.completed => '終了',
+                  },
+                  winnerLabel: 'WIN',
+                  loserLabel: 'LOSE',
+                  drawLabel: 'DRAW',
+                );
+              },
+            ),
           ),
         ),
       ),

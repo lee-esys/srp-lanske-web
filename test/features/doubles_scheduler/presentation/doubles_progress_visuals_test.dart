@@ -39,6 +39,40 @@ void main() {
     });
   });
 
+  group('round visual styles', () {
+    test('uses the completed match surface for completed rounds', () {
+      final completedMatchStyle = resolveDoublesMatchVisualStyle(
+        colorScheme,
+        ScheduleMatchStatus.completed,
+      );
+      final completedRoundColor = resolveDoublesRoundCardColor(
+        colorScheme,
+        isCompleted: true,
+        isEvenRound: false,
+      );
+
+      expect(
+        completedRoundColor,
+        completedMatchStyle.cardBackgroundColor,
+      );
+    });
+
+    test('keeps incomplete odd and even rounds visually distinct', () {
+      final oddRoundColor = resolveDoublesRoundCardColor(
+        colorScheme,
+        isCompleted: false,
+        isEvenRound: false,
+      );
+      final evenRoundColor = resolveDoublesRoundCardColor(
+        colorScheme,
+        isCompleted: false,
+        isEvenRound: true,
+      );
+
+      expect(oddRoundColor, isNot(evenRoundColor));
+    });
+  });
+
   group('completed round state', () {
     test('returns true only when every court in the round is completed', () {
       final progressByKey = <String, ScheduleMatchProgress>{
