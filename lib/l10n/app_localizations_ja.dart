@@ -647,7 +647,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String teamCourtTitle(int courtNo) {
-    return 'コート$courtNo';
+    return '$courtNoコート';
   }
 
   @override
