@@ -648,39 +648,40 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     final hasNext = currentIndex >= 0 && currentIndex < widget.matches.length - 1;
     final matchPosition = 'R ${_match.roundNo} / C ${_match.courtNo}';
 
-    return SizedBox(
-      width: double.infinity,
-      child: Wrap(
-        alignment: WrapAlignment.spaceBetween,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 12,
-        runSpacing: 8,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton.outlined(
-                key: const Key('doubles-match-previous-button'),
-                onPressed: !_isBusy && hasPrevious ? () => _move(-1) : null,
-                icon: const Icon(Icons.arrow_back),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  matchPosition,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
-              IconButton.outlined(
-                key: const Key('doubles-match-next-button'),
-                onPressed: !_isBusy && hasNext ? () => _move(1) : null,
-                icon: const Icon(Icons.arrow_forward),
-              ),
-            ],
+    final navigation = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton.outlined(
+          key: const Key('doubles-match-previous-button'),
+          onPressed: !_isBusy && hasPrevious ? () => _move(-1) : null,
+          icon: const Icon(Icons.arrow_back),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(
+            matchPosition,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
-          _buildStatusSelector(l10n),
-        ],
-      ),
+        ),
+        IconButton.outlined(
+          key: const Key('doubles-match-next-button'),
+          onPressed: !_isBusy && hasNext ? () => _move(1) : null,
+          icon: const Icon(Icons.arrow_forward),
+        ),
+      ],
+    );
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: navigation,
+        ),
+        const SizedBox(height: 8),
+        Center(child: _buildStatusSelector(l10n)),
+      ],
     );
   }
 
