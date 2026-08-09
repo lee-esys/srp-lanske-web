@@ -49,9 +49,13 @@ abstract final class DoublesProgressUiStore {
   static final ValueNotifier<DoublesProgressNavigationUiState?> navigation =
       ValueNotifier<DoublesProgressNavigationUiState?>(null);
 
+  static final ValueNotifier<Future<void> Function()?> completedNavigation =
+      ValueNotifier<Future<void> Function()?>(null);
+
   static void clearOverride() {
     progressText.value = null;
     navigation.value = null;
+    completedNavigation.value = null;
   }
 
   static void setSummary(
@@ -71,5 +75,9 @@ abstract final class DoublesProgressUiStore {
 
   static void setNavigation(DoublesProgressNavigationUiState? value) {
     navigation.value = value;
+  }
+
+  static void setCompletedNavigation(Future<void> Function()? value) {
+    completedNavigation.value = value;
   }
 }
