@@ -16,5 +16,6 @@ extension DoublesMatchNavigationLocalizations on AppLocalizations {
 
   String get doublesProgressNextMatchTitle => nextTeamMatchTitle;
 
-  String get doublesProgressAllCompletedLabel => doublesMatchStatusCompletedLabel;
+  String get doublesProgressAllCompletedLabel =>
+      doublesMatchStatusCompletedLabel;
 }

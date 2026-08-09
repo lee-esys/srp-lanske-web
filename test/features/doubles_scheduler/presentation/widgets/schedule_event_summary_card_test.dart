@@ -103,7 +103,8 @@ void main() {
     );
   });
 
-  testWidgets('shows next match details and invokes navigation', (tester) async {
+  testWidgets('shows next match details and invokes navigation',
+      (tester) async {
     final aggregate = _aggregate(adopted: true);
     final repository = _FakeEventRepository(aggregate);
     var navigationCount = 0;

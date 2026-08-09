@@ -65,8 +65,7 @@ ScheduleProgressNavigation resolveScheduleProgressNavigation({
     orderedKeysByValue[key.value] = key;
   }
 
-  final orderedKeys = orderedKeysByValue.values.toList(growable: false)
-    ..sort();
+  final orderedKeys = orderedKeysByValue.values.toList(growable: false)..sort();
   if (orderedKeys.isEmpty) {
     return const ScheduleProgressNavigation.completed();
   }

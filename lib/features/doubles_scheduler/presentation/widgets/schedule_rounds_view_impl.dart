@@ -263,10 +263,10 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     }
 
     final configuredCourtLabel = widget.courtLabelByNumber[target.courtNo];
-    final courtLabel = configuredCourtLabel == null ||
-            configuredCourtLabel.trim().isEmpty
-        ? target.courtNo.toString()
-        : configuredCourtLabel.trim();
+    final courtLabel =
+        configuredCourtLabel == null || configuredCourtLabel.trim().isEmpty
+            ? target.courtNo.toString()
+            : configuredCourtLabel.trim();
 
     DoublesProgressUiStore.setNavigation(
       DoublesProgressNavigationUiState(

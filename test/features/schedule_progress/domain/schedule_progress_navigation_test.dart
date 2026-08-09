@@ -44,7 +44,9 @@ void main() {
       expect(navigation.primaryMatchKey, _key(2, 1));
     });
 
-    test('returns to the first scheduled match after a skipped-ahead match ends', () {
+    test(
+        'returns to the first scheduled match after a skipped-ahead match ends',
+        () {
       final navigation = resolveScheduleProgressNavigation(
         matchKeys: [_key(1, 1), _key(1, 2), _key(2, 1)],
         progresses: [
