@@ -174,10 +174,179 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
     }
   }
 
+  Widget _buildProgressChip() {
+    return ValueListenableBuilder<String?>(
+      valueListenable: DoublesProgressUiStore.progressText,
+      builder: (context, latestProgressText, child) {
+        final displayProgressText = latestProgressText ?? widget.progressText;
+        if (displayProgressText == null) {
+          return const SizedBox.shrink();
+        }
+
+        return Chip(
+          key: const ValueKey('doubles-progress-summary-chip'),
+          avatar: const Icon(Icons.sports_score, size: 18),
+          label: Text(displayProgressText),
+          visualDensity: VisualDensity.compact,
+        );
+      },
+    );
+  }
+
+  Widget _buildProgressNavigation(AppLocalizations l10n) {
+    return ValueListenableBuilder<DoublesProgressNavigationUiState?>(
+      valueListenable: DoublesProgressUiStore.navigation,
+      builder: (context, navigation, child) {
+        if (navigation == null) {
+          return const SizedBox.shrink();
+        }
+
+        final colorScheme = Theme.of(context).colorScheme;
+        if (navigation.kind == DoublesProgressNavigationUiKind.completed) {
+          return Container(
+            key: const ValueKey('doubles-progress-navigation-completed'),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerLow,
+              border: Border.all(color: colorScheme.outlineVariant),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline,
+                        color: colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.doublesProgressAllCompletedLabel,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ],
+                  ),
+                ),
+                ValueListenableBuilder<Future<void> Function()?>(
+                  valueListenable: DoublesProgressUiStore.completedNavigation,
+                  builder: (context, onNavigate, child) {
+                    if (onNavigate == null) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return TextButton.icon(
+                      key: const ValueKey(
+                        'doubles-progress-completed-move-button',
+                      ),
+                      onPressed: () {
+                        onNavigate();
+                      },
+                      icon: const Icon(Icons.arrow_downward),
+                      label: Text(l10n.doublesProgressAllCompletedLabel),
+                    );
+                  },
+                ),
+              ],
+            ),
+          );
+        }
+
+        final roundNo = navigation.roundNo;
+        final courtLabel = navigation.courtLabel;
+        if (roundNo == null || courtLabel == null) {
+          return const SizedBox.shrink();
+        }
+
+        final isInProgress =
+            navigation.kind == DoublesProgressNavigationUiKind.inProgress;
+        final title = isInProgress
+            ? l10n.doublesProgressInProgressTitle
+            : l10n.doublesProgressNextMatchTitle;
+        final position = l10n.doublesProgressPositionLabel(
+          roundNo,
+          courtLabel,
+        );
+        final side1 = navigation.side1PlayerNames.join(
+          l10n.teamMatchGroupSeparator,
+        );
+        final side2 = navigation.side2PlayerNames.join(
+          l10n.teamMatchGroupSeparator,
+        );
+        final opponents = '$side1${l10n.teamMatchVsSeparator}$side2';
+
+        return Container(
+          key: const ValueKey('doubles-progress-navigation'),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerLow,
+            border: Border.all(color: colorScheme.outlineVariant),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 6,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      if (isInProgress &&
+                          navigation.inProgressMatchCount > 1) ...[
+                        const SizedBox(width: 6),
+                        Badge(
+                          label: Text('${navigation.inProgressMatchCount}'),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    position,
+                    key: const ValueKey('doubles-progress-position'),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  Text(
+                    opponents,
+                    key: const ValueKey('doubles-progress-opponents'),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+              TextButton.icon(
+                key: const ValueKey('doubles-progress-move-button'),
+                onPressed: navigation.canNavigate
+                    ? () {
+                        navigation.onNavigate?.call();
+                      }
+                    : null,
+                icon: const Icon(Icons.arrow_downward),
+                label: Text(title),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final event = _displayAggregate?.event;
+    final hasAdoptedSchedule = event?.hasAdoptedSchedule ?? false;
     final canEdit = event != null &&
         !_isEditingEventInfo &&
         !widget.isRefreshing &&
@@ -190,9 +359,25 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (event != null) ...[
-              Text(
-                event.title,
-                style: Theme.of(context).textTheme.titleLarge,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Tooltip(
+                      message: event.title,
+                      child: Text(
+                        event.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ),
+                  ),
+                  if (hasAdoptedSchedule) ...[
+                    const SizedBox(width: 8),
+                    _buildProgressChip(),
+                  ],
+                ],
               ),
               if (event.memo.isNotEmpty) ...[
                 const SizedBox(height: 8),
@@ -200,6 +385,10 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
                   event.memo,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
+              ],
+              if (hasAdoptedSchedule) ...[
+                const SizedBox(height: 8),
+                _buildProgressNavigation(l10n),
               ],
               const SizedBox(height: 12),
             ],
@@ -230,21 +419,6 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
                         : const Icon(Icons.sync),
                     label: Text(l10n.refreshLatestButton),
                   ),
-                ValueListenableBuilder<String?>(
-                  valueListenable: DoublesProgressUiStore.progressText,
-                  builder: (context, latestProgressText, child) {
-                    final displayProgressText =
-                        latestProgressText ?? widget.progressText;
-                    if (displayProgressText == null) {
-                      return const SizedBox.shrink();
-                    }
-
-                    return Chip(
-                      avatar: const Icon(Icons.sports_score, size: 18),
-                      label: Text(displayProgressText),
-                    );
-                  },
-                ),
                 if (event != null)
                   OutlinedButton.icon(
                     onPressed: canEdit ? _editEventInfo : null,

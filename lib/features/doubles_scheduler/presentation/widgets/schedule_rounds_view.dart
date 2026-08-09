@@ -3,7 +3,9 @@ import 'package:srp_lanske/features/doubles_scheduler/application/doubles_match_
 import 'package:srp_lanske/features/doubles_scheduler/application/local_schedule_history_mapper.dart';
 import 'package:srp_lanske/features/doubles_scheduler/data/local_schedule_history_store.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_match_save_registry.dart';
+import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_progress_ui_store.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
 import 'schedule_rounds_view_impl.dart' as impl;
@@ -34,9 +36,15 @@ class ScheduleRoundsView extends StatefulWidget {
 }
 
 class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
+  static const _floatingNavigationRevealTop = 240.0;
+
   late final DoublesMatchProgressService _progressService;
+  final GlobalKey _floatingNavigationAnchorKey = GlobalKey();
 
   DoublesMatchSaveRegistration? _saveRegistration;
+  ScrollPosition? _parentScrollPosition;
+  OverlayEntry? _floatingNavigationEntry;
+  bool _floatingVisibilityCheckScheduled = false;
 
   @override
   void initState() {
@@ -44,18 +52,32 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     _progressService = DoublesMatchProgressService(
       repository: appScheduleProgressRepository,
     );
+    DoublesProgressUiStore.navigation.addListener(_handleNavigationChanged);
     _syncSaveRegistration();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncParentScrollPosition();
+    _scheduleFloatingNavigationVisibilityCheck();
   }
 
   @override
   void didUpdateWidget(covariant ScheduleRoundsView oldWidget) {
     super.didUpdateWidget(oldWidget);
     _syncSaveRegistration();
+    _scheduleFloatingNavigationVisibilityCheck();
   }
 
   @override
   void dispose() {
     DoublesMatchSaveRegistry.unregister(_saveRegistration);
+    DoublesProgressUiStore.navigation.removeListener(_handleNavigationChanged);
+    DoublesProgressUiStore.setCompletedNavigation(null);
+    _parentScrollPosition?.removeListener(_handleParentScroll);
+    _floatingNavigationEntry?.remove();
+    _floatingNavigationEntry = null;
     super.dispose();
   }
 
@@ -104,6 +126,200 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     );
   }
 
+  void _syncParentScrollPosition() {
+    final nextPosition = Scrollable.maybeOf(context)?.position;
+    if (identical(nextPosition, _parentScrollPosition)) {
+      return;
+    }
+
+    _parentScrollPosition?.removeListener(_handleParentScroll);
+    _parentScrollPosition = nextPosition;
+    _parentScrollPosition?.addListener(_handleParentScroll);
+  }
+
+  void _handleParentScroll() {
+    _scheduleFloatingNavigationVisibilityCheck();
+  }
+
+  void _handleNavigationChanged() {
+    final navigation = DoublesProgressUiStore.navigation.value;
+    DoublesProgressUiStore.setCompletedNavigation(
+      navigation?.kind == DoublesProgressNavigationUiKind.completed
+          ? _scrollToBottom
+          : null,
+    );
+    _floatingNavigationEntry?.markNeedsBuild();
+    _scheduleFloatingNavigationVisibilityCheck();
+  }
+
+  void _scheduleFloatingNavigationVisibilityCheck() {
+    if (_floatingVisibilityCheckScheduled) {
+      return;
+    }
+
+    _floatingVisibilityCheckScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _floatingVisibilityCheckScheduled = false;
+      if (mounted) {
+        _updateFloatingNavigationVisibility();
+      }
+    });
+  }
+
+  void _updateFloatingNavigationVisibility() {
+    final navigation = DoublesProgressUiStore.navigation.value;
+    final anchorContext = _floatingNavigationAnchorKey.currentContext;
+    final renderObject = anchorContext?.findRenderObject();
+
+    if (navigation == null ||
+        renderObject is! RenderBox ||
+        !renderObject.attached) {
+      _setFloatingNavigationVisible(false);
+      return;
+    }
+
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final revealTop = (screenHeight * 0.3).clamp(
+      180.0,
+      _floatingNavigationRevealTop,
+    );
+    final anchorTop = renderObject.localToGlobal(Offset.zero).dy;
+
+    _setFloatingNavigationVisible(anchorTop <= revealTop);
+  }
+
+  void _setFloatingNavigationVisible(bool visible) {
+    if (visible) {
+      if (_floatingNavigationEntry != null) {
+        return;
+      }
+
+      final overlay = Overlay.maybeOf(context, rootOverlay: true);
+      if (overlay == null) {
+        return;
+      }
+
+      final entry = OverlayEntry(builder: _buildFloatingNavigationOverlay);
+      _floatingNavigationEntry = entry;
+      overlay.insert(entry);
+      return;
+    }
+
+    _floatingNavigationEntry?.remove();
+    _floatingNavigationEntry = null;
+  }
+
+  Widget _buildFloatingNavigationOverlay(BuildContext context) {
+    return Positioned(
+      right: 40,
+      bottom: 12,
+      child: SafeArea(
+        top: false,
+        left: false,
+        child: ValueListenableBuilder<DoublesProgressNavigationUiState?>(
+          valueListenable: DoublesProgressUiStore.navigation,
+          builder: (context, navigation, child) {
+            if (navigation == null) {
+              return const SizedBox.shrink();
+            }
+
+            final l10n = AppLocalizations.of(context);
+            final colorScheme = Theme.of(context).colorScheme;
+            final primaryLabel = switch (navigation.kind) {
+              DoublesProgressNavigationUiKind.inProgress =>
+                l10n.doublesProgressInProgressTitle,
+              DoublesProgressNavigationUiKind.nextMatch =>
+                l10n.doublesProgressNextMatchTitle,
+              DoublesProgressNavigationUiKind.completed =>
+                l10n.doublesProgressAllCompletedLabel,
+            };
+            final primaryIcon = switch (navigation.kind) {
+              DoublesProgressNavigationUiKind.inProgress => Icons.my_location,
+              DoublesProgressNavigationUiKind.nextMatch => Icons.arrow_downward,
+              DoublesProgressNavigationUiKind.completed =>
+                Icons.vertical_align_bottom,
+            };
+            final canUsePrimary =
+                navigation.kind == DoublesProgressNavigationUiKind.completed ||
+                    navigation.canNavigate;
+
+            return Material(
+              key: const ValueKey('doubles-schedule-floating-navigation'),
+              elevation: 6,
+              color: colorScheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(28),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FilledButton.tonalIcon(
+                      key: const ValueKey(
+                        'doubles-schedule-floating-primary-button',
+                      ),
+                      onPressed: canUsePrimary
+                          ? () {
+                              if (navigation.kind ==
+                                  DoublesProgressNavigationUiKind.completed) {
+                                _scrollToBottom();
+                              } else {
+                                navigation.onNavigate?.call();
+                              }
+                            }
+                          : null,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 42),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      icon: Icon(primaryIcon, size: 18),
+                      label: Text(primaryLabel),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton.filledTonal(
+                      key: const ValueKey(
+                        'doubles-schedule-floating-top-button',
+                      ),
+                      onPressed: _scrollToTop,
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.vertical_align_top),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _scrollToTop() async {
+    final position = _parentScrollPosition;
+    if (position == null || !position.hasPixels) {
+      return;
+    }
+
+    await position.animateTo(
+      position.minScrollExtent,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  Future<void> _scrollToBottom() async {
+    final position = _parentScrollPosition;
+    if (position == null || !position.hasPixels) {
+      return;
+    }
+
+    await position.animateTo(
+      position.maxScrollExtent,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
   Future<DoublesMatchProgressSaveResult> _saveMatch({
     required ScheduleMatchProgress current,
     required DoublesMatchProgressInput input,
@@ -144,13 +360,16 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
   @override
   Widget build(BuildContext context) {
-    return impl.ScheduleRoundsView(
-      scheduleResponse: widget.scheduleResponse,
-      playerNameById: widget.playerNameById,
-      courtCount: widget.courtCount,
-      selectedPlayerId: widget.selectedPlayerId,
-      onPlayerSelected: widget.onPlayerSelected,
-      courtLabelByNumber: widget.courtLabelByNumber,
+    return SizedBox(
+      key: _floatingNavigationAnchorKey,
+      child: impl.ScheduleRoundsView(
+        scheduleResponse: widget.scheduleResponse,
+        playerNameById: widget.playerNameById,
+        courtCount: widget.courtCount,
+        selectedPlayerId: widget.selectedPlayerId,
+        onPlayerSelected: widget.onPlayerSelected,
+        courtLabelByNumber: widget.courtLabelByNumber,
+      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_progr
 import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_progress_visuals.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/models/doubles_match_editor_models.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
+import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_navigation.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/presentation/app_message_type.dart';
 import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
@@ -40,8 +41,10 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   static const _courtMatchCardWidth = 340.0;
 
   final Set<String> _expandedRestRoundNumbers = {};
+  final Map<String, GlobalKey> _matchCardKeys = {};
 
   Map<String, ScheduleMatchProgress> _progressByKey = const {};
+  ScheduleProgressNavigation? _progressNavigation;
   bool _canEditMatches = false;
   bool _isLoadingProgress = false;
   bool _isOpeningMatch = false;
@@ -61,12 +64,19 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   @override
   void didUpdateWidget(covariant ScheduleRoundsView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _matchCardKeys.clear();
     DoublesProgressUiStore.clearOverride();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _loadProgress();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    DoublesProgressUiStore.setNavigation(null);
+    super.dispose();
   }
 
   String? get _publicId {
@@ -118,11 +128,13 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       if (mounted && requestSequence == _progressRequestSequence) {
         setState(() {
           _progressByKey = const {};
+          _progressNavigation = null;
           _canEditMatches = false;
           _isLoadingProgress = false;
         });
       }
       DoublesProgressUiStore.setSummary(null);
+      DoublesProgressUiStore.setNavigation(null);
       return;
     }
 
@@ -143,14 +155,25 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
         return;
       }
 
+      final progressByKey = Map<String, ScheduleMatchProgress>.unmodifiable({
+        for (final match in matches) match.key.value: match,
+      });
+      final canEditMatches = aggregate?.event.hasAdoptedSchedule ?? false;
+      final navigation = canEditMatches
+          ? _resolveProgressNavigation(progressByKey.values)
+          : null;
+
       setState(() {
-        _progressByKey = Map<String, ScheduleMatchProgress>.unmodifiable({
-          for (final match in matches) match.key.value: match,
-        });
-        _canEditMatches = aggregate?.event.hasAdoptedSchedule ?? false;
+        _progressByKey = progressByKey;
+        _progressNavigation = navigation;
+        _canEditMatches = canEditMatches;
         _isLoadingProgress = false;
       });
-      DoublesProgressUiStore.setSummary(summary);
+      DoublesProgressUiStore.setSummary(
+        summary,
+        totalMatchCount: canEditMatches ? _totalMatchCount : null,
+      );
+      _publishProgressNavigation(navigation);
 
       if (showMessage) {
         AppSnackBar.show(
@@ -177,6 +200,114 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
         );
       }
     }
+  }
+
+  ScheduleProgressNavigation? _resolveProgressNavigation(
+    Iterable<ScheduleMatchProgress> progresses,
+  ) {
+    final scheduleResponse = widget.scheduleResponse;
+    if (scheduleResponse == null) {
+      return null;
+    }
+
+    final slotToPlayerId = _buildSlotToPlayerId(scheduleResponse);
+    final matches = _buildMatchSelections(scheduleResponse, slotToPlayerId);
+    if (matches.isEmpty) {
+      return null;
+    }
+
+    return resolveScheduleProgressNavigation(
+      matchKeys: matches.map(
+        (match) => ScheduleMatchKey(
+          roundNo: match.roundNo,
+          courtNo: match.courtNo,
+        ),
+      ),
+      progresses: progresses,
+    );
+  }
+
+  void _publishProgressNavigation(ScheduleProgressNavigation? navigation) {
+    if (navigation == null) {
+      DoublesProgressUiStore.setNavigation(null);
+      return;
+    }
+
+    if (navigation.kind == ScheduleProgressNavigationKind.completed) {
+      DoublesProgressUiStore.setNavigation(
+        const DoublesProgressNavigationUiState.completed(),
+      );
+      return;
+    }
+
+    final targetKey = navigation.primaryMatchKey;
+    final scheduleResponse = widget.scheduleResponse;
+    if (targetKey == null || scheduleResponse == null) {
+      DoublesProgressUiStore.setNavigation(null);
+      return;
+    }
+
+    final slotToPlayerId = _buildSlotToPlayerId(scheduleResponse);
+    final matches = _buildMatchSelections(scheduleResponse, slotToPlayerId);
+    DoublesMatchSelection? target;
+    for (final match in matches) {
+      if (match.roundNo == targetKey.roundNo &&
+          match.courtNo == targetKey.courtNo) {
+        target = match;
+        break;
+      }
+    }
+    if (target == null) {
+      DoublesProgressUiStore.setNavigation(null);
+      return;
+    }
+
+    final configuredCourtLabel = widget.courtLabelByNumber[target.courtNo];
+    final courtLabel =
+        configuredCourtLabel == null || configuredCourtLabel.trim().isEmpty
+            ? target.courtNo.toString()
+            : configuredCourtLabel.trim();
+
+    DoublesProgressUiStore.setNavigation(
+      DoublesProgressNavigationUiState(
+        kind: navigation.kind == ScheduleProgressNavigationKind.inProgress
+            ? DoublesProgressNavigationUiKind.inProgress
+            : DoublesProgressNavigationUiKind.nextMatch,
+        roundNo: target.roundNo,
+        courtLabel: courtLabel,
+        side1PlayerNames: List<String>.unmodifiable(
+          target.side1Players.map((player) => player.displayName),
+        ),
+        side2PlayerNames: List<String>.unmodifiable(
+          target.side2Players.map((player) => player.displayName),
+        ),
+        inProgressMatchCount: navigation.inProgressMatchCount,
+        targetKey: targetKey.value,
+        onNavigate: () => _scrollToMatch(targetKey),
+      ),
+    );
+  }
+
+  GlobalKey _matchCardKeyFor(ScheduleMatchKey matchKey) {
+    return _matchCardKeys.putIfAbsent(matchKey.value, GlobalKey.new);
+  }
+
+  Future<void> _scrollToMatch(ScheduleMatchKey matchKey) async {
+    if (!mounted) {
+      return;
+    }
+
+    final targetContext = _matchCardKeys[matchKey.value]?.currentContext;
+    if (targetContext == null) {
+      return;
+    }
+
+    await Scrollable.ensureVisible(
+      targetContext,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+      alignment: 0.08,
+    );
   }
 
   Future<ScheduleMatchProgress> _loadMatchForDialog(
@@ -519,18 +650,18 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     final side1Slots = _asIntList(court['team1_player_slots']);
     final side2Slots = _asIntList(court['team2_player_slots']);
     final matchNo = _tryReadInt(court['match_number'] ?? court['match_no']);
-
-    final progress = roundNo == null || courtNumber == null
+    final matchKey = roundNo == null || courtNumber == null
         ? null
-        : _progressByKey[ScheduleMatchKey(
-            roundNo: roundNo,
-            courtNo: courtNumber,
-          ).value];
+        : ScheduleMatchKey(roundNo: roundNo, courtNo: courtNumber);
+
+    final progress = matchKey == null ? null : _progressByKey[matchKey.value];
     final status = progress?.status ?? ScheduleMatchStatus.scheduled;
     final visualStyle = resolveDoublesMatchVisualStyle(
       Theme.of(context).colorScheme,
       status,
     );
+    final isNavigationTarget =
+        matchKey != null && _progressNavigation?.primaryMatchKey == matchKey;
 
     final selection = roundNo == null || courtNumber == null
         ? null
@@ -549,6 +680,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
           );
 
     return SizedBox(
+      key: matchKey == null ? null : _matchCardKeyFor(matchKey),
       width: cardWidth,
       child: Material(
         color: Colors.transparent,
@@ -564,7 +696,10 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             decoration: BoxDecoration(
               color: visualStyle.cardBackgroundColor,
-              border: Border.all(color: visualStyle.cardBorderColor),
+              border: Border.all(
+                color: visualStyle.cardBorderColor,
+                width: isNavigationTarget ? 2 : 1,
+              ),
               borderRadius: BorderRadius.circular(12),
             ),
             child: DoublesMatchCardContent(

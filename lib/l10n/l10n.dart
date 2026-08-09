@@ -6,4 +6,16 @@ extension DoublesMatchNavigationLocalizations on AppLocalizations {
   String doublesMatchPositionLabel(int roundNo, int courtNo) {
     return '${teamRoundTitle(roundNo)}$teamMatchGroupSeparator${teamCourtTitle(courtNo)}';
   }
+
+  String doublesProgressPositionLabel(int roundNo, String courtLabel) {
+    return '${teamRoundTitle(roundNo)}$teamMatchGroupSeparator$courtLabel';
+  }
+
+  String get doublesProgressInProgressTitle =>
+      doublesMatchStatusInProgressLabel;
+
+  String get doublesProgressNextMatchTitle => nextTeamMatchTitle;
+
+  String get doublesProgressAllCompletedLabel =>
+      doublesMatchStatusCompletedLabel;
 }
