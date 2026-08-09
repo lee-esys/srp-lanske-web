@@ -160,14 +160,14 @@ void main() {
     expect(_navigationButton(tester, previous: true).onPressed, isNull);
     expect(_navigationButton(tester, previous: false).onPressed, isNotNull);
 
-    await tester.tap(find.byKey(const Key('doubles-match-next-button')));
+    await _tapNextMatch(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('R 1 / C 2'), findsOneWidget);
     expect(find.text('終了'), findsOneWidget);
     expect(loaded, <String>['1-2']);
 
-    await tester.tap(find.byKey(const Key('doubles-match-next-button')));
+    await _tapNextMatch(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('R 2 / C 1'), findsOneWidget);
@@ -202,7 +202,7 @@ void main() {
     await tester.enterText(find.byType(TextField), 'discard me');
     await tester.pump();
 
-    await tester.tap(find.byKey(const Key('doubles-match-next-button')));
+    await _tapNextMatch(tester);
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(TextButton, 'キャンセル'));
     await tester.pumpAndSettle();
@@ -210,7 +210,7 @@ void main() {
     expect(find.text('R 1 / C 1'), findsOneWidget);
     expect(find.text('discard me'), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('doubles-match-next-button')));
+    await _tapNextMatch(tester);
     await tester.pumpAndSettle();
     await tester.tap(find.text('保存せず移動'));
     await tester.pumpAndSettle();
@@ -249,7 +249,7 @@ void main() {
     await tester.enterText(find.byType(TextField), 'save before move');
     await tester.pump();
 
-    await tester.tap(find.byKey(const Key('doubles-match-next-button')));
+    await _tapNextMatch(tester);
     await tester.pumpAndSettle();
     await tester.tap(find.text('保存して移動'));
     await tester.pumpAndSettle();
@@ -355,6 +355,13 @@ void _setLogicalViewSize(WidgetTester tester, Size size) {
   tester.view.physicalSize = size;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
+}
+
+Future<void> _tapNextMatch(WidgetTester tester) async {
+  final finder = find.byKey(const Key('doubles-match-next-button'));
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
 }
 
 FilledButton _saveButton(WidgetTester tester) {
