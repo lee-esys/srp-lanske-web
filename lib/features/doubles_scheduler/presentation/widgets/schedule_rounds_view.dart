@@ -74,6 +74,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   void dispose() {
     DoublesMatchSaveRegistry.unregister(_saveRegistration);
     DoublesProgressUiStore.navigation.removeListener(_handleNavigationChanged);
+    DoublesProgressUiStore.setCompletedNavigation(null);
     _parentScrollPosition?.removeListener(_handleParentScroll);
     _floatingNavigationEntry?.remove();
     _floatingNavigationEntry = null;
@@ -141,6 +142,12 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   }
 
   void _handleNavigationChanged() {
+    final navigation = DoublesProgressUiStore.navigation.value;
+    DoublesProgressUiStore.setCompletedNavigation(
+      navigation?.kind == DoublesProgressNavigationUiKind.completed
+          ? _scrollToBottom
+          : null,
+    );
     _floatingNavigationEntry?.markNeedsBuild();
     _scheduleFloatingNavigationVisibilityCheck();
   }
@@ -204,87 +211,84 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
   Widget _buildFloatingNavigationOverlay(BuildContext context) {
     return Positioned(
-      left: 0,
-      right: 0,
+      right: 40,
       bottom: 12,
       child: SafeArea(
-        minimum: const EdgeInsets.symmetric(horizontal: 12),
-        child: Center(
-          child: ValueListenableBuilder<DoublesProgressNavigationUiState?>(
-            valueListenable: DoublesProgressUiStore.navigation,
-            builder: (context, navigation, child) {
-              if (navigation == null) {
-                return const SizedBox.shrink();
-              }
+        top: false,
+        left: false,
+        child: ValueListenableBuilder<DoublesProgressNavigationUiState?>(
+          valueListenable: DoublesProgressUiStore.navigation,
+          builder: (context, navigation, child) {
+            if (navigation == null) {
+              return const SizedBox.shrink();
+            }
 
-              final l10n = AppLocalizations.of(context);
-              final colorScheme = Theme.of(context).colorScheme;
-              final primaryLabel = switch (navigation.kind) {
-                DoublesProgressNavigationUiKind.inProgress =>
-                  l10n.doublesProgressInProgressTitle,
-                DoublesProgressNavigationUiKind.nextMatch =>
-                  l10n.doublesProgressNextMatchTitle,
-                DoublesProgressNavigationUiKind.completed =>
-                  l10n.doublesProgressAllCompletedLabel,
-              };
-              final primaryIcon = switch (navigation.kind) {
-                DoublesProgressNavigationUiKind.inProgress => Icons.my_location,
-                DoublesProgressNavigationUiKind.nextMatch =>
-                  Icons.arrow_downward,
-                DoublesProgressNavigationUiKind.completed =>
-                  Icons.vertical_align_bottom,
-              };
-              final canUsePrimary =
-                  navigation.kind == DoublesProgressNavigationUiKind.completed ||
-                      navigation.canNavigate;
+            final l10n = AppLocalizations.of(context);
+            final colorScheme = Theme.of(context).colorScheme;
+            final primaryLabel = switch (navigation.kind) {
+              DoublesProgressNavigationUiKind.inProgress =>
+                l10n.doublesProgressInProgressTitle,
+              DoublesProgressNavigationUiKind.nextMatch =>
+                l10n.doublesProgressNextMatchTitle,
+              DoublesProgressNavigationUiKind.completed =>
+                l10n.doublesProgressAllCompletedLabel,
+            };
+            final primaryIcon = switch (navigation.kind) {
+              DoublesProgressNavigationUiKind.inProgress => Icons.my_location,
+              DoublesProgressNavigationUiKind.nextMatch => Icons.arrow_downward,
+              DoublesProgressNavigationUiKind.completed =>
+                Icons.vertical_align_bottom,
+            };
+            final canUsePrimary =
+                navigation.kind == DoublesProgressNavigationUiKind.completed ||
+                    navigation.canNavigate;
 
-              return Material(
-                key: const ValueKey('doubles-schedule-floating-navigation'),
-                elevation: 6,
-                color: colorScheme.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(28),
-                child: Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      FilledButton.tonalIcon(
-                        key: const ValueKey(
-                          'doubles-schedule-floating-primary-button',
-                        ),
-                        onPressed: canUsePrimary
-                            ? () {
-                                if (navigation.kind ==
-                                    DoublesProgressNavigationUiKind.completed) {
-                                  _scrollToBottom();
-                                } else {
-                                  navigation.onNavigate?.call();
-                                }
+            return Material(
+              key: const ValueKey('doubles-schedule-floating-navigation'),
+              elevation: 6,
+              color: colorScheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(28),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FilledButton.tonalIcon(
+                      key: const ValueKey(
+                        'doubles-schedule-floating-primary-button',
+                      ),
+                      onPressed: canUsePrimary
+                          ? () {
+                              if (navigation.kind ==
+                                  DoublesProgressNavigationUiKind.completed) {
+                                _scrollToBottom();
+                              } else {
+                                navigation.onNavigate?.call();
                               }
-                            : null,
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size(0, 42),
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                        icon: Icon(primaryIcon, size: 18),
-                        label: Text(primaryLabel),
-                      ),
-                      const SizedBox(width: 4),
-                      IconButton.filledTonal(
-                        key: const ValueKey(
-                          'doubles-schedule-floating-top-button',
-                        ),
-                        onPressed: _scrollToTop,
+                            }
+                          : null,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 42),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
                         visualDensity: VisualDensity.compact,
-                        icon: const Icon(Icons.vertical_align_top),
                       ),
-                    ],
-                  ),
+                      icon: Icon(primaryIcon, size: 18),
+                      label: Text(primaryLabel),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton.filledTonal(
+                      key: const ValueKey(
+                        'doubles-schedule-floating-top-button',
+                      ),
+                      onPressed: _scrollToTop,
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.vertical_align_top),
+                    ),
+                  ],
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
