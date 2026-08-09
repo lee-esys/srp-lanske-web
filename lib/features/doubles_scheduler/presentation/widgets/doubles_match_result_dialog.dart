@@ -648,7 +648,10 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     final hasNext =
         currentIndex >= 0 && currentIndex < widget.matches.length - 1;
 
-    final matchPosition = '第${_match.roundNo}ラウンド / ${_match.courtNo}コート';
+    final matchPosition = l10n.doublesMatchPositionLabel(
+      _match.roundNo,
+      _match.courtNo,
+    );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -673,7 +676,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
                       maxLines: 1,
                       softWrap: false,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontSize: 16,
+                            fontSize: 20,
                             fontWeight: FontWeight.w500,
                           ),
                     ),

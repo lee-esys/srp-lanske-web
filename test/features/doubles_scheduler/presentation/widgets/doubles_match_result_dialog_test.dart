@@ -302,8 +302,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(savedInput, isNotNull);
-    expect(savedInput!.side1Score, isNull);
-    expect(savedInput!.side2Score, isNull);
+    expect(savedInput.side1Score, isNull);
+    expect(savedInput.side2Score, isNull);
     expect(tester.takeException(), isNull);
   });
 
