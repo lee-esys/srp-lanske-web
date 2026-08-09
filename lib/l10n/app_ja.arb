@@ -202,7 +202,7 @@
   },
   "shareUrlCopiedMessage": "URLをコピーしました",
   "@shareUrlCopiedMessage": {
-    "description": "Message shown when the share URL was copied."
+    "description": "Snack bar message shown after copying the schedule URL."
   },
   "generateScheduleFailedMessage": "対戦表を生成できませんでした: {error}",
   "@generateScheduleFailedMessage": {
@@ -250,7 +250,7 @@
   },
   "adoptScheduleFailedMessage": "対戦表を確定できませんでした: {error}",
   "@adoptScheduleFailedMessage": {
-    "description": "Error message shown when schedule adoption failed.",
+    "description": "Message shown when schedule adoption failed.",
     "placeholders": {
       "error": {
         "type": "String",
@@ -944,7 +944,7 @@
   },
   "teamScheduleShareUrlCopiedMessage": "共有URLをコピーしました",
   "@teamScheduleShareUrlCopiedMessage": {
-    "description": "Message shown after copying the team schedule share URL."
+    "description": "Message shown after copying a team schedule share URL."
   },
   "nextTeamMatchTitle": "次の対戦",
   "@nextTeamMatchTitle": {
@@ -1427,6 +1427,36 @@
   "doublesMatchSaveButton": "保存",
   "@doublesMatchSaveButton": {
     "description": "Button label for saving doubles match information."
+  },
+  "doublesMatchRestoreLatestButton": "最新の状態に戻す",
+  "@doublesMatchRestoreLatestButton": {
+    "description": "Button label for restoring the latest doubles match state."
+  },
+  "doublesMatchRestoreLatestConfirmTitle": "未保存の変更を破棄して最新の状態に戻しますか？",
+  "@doublesMatchRestoreLatestConfirmTitle": {
+    "description": "Dialog title for restoring the latest doubles match state while changes are unsaved."
+  },
+  "doublesMatchRestoreLatestConfirmBody": "最新の状態に戻すと、保存していない入力内容は破棄されます。",
+  "@doublesMatchRestoreLatestConfirmBody": {
+    "description": "Dialog body for restoring the latest doubles match state while changes are unsaved."
+  },
+  "doublesMatchDiscardAndMoveButton": "保存せず移動",
+  "@doublesMatchDiscardAndMoveButton": {
+    "description": "Button label for discarding doubles match changes and moving to another match."
+  },
+  "doublesMatchSaveAndMoveButton": "保存して移動",
+  "@doublesMatchSaveAndMoveButton": {
+    "description": "Button label for saving doubles match changes and moving to another match."
+  },
+  "doublesMatchLoadFailedMessage": "試合情報を取得できませんでした: {error}",
+  "@doublesMatchLoadFailedMessage": {
+    "description": "Message shown when doubles match information cannot be loaded.",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
   },
   "doublesMatchWinnerLabel": "WIN",
   "@doublesMatchWinnerLabel": {
