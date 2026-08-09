@@ -930,6 +930,27 @@ class AppLocalizationsJa extends AppLocalizations {
   String get doublesMatchSaveButton => '保存';
 
   @override
+  String get doublesMatchRestoreLatestButton => '最新の状態に戻す';
+
+  @override
+  String get doublesMatchRestoreLatestConfirmTitle => '未保存の変更を破棄して最新の状態に戻しますか？';
+
+  @override
+  String get doublesMatchRestoreLatestConfirmBody =>
+      '最新の状態に戻すと、保存していない入力内容は破棄されます。';
+
+  @override
+  String get doublesMatchDiscardAndMoveButton => '保存せず移動';
+
+  @override
+  String get doublesMatchSaveAndMoveButton => '保存して移動';
+
+  @override
+  String doublesMatchLoadFailedMessage(String error) {
+    return '試合情報を取得できませんでした: $error';
+  }
+
+  @override
   String get doublesMatchWinnerLabel => 'WIN';
 
   @override

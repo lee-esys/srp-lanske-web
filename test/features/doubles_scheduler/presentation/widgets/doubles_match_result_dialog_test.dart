@@ -68,7 +68,8 @@ void main() {
     expect(find.text('試合状態・最終スコア'), findsOneWidget);
   });
 
-  testWidgets('revision conflict keeps the draft and can restore latest state', (
+  testWidgets('revision conflict keeps the draft and can restore latest state',
+      (
     tester,
   ) async {
     final latest = _progressFor(
@@ -453,8 +454,8 @@ ScheduleMatchProgress _progressFor(
     status: status,
     result: hasScores
         ? ScheduleMatchResultSummary.simpleScore(<int>[
-            side1Score!,
-            side2Score!,
+            side1Score,
+            side2Score,
           ])
         : null,
     note: note,

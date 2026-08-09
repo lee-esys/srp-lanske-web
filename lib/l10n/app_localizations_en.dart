@@ -963,6 +963,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get doublesMatchSaveButton => 'Save';
 
   @override
+  String get doublesMatchRestoreLatestButton => 'Restore latest state';
+
+  @override
+  String get doublesMatchRestoreLatestConfirmTitle =>
+      'Discard unsaved changes and restore the latest state?';
+
+  @override
+  String get doublesMatchRestoreLatestConfirmBody =>
+      'Restoring the latest state will discard unsaved input.';
+
+  @override
+  String get doublesMatchDiscardAndMoveButton => 'Move without saving';
+
+  @override
+  String get doublesMatchSaveAndMoveButton => 'Save and move';
+
+  @override
+  String doublesMatchLoadFailedMessage(String error) {
+    return 'Could not load match information: $error';
+  }
+
+  @override
   String get doublesMatchWinnerLabel => 'WIN';
 
   @override

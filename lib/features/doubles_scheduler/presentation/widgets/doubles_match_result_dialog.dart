@@ -645,7 +645,8 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   Widget _buildMatchNavigationAndStatus(AppLocalizations l10n) {
     final currentIndex = _currentMatchIndex;
     final hasPrevious = currentIndex > 0;
-    final hasNext = currentIndex >= 0 && currentIndex < widget.matches.length - 1;
+    final hasNext =
+        currentIndex >= 0 && currentIndex < widget.matches.length - 1;
     final matchPosition = 'R ${_match.roundNo} / C ${_match.courtNo}';
 
     final navigation = Row(
@@ -1004,9 +1005,8 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
         ),
         actions: [
           TextButton(
-            onPressed: _isBusy || widget.onLoadMatch == null
-                ? null
-                : _restoreLatest,
+            onPressed:
+                _isBusy || widget.onLoadMatch == null ? null : _restoreLatest,
             child: Text(l10n.doublesMatchRestoreLatestButton),
           ),
           TextButton(
