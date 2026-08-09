@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 
 enum DoublesProgressNavigationUiKind {
@@ -53,9 +54,9 @@ abstract final class DoublesProgressUiStore {
       ValueNotifier<Future<void> Function()?>(null);
 
   static void clearOverride() {
-    progressText.value = null;
-    navigation.value = null;
-    completedNavigation.value = null;
+    _setValueSafely(progressText, null);
+    _setValueSafely(navigation, null);
+    _setValueSafely(completedNavigation, null);
   }
 
   static void setSummary(
@@ -63,21 +64,38 @@ abstract final class DoublesProgressUiStore {
     int? totalMatchCount,
   }) {
     if (summary != null) {
-      progressText.value =
-          '${summary.completedMatchCount} / ${summary.totalMatchCount}';
+      _setValueSafely(
+        progressText,
+        '${summary.completedMatchCount} / ${summary.totalMatchCount}',
+      );
       return;
     }
 
-    progressText.value = totalMatchCount != null && totalMatchCount > 0
-        ? '0 / $totalMatchCount'
-        : '- / -';
+    _setValueSafely(
+      progressText,
+      totalMatchCount != null && totalMatchCount > 0
+          ? '0 / $totalMatchCount'
+          : '- / -',
+    );
   }
 
   static void setNavigation(DoublesProgressNavigationUiState? value) {
-    navigation.value = value;
+    _setValueSafely(navigation, value);
   }
 
   static void setCompletedNavigation(Future<void> Function()? value) {
-    completedNavigation.value = value;
+    _setValueSafely(completedNavigation, value);
+  }
+
+  static void _setValueSafely<T>(ValueNotifier<T> notifier, T value) {
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifier.value = value;
+      });
+      return;
+    }
+
+    notifier.value = value;
   }
 }
