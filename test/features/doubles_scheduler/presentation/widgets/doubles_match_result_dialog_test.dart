@@ -444,7 +444,10 @@ ScheduleMatchProgress _progressFor(
     matchNo: match.matchNo,
     status: status,
     result: hasScores
-        ? ScheduleMatchResultSummary.simpleScore(<int>[side1Score, side2Score])
+        ? ScheduleMatchResultSummary.simpleScore(<int>[
+            side1Score!,
+            side2Score!,
+          ])
         : null,
     note: note,
     startedAt: status == ScheduleMatchStatus.scheduled ? null : now,
