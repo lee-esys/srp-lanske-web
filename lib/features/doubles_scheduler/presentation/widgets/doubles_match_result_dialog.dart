@@ -647,41 +647,52 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     final hasPrevious = currentIndex > 0;
     final hasNext =
         currentIndex >= 0 && currentIndex < widget.matches.length - 1;
-    final matchPosition = 'R ${_match.roundNo} / C ${_match.courtNo}';
 
-    final navigation = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton.outlined(
-          key: const Key('doubles-match-previous-button'),
-          onPressed: !_isBusy && hasPrevious ? () => _move(-1) : null,
-          icon: const Icon(Icons.arrow_back),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text(
-            matchPosition,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ),
-        IconButton.outlined(
-          key: const Key('doubles-match-next-button'),
-          onPressed: !_isBusy && hasNext ? () => _move(1) : null,
-          icon: const Icon(Icons.arrow_forward),
-        ),
-      ],
-    );
+    final matchPosition = '第${_match.roundNo}ラウンド / ${_match.courtNo}コート';
 
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: navigation,
+        Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton.outlined(
+                key: const Key('doubles-match-previous-button'),
+                onPressed: !_isBusy && hasPrevious ? () => _move(-1) : null,
+                icon: const Icon(Icons.arrow_back),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Center(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      matchPosition,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              IconButton.outlined(
+                key: const Key('doubles-match-next-button'),
+                onPressed: !_isBusy && hasNext ? () => _move(1) : null,
+                icon: const Icon(Icons.arrow_forward),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 8),
-        Center(child: _buildStatusSelector(l10n)),
+        const SizedBox(height: 12),
+        Center(
+          child: _buildStatusSelector(l10n),
+        ),
       ],
     );
   }

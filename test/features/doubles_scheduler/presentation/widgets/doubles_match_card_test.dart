@@ -6,9 +6,9 @@ import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_m
 
 void main() {
   test('formats round and one-character court labels clearly', () {
-    expect(formatDoublesMatchPositionLabel('R 1 / C 1'), 'R1・1コート');
-    expect(formatDoublesMatchPositionLabel('R 2 / C A'), 'R2・Aコート');
-    expect(formatDoublesMatchPositionLabel('R 3 / C 右'), 'R3・右コート');
+    expect(formatDoublesMatchPositionLabel('第1ラウンド / 1コート'), '第1ラウンド / 1コート');
+    expect(formatDoublesMatchPositionLabel('第2ラウンド / Aコート'), '第2ラウンド / Aコート');
+    expect(formatDoublesMatchPositionLabel('第3ラウンド / 右コート'), '第3ラウンド / 右コート');
     expect(formatDoublesMatchPositionLabel('custom label'), 'custom label');
   });
 
@@ -22,7 +22,7 @@ void main() {
       ),
     );
 
-    expect(find.text('R1・Aコート'), findsOneWidget);
+    expect(find.text('第1ラウンド / Aコート'), findsOneWidget);
     expect(find.text('試合前'), findsNothing);
     expect(find.byKey(const ValueKey('match-score')), findsNothing);
     expect(find.byIcon(Icons.note_alt_outlined), findsNothing);
@@ -229,7 +229,7 @@ class _TestApp extends StatelessWidget {
               builder: (context) {
                 return DoublesMatchCardContent(
                   hasAdoptedSchedule: hasAdoptedSchedule,
-                  matchPositionLabel: 'R 1 / C A',
+                  matchPositionLabel: '第1ラウンド / Aコート',
                   side1: const SizedBox(
                     width: 120,
                     height: 56,

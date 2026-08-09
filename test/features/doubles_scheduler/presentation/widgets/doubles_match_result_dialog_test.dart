@@ -33,7 +33,7 @@ void main() {
     await tester.tap(find.text('開く'));
     await tester.pumpAndSettle();
 
-    expect(find.text('R 1 / C 1'), findsOneWidget);
+    expect(find.text('第1ラウンド / 1コート'), findsOneWidget);
     expect(find.textContaining('/ M '), findsNothing);
     expect(_saveButton(tester).onPressed, isNull);
 
@@ -157,21 +157,21 @@ void main() {
     await tester.tap(find.text('開く'));
     await tester.pumpAndSettle();
 
-    expect(find.text('R 1 / C 1'), findsOneWidget);
+    expect(find.text('第1ラウンド / 1コート'), findsOneWidget);
     expect(_navigationButton(tester, previous: true).onPressed, isNull);
     expect(_navigationButton(tester, previous: false).onPressed, isNotNull);
 
     await _tapNextMatch(tester);
     await tester.pumpAndSettle();
 
-    expect(find.text('R 1 / C 2'), findsOneWidget);
+    expect(find.text('第1ラウンド / 2コート'), findsOneWidget);
     expect(find.text('終了'), findsOneWidget);
     expect(loaded, <String>['1-2']);
 
     await _tapNextMatch(tester);
     await tester.pumpAndSettle();
 
-    expect(find.text('R 2 / C 1'), findsOneWidget);
+    expect(find.text('第2ラウンド / 1コート'), findsOneWidget);
     expect(loaded, <String>['1-2', '2-1']);
     expect(_navigationButton(tester, previous: false).onPressed, isNull);
   });
@@ -208,7 +208,7 @@ void main() {
     await tester.tap(find.widgetWithText(TextButton, 'キャンセル'));
     await tester.pumpAndSettle();
 
-    expect(find.text('R 1 / C 1'), findsOneWidget);
+    expect(find.text('第1ラウンド / 1コート'), findsOneWidget);
     expect(find.text('discard me'), findsOneWidget);
 
     await _tapNextMatch(tester);
@@ -216,7 +216,7 @@ void main() {
     await tester.tap(find.text('保存せず移動'));
     await tester.pumpAndSettle();
 
-    expect(find.text('R 1 / C 2'), findsOneWidget);
+    expect(find.text('第1ラウンド / 2コート'), findsOneWidget);
     expect(find.text('target note'), findsOneWidget);
     expect(find.text('discard me'), findsNothing);
   });
@@ -256,7 +256,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(savedNotes, <String>['save before move']);
-    expect(find.text('R 1 / C 2'), findsOneWidget);
+    expect(find.text('第1ラウンド / 2コート'), findsOneWidget);
     expect(find.text('next match'), findsOneWidget);
   });
 
