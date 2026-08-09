@@ -305,7 +305,7 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
                       }
                     : null,
                 icon: const Icon(Icons.arrow_downward),
-                label: Text(l10n.doublesProgressMoveToMatchButton),
+                label: Text(title),
               ),
             ],
           ),
