@@ -46,10 +46,11 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(
-      find.byKey(const ValueKey('doubles-schedule-floating-navigation')),
-      findsOneWidget,
+    final floatingNavigation = find.byKey(
+      const ValueKey('doubles-schedule-floating-navigation'),
     );
+    expect(floatingNavigation, findsOneWidget);
+    expect(tester.getTopRight(floatingNavigation).dx, closeTo(760, 0.1));
 
     await tester.tap(
       find.byKey(
@@ -71,7 +72,7 @@ void main() {
     );
   });
 
-  testWidgets('completed floating navigation scrolls to page bottom',
+  testWidgets('completed navigation exposes and uses page bottom action',
       (tester) async {
     final scrollController = ScrollController();
     addTearDown(scrollController.dispose);
@@ -90,11 +91,23 @@ void main() {
     await tester.pump();
     await tester.pump();
 
+    expect(DoublesProgressUiStore.completedNavigation.value, isNotNull);
+
     await tester.tap(
       find.byKey(
         const ValueKey('doubles-schedule-floating-primary-button'),
       ),
     );
+    await tester.pumpAndSettle();
+
+    expect(
+      scrollController.offset,
+      closeTo(scrollController.position.maxScrollExtent, 0.1),
+    );
+
+    scrollController.jumpTo(500);
+    await tester.pump();
+    await DoublesProgressUiStore.completedNavigation.value?.call();
     await tester.pumpAndSettle();
 
     expect(
