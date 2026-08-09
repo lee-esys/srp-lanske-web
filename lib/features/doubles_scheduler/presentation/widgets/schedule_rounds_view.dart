@@ -3,7 +3,6 @@ import 'package:srp_lanske/features/doubles_scheduler/application/doubles_match_
 import 'package:srp_lanske/features/doubles_scheduler/application/local_schedule_history_mapper.dart';
 import 'package:srp_lanske/features/doubles_scheduler/data/local_schedule_history_store.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_match_save_registry.dart';
-import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_progress_ui_store.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
@@ -124,11 +123,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       input: input,
       totalMatchCount: totalMatchCount,
     );
-
-    DoublesProgressUiStore.setSummary(saved.summary);
-    if (mounted) {
-      setState(() {});
-    }
 
     try {
       final aggregate = await appEventRepository.findByPublicId(scope.shareId);
