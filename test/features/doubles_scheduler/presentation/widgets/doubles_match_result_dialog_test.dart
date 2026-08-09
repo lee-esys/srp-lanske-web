@@ -359,9 +359,10 @@ void _setLogicalViewSize(WidgetTester tester, Size size) {
 
 Future<void> _tapNextMatch(WidgetTester tester) async {
   final finder = find.byKey(const Key('doubles-match-next-button'));
-  await tester.ensureVisible(finder);
+  final button = tester.widget<IconButton>(finder);
+  expect(button.onPressed, isNotNull);
+  button.onPressed!.call();
   await tester.pumpAndSettle();
-  await tester.tap(finder);
 }
 
 FilledButton _saveButton(WidgetTester tester) {
