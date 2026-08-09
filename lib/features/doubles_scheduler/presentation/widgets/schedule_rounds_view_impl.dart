@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:srp_lanske/features/doubles_scheduler/application/doubles_match_progress_service.dart';
-import 'package:srp_lanske/features/doubles_scheduler/application/local_schedule_history_mapper.dart';
-import 'package:srp_lanske/features/doubles_scheduler/data/local_schedule_history_store.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_progress_ui_store.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_progress_visuals.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/models/doubles_match_editor_models.dart';
-import 'package:srp_lanske/features/schedule_progress/application/schedule_progress_repository.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/presentation/app_message_type.dart';
@@ -44,7 +40,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   static const _courtMatchCardWidth = 340.0;
 
   final Set<String> _expandedRestRoundNumbers = {};
-  late final DoublesMatchProgressService _progressService;
 
   Map<String, ScheduleMatchProgress> _progressByKey = const {};
   bool _canEditMatches = false;
@@ -55,9 +50,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   @override
   void initState() {
     super.initState();
-    _progressService = DoublesMatchProgressService(
-      repository: appScheduleProgressRepository,
-    );
     DoublesProgressUiStore.clearOverride();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -92,7 +84,17 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   }
 
   int get _totalMatchCount {
-    return countDoublesScheduleMatches(widget.scheduleResponse);
+    final scheduleResponse = widget.scheduleResponse;
+    if (scheduleResponse == null) {
+      return 0;
+    }
+
+    return _asObjectList(scheduleResponse['rounds']).fold<int>(0, (
+      total,
+      round,
+    ) {
+      return total + _asObjectList(round['courts']).length;
+    });
   }
 
   ScheduleProgressScope? get _progressScope {
@@ -177,6 +179,24 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     }
   }
 
+  Future<ScheduleMatchProgress> _loadMatchForDialog(
+    ScheduleProgressScope sessionScope,
+    DoublesMatchSelection selection,
+  ) async {
+    final currentScope = _progressScope;
+    if (currentScope == null ||
+        currentScope.storageKey != sessionScope.storageKey) {
+      throw StateError('displayed doubles schedule changed while editing');
+    }
+
+    return appScheduleProgressRepository.findMatch(
+      scope: sessionScope,
+      roundNo: selection.roundNo,
+      courtNo: selection.courtNo,
+      matchNo: selection.matchNo,
+    );
+  }
+
   Future<void> _openMatch(DoublesMatchSelection selection) async {
     if (!_canEditMatches || _isOpeningMatch || _isLoadingProgress) {
       return;
@@ -185,12 +205,13 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     final scope = _progressScope;
     final publicId = _publicId;
     final generatedScheduleId = _generatedScheduleId;
-    final totalMatchCount = _totalMatchCount;
+    final scheduleResponse = widget.scheduleResponse;
     final l10n = AppLocalizations.of(context);
     if (scope == null ||
         publicId == null ||
         generatedScheduleId == null ||
-        totalMatchCount <= 0) {
+        scheduleResponse == null ||
+        _totalMatchCount <= 0) {
       AppSnackBar.show(
         context,
         message: l10n.doublesMatchUnavailableMessage,
@@ -222,102 +243,41 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
         return;
       }
 
-      final latest = await appScheduleProgressRepository.findMatch(
-        scope: scope,
-        roundNo: selection.roundNo,
-        courtNo: selection.courtNo,
-        matchNo: selection.matchNo,
-      );
+      final latest = await _loadMatchForDialog(scope, selection);
       if (!mounted) {
         return;
       }
 
-      final input = await showDialog<DoublesMatchProgressInput>(
+      final slotToPlayerId = _buildSlotToPlayerId(scheduleResponse);
+      final matches = _buildMatchSelections(
+        scheduleResponse,
+        slotToPlayerId,
+      );
+
+      await showDialog<void>(
         context: context,
         barrierDismissible: false,
         builder: (context) {
           return DoublesMatchResultDialog(
             match: selection,
             initialProgress: latest,
+            matches: matches,
+            onLoadMatch: (target) => _loadMatchForDialog(scope, target),
           );
         },
       );
-      if (!mounted || input == null) {
-        return;
-      }
-
-      final saved = await _progressService.save(
-        scope: scope,
-        current: latest,
-        input: input,
-        totalMatchCount: totalMatchCount,
-      );
       if (!mounted) {
         return;
       }
 
-      setState(() {
-        _progressByKey = Map<String, ScheduleMatchProgress>.unmodifiable({
-          ..._progressByKey,
-          saved.match.key.value: saved.match,
-        });
-      });
-      DoublesProgressUiStore.setSummary(saved.summary);
-
-      await LocalScheduleHistoryStore().upsert(
-        buildLocalScheduleHistoryItem(
-          aggregate,
-          now: DateTime.now(),
-        ),
-      );
-      if (!mounted) {
-        return;
-      }
-
-      AppSnackBar.show(
-        context,
-        message: l10n.doublesMatchSavedMessage,
-        type: AppMessageType.success,
-      );
-    } on ScheduleProgressConflictException {
-      if (!mounted) {
-        return;
-      }
-
-      AppSnackBar.show(
-        context,
-        message: l10n.doublesMatchConflictMessage,
-        type: AppMessageType.warning,
-        actionLabel: l10n.refreshLatestButton,
-        onAction: () {
-          _loadProgress(showMessage: true);
-        },
-      );
-    } on DoublesMatchIncompleteScoreException {
-      if (!mounted) {
-        return;
-      }
-      AppSnackBar.show(
-        context,
-        message: l10n.doublesMatchIncompleteScoreMessage,
-        type: AppMessageType.warning,
-      );
-    } on DoublesMatchTimeOrderException {
-      if (!mounted) {
-        return;
-      }
-      AppSnackBar.show(
-        context,
-        message: l10n.doublesMatchTimeOrderErrorMessage,
-        type: AppMessageType.warning,
-      );
+      await _loadProgress();
     } catch (error) {
       if (!mounted) {
         return;
       }
       AppSnackBar.show(
         context,
-        message: l10n.doublesMatchSaveFailedMessage(error.toString()),
+        message: l10n.reloadScheduleFailedMessage(error.toString()),
         type: AppMessageType.error,
       );
     } finally {
@@ -625,6 +585,45 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
         ),
       ),
     );
+  }
+
+  List<DoublesMatchSelection> _buildMatchSelections(
+    Map<String, dynamic> scheduleResponse,
+    Map<int, String> slotToPlayerId,
+  ) {
+    final matches = <DoublesMatchSelection>[];
+
+    for (final round in _asObjectList(scheduleResponse['rounds'])) {
+      final roundNo = _tryReadInt(round['round_number']);
+      if (roundNo == null) {
+        continue;
+      }
+
+      for (final court in _asObjectList(round['courts'])) {
+        final courtNo = _tryReadInt(court['court_number']);
+        if (courtNo == null) {
+          continue;
+        }
+
+        matches.add(
+          DoublesMatchSelection(
+            roundNo: roundNo,
+            courtNo: courtNo,
+            matchNo: _tryReadInt(court['match_number'] ?? court['match_no']),
+            side1Players: _buildParticipantViewModels(
+              _asIntList(court['team1_player_slots']),
+              slotToPlayerId,
+            ),
+            side2Players: _buildParticipantViewModels(
+              _asIntList(court['team2_player_slots']),
+              slotToPlayerId,
+            ),
+          ),
+        );
+      }
+    }
+
+    return List<DoublesMatchSelection>.unmodifiable(matches);
   }
 
   String _statusLabel(AppLocalizations l10n, ScheduleMatchStatus status) {
