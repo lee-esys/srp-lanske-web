@@ -213,13 +213,41 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.check_circle_outline, color: colorScheme.primary),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.doublesProgressAllCompletedLabel,
-                  style: Theme.of(context).textTheme.titleSmall,
+                Expanded(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline,
+                        color: colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.doublesProgressAllCompletedLabel,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ],
+                  ),
+                ),
+                ValueListenableBuilder<Future<void> Function()?>(
+                  valueListenable: DoublesProgressUiStore.completedNavigation,
+                  builder: (context, onNavigate, child) {
+                    if (onNavigate == null) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return TextButton.icon(
+                      key: const ValueKey(
+                        'doubles-progress-completed-move-button',
+                      ),
+                      onPressed: () {
+                        onNavigate();
+                      },
+                      icon: const Icon(Icons.arrow_downward),
+                      label: Text(l10n.doublesProgressAllCompletedLabel),
+                    );
+                  },
                 ),
               ],
             ),
