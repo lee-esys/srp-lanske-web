@@ -10,4 +10,11 @@ extension DoublesMatchNavigationLocalizations on AppLocalizations {
   String doublesProgressPositionLabel(int roundNo, String courtLabel) {
     return '${teamRoundTitle(roundNo)}$teamMatchGroupSeparator$courtLabel';
   }
+
+  String get doublesProgressInProgressTitle =>
+      doublesMatchStatusInProgressLabel;
+
+  String get doublesProgressNextMatchTitle => nextTeamMatchTitle;
+
+  String get doublesProgressAllCompletedLabel => doublesMatchStatusCompletedLabel;
 }
