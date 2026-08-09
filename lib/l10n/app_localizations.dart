@@ -368,7 +368,7 @@ abstract class AppLocalizations {
   /// **'URLを作成できませんでした'**
   String get shareUrlCreateFailedMessage;
 
-  /// Message shown when the share URL was copied.
+  /// Snack bar message shown after copying the schedule URL.
   ///
   /// In ja, this message translates to:
   /// **'URLをコピーしました'**
@@ -422,7 +422,7 @@ abstract class AppLocalizations {
   /// **'この対戦表を確定しました'**
   String get adoptScheduleCompletedMessage;
 
-  /// Error message shown when schedule adoption failed.
+  /// Message shown when schedule adoption failed.
   ///
   /// In ja, this message translates to:
   /// **'対戦表を確定できませんでした: {error}'**
@@ -1203,7 +1203,7 @@ abstract class AppLocalizations {
   /// **'共有URLをコピー'**
   String get copyTeamScheduleShareUrlButton;
 
-  /// Message shown after copying the team schedule share URL.
+  /// Message shown after copying a team schedule share URL.
   ///
   /// In ja, this message translates to:
   /// **'共有URLをコピーしました'**
@@ -1714,6 +1714,42 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'保存'**
   String get doublesMatchSaveButton;
+
+  /// Button label for restoring the latest doubles match state.
+  ///
+  /// In ja, this message translates to:
+  /// **'最新の状態に戻す'**
+  String get doublesMatchRestoreLatestButton;
+
+  /// Dialog title for restoring the latest doubles match state while changes are unsaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'未保存の変更を破棄して最新の状態に戻しますか？'**
+  String get doublesMatchRestoreLatestConfirmTitle;
+
+  /// Dialog body for restoring the latest doubles match state while changes are unsaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'最新の状態に戻すと、保存していない入力内容は破棄されます。'**
+  String get doublesMatchRestoreLatestConfirmBody;
+
+  /// Button label for discarding doubles match changes and moving to another match.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存せず移動'**
+  String get doublesMatchDiscardAndMoveButton;
+
+  /// Button label for saving doubles match changes and moving to another match.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存して移動'**
+  String get doublesMatchSaveAndMoveButton;
+
+  /// Message shown when doubles match information cannot be loaded.
+  ///
+  /// In ja, this message translates to:
+  /// **'試合情報を取得できませんでした: {error}'**
+  String doublesMatchLoadFailedMessage(String error);
 
   /// Label for the winning side of a completed doubles match.
   ///

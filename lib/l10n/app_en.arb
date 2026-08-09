@@ -800,7 +800,7 @@
   },
   "teamScheduleBulkEditMembersSection": "Member names",
   "@teamScheduleBulkEditMembersSection": {
-    "description": "Section title for member names in the bulk edit dialog."
+    "description": "Section title for team names in the bulk edit dialog."
   },
   "teamScheduleTeamNameLabel": "Team {teamSlot}",
   "@teamScheduleTeamNameLabel": {
@@ -1427,6 +1427,36 @@
   "doublesMatchSaveButton": "Save",
   "@doublesMatchSaveButton": {
     "description": "Button label for saving doubles match information."
+  },
+  "doublesMatchRestoreLatestButton": "Restore latest state",
+  "@doublesMatchRestoreLatestButton": {
+    "description": "Button label for restoring the latest doubles match state."
+  },
+  "doublesMatchRestoreLatestConfirmTitle": "Discard unsaved changes and restore the latest state?",
+  "@doublesMatchRestoreLatestConfirmTitle": {
+    "description": "Dialog title for restoring the latest doubles match state while changes are unsaved."
+  },
+  "doublesMatchRestoreLatestConfirmBody": "Restoring the latest state will discard unsaved input.",
+  "@doublesMatchRestoreLatestConfirmBody": {
+    "description": "Dialog body for restoring the latest doubles match state while changes are unsaved."
+  },
+  "doublesMatchDiscardAndMoveButton": "Move without saving",
+  "@doublesMatchDiscardAndMoveButton": {
+    "description": "Button label for discarding doubles match changes and moving to another match."
+  },
+  "doublesMatchSaveAndMoveButton": "Save and move",
+  "@doublesMatchSaveAndMoveButton": {
+    "description": "Button label for saving doubles match changes and moving to another match."
+  },
+  "doublesMatchLoadFailedMessage": "Could not load match information: {error}",
+  "@doublesMatchLoadFailedMessage": {
+    "description": "Message shown when doubles match information cannot be loaded.",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network error"
+      }
+    }
   },
   "doublesMatchWinnerLabel": "WIN",
   "@doublesMatchWinnerLabel": {
