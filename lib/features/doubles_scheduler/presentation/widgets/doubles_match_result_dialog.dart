@@ -8,16 +8,24 @@ import 'package:srp_lanske/l10n/l10n.dart';
 
 import 'schedule_player_chip.dart';
 
+typedef DoublesMatchLoadCallback = Future<ScheduleMatchProgress> Function(
+  DoublesMatchSelection match,
+);
+
 class DoublesMatchResultDialog extends StatefulWidget {
   const DoublesMatchResultDialog({
     required this.match,
     required this.initialProgress,
+    this.matches = const <DoublesMatchSelection>[],
+    this.onLoadMatch,
     this.onSave,
     super.key,
   });
 
   final DoublesMatchSelection match;
   final ScheduleMatchProgress initialProgress;
+  final List<DoublesMatchSelection> matches;
+  final DoublesMatchLoadCallback? onLoadMatch;
   final DoublesMatchSaveCallback? onSave;
 
   @override
@@ -26,6 +34,7 @@ class DoublesMatchResultDialog extends StatefulWidget {
 }
 
 class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
+  late DoublesMatchSelection _match;
   late ScheduleMatchProgress _baselineProgress;
   late ScheduleMatchStatus _status;
   late int? _side1Score;
@@ -35,9 +44,12 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   late final TextEditingController _noteController;
 
   bool _isSaving = false;
+  bool _isLoadingMatch = false;
   bool _suppressNoteListener = false;
   String? _statusMessage;
   String? _errorMessage;
+
+  bool get _isBusy => _isSaving || _isLoadingMatch;
 
   DoublesMatchProgressInput get _draftInput {
     return DoublesMatchProgressInput(
@@ -57,9 +69,17 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     );
   }
 
+  int get _currentMatchIndex {
+    return widget.matches.indexWhere((candidate) {
+      return candidate.roundNo == _match.roundNo &&
+          candidate.courtNo == _match.courtNo;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    _match = widget.match;
     _baselineProgress = widget.initialProgress;
     final input = buildDoublesMatchProgressInput(_baselineProgress);
     _status = input.status;
@@ -91,7 +111,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     _errorMessage = null;
   }
 
-  void _applySavedProgress(ScheduleMatchProgress progress) {
+  void _applyProgress(ScheduleMatchProgress progress) {
     final input = buildDoublesMatchProgressInput(progress);
     _baselineProgress = progress;
     _status = input.status;
@@ -109,7 +129,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   void _selectStatus(ScheduleMatchStatus status) {
-    if (_isSaving) {
+    if (_isBusy) {
       return;
     }
 
@@ -142,7 +162,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   void _adjustScore({required bool side1, required int delta}) {
-    if (_isSaving) {
+    if (_isBusy) {
       return;
     }
 
@@ -167,7 +187,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   Future<void> _pickScore({required bool side1}) async {
-    if (_isSaving) {
+    if (_isBusy) {
       return;
     }
 
@@ -249,7 +269,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   void _setCurrentTime({required bool start}) {
-    if (_isSaving) {
+    if (_isBusy) {
       return;
     }
 
@@ -264,7 +284,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   void _setHour({required bool start, required int? hour}) {
-    if (_isSaving || hour == null) {
+    if (_isBusy || hour == null) {
       return;
     }
 
@@ -279,7 +299,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   void _setMinute({required bool start, required int? minute}) {
-    if (_isSaving || minute == null) {
+    if (_isBusy || minute == null) {
       return;
     }
 
@@ -294,7 +314,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   Future<bool> _save() async {
-    if (_isSaving) {
+    if (_isBusy) {
       return false;
     }
     if (!_isDirty) {
@@ -343,7 +363,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
       }
 
       setState(() {
-        _applySavedProgress(saved.match);
+        _applyProgress(saved.match);
         _isSaving = false;
         _statusMessage = l10n.doublesMatchSavedMessage;
       });
@@ -387,8 +407,161 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     }
   }
 
+  Future<bool> _loadMatch(
+    DoublesMatchSelection match, {
+    bool showRefreshedMessage = false,
+  }) async {
+    if (_isBusy) {
+      return false;
+    }
+
+    final l10n = AppLocalizations.of(context);
+    final onLoadMatch = widget.onLoadMatch;
+    if (onLoadMatch == null) {
+      setState(() {
+        _statusMessage = null;
+        _errorMessage = l10n.doublesMatchLoadFailedMessage(
+          'load callback is unavailable',
+        );
+      });
+      return false;
+    }
+
+    setState(() {
+      _isLoadingMatch = true;
+      _statusMessage = null;
+      _errorMessage = null;
+    });
+
+    try {
+      final latest = await onLoadMatch(match);
+      if (!mounted) {
+        return false;
+      }
+
+      setState(() {
+        _match = match;
+        _applyProgress(latest);
+        _isLoadingMatch = false;
+        if (showRefreshedMessage) {
+          _statusMessage = l10n.doublesMatchRefreshedMessage;
+        }
+      });
+      return true;
+    } catch (error) {
+      if (!mounted) {
+        return false;
+      }
+      setState(() {
+        _isLoadingMatch = false;
+        _errorMessage = l10n.doublesMatchLoadFailedMessage(error.toString());
+      });
+      return false;
+    }
+  }
+
+  Future<void> _restoreLatest() async {
+    if (_isBusy || widget.onLoadMatch == null) {
+      return;
+    }
+
+    if (_isDirty) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          final l10n = AppLocalizations.of(context);
+          return AlertDialog(
+            title: Text(l10n.doublesMatchRestoreLatestConfirmTitle),
+            content: Text(l10n.doublesMatchRestoreLatestConfirmBody),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(l10n.cancelButton),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(l10n.doublesMatchRestoreLatestButton),
+              ),
+            ],
+          );
+        },
+      );
+      if (!mounted || confirmed != true) {
+        return;
+      }
+    }
+
+    await _loadMatch(_match, showRefreshedMessage: true);
+  }
+
+  Future<void> _move(int offset) async {
+    if (_isBusy) {
+      return;
+    }
+
+    final currentIndex = _currentMatchIndex;
+    final targetIndex = currentIndex + offset;
+    if (currentIndex < 0 ||
+        targetIndex < 0 ||
+        targetIndex >= widget.matches.length) {
+      return;
+    }
+
+    final target = widget.matches[targetIndex];
+    if (!_isDirty) {
+      await _loadMatch(target);
+      return;
+    }
+
+    final action = await showDialog<_UnsavedMoveAction>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        final l10n = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(l10n.bocciaScoreDiscardChangesTitle),
+          content: Text(l10n.bocciaScoreUnsavedChangesMessage),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(_UnsavedMoveAction.cancel);
+              },
+              child: Text(l10n.cancelButton),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(_UnsavedMoveAction.discardAndMove);
+              },
+              child: Text(l10n.doublesMatchDiscardAndMoveButton),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop(_UnsavedMoveAction.saveAndMove);
+              },
+              child: Text(l10n.doublesMatchSaveAndMoveButton),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (!mounted || action == null || action == _UnsavedMoveAction.cancel) {
+      return;
+    }
+
+    if (action == _UnsavedMoveAction.saveAndMove) {
+      final saved = await _save();
+      if (!mounted || !saved) {
+        return;
+      }
+    }
+
+    await _loadMatch(target);
+  }
+
   Future<void> _close() async {
-    if (_isSaving) {
+    if (_isBusy) {
       return;
     }
     if (!_isDirty) {
@@ -461,7 +634,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
           ),
       ],
       selected: <ScheduleMatchStatus>{_status},
-      onSelectionChanged: _isSaving
+      onSelectionChanged: _isBusy
           ? null
           : (selected) {
               _selectStatus(selected.single);
@@ -469,43 +642,45 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     );
   }
 
-  Widget _buildMatchPositionAndStatus({
-    required AppLocalizations l10n,
-    required String matchPosition,
-    required double availableWidth,
-  }) {
-    final statusSelector = _buildStatusSelector(l10n);
-    final position = Text(
-      matchPosition,
-      style: Theme.of(context).textTheme.bodySmall,
-    );
+  Widget _buildMatchNavigationAndStatus(AppLocalizations l10n) {
+    final currentIndex = _currentMatchIndex;
+    final hasPrevious = currentIndex > 0;
+    final hasNext = currentIndex >= 0 && currentIndex < widget.matches.length - 1;
+    final matchPosition = 'R ${_match.roundNo} / C ${_match.courtNo}';
 
-    if (availableWidth >= 280) {
-      return Row(
+    return SizedBox(
+      width: double.infinity,
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        runSpacing: 8,
         children: [
-          position,
-          const SizedBox(width: 12),
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerRight,
-                child: statusSelector,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton.outlined(
+                key: const Key('doubles-match-previous-button'),
+                onPressed: !_isBusy && hasPrevious ? () => _move(-1) : null,
+                icon: const Icon(Icons.arrow_back),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  matchPosition,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              IconButton.outlined(
+                key: const Key('doubles-match-next-button'),
+                onPressed: !_isBusy && hasNext ? () => _move(1) : null,
+                icon: const Icon(Icons.arrow_forward),
+              ),
+            ],
           ),
+          _buildStatusSelector(l10n),
         ],
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        position,
-        const SizedBox(height: 8),
-        Center(child: statusSelector),
-      ],
+      ),
     );
   }
 
@@ -529,9 +704,9 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   Widget _buildScoreControl({required bool side1}) {
     final score = side1 ? _side1Score : _side2Score;
     final onDecrease =
-        _isSaving ? null : () => _adjustScore(side1: side1, delta: -1);
+        _isBusy ? null : () => _adjustScore(side1: side1, delta: -1);
     final onIncrease =
-        _isSaving ? null : () => _adjustScore(side1: side1, delta: 1);
+        _isBusy ? null : () => _adjustScore(side1: side1, delta: 1);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -548,7 +723,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
           width: 48,
           height: 48,
           child: OutlinedButton(
-            onPressed: _isSaving ? null : () => _pickScore(side1: side1),
+            onPressed: _isBusy ? null : () => _pickScore(side1: side1),
             style: OutlinedButton.styleFrom(padding: EdgeInsets.zero),
             child: Text(score?.toString() ?? '－'),
           ),
@@ -575,12 +750,12 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildPlayers(widget.match.side1Players),
+              _buildPlayers(_match.side1Players),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10),
                 child: Text('vs'),
               ),
-              _buildPlayers(widget.match.side2Players),
+              _buildPlayers(_match.side2Players),
             ],
           ),
         ),
@@ -598,8 +773,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   Widget _buildNarrowSideRow({required bool side1}) {
-    final players =
-        side1 ? widget.match.side1Players : widget.match.side2Players;
+    final players = side1 ? _match.side1Players : _match.side2Players;
 
     return Row(
       children: [
@@ -634,7 +808,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     required bool start,
   }) {
     final l10n = AppLocalizations.of(context);
-    final canEdit = enabled && !_isSaving;
+    final canEdit = enabled && !_isBusy;
 
     return InputDecorator(
       decoration: InputDecoration(
@@ -715,7 +889,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   Widget _buildSaveStatus(AppLocalizations l10n) {
-    if (_isSaving) {
+    if (_isBusy) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -764,10 +938,6 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     final availableContentWidth =
         (MediaQuery.sizeOf(context).width - 72).clamp(0.0, 680.0).toDouble();
     final useWideScoreLayout = availableContentWidth >= 328;
-    final matchPosition = widget.match.matchNo == null
-        ? 'R ${widget.match.roundNo} / C ${widget.match.courtNo}'
-        : 'R ${widget.match.roundNo} / C ${widget.match.courtNo} / '
-            'M ${widget.match.matchNo}';
 
     final startTimeInput = _buildTimeInput(
       label: l10n.doublesMatchStartTimeLabel,
@@ -785,7 +955,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     return PopScope<Object?>(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop && !_isSaving) {
+        if (!didPop && !_isBusy) {
           _close();
         }
       },
@@ -799,11 +969,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildMatchPositionAndStatus(
-                  l10n: l10n,
-                  matchPosition: matchPosition,
-                  availableWidth: availableContentWidth,
-                ),
+                _buildMatchNavigationAndStatus(l10n),
                 const SizedBox(height: 20),
                 if (useWideScoreLayout)
                   _buildWideMatchInputs()
@@ -817,7 +983,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
                 const SizedBox(height: 20),
                 TextField(
                   controller: _noteController,
-                  enabled: !_isSaving,
+                  enabled: !_isBusy,
                   minLines: 2,
                   maxLines: 4,
                   decoration: InputDecoration(
@@ -837,11 +1003,17 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
         ),
         actions: [
           TextButton(
-            onPressed: _isSaving ? null : _close,
+            onPressed: _isBusy || widget.onLoadMatch == null
+                ? null
+                : _restoreLatest,
+            child: Text(l10n.doublesMatchRestoreLatestButton),
+          ),
+          TextButton(
+            onPressed: _isBusy ? null : _close,
             child: Text(l10n.closeButton),
           ),
           FilledButton(
-            onPressed: _isSaving || !_isDirty ? null : _save,
+            onPressed: _isBusy || !_isDirty ? null : _save,
             child: Text(l10n.doublesMatchSaveButton),
           ),
         ],
@@ -854,4 +1026,10 @@ enum _UnsavedAction {
   cancel,
   discardAndClose,
   saveAndClose,
+}
+
+enum _UnsavedMoveAction {
+  cancel,
+  discardAndMove,
+  saveAndMove,
 }
