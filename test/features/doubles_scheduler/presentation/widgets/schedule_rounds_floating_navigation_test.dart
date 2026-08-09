@@ -127,8 +127,9 @@ void main() {
     final onNavigate = DoublesProgressUiStore.completedNavigation.value;
     expect(onNavigate, isNotNull);
 
-    await onNavigate?.call();
+    final navigationFuture = onNavigate?.call();
     await tester.pumpAndSettle();
+    await navigationFuture;
 
     expect(
       scrollController.offset,
