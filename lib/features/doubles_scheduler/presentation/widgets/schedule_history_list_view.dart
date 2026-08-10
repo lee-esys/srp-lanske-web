@@ -39,7 +39,7 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.reloadToken != widget.reloadToken) {
-      _reloadItems();
+      _itemsFuture = _loadItems();
     }
   }
 
