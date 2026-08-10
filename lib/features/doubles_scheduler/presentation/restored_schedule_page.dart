@@ -17,11 +17,12 @@ import '../application/generated_schedule_service.dart';
 import '../application/local_schedule_history_mapper.dart';
 import '../application/saved_event_aggregate_helpers.dart';
 import '../application/schedule_share_url.dart';
+import '../data/local_schedule_history_item.dart';
 import '../data/local_schedule_history_store.dart';
 import '../domain/player_draft.dart';
 import '../domain/public_id.dart';
 import '../domain/saved_event_models.dart';
-import 'event_list_page.dart';
+import 'doubles_schedule_list_drawer.dart';
 import 'models/event_draft.dart';
 import 'widgets/court_display_settings_dialog.dart';
 import 'widgets/schedule_event_summary_card.dart';
@@ -48,6 +49,8 @@ class RestoredSchedulePage extends StatefulWidget {
 enum _ScheduleMenuAction { top, list, support }
 
 class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   late final GeneratedScheduleService _service;
   late final DoublesScheduleRefreshService _refreshService;
 
@@ -57,6 +60,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   bool _isCheckingRegenerate = false;
   bool _isOpeningSharedDataDialog = false;
   int _refreshRequestSequence = 0;
+  int _scheduleListReloadToken = 0;
   String? _errorMessage;
 
   SavedEventAggregate? _savedEvent;
@@ -178,6 +182,29 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   void _toggleSelectedPlayer(String playerId) {
     setState(() {
       _selectedPlayerId = _selectedPlayerId == playerId ? null : playerId;
+    });
+  }
+
+  void _openScheduleFromHistory(LocalScheduleHistoryItem item) {
+    Navigator.of(context).pop();
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        builder: (_) => RestoredSchedulePage(publicId: item.publicId),
+      ),
+    );
+    replaceUrl(
+      buildScheduleShareUrl(
+        baseUri: Uri.base,
+        publicId: item.publicId,
+      ),
+    );
+  }
+
+  void _handleEndDrawerChanged(bool isOpened) {
+    if (!isOpened) return;
+
+    setState(() {
+      _scheduleListReloadToken += 1;
     });
   }
 
@@ -472,7 +499,6 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       final scheduleWasReplaced = previousGeneratedScheduleId != null &&
           previousGeneratedScheduleId.isNotEmpty &&
           latestGeneratedScheduleId != previousGeneratedScheduleId;
-
       if (scheduleWasReplaced) {
         _showMessage(
           l10n.scheduleUpdatedReloadMessage,
@@ -778,14 +804,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _goTop();
         break;
       case _ScheduleMenuAction.list:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => EventListPage(
-              currentPublicId: _savedEvent?.event.publicId ?? widget.publicId,
-            ),
-          ),
-        );
+        _scaffoldKey.currentState?.openEndDrawer();
         break;
       case _ScheduleMenuAction.support:
         openUrlInCurrentTab(_supportPagePath);
@@ -964,6 +983,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     final showInitialLoading = _isLoading && _savedEvent == null;
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Text(l10n.eventSetupTitle),
@@ -987,6 +1007,11 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           ),
         ],
       ),
+      endDrawer: DoublesScheduleListDrawer(
+        reloadToken: _scheduleListReloadToken,
+        onOpenSchedule: _openScheduleFromHistory,
+      ),
+      onEndDrawerChanged: _handleEndDrawerChanged,
       body: SafeArea(
         child: showInitialLoading
             ? const Center(

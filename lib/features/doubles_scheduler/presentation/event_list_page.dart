@@ -4,9 +4,11 @@ import 'package:srp_lanske/shared/presentation/app_message_type.dart';
 import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
 import 'package:srp_lanske/shared/utils/browser_url.dart';
 
+import '../application/schedule_share_url.dart';
 import '../data/local_schedule_history_item.dart';
 import '../data/local_schedule_history_store.dart';
 import 'restored_schedule_page.dart';
+import 'widgets/schedule_history_list_view.dart';
 
 class EventListPage extends StatefulWidget {
   const EventListPage({
@@ -23,29 +25,13 @@ class EventListPage extends StatefulWidget {
 class _EventListPageState extends State<EventListPage> {
   final _historyStore = LocalScheduleHistoryStore();
 
-  late Future<List<LocalScheduleHistoryItem>> _itemsFuture;
   bool _canClearHistory = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _itemsFuture = _loadItems();
-  }
+  int _reloadToken = 0;
 
   String? get _currentPublicId {
     final publicId = widget.currentPublicId?.trim().toUpperCase();
     if (publicId == null || publicId.isEmpty) return null;
     return publicId;
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    final y = dateTime.year.toString().padLeft(4, '0');
-    final m = dateTime.month.toString().padLeft(2, '0');
-    final d = dateTime.day.toString().padLeft(2, '0');
-    final hh = dateTime.hour.toString().padLeft(2, '0');
-    final mm = dateTime.minute.toString().padLeft(2, '0');
-
-    return '$y/$m/$d $hh:$mm';
   }
 
   void _openSchedule(LocalScheduleHistoryItem item) {
@@ -56,29 +42,12 @@ class _EventListPageState extends State<EventListPage> {
       ),
     );
 
-    _replaceBrowserUrlWithPublicId(item.publicId);
-  }
-
-  void _replaceBrowserUrlWithPublicId(String publicId) {
     replaceUrl(
-      Uri.base.replace(
-        queryParameters: {
-          ...Uri.base.queryParameters,
-          'sid': publicId,
-        },
-      ).toString(),
+      buildScheduleShareUrl(
+        baseUri: Uri.base,
+        publicId: item.publicId,
+      ),
     );
-  }
-
-  Future<List<LocalScheduleHistoryItem>> _loadItems() async {
-    final items = await _historyStore.findAll();
-    if (!mounted) return items;
-
-    setState(() {
-      _canClearHistory = _hasClearableHistory(items);
-    });
-
-    return items;
   }
 
   bool _hasClearableHistory(List<LocalScheduleHistoryItem> items) {
@@ -90,9 +59,19 @@ class _EventListPageState extends State<EventListPage> {
     );
   }
 
+  void _handleItemsLoaded(List<LocalScheduleHistoryItem> items) {
+    final canClearHistory = _hasClearableHistory(items);
+    if (canClearHistory == _canClearHistory) return;
+
+    setState(() {
+      _canClearHistory = canClearHistory;
+    });
+  }
+
   void _reloadItems() {
     setState(() {
-      _itemsFuture = _loadItems();
+      _canClearHistory = false;
+      _reloadToken += 1;
     });
   }
 
@@ -158,57 +137,10 @@ class _EventListPageState extends State<EventListPage> {
             ),
         ],
       ),
-      body: FutureBuilder<List<LocalScheduleHistoryItem>>(
-        future: _itemsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  l10n.reloadScheduleFailedMessage(snapshot.error.toString()),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            );
-          }
-
-          final items = snapshot.data ?? const [];
-
-          if (items.isEmpty) {
-            return Center(
-              child: Text(l10n.scheduleHistoryEmptyMessage),
-            );
-          }
-
-          return ListView.separated(
-            padding: const EdgeInsets.all(4),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final item = items[index];
-
-              return Card(
-                child: ListTile(
-                  title: Text(item.title),
-                  subtitle: Text(
-                    '${l10n.schedulePlayersTitle(item.courtCount, item.playerCount)}\n'
-                    '${l10n.lastOpenedAtLabel(_formatDateTime(item.lastOpenedAt))}',
-                  ),
-                  isThreeLine: true,
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _openSchedule(item),
-                ),
-              );
-            },
-          );
-        },
+      body: ScheduleHistoryListView(
+        reloadToken: _reloadToken,
+        onItemsLoaded: _handleItemsLoaded,
+        onOpenSchedule: _openSchedule,
       ),
     );
   }
