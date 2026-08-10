@@ -138,7 +138,6 @@ class _EventListPageState extends State<EventListPage> {
         ],
       ),
       body: ScheduleHistoryListView(
-        padding: const EdgeInsets.all(4),
         reloadToken: _reloadToken,
         onItemsLoaded: _handleItemsLoaded,
         onOpenSchedule: _openSchedule,
