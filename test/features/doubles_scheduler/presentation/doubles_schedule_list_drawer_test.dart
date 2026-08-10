@@ -53,7 +53,7 @@ void main() {
     expect(backCount, 1);
   });
 
-  testWidgets('opens the selected local schedule with team-style list cards',
+  testWidgets('opens the selected local schedule with compact list cards',
       (tester) async {
     final item = LocalScheduleHistoryItem(
       publicId: 'ABCDEFGH',
@@ -80,7 +80,7 @@ void main() {
     expect(find.text('テスト対戦表'), findsOneWidget);
     expect(find.text('面数 2'), findsOneWidget);
     expect(find.text('人数 8'), findsOneWidget);
-    expect(find.byIcon(Icons.sports_tennis_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.sports_tennis_outlined), findsNothing);
     expect(find.byIcon(Icons.chevron_right), findsOneWidget);
 
     await tester.tap(find.text('テスト対戦表'));
