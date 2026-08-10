@@ -27,6 +27,32 @@ void main() {
     expect(drawer.width, 680);
   });
 
+  testWidgets('schedule list panel delegates its back action', (tester) async {
+    var backCount = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('ja'),
+        home: Scaffold(
+          body: DoublesScheduleListPanel(
+            onBack: () {
+              backCount += 1;
+            },
+            onOpenSchedule: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pump();
+
+    expect(backCount, 1);
+  });
+
   testWidgets('opens the selected local schedule with team-style list cards',
       (tester) async {
     final item = LocalScheduleHistoryItem(
