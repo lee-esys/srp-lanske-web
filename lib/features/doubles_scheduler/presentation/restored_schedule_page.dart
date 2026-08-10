@@ -17,11 +17,12 @@ import '../application/generated_schedule_service.dart';
 import '../application/local_schedule_history_mapper.dart';
 import '../application/saved_event_aggregate_helpers.dart';
 import '../application/schedule_share_url.dart';
+import '../data/local_schedule_history_item.dart';
 import '../data/local_schedule_history_store.dart';
 import '../domain/player_draft.dart';
 import '../domain/public_id.dart';
 import '../domain/saved_event_models.dart';
-import 'event_list_page.dart';
+import 'doubles_schedule_list_drawer.dart';
 import 'models/event_draft.dart';
 import 'widgets/court_display_settings_dialog.dart';
 import 'widgets/schedule_event_summary_card.dart';
@@ -45,7 +46,7 @@ class RestoredSchedulePage extends StatefulWidget {
   State<RestoredSchedulePage> createState() => _RestoredSchedulePageState();
 }
 
-enum _ScheduleMenuAction { top, list, support }
+enum _ScheduleMenuAction { top, support }
 
 class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   late final GeneratedScheduleService _service;
@@ -57,6 +58,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   bool _isCheckingRegenerate = false;
   bool _isOpeningSharedDataDialog = false;
   int _refreshRequestSequence = 0;
+  int _scheduleListReloadToken = 0;
   String? _errorMessage;
 
   SavedEventAggregate? _savedEvent;
@@ -178,6 +180,29 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   void _toggleSelectedPlayer(String playerId) {
     setState(() {
       _selectedPlayerId = _selectedPlayerId == playerId ? null : playerId;
+    });
+  }
+
+  void _openScheduleFromHistory(LocalScheduleHistoryItem item) {
+    Navigator.of(context).pop();
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        builder: (_) => RestoredSchedulePage(publicId: item.publicId),
+      ),
+    );
+    replaceUrl(
+      buildScheduleShareUrl(
+        baseUri: Uri.base,
+        publicId: item.publicId,
+      ),
+    );
+  }
+
+  void _handleEndDrawerChanged(bool isOpened) {
+    if (!isOpened) return;
+
+    setState(() {
+      _scheduleListReloadToken += 1;
     });
   }
 
@@ -777,16 +802,6 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       case _ScheduleMenuAction.top:
         _goTop();
         break;
-      case _ScheduleMenuAction.list:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => EventListPage(
-              currentPublicId: _savedEvent?.event.publicId ?? widget.publicId,
-            ),
-          ),
-        );
-        break;
       case _ScheduleMenuAction.support:
         openUrlInCurrentTab(_supportPagePath);
         break;
@@ -968,16 +983,21 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         automaticallyImplyLeading: false,
         title: Text(l10n.eventSetupTitle),
         actions: [
+          Builder(
+            builder: (context) {
+              return IconButton(
+                tooltip: l10n.matchTableList,
+                onPressed: () => Scaffold.of(context).openEndDrawer(),
+                icon: const Icon(Icons.list_alt_outlined),
+              );
+            },
+          ),
           PopupMenuButton<_ScheduleMenuAction>(
             onSelected: _handleMenu,
             itemBuilder: (context) => [
               PopupMenuItem(
                 value: _ScheduleMenuAction.top,
                 child: Text(l10n.topPageMenu),
-              ),
-              PopupMenuItem(
-                value: _ScheduleMenuAction.list,
-                child: Text(l10n.matchTableList),
               ),
               PopupMenuItem(
                 value: _ScheduleMenuAction.support,
@@ -987,6 +1007,11 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           ),
         ],
       ),
+      endDrawer: DoublesScheduleListDrawer(
+        reloadToken: _scheduleListReloadToken,
+        onOpenSchedule: _openScheduleFromHistory,
+      ),
+      onEndDrawerChanged: _handleEndDrawerChanged,
       body: SafeArea(
         child: showInitialLoading
             ? const Center(
