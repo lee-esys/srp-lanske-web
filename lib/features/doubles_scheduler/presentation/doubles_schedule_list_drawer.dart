@@ -16,7 +16,7 @@ class DoublesScheduleListDrawer extends StatelessWidget {
 
   static double widthFor(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
-    return (screenWidth * 0.75).clamp(0.0, 300.0);
+    return (screenWidth * 0.75).clamp(0.0, 300.0).toDouble();
   }
 
   @override
