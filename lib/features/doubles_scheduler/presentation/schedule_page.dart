@@ -42,9 +42,11 @@ class SchedulePage extends StatefulWidget {
   State<SchedulePage> createState() => _SchedulePageState();
 }
 
-enum _ScheduleMenuAction { top, support }
+enum _ScheduleMenuAction { top, list, support }
 
 class _SchedulePageState extends State<SchedulePage> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   late final GeneratedScheduleService _service;
   late final DoublesScheduleRefreshService _refreshService;
 
@@ -852,6 +854,9 @@ class _SchedulePageState extends State<SchedulePage> {
       case _ScheduleMenuAction.top:
         _goTop();
         break;
+      case _ScheduleMenuAction.list:
+        _scaffoldKey.currentState?.openEndDrawer();
+        break;
       case _ScheduleMenuAction.support:
         openUrlInCurrentTab(_supportPagePath);
         break;
@@ -969,25 +974,21 @@ class _SchedulePageState extends State<SchedulePage> {
     final showInitialLoading = _isLoading && _scheduleResponse == null;
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Text(l10n.eventSetupTitle),
         actions: [
-          Builder(
-            builder: (context) {
-              return IconButton(
-                tooltip: l10n.matchTableList,
-                onPressed: () => Scaffold.of(context).openEndDrawer(),
-                icon: const Icon(Icons.list_alt_outlined),
-              );
-            },
-          ),
           PopupMenuButton<_ScheduleMenuAction>(
             onSelected: _handleMenu,
             itemBuilder: (context) => [
               PopupMenuItem(
                 value: _ScheduleMenuAction.top,
                 child: Text(l10n.topPageMenu),
+              ),
+              PopupMenuItem(
+                value: _ScheduleMenuAction.list,
+                child: Text(l10n.matchTableList),
               ),
               PopupMenuItem(
                 value: _ScheduleMenuAction.support,
