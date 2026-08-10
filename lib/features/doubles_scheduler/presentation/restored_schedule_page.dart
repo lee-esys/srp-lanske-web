@@ -46,9 +46,11 @@ class RestoredSchedulePage extends StatefulWidget {
   State<RestoredSchedulePage> createState() => _RestoredSchedulePageState();
 }
 
-enum _ScheduleMenuAction { top, support }
+enum _ScheduleMenuAction { top, list, support }
 
 class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   late final GeneratedScheduleService _service;
   late final DoublesScheduleRefreshService _refreshService;
 
@@ -497,7 +499,6 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       final scheduleWasReplaced = previousGeneratedScheduleId != null &&
           previousGeneratedScheduleId.isNotEmpty &&
           latestGeneratedScheduleId != previousGeneratedScheduleId;
-
       if (scheduleWasReplaced) {
         _showMessage(
           l10n.scheduleUpdatedReloadMessage,
@@ -802,6 +803,9 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       case _ScheduleMenuAction.top:
         _goTop();
         break;
+      case _ScheduleMenuAction.list:
+        _scaffoldKey.currentState?.openEndDrawer();
+        break;
       case _ScheduleMenuAction.support:
         openUrlInCurrentTab(_supportPagePath);
         break;
@@ -979,25 +983,21 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     final showInitialLoading = _isLoading && _savedEvent == null;
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Text(l10n.eventSetupTitle),
         actions: [
-          Builder(
-            builder: (context) {
-              return IconButton(
-                tooltip: l10n.matchTableList,
-                onPressed: () => Scaffold.of(context).openEndDrawer(),
-                icon: const Icon(Icons.list_alt_outlined),
-              );
-            },
-          ),
           PopupMenuButton<_ScheduleMenuAction>(
             onSelected: _handleMenu,
             itemBuilder: (context) => [
               PopupMenuItem(
                 value: _ScheduleMenuAction.top,
                 child: Text(l10n.topPageMenu),
+              ),
+              PopupMenuItem(
+                value: _ScheduleMenuAction.list,
+                child: Text(l10n.matchTableList),
               ),
               PopupMenuItem(
                 value: _ScheduleMenuAction.support,
