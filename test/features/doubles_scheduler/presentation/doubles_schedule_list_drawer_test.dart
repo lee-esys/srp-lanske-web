@@ -12,21 +12,23 @@ void main() {
     SharedPreferences.setMockInitialValues(const {});
   });
 
-  testWidgets('uses 75 percent width on narrow screens', (tester) async {
+  testWidgets('uses 85 percent width on narrow screens', (tester) async {
     await _pumpDrawer(tester, width: 320);
 
     final drawer = tester.widget<Drawer>(find.byType(Drawer));
-    expect(drawer.width, 240);
+    expect(drawer.width, 272);
   });
 
-  testWidgets('caps drawer width at 300 pixels', (tester) async {
+  testWidgets('uses 85 percent width on wide screens without a max cap',
+      (tester) async {
     await _pumpDrawer(tester, width: 800);
 
     final drawer = tester.widget<Drawer>(find.byType(Drawer));
-    expect(drawer.width, 300);
+    expect(drawer.width, 680);
   });
 
-  testWidgets('opens the selected local schedule', (tester) async {
+  testWidgets('opens the selected local schedule with team-style list cards',
+      (tester) async {
     final item = LocalScheduleHistoryItem(
       publicId: 'ABCDEFGH',
       title: 'テスト対戦表',
@@ -50,6 +52,10 @@ void main() {
     );
 
     expect(find.text('テスト対戦表'), findsOneWidget);
+    expect(find.text('面数 2'), findsOneWidget);
+    expect(find.text('人数 8'), findsOneWidget);
+    expect(find.byIcon(Icons.sports_tennis_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.chevron_right), findsOneWidget);
 
     await tester.tap(find.text('テスト対戦表'));
     await tester.pump();
