@@ -142,12 +142,6 @@ class _ScheduleHistoryListItem extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                backgroundColor: colorScheme.primary.withValues(alpha: 0.12),
-                foregroundColor: colorScheme.primary,
-                child: const Icon(Icons.sports_tennis_outlined),
-              ),
-              const SizedBox(width: 12),
               Expanded(
                 child: _ScheduleHistoryListItemBody(item: item),
               ),
