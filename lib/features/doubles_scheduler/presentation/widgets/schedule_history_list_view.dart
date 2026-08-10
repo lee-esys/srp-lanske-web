@@ -69,17 +69,6 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
     await future;
   }
 
-  String _formatDateTime(DateTime dateTime) {
-    final local = dateTime.toLocal();
-    final y = local.year.toString().padLeft(4, '0');
-    final m = local.month.toString().padLeft(2, '0');
-    final d = local.day.toString().padLeft(2, '0');
-    final hh = local.hour.toString().padLeft(2, '0');
-    final mm = local.minute.toString().padLeft(2, '0');
-
-    return '$y/$m/$d $hh:$mm';
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -119,22 +108,137 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
             itemBuilder: (context, index) {
               final item = items[index];
 
-              return Card(
-                child: ListTile(
-                  title: Text(item.title),
-                  subtitle: Text(
-                    '${l10n.schedulePlayersTitle(item.courtCount, item.playerCount)}\n'
-                    '${l10n.lastOpenedAtLabel(_formatDateTime(item.lastOpenedAt))}',
-                  ),
-                  isThreeLine: true,
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => widget.onOpenSchedule(item),
-                ),
+              return _ScheduleHistoryListItem(
+                item: item,
+                onTap: () => widget.onOpenSchedule(item),
               );
             },
           ),
         );
       },
+    );
+  }
+}
+
+class _ScheduleHistoryListItem extends StatelessWidget {
+  const _ScheduleHistoryListItem({
+    required this.item,
+    required this.onTap,
+  });
+
+  final LocalScheduleHistoryItem item;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                backgroundColor: colorScheme.primary.withValues(alpha: 0.12),
+                foregroundColor: colorScheme.primary,
+                child: const Icon(Icons.sports_tennis_outlined),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _ScheduleHistoryListItemBody(item: item),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScheduleHistoryListItemBody extends StatelessWidget {
+  const _ScheduleHistoryListItemBody({required this.item});
+
+  final LocalScheduleHistoryItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          item.title,
+          style: textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            _ScheduleHistoryListChip(
+              icon: Icons.grid_view_outlined,
+              label: '${l10n.courtCountLabel} ${item.courtCount}',
+            ),
+            _ScheduleHistoryListChip(
+              icon: Icons.person_outline,
+              label: '${l10n.playerCountLabel} ${item.playerCount}',
+            ),
+            _ScheduleHistoryListChip(
+              icon: Icons.schedule_outlined,
+              label: l10n.lastOpenedAtLabel(
+                _formatDateTime(item.lastOpenedAt),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    final local = dateTime.toLocal();
+    final y = local.year.toString().padLeft(4, '0');
+    final m = local.month.toString().padLeft(2, '0');
+    final d = local.day.toString().padLeft(2, '0');
+    final hh = local.hour.toString().padLeft(2, '0');
+    final mm = local.minute.toString().padLeft(2, '0');
+
+    return '$y/$m/$d $hh:$mm';
+  }
+}
+
+class _ScheduleHistoryListChip extends StatelessWidget {
+  const _ScheduleHistoryListChip({
+    required this.icon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Chip(
+      avatar: Icon(icon, size: 16),
+      label: Text(label),
+      visualDensity: VisualDensity.compact,
+      backgroundColor: colorScheme.surfaceContainerHighest,
+      side: BorderSide.none,
     );
   }
 }
