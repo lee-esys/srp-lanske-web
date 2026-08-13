@@ -179,18 +179,16 @@ class LocalScheduleHistoryStore {
   Future<int> suppressPendingRemoval() async {
     final prefs = await SharedPreferences.getInstance();
     final current = await _readAll(prefs);
-    final pending = current
-        .where((item) => item.isPendingRemoval)
-        .toList(growable: false);
+    final pending =
+        current.where((item) => item.isPendingRemoval).toList(growable: false);
     if (pending.isEmpty) {
       return 0;
     }
 
     final suppressedPublicIds = _readSuppressedPublicIds(prefs)
       ..addAll(pending.map((item) => _normalizePublicId(item.publicId)));
-    final retained = current
-        .where((item) => !item.isPendingRemoval)
-        .toList(growable: false);
+    final retained =
+        current.where((item) => !item.isPendingRemoval).toList(growable: false);
 
     await _saveSuppressedPublicIds(prefs, suppressedPublicIds);
     await _saveRetained(prefs, retained);

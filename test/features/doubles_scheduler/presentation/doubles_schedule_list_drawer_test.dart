@@ -89,7 +89,8 @@ void main() {
     expect(openedItem?.publicId, 'ABCDEFGH');
   });
 
-  testWidgets('marks unconfirmed schedules and removes them from the local list',
+  testWidgets(
+      'marks unconfirmed schedules and removes them from the local list',
       (tester) async {
     final unconfirmed = LocalScheduleHistoryItem(
       publicId: 'UNCONFIRMED',

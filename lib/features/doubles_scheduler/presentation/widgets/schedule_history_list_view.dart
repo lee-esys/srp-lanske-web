@@ -88,11 +88,12 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
         isPendingRemoval: isPendingRemoval,
       );
     } finally {
-      if (!mounted) return;
-      setState(() {
-        _isUpdating = false;
-        _itemsFuture = _loadItems();
-      });
+      if (mounted) {
+        setState(() {
+          _isUpdating = false;
+          _itemsFuture = _loadItems();
+        });
+      }
     }
   }
 
@@ -116,11 +117,12 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
         isPendingRemoval: true,
       );
     } finally {
-      if (!mounted) return;
-      setState(() {
-        _isUpdating = false;
-        _itemsFuture = _loadItems();
-      });
+      if (mounted) {
+        setState(() {
+          _isUpdating = false;
+          _itemsFuture = _loadItems();
+        });
+      }
     }
   }
 
@@ -155,12 +157,13 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
     try {
       suppressedCount = await _historyStore.suppressPendingRemoval();
     } finally {
-      if (!mounted) return;
-      setState(() {
-        _isUpdating = false;
-        _selectionMode = false;
-        _itemsFuture = _loadItems();
-      });
+      if (mounted) {
+        setState(() {
+          _isUpdating = false;
+          _selectionMode = false;
+          _itemsFuture = _loadItems();
+        });
+      }
     }
 
     if (!mounted || suppressedCount <= 0) return;
@@ -217,9 +220,8 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
                 children: [
                   if (_selectionMode && hasUnconfirmed)
                     TextButton.icon(
-                      onPressed: _isUpdating
-                          ? null
-                          : () => _markAllUnconfirmed(items),
+                      onPressed:
+                          _isUpdating ? null : () => _markAllUnconfirmed(items),
                       icon: const Icon(Icons.select_all),
                       label: Text(l10n.scheduleHistoryUnconfirmedLabel),
                     ),

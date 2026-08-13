@@ -30,7 +30,8 @@ void main() {
     expect(items.map((item) => item.publicId), ['NEWER', 'OLDER']);
   });
 
-  test('shows 20 items while retaining older history for later display', () async {
+  test('shows 20 items while retaining older history for later display',
+      () async {
     final store = LocalScheduleHistoryStore();
     await store.upsert(
       _item(
@@ -60,7 +61,8 @@ void main() {
       visible.map((item) => item.publicId),
       isPendingRemoval: true,
     );
-    expect((await store.findAll()).every((item) => item.isPendingRemoval), isTrue);
+    expect(
+        (await store.findAll()).every((item) => item.isPendingRemoval), isTrue);
 
     final suppressedCount = await store.suppressPendingRemoval();
     expect(suppressedCount, 20);
@@ -105,7 +107,8 @@ void main() {
     expect(item.isPendingRemoval, isTrue);
   });
 
-  test('upsert clears stale progress but preserves pending state after regeneration',
+  test(
+      'upsert clears stale progress but preserves pending state after regeneration',
       () async {
     final store = LocalScheduleHistoryStore();
     await store.upsert(
