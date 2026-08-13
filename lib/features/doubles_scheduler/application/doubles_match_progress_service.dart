@@ -1,6 +1,8 @@
 import 'package:srp_lanske/features/schedule_progress/application/schedule_progress_repository.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 
+import '../data/local_schedule_history_store.dart';
+
 class DoublesMatchProgressInput {
   const DoublesMatchProgressInput({
     required this.status,
@@ -60,6 +62,18 @@ class DoublesMatchProgressService {
     final summary = await _repository.findSummary(scope);
     if (summary == null) {
       throw StateError('schedule progress summary was not saved');
+    }
+
+    try {
+      await LocalScheduleHistoryStore().updateProgress(
+        publicId: scope.shareId,
+        generatedScheduleId: scope.generatedScheduleId,
+        completedMatchCount: summary.completedMatchCount,
+        totalMatchCount: summary.totalMatchCount,
+        lastOpenedAt: _clock(),
+      );
+    } catch (_) {
+      // Local history is a best-effort display index and must not fail a save.
     }
 
     return DoublesMatchProgressSaveResult(
