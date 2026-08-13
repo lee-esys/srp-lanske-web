@@ -34,6 +34,34 @@ ver0.1.3 以降、公開用の本命 Firebase project は `lanske-srp` とする
 | `prod`    | `lanske-srp`         |
 | `dev`     | `srp-lanske-web-dev` |
 
+## Production URLs
+
+利用者向けの正式 Web URL は以下とする。
+
+```text
+https://lanske.jp
+```
+
+`www` は独立した公開先にはせず、Firebase Hosting の custom domain redirect を使って apex へ転送する。
+
+```text
+https://www.lanske.jp
+  -> https://lanske.jp
+```
+
+Firebase Hosting の標準 URL は継続して利用できる状態を維持する。
+
+```text
+https://lanske-srp.web.app
+https://lanske-srp.firebaseapp.com
+```
+
+正式 API URL は以下とする。
+
+```text
+https://api.lanske.jp
+```
+
 ## Firebase config
 
 Flutter Web の Firebase config は `flutterfire configure` で生成する。
@@ -56,38 +84,20 @@ grep -n "projectId\|authDomain\|storageBucket\|appId\|messagingSenderId" lib/fir
 
 補足:
 
-- ver0.1.3 では Flutter Web / Firebase Hosting の公開先を `lanske-srp` に切り替える。
-- Android / iOS / macOS / Windows の Firebase app 設定整理は今回の対象外とする。
+- ver0.1.3 では Flutter Web / Firebase Hosting の公開先を `lanske-srp` に切り替えた。
+- Android / iOS / macOS / Windows の Firebase app 設定整理は Web deploy の確認対象外とする。
 - `--platforms=web` で再生成した場合、Web 以外の既存 platform 設定が旧 project のまま残る場合があるが、Web deploy の確認対象は Web 用設定とする。
+- `authDomain` などに `*.firebaseapp.com` が残ることは Firebase client config として正常であり、custom domain 化を理由に置換しない。
 
 ## Core API URL
 
-公開用 build では、core API の base URL を `LANSKE_CORE_API_BASE_URL` で指定する。
-
-現在の通常運用では、core API は以下の Cloud Run service を使う。
-
-| 項目                | 値                 |
-| ----------------- | ----------------- |
-| Cloud Run project | `srp-lanske`      |
-| Cloud Run service | `lanske-core-api` |
-| region            | `asia-northeast1` |
-
-core API URL は必要に応じて core 側の deploy docs / Cloud Run Console / `gcloud` で確認する。
+production build では、core API の base URL に正式 URL を指定する。
 
 ```bash
-gcloud run services describe lanske-core-api \
-  --project srp-lanske \
-  --region asia-northeast1 \
-  --format="value(status.url)"
+export LANSKE_CORE_API_BASE_URL="https://api.lanske.jp"
 ```
 
-build 時は確認した URL を環境変数に入れる。
-
-```bash
-export LANSKE_CORE_API_BASE_URL="<srp-lanske の lanske-core-api URL>"
-```
-
-例:
+確認:
 
 ```bash
 echo "$LANSKE_CORE_API_BASE_URL"
@@ -97,7 +107,9 @@ echo "$LANSKE_CORE_API_BASE_URL"
 
 - `LANSKE_CORE_API_BASE_URL` は build 時に `main.dart.js` へ埋め込まれる。
 - build 後に環境変数だけ変更しても、既存の `build/web/main.dart.js` は変わらない。
-- core Cloud Run 移行後は、旧 `jebra-lanske` の core URL が `main.dart.js` に残っていないことを確認する。
+- production Web では Cloud Run の `run.app` URL を直接指定せず、`https://api.lanske.jp` を使用する。
+- `https://lanske.jp` から production API を利用するには、core 側の production CORS allowlist に `https://lanske.jp` が exact origin として必要。
+- `www.lanske.jp` は `lanske.jp` への redirect 専用で、通常は API request origin にならないため CORS allowlist へ追加しない。
 
 ## Build
 
@@ -115,46 +127,56 @@ flutter build web \
 
 ## Build artifact の API URL 確認
 
-deploy 前に、`build/web` 内へ埋め込まれた core API URL を確認する。
+deploy 前に、`build/web/main.dart.js` が正式 API URL を参照していることを確認する。
 
 ```bash
-grep -RahoE "https://lanske-core-api-[^\"' )]+" build/web | sort -u
+grep -ao 'https://api\.lanske\.jp' build/web/main.dart.js | sort -u
 ```
 
 期待値:
 
-- `srp-lanske` 側の `lanske-core-api` URL が出る
-- 旧 `jebra-lanske` 側の URL が出ない
-- URL が複数出る場合は意図したものか確認する
+```text
+https://api.lanske.jp
+```
 
-旧 core URL が残っている場合は、`build/web` を削除して再 build する。
+旧 Cloud Run URL 等が残っていないことも確認する。
 
 ```bash
-rm -rf build/web
-
-flutter build web \
-  --dart-define=LANSKE_CORE_API_BASE_URL="$LANSKE_CORE_API_BASE_URL" \
-  --dart-define=LANSKE_EVENT_REPOSITORY=firestore
-
-grep -RahoE "https://lanske-core-api-[^\"' )]+" build/web | sort -u
+grep -aoE 'https://[^"[:space:]]+' build/web/main.dart.js \
+  | grep -E 'run\.app|lanske-core-api|jebra-lanske' \
+  | sort -u
 ```
+
+期待値は出力なし。
+
+正式 API URL が出ない、または旧 URL が残っている場合は `build/web` を削除して再 build する。
 
 ## Preview deploy
 
 本番 live URL に出す前の確認は Firebase Hosting preview channel を使う。
 
+Issue 単位の一時 preview の例:
+
 ```bash
 npx firebase hosting:channel:deploy issue-123 --project lanske-srp
 ```
 
-preview URL は一時的な公開 URL として発行される。
+Core API との接続確認など、定期的に再利用する preview は固定 channel `core-api-preview` を使う。
+
+```bash
+npx firebase hosting:channel:deploy core-api-preview \
+  --expires 30d \
+  --project lanske-srp
+```
 
 注意:
 
 - preview channel は Hosting の確認用。
 - preview URL でも、アプリが Firestore を使う場合は `lanske-srp` の Firestore に接続する。
 - 本番 Firestore を触りたくない破壊系確認は、preview channel ではなく別 Firebase project を使う。
-- preview URL から core API を呼び出す場合、core 側の `LANSKE_ALLOWED_ORIGINS` に preview URL の origin を追加する必要がある。
+- preview URL から core API を呼び出す場合、core 側の `LANSKE_ALLOWED_ORIGINS` にその preview URL の exact origin を追加する必要がある。
+- preview channel には有効期限がある。固定 channel を継続利用する場合は期限切れ前に同じ channel 名へ再 deploy する。
+- 同じ fixed channel を継続利用している間は URL を CORS allowlist の exact origin として扱いやすいが、削除・再作成等で URL が変わった場合は allowlist も更新する。
 
 ## Live deploy
 
@@ -164,34 +186,81 @@ preview channel で主要導線を確認したあと、本番 Hosting へ deploy
 npx firebase deploy --only hosting --project lanske-srp
 ```
 
-公開URL:
+公開先:
 
-- [https://lanske-srp.web.app](https://lanske-srp.web.app)
-- [https://lanske-srp.firebaseapp.com](https://lanske-srp.firebaseapp.com)
+- 正式 URL: [https://lanske.jp](https://lanske.jp)
+- Firebase Hosting 標準 URL: [https://lanske-srp.web.app](https://lanske-srp.web.app)
+- Firebase Hosting 標準 URL: [https://lanske-srp.firebaseapp.com](https://lanske-srp.firebaseapp.com)
+- `https://www.lanske.jp` は `https://lanske.jp` へ redirect
 
-主導線としては `https://lanske-srp.web.app` を使う。
+利用者向けの正式 URL は `https://lanske.jp` とするが、Firebase Hosting の標準 URL は無効化せず継続して利用できる状態を維持する。
+
+## Custom domain / DNS
+
+Firebase Hosting の custom domain として以下を設定する。
+
+```text
+lanske.jp
+www.lanske.jp -> lanske.jp redirect
+```
+
+2026-08-13 の設定時に Firebase Console から指定された DNS record は以下。
+
+| 用途 | host | type | value |
+| ---- | ---- | ---- | ----- |
+| apex Hosting | `lanske.jp` | A | `199.36.158.100` |
+| apex verification | `lanske.jp` | TXT | `hosting-site=lanske-srp` |
+| www Hosting / redirect | `www.lanske.jp` | CNAME | `lanske-srp.web.app` |
+
+DNS 設定時の注意:
+
+- 上記は実績値として記録する。
+- custom domain を再設定する場合は、必ず Firebase Console にその時点で表示される値を正本とし、過去の値を決め打ちしない。
+- `api.lanske.jp` は core API 用の独立した DNS record のため、Web custom domain 設定では変更しない。
+- Firebase Console で domain verification と SSL certificate の発行・接続完了を確認する。
+- 証明書発行前に HTTPS アクセスすると警告が出る場合があるため、接続済みになってからブラウザで再確認する。
+
+確認例:
+
+```bash
+nslookup -type=A lanske.jp 8.8.8.8
+nslookup -type=TXT lanske.jp 8.8.8.8
+nslookup -type=CNAME www.lanske.jp 8.8.8.8
+nslookup -type=A api.lanske.jp 8.8.8.8
+```
 
 ## Live Hosting の API URL 確認
 
-deploy 後に、live Hosting の `main.dart.js` に埋め込まれた core API URL を確認する。
+deploy 後に、正式 URL で配信されている `main.dart.js` が正式 API URL を参照していることを確認する。
 
 ```bash
-curl -sL "https://lanske-srp.web.app/main.dart.js?check=$(date +%s)" \
-  | grep -aoE "https://lanske-core-api-[^\"' )]+" \
+curl -sL "https://lanske.jp/main.dart.js?check=$(date +%s)" \
+  | grep -ao 'https://api\.lanske\.jp' \
   | sort -u
 ```
 
 期待値:
 
-- `srp-lanske` 側の `lanske-core-api` URL が出る
-- 旧 `jebra-lanske` 側の URL が出ない
-- deploy 前に確認した `build/web` 内の URL と一致する
+```text
+https://api.lanske.jp
+```
 
-`lanske-srp.firebaseapp.com` 側も確認したい場合:
+旧 Cloud Run URL 等が残っていないことも確認する。
 
 ```bash
-curl -sL "https://lanske-srp.firebaseapp.com/main.dart.js?check=$(date +%s)" \
-  | grep -aoE "https://lanske-core-api-[^\"' )]+" \
+curl -sL "https://lanske.jp/main.dart.js?check=$(date +%s)" \
+  | grep -aoE 'https://[^"[:space:]]+' \
+  | grep -E 'run\.app|lanske-core-api|jebra-lanske' \
+  | sort -u
+```
+
+期待値は出力なし。
+
+Firebase Hosting 標準 URL 側も必要に応じて同様に確認できる。
+
+```bash
+curl -sL "https://lanske-srp.web.app/main.dart.js?check=$(date +%s)" \
+  | grep -ao 'https://api\.lanske\.jp' \
   | sort -u
 ```
 
@@ -213,10 +282,10 @@ API URL の正否は、画面表示だけで判断せず、live Hosting の `mai
 
 Firebase Hosting は SPA として `/team` などの direct path を `index.html` に rewrite する。
 
-deploy 後は以下も確認する。
+deploy 後は正式 URL でも確認する。
 
 ```bash
-curl -I "https://lanske-srp.web.app/team?check=$(date +%s)"
+curl -I "https://lanske.jp/team?check=$(date +%s)"
 ```
 
 期待値:
@@ -224,6 +293,8 @@ curl -I "https://lanske-srp.web.app/team?check=$(date +%s)"
 - HTTP 200
 - `/team` 直アクセスで画面が表示される
 - 古い JS / 旧 API URL が使われていない
+
+Firebase Hosting 標準 URL を使った確認も引き続き可能。
 
 ## Firestore Rules deploy
 
@@ -279,11 +350,15 @@ ver0.1.3 の `lanske-srp` 切り替えでは、旧 `srp-lanske-web-dev` の Fire
 
 live deploy 後は以下を確認する。
 
-### API URL
+### domain / API URL
 
-- `build/web/main.dart.js` に現在の core API URL が埋め込まれている
-- live Hosting の `main.dart.js` に現在の core API URL が埋め込まれている
-- 旧 `jebra-lanske` core URL が残っていない
+- `https://lanske.jp` が SSL warning なしで開ける
+- `https://www.lanske.jp` が `https://lanske.jp` へ redirect される
+- `build/web/main.dart.js` に `https://api.lanske.jp` が埋め込まれている
+- `https://lanske.jp/main.dart.js` に `https://api.lanske.jp` が埋め込まれている
+- `run.app` / 旧 core URL が production build / live Hosting に残っていない
+- `https://lanske.jp` から production API を利用できる
+- local Web から production API を利用できない状態を維持している
 
 ### common
 
@@ -291,6 +366,7 @@ live deploy 後は以下を確認する。
 - 主要メニューが開ける
 - hard reload / cache busting 後も表示できる
 - `/team` など direct path が開ける
+- Firebase Hosting 標準 URL でも必要な確認を継続できる
 
 ### doubles
 
@@ -298,6 +374,7 @@ live deploy 後は以下を確認する。
 - 採用 / 保存できる
 - 共有URLを作成できる
 - 共有URLから復元できる
+- リロード後も復元できる
 - QRコードを表示できる
 - 対戦表一覧を開ける
 
