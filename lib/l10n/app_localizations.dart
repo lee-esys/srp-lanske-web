@@ -482,7 +482,7 @@ abstract class AppLocalizations {
   /// **'対戦表を取得できていません'**
   String get scheduleNotLoadedMessage;
 
-  /// Message shown when the schedule response contains no rounds.
+  /// Message shown when no schedule response contains rounds.
   ///
   /// In ja, this message translates to:
   /// **'対戦表データがありません'**
@@ -505,6 +505,25 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'最終表示: {lastOpenedAt}'**
   String lastOpenedAtLabel(String lastOpenedAt);
+
+  /// Label showing the creation date of a saved doubles schedule.
+  ///
+  /// In ja, this message translates to:
+  /// **'{createdAt} 作成'**
+  String scheduleHistoryCreatedAtLabel(String createdAt);
+
+  /// Label shown for a saved doubles schedule that has not been confirmed.
+  ///
+  /// In ja, this message translates to:
+  /// **'未確定'**
+  String get scheduleHistoryUnconfirmedLabel;
+
+  /// Progress label showing completed and total match counts in doubles schedule history.
+  ///
+  /// In ja, this message translates to:
+  /// **'{completedMatchCount} / {totalMatchCount} 試合終了'**
+  String scheduleHistoryCompletedMatchesLabel(
+      int completedMatchCount, int totalMatchCount);
 
   /// Tooltip for removing a player input field.
   ///
@@ -1685,13 +1704,13 @@ abstract class AppLocalizations {
   /// **'スコアを未入力に戻す'**
   String get doublesMatchScoreUnsetLabel;
 
-  /// Label for a doubles match start time.
+  /// Input label for a doubles match start time.
   ///
   /// In ja, this message translates to:
   /// **'開始時間'**
   String get doublesMatchStartTimeLabel;
 
-  /// Label for a doubles match end time.
+  /// Input label for a doubles match end time.
   ///
   /// In ja, this message translates to:
   /// **'終了時間'**

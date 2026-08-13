@@ -46,7 +46,8 @@ class LocalScheduleHistoryItem {
     final rawPlayerCount = json['player_count'] ?? json['participant_count'];
     final fallbackNow = DateTime.now();
     final lastOpenedAt =
-        DateTime.tryParse(json['last_opened_at'] as String? ?? '') ?? fallbackNow;
+        DateTime.tryParse(json['last_opened_at'] as String? ?? '') ??
+            fallbackNow;
     final firstSavedAt =
         DateTime.tryParse(json['first_saved_at'] as String? ?? '') ??
             lastOpenedAt;

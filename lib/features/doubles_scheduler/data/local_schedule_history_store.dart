@@ -46,16 +46,16 @@ class LocalScheduleHistoryStore {
       generatedScheduleId:
           item.generatedScheduleId ?? previous?.generatedScheduleId,
       isAdopted: item.isAdopted ??
-          (sameGeneratedSchedule ? previous?.isAdopted : null),
+          (sameGeneratedSchedule ? previous.isAdopted : null),
       completedMatchCount: hasIncomingProgress
           ? item.completedMatchCount
           : sameGeneratedSchedule
-              ? previous?.completedMatchCount
+              ? previous.completedMatchCount
               : null,
       totalMatchCount: hasIncomingProgress
           ? item.totalMatchCount
           : sameGeneratedSchedule
-              ? previous?.totalMatchCount
+              ? previous.totalMatchCount
               : null,
     );
 

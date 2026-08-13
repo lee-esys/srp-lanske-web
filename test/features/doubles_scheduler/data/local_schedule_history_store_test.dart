@@ -78,7 +78,8 @@ void main() {
     expect(item.totalMatchCount, 12);
   });
 
-  test('upsert clears stale progress when generated schedule changes', () async {
+  test('upsert clears stale progress when generated schedule changes',
+      () async {
     final store = LocalScheduleHistoryStore();
     await store.upsert(
       _item(

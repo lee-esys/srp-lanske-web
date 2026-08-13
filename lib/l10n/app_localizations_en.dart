@@ -241,6 +241,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String scheduleHistoryCreatedAtLabel(String createdAt) {
+    return 'Created $createdAt';
+  }
+
+  @override
+  String get scheduleHistoryUnconfirmedLabel => 'Unconfirmed';
+
+  @override
+  String scheduleHistoryCompletedMatchesLabel(
+      int completedMatchCount, int totalMatchCount) {
+    return '$completedMatchCount / $totalMatchCount matches completed';
+  }
+
+  @override
   String get removePlayerTooltip => 'Remove this player';
 
   @override
