@@ -10,7 +10,16 @@ Lanske（らんすけ）は、テニスのダブルス向けに、対戦表を�
 
 ## 🌐 公開URL
 
-https://lanske-srp.web.app
+正式URL:
+
+https://lanske.jp
+
+Firebase Hosting の標準URLも継続して利用できます。
+
+- https://lanske-srp.web.app
+- https://lanske-srp.firebaseapp.com
+
+`https://www.lanske.jp` は `https://lanske.jp` へリダイレクトします。
 
 ---
 
@@ -158,14 +167,14 @@ flutter run -d web-server --web-hostname 0.0.0.0 --web-port 3000 \
   --dart-define=LANSKE_CORE_API_BASE_URL=http://localhost:8080
 ```
 
-公開用 core API に接続する場合:
+production core API に接続する場合:
 
 ```bash
 flutter run -d web-server --web-hostname 0.0.0.0 --web-port 3000 \
-  --dart-define=LANSKE_CORE_API_BASE_URL=https://<core-api-url>
+  --dart-define=LANSKE_CORE_API_BASE_URL=https://api.lanske.jp
 ```
 
-`<core-api-url>` には Cloud Run などの公開 core API URL を指定します。
+production Web の build でも `https://api.lanske.jp` を使用します。
 
 ### Codespaces で core API と接続して起動する
 
