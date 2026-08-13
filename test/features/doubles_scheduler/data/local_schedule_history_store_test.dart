@@ -30,26 +30,48 @@ void main() {
     expect(items.map((item) => item.publicId), ['NEWER', 'OLDER']);
   });
 
-  test('retains the 20 most recently opened items', () async {
+  test('shows 20 items while retaining older history for later display', () async {
     final store = LocalScheduleHistoryStore();
+    await store.upsert(
+      _item(
+        publicId: 'CONFIRMED',
+        createdAt: DateTime(2026, 8, 1),
+        lastOpenedAt: DateTime(2026, 8, 1),
+        isAdopted: true,
+      ),
+    );
 
-    for (var i = 0; i < 21; i += 1) {
+    for (var i = 0; i < 20; i += 1) {
       await store.upsert(
         _item(
-          publicId: 'ID$i',
-          createdAt: DateTime(2026, 8, 1).add(Duration(days: i)),
-          lastOpenedAt: DateTime(2026, 8, 1).add(Duration(hours: i)),
+          publicId: 'UNCONFIRMED$i',
+          createdAt: DateTime(2026, 8, 2).add(Duration(hours: i)),
+          lastOpenedAt: DateTime(2026, 8, 2).add(Duration(hours: i)),
+          isAdopted: false,
         ),
       );
     }
 
-    final items = await store.findAll();
+    final visible = await store.findAll();
+    expect(visible, hasLength(20));
+    expect(visible.any((item) => item.publicId == 'CONFIRMED'), isFalse);
 
-    expect(items, hasLength(20));
-    expect(items.any((item) => item.publicId == 'ID0'), isFalse);
+    await store.setPendingRemovalForPublicIds(
+      visible.map((item) => item.publicId),
+      isPendingRemoval: true,
+    );
+    expect((await store.findAll()).every((item) => item.isPendingRemoval), isTrue);
+
+    final suppressedCount = await store.suppressPendingRemoval();
+    expect(suppressedCount, 20);
+
+    final remaining = await store.findAll();
+    expect(remaining, hasLength(1));
+    expect(remaining.single.publicId, 'CONFIRMED');
   });
 
-  test('upsert preserves progress for the same generated schedule', () async {
+  test('upsert preserves progress and pending state for the same schedule',
+      () async {
     final store = LocalScheduleHistoryStore();
     await store.upsert(
       _item(
@@ -61,6 +83,10 @@ void main() {
         completedMatchCount: 4,
         totalMatchCount: 12,
       ),
+    );
+    await store.setPendingRemoval(
+      publicId: 'ABCDEFGH',
+      isPendingRemoval: true,
     );
 
     await store.upsert(
@@ -76,9 +102,10 @@ void main() {
     final item = (await store.findAll()).single;
     expect(item.completedMatchCount, 4);
     expect(item.totalMatchCount, 12);
+    expect(item.isPendingRemoval, isTrue);
   });
 
-  test('upsert clears stale progress when generated schedule changes',
+  test('upsert clears stale progress but preserves pending state after regeneration',
       () async {
     final store = LocalScheduleHistoryStore();
     await store.upsert(
@@ -90,6 +117,7 @@ void main() {
         isAdopted: false,
         completedMatchCount: 4,
         totalMatchCount: 12,
+        isPendingRemoval: true,
       ),
     );
 
@@ -107,6 +135,7 @@ void main() {
     expect(item.generatedScheduleId, 'schedule-2');
     expect(item.completedMatchCount, isNull);
     expect(item.totalMatchCount, isNull);
+    expect(item.isPendingRemoval, isTrue);
   });
 
   test('updateProgress updates matching schedule without changing metadata',
@@ -124,6 +153,7 @@ void main() {
         isAdopted: true,
         completedMatchCount: 0,
         totalMatchCount: 12,
+        isPendingRemoval: true,
       ),
     );
 
@@ -143,6 +173,7 @@ void main() {
     expect(item.completedMatchCount, 5);
     expect(item.totalMatchCount, 12);
     expect(item.isAdopted, isTrue);
+    expect(item.isPendingRemoval, isTrue);
   });
 
   test('updateProgress ignores a stale generated schedule', () async {
@@ -170,6 +201,67 @@ void main() {
     expect(item.totalMatchCount, isNull);
     expect(item.isAdopted, isFalse);
   });
+
+  test('suppressed history is not restored by normal upsert', () async {
+    final store = LocalScheduleHistoryStore();
+    final item = _item(
+      publicId: 'ABCDEFGH',
+      createdAt: DateTime(2026, 8, 10),
+      lastOpenedAt: DateTime(2026, 8, 10),
+      isAdopted: false,
+    );
+    await store.upsert(item);
+    await store.setPendingRemoval(
+      publicId: item.publicId,
+      isPendingRemoval: true,
+    );
+    expect(await store.suppressPendingRemoval(), 1);
+    expect(await store.findAll(), isEmpty);
+
+    await store.upsert(
+      _item(
+        publicId: 'ABCDEFGH',
+        createdAt: DateTime(2026, 8, 10),
+        lastOpenedAt: DateTime(2026, 8, 14),
+        isAdopted: true,
+      ),
+    );
+
+    expect(await store.findAll(), isEmpty);
+  });
+
+  test('clearExceptPublicId keeps current history and suppresses the others',
+      () async {
+    final store = LocalScheduleHistoryStore();
+    await store.upsert(
+      _item(
+        publicId: 'KEEP',
+        createdAt: DateTime(2026, 8, 10),
+        lastOpenedAt: DateTime(2026, 8, 10),
+      ),
+    );
+    await store.upsert(
+      _item(
+        publicId: 'OTHER',
+        createdAt: DateTime(2026, 8, 11),
+        lastOpenedAt: DateTime(2026, 8, 11),
+      ),
+    );
+
+    await store.clearExceptPublicId('KEEP');
+
+    final remaining = await store.findAll();
+    expect(remaining.map((item) => item.publicId), ['KEEP']);
+
+    await store.upsert(
+      _item(
+        publicId: 'OTHER',
+        createdAt: DateTime(2026, 8, 11),
+        lastOpenedAt: DateTime(2026, 8, 14),
+      ),
+    );
+    expect((await store.findAll()).map((item) => item.publicId), ['KEEP']);
+  });
 }
 
 LocalScheduleHistoryItem _item({
@@ -181,6 +273,7 @@ LocalScheduleHistoryItem _item({
   bool? isAdopted,
   int? completedMatchCount,
   int? totalMatchCount,
+  bool isPendingRemoval = false,
 }) {
   return LocalScheduleHistoryItem(
     publicId: publicId,
@@ -194,5 +287,6 @@ LocalScheduleHistoryItem _item({
     isAdopted: isAdopted,
     completedMatchCount: completedMatchCount,
     totalMatchCount: totalMatchCount,
+    isPendingRemoval: isPendingRemoval,
   );
 }
