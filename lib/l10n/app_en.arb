@@ -332,6 +332,34 @@
       }
     }
   },
+  "scheduleHistoryCreatedAtLabel": "Created {createdAt}",
+  "@scheduleHistoryCreatedAtLabel": {
+    "description": "Label showing the creation date of a saved doubles schedule.",
+    "placeholders": {
+      "createdAt": {
+        "type": "String",
+        "example": "2026/08/14"
+      }
+    }
+  },
+  "scheduleHistoryUnconfirmedLabel": "Unconfirmed",
+  "@scheduleHistoryUnconfirmedLabel": {
+    "description": "Label shown for a saved doubles schedule that has not been confirmed."
+  },
+  "scheduleHistoryCompletedMatchesLabel": "{completedMatchCount} / {totalMatchCount} matches completed",
+  "@scheduleHistoryCompletedMatchesLabel": {
+    "description": "Progress label showing completed and total match counts in doubles schedule history.",
+    "placeholders": {
+      "completedMatchCount": {
+        "type": "int",
+        "example": "8"
+      },
+      "totalMatchCount": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
   "removePlayerTooltip": "Remove this player",
   "@removePlayerTooltip": {
     "description": "Tooltip for removing a player input field."

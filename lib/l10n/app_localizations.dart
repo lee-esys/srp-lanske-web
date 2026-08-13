@@ -422,7 +422,7 @@ abstract class AppLocalizations {
   /// **'この対戦表を確定しました'**
   String get adoptScheduleCompletedMessage;
 
-  /// Message shown when schedule adoption failed.
+  /// Error message shown when schedule adoption failed.
   ///
   /// In ja, this message translates to:
   /// **'対戦表を確定できませんでした: {error}'**
@@ -505,6 +505,25 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'最終表示: {lastOpenedAt}'**
   String lastOpenedAtLabel(String lastOpenedAt);
+
+  /// Label showing the creation date of a saved doubles schedule.
+  ///
+  /// In ja, this message translates to:
+  /// **'{createdAt} 作成'**
+  String scheduleHistoryCreatedAtLabel(String createdAt);
+
+  /// Label shown for a saved doubles schedule that has not been confirmed.
+  ///
+  /// In ja, this message translates to:
+  /// **'未確定'**
+  String get scheduleHistoryUnconfirmedLabel;
+
+  /// Progress label showing completed and total match counts in doubles schedule history.
+  ///
+  /// In ja, this message translates to:
+  /// **'{completedMatchCount} / {totalMatchCount} 試合終了'**
+  String scheduleHistoryCompletedMatchesLabel(
+      int completedMatchCount, int totalMatchCount);
 
   /// Tooltip for removing a player input field.
   ///

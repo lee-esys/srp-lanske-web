@@ -1,8 +1,11 @@
 import 'package:srp_lanske/features/schedule_progress/application/schedule_progress_repository.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 
+import '../data/local_schedule_history_store.dart';
 import '../domain/saved_event_models.dart';
+import 'doubles_match_progress_service.dart';
 import 'event_repository.dart';
+import 'local_schedule_history_mapper.dart';
 
 typedef GeneratedScheduleByIdLoader = Future<Map<String, dynamic>> Function(
   String generatedScheduleId,
@@ -162,6 +165,19 @@ class DoublesScheduleRefreshService {
     } else {
       progressChanged = current?.progressSummary != null ||
           (current?.matches.isNotEmpty ?? false);
+    }
+
+    try {
+      await LocalScheduleHistoryStore().upsert(
+        buildLocalScheduleHistoryItem(
+          aggregate,
+          now: DateTime.now(),
+          progressSummary: progressSummary,
+          totalMatchCount: countDoublesScheduleMatches(scheduleResponse),
+        ),
+      );
+    } catch (_) {
+      // Local history is a best-effort display index and must not fail refresh.
     }
 
     return DoublesScheduleRefreshSnapshot(
