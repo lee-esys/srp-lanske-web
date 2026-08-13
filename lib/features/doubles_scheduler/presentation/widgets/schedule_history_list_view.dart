@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
+import 'package:srp_lanske/shared/presentation/app_message_type.dart';
+import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
 
 import '../../data/local_schedule_history_item.dart';
 import '../../data/local_schedule_history_store.dart';
@@ -27,6 +29,8 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
   final LocalScheduleHistoryStore _historyStore = LocalScheduleHistoryStore();
 
   late Future<List<LocalScheduleHistoryItem>> _itemsFuture;
+  bool _selectionMode = false;
+  bool _isUpdating = false;
 
   @override
   void initState() {
@@ -69,6 +73,104 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
     await future;
   }
 
+  Future<void> _setPendingRemoval(
+    LocalScheduleHistoryItem item,
+    bool isPendingRemoval,
+  ) async {
+    if (_isUpdating) return;
+
+    setState(() {
+      _isUpdating = true;
+    });
+    try {
+      await _historyStore.setPendingRemoval(
+        publicId: item.publicId,
+        isPendingRemoval: isPendingRemoval,
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isUpdating = false;
+        _itemsFuture = _loadItems();
+      });
+    }
+  }
+
+  Future<void> _markAllUnconfirmed(
+    List<LocalScheduleHistoryItem> items,
+  ) async {
+    if (_isUpdating) return;
+
+    final publicIds = items
+        .where((item) => item.isAdopted == false)
+        .map((item) => item.publicId)
+        .toList(growable: false);
+    if (publicIds.isEmpty) return;
+
+    setState(() {
+      _isUpdating = true;
+    });
+    try {
+      await _historyStore.setPendingRemovalForPublicIds(
+        publicIds,
+        isPendingRemoval: true,
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isUpdating = false;
+        _itemsFuture = _loadItems();
+      });
+    }
+  }
+
+  Future<void> _confirmSuppressPending() async {
+    if (_isUpdating) return;
+
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.clearScheduleHistoryConfirmTitle),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancelButton),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.clearScheduleHistoryActionButton),
+            ),
+          ],
+        );
+      },
+    );
+    if (!mounted || confirmed != true) return;
+
+    setState(() {
+      _isUpdating = true;
+    });
+    var suppressedCount = 0;
+    try {
+      suppressedCount = await _historyStore.suppressPendingRemoval();
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isUpdating = false;
+        _selectionMode = false;
+        _itemsFuture = _loadItems();
+      });
+    }
+
+    if (!mounted || suppressedCount <= 0) return;
+    AppSnackBar.show(
+      context,
+      message: l10n.scheduleHistoryClearedMessage,
+      type: AppMessageType.success,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -98,22 +200,92 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
           );
         }
 
-        return RefreshIndicator(
-          onRefresh: _refreshItems,
-          child: ListView.separated(
-            padding: widget.padding,
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final item = items[index];
+        final pendingCount =
+            items.where((item) => item.isPendingRemoval).length;
+        final hasUnconfirmed = items.any((item) => item.isAdopted == false);
 
-              return _ScheduleHistoryListItem(
-                item: item,
-                onTap: () => widget.onOpenSchedule(item),
-              );
-            },
-          ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: Wrap(
+                alignment: WrapAlignment.end,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  if (_selectionMode && hasUnconfirmed)
+                    TextButton.icon(
+                      onPressed: _isUpdating
+                          ? null
+                          : () => _markAllUnconfirmed(items),
+                      icon: const Icon(Icons.select_all),
+                      label: Text(l10n.scheduleHistoryUnconfirmedLabel),
+                    ),
+                  if (_selectionMode)
+                    TextButton.icon(
+                      onPressed: _isUpdating
+                          ? null
+                          : () {
+                              setState(() {
+                                _selectionMode = false;
+                              });
+                            },
+                      icon: const Icon(Icons.check),
+                      label: Text(l10n.confirmButton),
+                    )
+                  else
+                    IconButton(
+                      onPressed: _isUpdating
+                          ? null
+                          : () {
+                              setState(() {
+                                _selectionMode = true;
+                              });
+                            },
+                      icon: const Icon(Icons.delete_outline),
+                      tooltip: l10n.clearScheduleHistoryTooltip,
+                    ),
+                  if (pendingCount > 0)
+                    FilledButton.tonalIcon(
+                      onPressed: _isUpdating ? null : _confirmSuppressPending,
+                      icon: const Icon(Icons.delete_sweep_outlined),
+                      label: Text(l10n.clearScheduleHistoryActionButton),
+                    ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _refreshItems,
+                child: ListView.separated(
+                  padding: widget.padding,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+
+                    return _ScheduleHistoryListItem(
+                      item: item,
+                      selectionMode: _selectionMode,
+                      onTap: () {
+                        if (_selectionMode) {
+                          _setPendingRemoval(item, !item.isPendingRemoval);
+                          return;
+                        }
+                        widget.onOpenSchedule(item);
+                      },
+                      onSelectionChanged: (value) {
+                        _setPendingRemoval(item, value);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
@@ -123,11 +295,15 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
 class _ScheduleHistoryListItem extends StatelessWidget {
   const _ScheduleHistoryListItem({
     required this.item,
+    required this.selectionMode,
     required this.onTap,
+    required this.onSelectionChanged,
   });
 
   final LocalScheduleHistoryItem item;
+  final bool selectionMode;
   final VoidCallback onTap;
+  final ValueChanged<bool> onSelectionChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -135,6 +311,7 @@ class _ScheduleHistoryListItem extends StatelessWidget {
 
     return Card(
       clipBehavior: Clip.antiAlias,
+      color: item.isPendingRemoval ? colorScheme.surfaceContainerHighest : null,
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -142,14 +319,30 @@ class _ScheduleHistoryListItem extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (selectionMode) ...[
+                Checkbox(
+                  value: item.isPendingRemoval,
+                  onChanged: (value) {
+                    if (value != null) {
+                      onSelectionChanged(value);
+                    }
+                  },
+                ),
+                const SizedBox(width: 4),
+              ],
               Expanded(
-                child: _ScheduleHistoryListItemBody(item: item),
+                child: Opacity(
+                  opacity: item.isPendingRemoval ? 0.55 : 1,
+                  child: _ScheduleHistoryListItemBody(item: item),
+                ),
               ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              if (!selectionMode) ...[
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.chevron_right,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ],
             ],
           ),
         ),
