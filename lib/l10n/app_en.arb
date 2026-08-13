@@ -250,7 +250,7 @@
   },
   "adoptScheduleFailedMessage": "Could not confirm the match table: {error}",
   "@adoptScheduleFailedMessage": {
-    "description": "Message shown when schedule adoption failed.",
+    "description": "Error message shown when schedule adoption failed.",
     "placeholders": {
       "error": {
         "type": "String",

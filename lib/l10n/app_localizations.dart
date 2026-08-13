@@ -422,7 +422,7 @@ abstract class AppLocalizations {
   /// **'この対戦表を確定しました'**
   String get adoptScheduleCompletedMessage;
 
-  /// Message shown when schedule adoption failed.
+  /// Error message shown when schedule adoption failed.
   ///
   /// In ja, this message translates to:
   /// **'対戦表を確定できませんでした: {error}'**
@@ -482,7 +482,7 @@ abstract class AppLocalizations {
   /// **'対戦表を取得できていません'**
   String get scheduleNotLoadedMessage;
 
-  /// Message shown when no schedule response contains rounds.
+  /// Message shown when the schedule response contains no rounds.
   ///
   /// In ja, this message translates to:
   /// **'対戦表データがありません'**
@@ -1704,13 +1704,13 @@ abstract class AppLocalizations {
   /// **'スコアを未入力に戻す'**
   String get doublesMatchScoreUnsetLabel;
 
-  /// Input label for a doubles match start time.
+  /// Label for a doubles match start time.
   ///
   /// In ja, this message translates to:
   /// **'開始時間'**
   String get doublesMatchStartTimeLabel;
 
-  /// Input label for a doubles match end time.
+  /// Label for a doubles match end time.
   ///
   /// In ja, this message translates to:
   /// **'終了時間'**

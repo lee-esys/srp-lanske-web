@@ -250,7 +250,7 @@
   },
   "adoptScheduleFailedMessage": "対戦表を確定できませんでした: {error}",
   "@adoptScheduleFailedMessage": {
-    "description": "Message shown when schedule adoption failed.",
+    "description": "Error message shown when schedule adoption failed.",
     "placeholders": {
       "error": {
         "type": "String",
@@ -306,7 +306,7 @@
   },
   "scheduleDataEmptyMessage": "対戦表データがありません",
   "@scheduleDataEmptyMessage": {
-    "description": "Message shown when no schedule response contains rounds."
+    "description": "Message shown when the schedule response contains no rounds."
   },
   "restLabel": "休憩",
   "@restLabel": {
@@ -1438,11 +1438,11 @@
   },
   "doublesMatchStartTimeLabel": "開始時間",
   "@doublesMatchStartTimeLabel": {
-    "description": "Input label for a doubles match start time."
+    "description": "Label for a doubles match start time."
   },
   "doublesMatchEndTimeLabel": "終了時間",
   "@doublesMatchEndTimeLabel": {
-    "description": "Input label for a doubles match end time."
+    "description": "Label for a doubles match end time."
   },
   "doublesMatchSetCurrentTimeTooltip": "現在時刻を設定",
   "@doublesMatchSetCurrentTimeTooltip": {
