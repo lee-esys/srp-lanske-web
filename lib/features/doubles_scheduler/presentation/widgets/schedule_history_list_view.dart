@@ -167,6 +167,8 @@ class _ScheduleHistoryListItemBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
+    final completedMatchCount = item.completedMatchCount;
+    final totalMatchCount = item.totalMatchCount;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,26 +193,39 @@ class _ScheduleHistoryListItemBody extends StatelessWidget {
               label: '${l10n.playerCountLabel} ${item.playerCount}',
             ),
             _ScheduleHistoryListChip(
-              icon: Icons.schedule_outlined,
-              label: l10n.lastOpenedAtLabel(
-                _formatDateTime(item.lastOpenedAt),
+              icon: Icons.calendar_today_outlined,
+              label: l10n.scheduleHistoryCreatedAtLabel(
+                _formatDate(item.createdAt),
               ),
             ),
+            if (item.isAdopted == false)
+              _ScheduleHistoryListChip(
+                icon: Icons.pending_outlined,
+                label: l10n.scheduleHistoryUnconfirmedLabel,
+              )
+            else if (item.isAdopted == true &&
+                completedMatchCount != null &&
+                totalMatchCount != null)
+              _ScheduleHistoryListChip(
+                icon: Icons.check_circle_outline,
+                label: l10n.scheduleHistoryCompletedMatchesLabel(
+                  completedMatchCount,
+                  totalMatchCount,
+                ),
+              ),
           ],
         ),
       ],
     );
   }
 
-  String _formatDateTime(DateTime dateTime) {
+  String _formatDate(DateTime dateTime) {
     final local = dateTime.toLocal();
     final y = local.year.toString().padLeft(4, '0');
     final m = local.month.toString().padLeft(2, '0');
     final d = local.day.toString().padLeft(2, '0');
-    final hh = local.hour.toString().padLeft(2, '0');
-    final mm = local.minute.toString().padLeft(2, '0');
 
-    return '$y/$m/$d $hh:$mm';
+    return '$y/$m/$d';
   }
 }
 
