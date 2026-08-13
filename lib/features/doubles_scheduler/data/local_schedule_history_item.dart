@@ -7,6 +7,10 @@ class LocalScheduleHistoryItem {
     required this.createdAt,
     required this.firstSavedAt,
     required this.lastOpenedAt,
+    this.generatedScheduleId,
+    this.isAdopted,
+    this.completedMatchCount,
+    this.totalMatchCount,
   });
 
   final String publicId;
@@ -16,6 +20,10 @@ class LocalScheduleHistoryItem {
   final DateTime createdAt;
   final DateTime firstSavedAt;
   final DateTime lastOpenedAt;
+  final String? generatedScheduleId;
+  final bool? isAdopted;
+  final int? completedMatchCount;
+  final int? totalMatchCount;
 
   Map<String, dynamic> toJson() {
     return {
@@ -26,27 +34,42 @@ class LocalScheduleHistoryItem {
       'created_at': createdAt.toIso8601String(),
       'first_saved_at': firstSavedAt.toIso8601String(),
       'last_opened_at': lastOpenedAt.toIso8601String(),
+      'generated_schedule_id': generatedScheduleId,
+      'is_adopted': isAdopted,
+      'completed_match_count': completedMatchCount,
+      'total_match_count': totalMatchCount,
     };
   }
 
   static LocalScheduleHistoryItem fromJson(Map<String, dynamic> json) {
     // TODO(ver0.2): Remove the legacy participant_count fallback.
     final rawPlayerCount = json['player_count'] ?? json['participant_count'];
+    final fallbackNow = DateTime.now();
+    final lastOpenedAt =
+        DateTime.tryParse(json['last_opened_at'] as String? ?? '') ?? fallbackNow;
     final firstSavedAt =
         DateTime.tryParse(json['first_saved_at'] as String? ?? '') ??
-            DateTime.now();
+            lastOpenedAt;
+    final createdAt =
+        DateTime.tryParse(json['created_at'] as String? ?? '') ?? firstSavedAt;
+    final rawGeneratedScheduleId = json['generated_schedule_id'] as String?;
+    final generatedScheduleId = rawGeneratedScheduleId?.trim();
 
     return LocalScheduleHistoryItem(
       publicId: json['public_id'] as String? ?? '',
       title: json['title'] as String? ?? 'Untitled match table',
       courtCount: json['court_count'] as int? ?? 0,
       playerCount: rawPlayerCount as int? ?? 0,
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
-          firstSavedAt,
+      createdAt: createdAt,
       firstSavedAt: firstSavedAt,
-      lastOpenedAt:
-          DateTime.tryParse(json['last_opened_at'] as String? ?? '') ??
-              DateTime.now(),
+      lastOpenedAt: lastOpenedAt,
+      generatedScheduleId:
+          generatedScheduleId == null || generatedScheduleId.isEmpty
+              ? null
+              : generatedScheduleId,
+      isAdopted: json['is_adopted'] as bool?,
+      completedMatchCount: json['completed_match_count'] as int?,
+      totalMatchCount: json['total_match_count'] as int?,
     );
   }
 }
