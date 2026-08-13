@@ -83,7 +83,6 @@ class _EventListPageState extends State<EventListPage> {
       builder: (context) {
         return AlertDialog(
           title: Text(l10n.clearScheduleHistoryConfirmTitle),
-          content: Text(l10n.clearScheduleHistoryConfirmBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
