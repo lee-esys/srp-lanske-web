@@ -306,7 +306,7 @@
   },
   "scheduleDataEmptyMessage": "対戦表データがありません",
   "@scheduleDataEmptyMessage": {
-    "description": "Message shown when the schedule response contains no rounds."
+    "description": "Message shown when no schedule response contains rounds."
   },
   "restLabel": "休憩",
   "@restLabel": {
@@ -329,6 +329,34 @@
       "lastOpenedAt": {
         "type": "String",
         "example": "2026/05/22 23:10"
+      }
+    }
+  },
+  "scheduleHistoryCreatedAtLabel": "{createdAt} 作成",
+  "@scheduleHistoryCreatedAtLabel": {
+    "description": "Label showing the creation date of a saved doubles schedule.",
+    "placeholders": {
+      "createdAt": {
+        "type": "String",
+        "example": "2026/08/14"
+      }
+    }
+  },
+  "scheduleHistoryUnconfirmedLabel": "未確定",
+  "@scheduleHistoryUnconfirmedLabel": {
+    "description": "Label shown for a saved doubles schedule that has not been confirmed."
+  },
+  "scheduleHistoryCompletedMatchesLabel": "{completedMatchCount} / {totalMatchCount} 試合終了",
+  "@scheduleHistoryCompletedMatchesLabel": {
+    "description": "Progress label showing completed and total match counts in doubles schedule history.",
+    "placeholders": {
+      "completedMatchCount": {
+        "type": "int",
+        "example": "8"
+      },
+      "totalMatchCount": {
+        "type": "int",
+        "example": "12"
       }
     }
   },
@@ -1410,11 +1438,11 @@
   },
   "doublesMatchStartTimeLabel": "開始時間",
   "@doublesMatchStartTimeLabel": {
-    "description": "Label for a doubles match start time."
+    "description": "Input label for a doubles match start time."
   },
   "doublesMatchEndTimeLabel": "終了時間",
   "@doublesMatchEndTimeLabel": {
-    "description": "Label for a doubles match end time."
+    "description": "Input label for a doubles match end time."
   },
   "doublesMatchSetCurrentTimeTooltip": "現在時刻を設定",
   "@doublesMatchSetCurrentTimeTooltip": {
