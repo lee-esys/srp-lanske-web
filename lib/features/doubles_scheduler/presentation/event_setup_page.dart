@@ -48,7 +48,6 @@ class _EventSetupPageState extends State<EventSetupPage> {
   bool _isLoadingEvent = false;
   bool _loadedFromUrl = false;
   bool _isUrlImportCompleted = false;
-  int _scheduleListReloadToken = 0;
 
   String? _importedSourceUrl;
 
@@ -132,14 +131,6 @@ class _EventSetupPageState extends State<EventSetupPage> {
         publicId: item.publicId,
       ),
     );
-  }
-
-  void _handleEndDrawerChanged(bool isOpened) {
-    if (!isOpened) return;
-
-    setState(() {
-      _scheduleListReloadToken += 1;
-    });
   }
 
   void _showMessage(
@@ -666,11 +657,9 @@ class _EventSetupPageState extends State<EventSetupPage> {
         ],
       ),
       endDrawer: DoublesNavigationDrawer(
-        reloadToken: _scheduleListReloadToken,
         hintController: _menuHintController,
         onOpenSchedule: _openScheduleFromHistory,
       ),
-      onEndDrawerChanged: _handleEndDrawerChanged,
       body: SafeArea(
         child: Stack(
           children: [
