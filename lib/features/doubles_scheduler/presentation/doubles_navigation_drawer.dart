@@ -135,8 +135,7 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
   @override
   Widget build(BuildContext context) {
     final width = switch (_view) {
-      _DoublesDrawerView.menu =>
-        DoublesNavigationDrawer.menuWidthFor(context),
+      _DoublesDrawerView.menu => DoublesNavigationDrawer.menuWidthFor(context),
       _DoublesDrawerView.schedules =>
         DoublesNavigationDrawer.scheduleListWidthFor(context),
     };

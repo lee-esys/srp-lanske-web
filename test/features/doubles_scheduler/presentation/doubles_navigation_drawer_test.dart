@@ -42,7 +42,8 @@ void main() {
     expect(find.text('TOPへ'), findsOneWidget);
   });
 
-  testWidgets('shows schedule-specific actions only when callbacks are supplied',
+  testWidgets(
+      'shows schedule-specific actions only when callbacks are supplied',
       (tester) async {
     var refreshCount = 0;
     var editCount = 0;

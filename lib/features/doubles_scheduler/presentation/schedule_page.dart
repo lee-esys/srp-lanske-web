@@ -995,8 +995,7 @@ class _SchedulePageState extends State<SchedulePage> {
             : null,
         onEditEventInfo:
             canEditSharedData ? _eventSummaryController.editEventInfo : null,
-        onChangeCourtDisplay:
-            canEditSharedData ? _changeCourtDisplay : null,
+        onChangeCourtDisplay: canEditSharedData ? _changeCourtDisplay : null,
         onRegenerate: !_hasAdoptedSchedule &&
                 !_isLoading &&
                 !_isAdopting &&
