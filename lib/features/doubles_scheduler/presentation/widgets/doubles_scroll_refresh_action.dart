@@ -78,9 +78,8 @@ class _DoublesScrollRefreshActionState
     final revealThreshold = height * _revealViewportFraction;
     final hideThreshold = height * _hideViewportFraction;
     final offset = widget.scrollController.offset;
-    final shouldShow = _isVisible
-        ? offset >= hideThreshold
-        : offset >= revealThreshold;
+    final shouldShow =
+        _isVisible ? offset >= hideThreshold : offset >= revealThreshold;
 
     _setVisible(shouldShow);
   }
