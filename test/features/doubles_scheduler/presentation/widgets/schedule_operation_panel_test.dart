@@ -4,7 +4,8 @@ import 'package:srp_lanske/features/doubles_scheduler/presentation/widgets/sched
 import 'package:srp_lanske/l10n/l10n.dart';
 
 void main() {
-  testWidgets('shows court, regenerate, and confirm actions before confirmation',
+  testWidgets(
+      'shows court, regenerate, and confirm actions before confirmation',
       (tester) async {
     var regenerateCount = 0;
     var adoptCount = 0;
