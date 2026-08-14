@@ -880,26 +880,30 @@ class _SchedulePageState extends State<SchedulePage> {
           selectedPlayerId: _selectedPlayerId,
           onPlayerSelected: _toggleSelectedPlayer,
         ),
-        const SizedBox(height: 12),
-        ScheduleSectionCard(
-          child: ScheduleOperationPanel(
-            courtDisplaySummary: _courtDisplaySummary,
-            canChangeCourtDisplay: !_hasAdoptedSchedule &&
-                _savedEvent != null &&
-                !_isRefreshing &&
-                !_isCheckingRegenerate &&
-                !_isOpeningSharedDataDialog,
-            onChangeCourtDisplay: _changeCourtDisplay,
-            showActionButtons: !_hasAdoptedSchedule,
-            isLoading: _isLoading ||
-                _isRefreshing ||
-                _isCheckingRegenerate ||
-                _isOpeningSharedDataDialog,
-            isAdopting: _isAdopting,
-            canAdopt: _generatedScheduleId != null && _scheduleResponse != null,
-            onAdopt: _adoptSchedule,
+        if (!_hasAdoptedSchedule) ...[
+          const SizedBox(height: 12),
+          ScheduleSectionCard(
+            child: ScheduleOperationPanel(
+              courtDisplaySummary: _courtDisplaySummary,
+              canChangeCourtDisplay: _savedEvent != null &&
+                  !_isRefreshing &&
+                  !_isCheckingRegenerate &&
+                  !_isOpeningSharedDataDialog,
+              onChangeCourtDisplay: _changeCourtDisplay,
+              showActionButtons: true,
+              isLoading: _isLoading ||
+                  _isRefreshing ||
+                  _isCheckingRegenerate ||
+                  _isOpeningSharedDataDialog,
+              isAdopting: _isAdopting,
+              generateButtonLabel: l10n.regenerateButton,
+              canAdopt:
+                  _generatedScheduleId != null && _scheduleResponse != null,
+              onGenerate: _requestGenerateSchedule,
+              onAdopt: _adoptSchedule,
+            ),
           ),
-        ),
+        ],
         const SizedBox(height: 12),
         ScheduleSectionCard(
           title: l10n.matchTableTitle,
