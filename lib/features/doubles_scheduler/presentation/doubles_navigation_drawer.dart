@@ -223,7 +223,8 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
               if (widget.onChangeCourtDisplay != null)
                 _DoublesNavigationTile(
                   icon: Icons.tune,
-                  label: l10n.changeCourtDisplayButton,
+                  label:
+                      '${l10n.courtDisplaySectionTitle}: ${l10n.changeCourtDisplayButton}',
                   onTap: () {
                     unawaited(_runAction(widget.onChangeCourtDisplay!));
                   },
