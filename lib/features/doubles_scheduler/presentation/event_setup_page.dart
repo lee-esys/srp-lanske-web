@@ -4,20 +4,22 @@ import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/presentation/app_message_type.dart';
 import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
-import 'package:srp_lanske/shared/utils/external_link.dart';
+import 'package:srp_lanske/shared/utils/browser_url.dart';
 import 'package:srp_lanske/shared/utils/number_label_mapper.dart';
 
+import '../application/schedule_share_url.dart';
 import '../application/tennisbear_event_url.dart';
+import '../data/local_schedule_history_item.dart';
 import '../domain/player_draft.dart';
 import '../infrastructure/tennisbear_import_preview_api_client.dart';
-import 'event_list_page.dart';
+import 'doubles_navigation_drawer.dart';
 import 'models/event_draft.dart';
+import 'restored_schedule_page.dart';
 import 'schedule_page.dart';
+import 'widgets/doubles_navigation_menu_button.dart';
 import 'widgets/event_setup_detail_section.dart';
 import 'widgets/event_setup_stepper_field.dart';
 import 'widgets/event_setup_url_section.dart';
-
-const _supportPagePath = '/support/index.html';
 
 class EventSetupPage extends StatefulWidget {
   // TODO: 編集時の initialDraft 対応
@@ -27,10 +29,9 @@ class EventSetupPage extends StatefulWidget {
   State<EventSetupPage> createState() => _EventSetupPageState();
 }
 
-enum _EventSetupMenuAction { list, support }
-
 class _EventSetupPageState extends State<EventSetupPage> {
   final _formKey = GlobalKey<FormState>();
+  final _menuHintController = DoublesNavigationMenuHintController();
 
   final _urlController = TextEditingController();
   final _courtsController = TextEditingController(text: '1');
@@ -47,6 +48,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
   bool _isLoadingEvent = false;
   bool _loadedFromUrl = false;
   bool _isUrlImportCompleted = false;
+  int _scheduleListReloadToken = 0;
 
   String? _importedSourceUrl;
 
@@ -118,18 +120,26 @@ class _EventSetupPageState extends State<EventSetupPage> {
     super.dispose();
   }
 
-  void _handleMenu(_EventSetupMenuAction action) {
-    switch (action) {
-      case _EventSetupMenuAction.list:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const EventListPage()),
-        );
-        break;
-      case _EventSetupMenuAction.support:
-        openUrlInCurrentTab(_supportPagePath);
-        break;
-    }
+  void _openScheduleFromHistory(LocalScheduleHistoryItem item) {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        builder: (_) => RestoredSchedulePage(publicId: item.publicId),
+      ),
+    );
+    replaceUrl(
+      buildScheduleShareUrl(
+        baseUri: Uri.base,
+        publicId: item.publicId,
+      ),
+    );
+  }
+
+  void _handleEndDrawerChanged(bool isOpened) {
+    if (!isOpened) return;
+
+    setState(() {
+      _scheduleListReloadToken += 1;
+    });
   }
 
   void _showMessage(
@@ -638,33 +648,29 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.eventSetupTitle),
+        automaticallyImplyLeading: false,
+        title: Text(
+          l10n.eventSetupTitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         actions: [
-          PopupMenuButton<_EventSetupMenuAction>(
-            onSelected: _handleMenu,
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: _EventSetupMenuAction.list,
-                child: Text(l10n.matchTableList),
-              ),
-              PopupMenuItem(
-                value: _EventSetupMenuAction.support,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(l10n.supportMenuTitle),
-                    Text(
-                      l10n.supportMenuSubtitle,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          Builder(
+            builder: (context) {
+              return DoublesNavigationMenuButton(
+                hintController: _menuHintController,
+                onPressed: () => Scaffold.of(context).openEndDrawer(),
+              );
+            },
           ),
         ],
       ),
+      endDrawer: DoublesNavigationDrawer(
+        reloadToken: _scheduleListReloadToken,
+        hintController: _menuHintController,
+        onOpenSchedule: _openScheduleFromHistory,
+      ),
+      onEndDrawerChanged: _handleEndDrawerChanged,
       body: SafeArea(
         child: Stack(
           children: [
