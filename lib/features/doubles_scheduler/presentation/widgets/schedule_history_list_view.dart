@@ -126,6 +126,35 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
     }
   }
 
+  Future<void> _clearPendingRemoval(
+    List<LocalScheduleHistoryItem> items,
+  ) async {
+    if (_isUpdating) return;
+
+    final publicIds = items
+        .where((item) => item.isPendingRemoval)
+        .map((item) => item.publicId)
+        .toList(growable: false);
+    if (publicIds.isEmpty) return;
+
+    setState(() {
+      _isUpdating = true;
+    });
+    try {
+      await _historyStore.setPendingRemovalForPublicIds(
+        publicIds,
+        isPendingRemoval: false,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdating = false;
+          _itemsFuture = _loadItems();
+        });
+      }
+    }
+  }
+
   Future<void> _confirmSuppressPending() async {
     if (_isUpdating) return;
 
@@ -134,7 +163,7 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(l10n.clearScheduleHistoryConfirmTitle),
+          title: Text(l10n.scheduleHistorySelectedRemoveConfirmTitle),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -142,7 +171,7 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text(l10n.clearScheduleHistoryActionButton),
+              child: Text(l10n.scheduleHistoryRemoveFromListAction),
             ),
           ],
         );
@@ -169,7 +198,7 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
     if (!mounted || suppressedCount <= 0) return;
     AppSnackBar.show(
       context,
-      message: l10n.scheduleHistoryClearedMessage,
+      message: l10n.scheduleHistorySelectedRemovedMessage,
       type: AppMessageType.success,
     );
   }
@@ -223,7 +252,14 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
                       onPressed:
                           _isUpdating ? null : () => _markAllUnconfirmed(items),
                       icon: const Icon(Icons.select_all),
-                      label: Text(l10n.scheduleHistoryUnconfirmedLabel),
+                      label: Text(l10n.scheduleHistorySelectUnconfirmedAction),
+                    ),
+                  if (_selectionMode && pendingCount > 0)
+                    TextButton.icon(
+                      onPressed:
+                          _isUpdating ? null : () => _clearPendingRemoval(items),
+                      icon: const Icon(Icons.remove_done),
+                      label: Text(l10n.scheduleHistoryClearSelectionAction),
                     ),
                   if (_selectionMode)
                     TextButton.icon(
@@ -253,7 +289,7 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
                     FilledButton.tonalIcon(
                       onPressed: _isUpdating ? null : _confirmSuppressPending,
                       icon: const Icon(Icons.delete_sweep_outlined),
-                      label: Text(l10n.clearScheduleHistoryActionButton),
+                      label: Text(l10n.scheduleHistoryRemoveFromListAction),
                     ),
                 ],
               ),
