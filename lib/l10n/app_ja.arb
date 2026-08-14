@@ -848,7 +848,7 @@
   },
   "teamScheduleBulkEditMembersSection": "メンバー名",
   "@teamScheduleBulkEditMembersSection": {
-    "description": "Section title for team names in the bulk edit dialog."
+    "description": "Section title for member names in the bulk edit dialog."
   },
   "teamScheduleTeamNameLabel": "チーム{teamSlot}",
   "@teamScheduleTeamNameLabel": {
@@ -992,7 +992,7 @@
   },
   "teamScheduleShareUrlCopiedMessage": "共有URLをコピーしました",
   "@teamScheduleShareUrlCopiedMessage": {
-    "description": "Message shown after copying the team schedule share URL."
+    "description": "Message shown after copying a team schedule share URL."
   },
   "nextTeamMatchTitle": "次の対戦",
   "@nextTeamMatchTitle": {
