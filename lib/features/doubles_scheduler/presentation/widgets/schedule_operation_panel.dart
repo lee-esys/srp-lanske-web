@@ -12,7 +12,9 @@ class ScheduleOperationPanel extends StatelessWidget {
     required this.showActionButtons,
     required this.isLoading,
     required this.isAdopting,
+    required this.generateButtonLabel,
     required this.canAdopt,
+    required this.onGenerate,
     required this.onAdopt,
   });
 
@@ -23,7 +25,9 @@ class ScheduleOperationPanel extends StatelessWidget {
   final bool showActionButtons;
   final bool isLoading;
   final bool isAdopting;
+  final String generateButtonLabel;
   final bool canAdopt;
+  final VoidCallback? onGenerate;
   final VoidCallback? onAdopt;
 
   @override
@@ -58,7 +62,9 @@ class ScheduleOperationPanel extends StatelessWidget {
           ScheduleActionButtons(
             isLoading: isLoading,
             isAdopting: isAdopting,
+            generateButtonLabel: generateButtonLabel,
             canAdopt: canAdopt,
+            onGenerate: onGenerate,
             onAdopt: onAdopt,
           ),
         ],
