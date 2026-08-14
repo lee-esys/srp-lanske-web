@@ -3,15 +3,22 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'local_schedule_history_item.dart';
+import 'local_schedule_history_policy.dart';
 
 class LocalScheduleHistoryStore {
   static const _key = 'lanske_recent_schedules';
-  static const _maxItems = 20;
+  static const _suppressedKey = 'lanske_suppressed_schedule_ids';
 
   Future<List<LocalScheduleHistoryItem>> findAll() async {
-    final items = await _readAll();
-
-    return items
+    final prefs = await SharedPreferences.getInstance();
+    final suppressedPublicIds = _readSuppressedPublicIds(prefs);
+    final items = await _readAll(prefs);
+    final visibleItems = items
+        .where(
+          (item) =>
+              !suppressedPublicIds.contains(_normalizePublicId(item.publicId)),
+        )
+        .toList(growable: true)
       ..sort((a, b) {
         final createdAtComparison = b.createdAt.compareTo(a.createdAt);
         if (createdAtComparison != 0) {
@@ -19,11 +26,20 @@ class LocalScheduleHistoryStore {
         }
         return b.lastOpenedAt.compareTo(a.lastOpenedAt);
       });
+
+    return visibleItems
+        .take(LocalScheduleHistoryPolicy.displayLimit)
+        .toList(growable: false);
   }
 
   Future<void> upsert(LocalScheduleHistoryItem item) async {
     final prefs = await SharedPreferences.getInstance();
-    final current = await _readAll();
+    final normalizedPublicId = _normalizePublicId(item.publicId);
+    if (_readSuppressedPublicIds(prefs).contains(normalizedPublicId)) {
+      return;
+    }
+
+    final current = await _readAll(prefs);
     final existing = {
       for (final currentItem in current) currentItem.publicId: currentItem,
     };
@@ -57,6 +73,8 @@ class LocalScheduleHistoryStore {
           : sameGeneratedSchedule
               ? previous.totalMatchCount
               : null,
+      isPendingRemoval:
+          (previous?.isPendingRemoval ?? false) || item.isPendingRemoval,
     );
 
     await _saveRetained(prefs, existing.values);
@@ -69,16 +87,20 @@ class LocalScheduleHistoryStore {
     required int totalMatchCount,
     DateTime? lastOpenedAt,
   }) async {
-    final normalizedPublicId = publicId.trim().toUpperCase();
+    final normalizedPublicId = _normalizePublicId(publicId);
     final normalizedGeneratedScheduleId = generatedScheduleId.trim();
     if (normalizedPublicId.isEmpty || normalizedGeneratedScheduleId.isEmpty) {
       return;
     }
 
     final prefs = await SharedPreferences.getInstance();
-    final current = await _readAll();
+    if (_readSuppressedPublicIds(prefs).contains(normalizedPublicId)) {
+      return;
+    }
+
+    final current = await _readAll(prefs);
     final index = current.indexWhere(
-      (item) => item.publicId.trim().toUpperCase() == normalizedPublicId,
+      (item) => _normalizePublicId(item.publicId) == normalizedPublicId,
     );
     if (index < 0) {
       return;
@@ -104,40 +126,194 @@ class LocalScheduleHistoryStore {
       isAdopted: true,
       completedMatchCount: completedMatchCount,
       totalMatchCount: totalMatchCount,
+      isPendingRemoval: item.isPendingRemoval,
     );
 
     await _saveRetained(prefs, current);
   }
 
+  Future<void> replacePendingRemovalForPublicIds({
+    required Iterable<String> visiblePublicIds,
+    required Iterable<String> pendingPublicIds,
+  }) async {
+    final normalizedVisiblePublicIds = visiblePublicIds
+        .map(_normalizePublicId)
+        .where((publicId) => publicId.isNotEmpty)
+        .toSet();
+    if (normalizedVisiblePublicIds.isEmpty) {
+      return;
+    }
+
+    final normalizedPendingPublicIds = pendingPublicIds
+        .map(_normalizePublicId)
+        .where(normalizedVisiblePublicIds.contains)
+        .toSet();
+    final prefs = await SharedPreferences.getInstance();
+    final current = await _readAll(prefs);
+    var changed = false;
+
+    for (var index = 0; index < current.length; index += 1) {
+      final item = current[index];
+      final normalizedPublicId = _normalizePublicId(item.publicId);
+      if (!normalizedVisiblePublicIds.contains(normalizedPublicId)) {
+        continue;
+      }
+
+      final isPendingRemoval =
+          normalizedPendingPublicIds.contains(normalizedPublicId);
+      if (item.isPendingRemoval == isPendingRemoval) {
+        continue;
+      }
+
+      current[index] = _copyWithPendingRemoval(item, isPendingRemoval);
+      changed = true;
+    }
+
+    if (!changed) {
+      return;
+    }
+
+    await _saveRetained(prefs, current);
+  }
+
+  Future<int> suppressPublicIds(Iterable<String> publicIds) async {
+    final normalizedPublicIds = publicIds
+        .map(_normalizePublicId)
+        .where((publicId) => publicId.isNotEmpty)
+        .toSet();
+    if (normalizedPublicIds.isEmpty) {
+      return 0;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final current = await _readAll(prefs);
+    final targets = current
+        .where(
+          (item) => normalizedPublicIds.contains(
+            _normalizePublicId(item.publicId),
+          ),
+        )
+        .toList(growable: false);
+    if (targets.isEmpty) {
+      return 0;
+    }
+
+    final suppressedPublicIds = _readSuppressedPublicIds(prefs)
+      ..addAll(targets.map((item) => _normalizePublicId(item.publicId)));
+    final retained = current
+        .where(
+          (item) => !normalizedPublicIds.contains(
+            _normalizePublicId(item.publicId),
+          ),
+        )
+        .toList(growable: false);
+
+    await _saveSuppressedPublicIds(prefs, suppressedPublicIds);
+    await _saveRetained(prefs, retained);
+    return targets.length;
+  }
+
+  Future<void> setPendingRemoval({
+    required String publicId,
+    required bool isPendingRemoval,
+  }) async {
+    await setPendingRemovalForPublicIds(
+      [publicId],
+      isPendingRemoval: isPendingRemoval,
+    );
+  }
+
+  Future<void> setPendingRemovalForPublicIds(
+    Iterable<String> publicIds, {
+    required bool isPendingRemoval,
+  }) async {
+    final normalizedPublicIds = publicIds
+        .map(_normalizePublicId)
+        .where((publicId) => publicId.isNotEmpty)
+        .toSet();
+    if (normalizedPublicIds.isEmpty) {
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final current = await _readAll(prefs);
+    var changed = false;
+
+    for (var index = 0; index < current.length; index += 1) {
+      final item = current[index];
+      if (!normalizedPublicIds.contains(_normalizePublicId(item.publicId)) ||
+          item.isPendingRemoval == isPendingRemoval) {
+        continue;
+      }
+
+      current[index] = _copyWithPendingRemoval(item, isPendingRemoval);
+      changed = true;
+    }
+
+    if (!changed) {
+      return;
+    }
+
+    await _saveRetained(prefs, current);
+  }
+
+  Future<int> suppressPendingRemoval() async {
+    final prefs = await SharedPreferences.getInstance();
+    final current = await _readAll(prefs);
+    final pendingPublicIds = current
+        .where((item) => item.isPendingRemoval)
+        .map((item) => item.publicId)
+        .toList(growable: false);
+
+    return suppressPublicIds(pendingPublicIds);
+  }
+
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
+    final current = await _readAll(prefs);
+    if (current.isEmpty) {
+      await prefs.remove(_key);
+      return;
+    }
+
+    final suppressedPublicIds = _readSuppressedPublicIds(prefs)
+      ..addAll(current.map((item) => _normalizePublicId(item.publicId)));
+    await _saveSuppressedPublicIds(prefs, suppressedPublicIds);
     await prefs.remove(_key);
   }
 
   Future<void> clearExceptPublicId(String publicId) async {
-    final keepPublicId = publicId.trim().toUpperCase();
+    final keepPublicId = _normalizePublicId(publicId);
     if (keepPublicId.isEmpty) {
       await clearAll();
       return;
     }
 
     final prefs = await SharedPreferences.getInstance();
-    final current = await _readAll();
-    final kept = current
-        .where((item) => item.publicId.trim().toUpperCase() == keepPublicId)
-        .map((item) => item.toJson())
-        .toList(growable: false);
+    final current = await _readAll(prefs);
+    final suppressedPublicIds = _readSuppressedPublicIds(prefs);
+    final kept = <LocalScheduleHistoryItem>[];
 
+    for (final item in current) {
+      if (_normalizePublicId(item.publicId) == keepPublicId) {
+        kept.add(item);
+      } else {
+        suppressedPublicIds.add(_normalizePublicId(item.publicId));
+      }
+    }
+
+    await _saveSuppressedPublicIds(prefs, suppressedPublicIds);
     if (kept.isEmpty) {
       await prefs.remove(_key);
       return;
     }
 
-    await prefs.setString(_key, jsonEncode(kept));
+    await _saveRetained(prefs, kept);
   }
 
-  Future<List<LocalScheduleHistoryItem>> _readAll() async {
-    final prefs = await SharedPreferences.getInstance();
+  Future<List<LocalScheduleHistoryItem>> _readAll(
+    SharedPreferences prefs,
+  ) async {
     final raw = prefs.getString(_key);
     if (raw == null || raw.isEmpty) return <LocalScheduleHistoryItem>[];
 
@@ -151,6 +327,21 @@ class LocalScheduleHistoryStore {
         .toList(growable: true);
   }
 
+  Set<String> _readSuppressedPublicIds(SharedPreferences prefs) {
+    return (prefs.getStringList(_suppressedKey) ?? const <String>[])
+        .map(_normalizePublicId)
+        .where((publicId) => publicId.isNotEmpty)
+        .toSet();
+  }
+
+  Future<void> _saveSuppressedPublicIds(
+    SharedPreferences prefs,
+    Set<String> publicIds,
+  ) async {
+    final values = publicIds.toList(growable: false)..sort();
+    await prefs.setStringList(_suppressedKey, values);
+  }
+
   Future<void> _saveRetained(
     SharedPreferences prefs,
     Iterable<LocalScheduleHistoryItem> items,
@@ -158,10 +349,39 @@ class LocalScheduleHistoryStore {
     final retained = items.toList(growable: false)
       ..sort((a, b) => b.lastOpenedAt.compareTo(a.lastOpenedAt));
     final encoded = retained
-        .take(_maxItems)
+        .take(LocalScheduleHistoryPolicy.storageLimit)
         .map((item) => item.toJson())
         .toList(growable: false);
 
+    if (encoded.isEmpty) {
+      await prefs.remove(_key);
+      return;
+    }
+
     await prefs.setString(_key, jsonEncode(encoded));
+  }
+
+  LocalScheduleHistoryItem _copyWithPendingRemoval(
+    LocalScheduleHistoryItem item,
+    bool isPendingRemoval,
+  ) {
+    return LocalScheduleHistoryItem(
+      publicId: item.publicId,
+      title: item.title,
+      courtCount: item.courtCount,
+      playerCount: item.playerCount,
+      createdAt: item.createdAt,
+      firstSavedAt: item.firstSavedAt,
+      lastOpenedAt: item.lastOpenedAt,
+      generatedScheduleId: item.generatedScheduleId,
+      isAdopted: item.isAdopted,
+      completedMatchCount: item.completedMatchCount,
+      totalMatchCount: item.totalMatchCount,
+      isPendingRemoval: isPendingRemoval,
+    );
+  }
+
+  String _normalizePublicId(String publicId) {
+    return publicId.trim().toUpperCase();
   }
 }

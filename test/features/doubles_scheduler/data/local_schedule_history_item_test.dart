@@ -15,6 +15,7 @@ void main() {
       isAdopted: true,
       completedMatchCount: 8,
       totalMatchCount: 12,
+      isPendingRemoval: true,
     );
 
     final restored = LocalScheduleHistoryItem.fromJson(item.toJson());
@@ -24,9 +25,10 @@ void main() {
     expect(restored.completedMatchCount, 8);
     expect(restored.totalMatchCount, 12);
     expect(restored.createdAt, item.createdAt);
+    expect(restored.isPendingRemoval, isTrue);
   });
 
-  test('keeps new metadata nullable for legacy history', () {
+  test('keeps new metadata compatible for legacy history', () {
     final restored = LocalScheduleHistoryItem.fromJson({
       'public_id': 'ABCDEFGH',
       'title': 'Legacy event',
@@ -41,6 +43,7 @@ void main() {
     expect(restored.isAdopted, isNull);
     expect(restored.completedMatchCount, isNull);
     expect(restored.totalMatchCount, isNull);
+    expect(restored.isPendingRemoval, isFalse);
   });
 
   test('uses last opened time as stable legacy created-at fallback', () {

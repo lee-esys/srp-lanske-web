@@ -88,6 +88,143 @@ void main() {
 
     expect(openedItem?.publicId, 'ABCDEFGH');
   });
+
+  testWidgets('keeps selection as draft until confirmation and then removes it',
+      (tester) async {
+    final unconfirmed = LocalScheduleHistoryItem(
+      publicId: 'UNCONFIRMED',
+      title: '未確定イベント',
+      courtCount: 1,
+      playerCount: 6,
+      createdAt: DateTime(2026, 8, 14, 8),
+      firstSavedAt: DateTime(2026, 8, 14, 8),
+      lastOpenedAt: DateTime(2026, 8, 14, 8),
+      generatedScheduleId: 'schedule-unconfirmed',
+      isAdopted: false,
+      completedMatchCount: 0,
+      totalMatchCount: 10,
+    );
+    final confirmed = LocalScheduleHistoryItem(
+      publicId: 'CONFIRMED',
+      title: '確定済みイベント',
+      courtCount: 1,
+      playerCount: 6,
+      createdAt: DateTime(2026, 8, 13, 8),
+      firstSavedAt: DateTime(2026, 8, 13, 8),
+      lastOpenedAt: DateTime(2026, 8, 13, 8),
+      generatedScheduleId: 'schedule-confirmed',
+      isAdopted: true,
+      completedMatchCount: 3,
+      totalMatchCount: 10,
+    );
+    SharedPreferences.setMockInitialValues({
+      'lanske_recent_schedules': jsonEncode([
+        unconfirmed.toJson(),
+        confirmed.toJson(),
+      ]),
+    });
+
+    await _pumpDrawer(tester, width: 340);
+
+    await tester.tap(find.byIcon(Icons.delete_outline));
+    await tester.pumpAndSettle();
+    expect(find.byType(Checkbox), findsNWidgets(2));
+    expect(find.text('未確定を選択'), findsOneWidget);
+    expect(find.text('選択を解除'), findsNothing);
+
+    await tester.tap(find.text('未確定を選択'));
+    await tester.pumpAndSettle();
+    expect(find.text('選択を解除'), findsOneWidget);
+
+    var markedById = await _readPendingById();
+    expect(markedById['UNCONFIRMED'], isFalse);
+    expect(markedById['CONFIRMED'], isFalse);
+
+    await tester.tap(find.text('選択を解除'));
+    await tester.pumpAndSettle();
+    expect(find.text('選択を解除'), findsNothing);
+
+    markedById = await _readPendingById();
+    expect(markedById['UNCONFIRMED'], isFalse);
+    expect(markedById['CONFIRMED'], isFalse);
+
+    await tester.tap(find.text('未確定を選択'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('決定'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Checkbox), findsNothing);
+    expect(find.text('未確定イベント'), findsOneWidget);
+
+    markedById = await _readPendingById();
+    expect(markedById['UNCONFIRMED'], isTrue);
+    expect(markedById['CONFIRMED'], isFalse);
+
+    await tester.tap(find.text('一覧から削除'));
+    await tester.pumpAndSettle();
+    expect(find.text('選択した対戦表を一覧から削除しますか？'), findsOneWidget);
+
+    await tester.tap(
+      find.widgetWithText(FilledButton, '一覧から削除').last,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('未確定イベント'), findsNothing);
+    expect(find.text('確定済みイベント'), findsOneWidget);
+
+    final prefsAfterSuppress = await SharedPreferences.getInstance();
+    expect(
+      prefsAfterSuppress.getStringList('lanske_suppressed_schedule_ids'),
+      contains('UNCONFIRMED'),
+    );
+  });
+
+  testWidgets('persists draft selection when tapping outside the drawer',
+      (tester) async {
+    final item = LocalScheduleHistoryItem(
+      publicId: 'UNCONFIRMED',
+      title: '未確定イベント',
+      courtCount: 1,
+      playerCount: 6,
+      createdAt: DateTime(2026, 8, 14, 8),
+      firstSavedAt: DateTime(2026, 8, 14, 8),
+      lastOpenedAt: DateTime(2026, 8, 14, 8),
+      generatedScheduleId: 'schedule-unconfirmed',
+      isAdopted: false,
+      completedMatchCount: 0,
+      totalMatchCount: 10,
+    );
+    SharedPreferences.setMockInitialValues({
+      'lanske_recent_schedules': jsonEncode([item.toJson()]),
+    });
+
+    await _pumpDrawer(tester, width: 400);
+    await tester.tap(find.byIcon(Icons.delete_outline));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(Checkbox));
+    await tester.pumpAndSettle();
+
+    var markedById = await _readPendingById();
+    expect(markedById['UNCONFIRMED'], isFalse);
+
+    await tester.tapAt(const Offset(20, 400));
+    await tester.pumpAndSettle();
+
+    markedById = await _readPendingById();
+    expect(markedById['UNCONFIRMED'], isTrue);
+  });
+}
+
+Future<Map<String, bool>> _readPendingById() async {
+  final prefs = await SharedPreferences.getInstance();
+  final raw = jsonDecode(
+    prefs.getString('lanske_recent_schedules')!,
+  ) as List<dynamic>;
+
+  return {
+    for (final value in raw.cast<Map<String, dynamic>>())
+      value['public_id'] as String: value['is_pending_removal'] as bool,
+  };
 }
 
 Future<void> _pumpDrawer(

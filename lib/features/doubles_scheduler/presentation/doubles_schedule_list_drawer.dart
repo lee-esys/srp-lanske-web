@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
 import '../data/local_schedule_history_item.dart';
 import 'widgets/schedule_history_list_view.dart';
 
-class DoublesScheduleListDrawer extends StatelessWidget {
+class DoublesScheduleListDrawer extends StatefulWidget {
   const DoublesScheduleListDrawer({
     super.key,
     required this.onOpenSchedule,
@@ -20,14 +22,40 @@ class DoublesScheduleListDrawer extends StatelessWidget {
   }
 
   @override
+  State<DoublesScheduleListDrawer> createState() =>
+      _DoublesScheduleListDrawerState();
+}
+
+class _DoublesScheduleListDrawerState extends State<DoublesScheduleListDrawer> {
+  final _historyController = ScheduleHistoryListController();
+
+  @override
+  void dispose() {
+    unawaited(_historyController.flushSelection());
+    super.dispose();
+  }
+
+  Future<void> _closeDrawer() async {
+    await _historyController.flushSelection();
+    if (!mounted) return;
+    Navigator.of(context).pop();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Drawer(
-      width: widthFor(context),
-      child: SafeArea(
-        child: DoublesScheduleListPanel(
-          reloadToken: reloadToken,
-          onBack: () => Navigator.of(context).pop(),
-          onOpenSchedule: onOpenSchedule,
+    return PopScope(
+      onPopInvokedWithResult: (_, __) {
+        unawaited(_historyController.flushSelection());
+      },
+      child: Drawer(
+        width: DoublesScheduleListDrawer.widthFor(context),
+        child: SafeArea(
+          child: DoublesScheduleListPanel(
+            reloadToken: widget.reloadToken,
+            historyController: _historyController,
+            onBack: _closeDrawer,
+            onOpenSchedule: widget.onOpenSchedule,
+          ),
         ),
       ),
     );
@@ -40,11 +68,13 @@ class DoublesScheduleListPanel extends StatelessWidget {
     required this.onBack,
     required this.onOpenSchedule,
     this.reloadToken = 0,
+    this.historyController,
   });
 
   final VoidCallback onBack;
   final ValueChanged<LocalScheduleHistoryItem> onOpenSchedule;
   final int reloadToken;
+  final ScheduleHistoryListController? historyController;
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +98,7 @@ class DoublesScheduleListPanel extends StatelessWidget {
           child: ScheduleHistoryListView(
             padding: const EdgeInsets.all(12),
             reloadToken: reloadToken,
+            controller: historyController,
             onOpenSchedule: onOpenSchedule,
           ),
         ),

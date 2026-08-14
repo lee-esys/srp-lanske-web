@@ -11,6 +11,7 @@ class LocalScheduleHistoryItem {
     this.isAdopted,
     this.completedMatchCount,
     this.totalMatchCount,
+    this.isPendingRemoval = false,
   });
 
   final String publicId;
@@ -24,6 +25,7 @@ class LocalScheduleHistoryItem {
   final bool? isAdopted;
   final int? completedMatchCount;
   final int? totalMatchCount;
+  final bool isPendingRemoval;
 
   Map<String, dynamic> toJson() {
     return {
@@ -38,11 +40,11 @@ class LocalScheduleHistoryItem {
       'is_adopted': isAdopted,
       'completed_match_count': completedMatchCount,
       'total_match_count': totalMatchCount,
+      'is_pending_removal': isPendingRemoval,
     };
   }
 
   static LocalScheduleHistoryItem fromJson(Map<String, dynamic> json) {
-    // TODO(ver0.2): Remove the legacy participant_count fallback.
     final rawPlayerCount = json['player_count'] ?? json['participant_count'];
     final fallbackNow = DateTime.now();
     final lastOpenedAt =
@@ -71,6 +73,7 @@ class LocalScheduleHistoryItem {
       isAdopted: json['is_adopted'] as bool?,
       completedMatchCount: json['completed_match_count'] as int?,
       totalMatchCount: json['total_match_count'] as int?,
+      isPendingRemoval: json['is_pending_removal'] as bool? ?? false,
     );
   }
 }
