@@ -57,19 +57,62 @@ void main() {
     expect(visible, hasLength(20));
     expect(visible.any((item) => item.publicId == 'CONFIRMED'), isFalse);
 
-    await store.setPendingRemovalForPublicIds(
-      visible.map((item) => item.publicId),
-      isPendingRemoval: true,
+    final visiblePublicIds = visible.map((item) => item.publicId).toList();
+    await store.replacePendingRemovalForPublicIds(
+      visiblePublicIds: visiblePublicIds,
+      pendingPublicIds: visiblePublicIds,
     );
     expect(
-        (await store.findAll()).every((item) => item.isPendingRemoval), isTrue);
+      (await store.findAll()).every((item) => item.isPendingRemoval),
+      isTrue,
+    );
 
-    final suppressedCount = await store.suppressPendingRemoval();
+    final suppressedCount = await store.suppressPublicIds(visiblePublicIds);
     expect(suppressedCount, 20);
 
     final remaining = await store.findAll();
     expect(remaining, hasLength(1));
     expect(remaining.single.publicId, 'CONFIRMED');
+  });
+
+  test('replaces pending removal only for the supplied visible history',
+      () async {
+    final store = LocalScheduleHistoryStore();
+    await store.upsert(
+      _item(
+        publicId: 'FIRST',
+        createdAt: DateTime(2026, 8, 10),
+        lastOpenedAt: DateTime(2026, 8, 10),
+        isPendingRemoval: true,
+      ),
+    );
+    await store.upsert(
+      _item(
+        publicId: 'SECOND',
+        createdAt: DateTime(2026, 8, 11),
+        lastOpenedAt: DateTime(2026, 8, 11),
+      ),
+    );
+    await store.upsert(
+      _item(
+        publicId: 'OUTSIDE',
+        createdAt: DateTime(2026, 8, 12),
+        lastOpenedAt: DateTime(2026, 8, 12),
+        isPendingRemoval: true,
+      ),
+    );
+
+    await store.replacePendingRemovalForPublicIds(
+      visiblePublicIds: const ['FIRST', 'SECOND'],
+      pendingPublicIds: const ['SECOND'],
+    );
+
+    final byId = {
+      for (final item in await store.findAll()) item.publicId: item,
+    };
+    expect(byId['FIRST']!.isPendingRemoval, isFalse);
+    expect(byId['SECOND']!.isPendingRemoval, isTrue);
+    expect(byId['OUTSIDE']!.isPendingRemoval, isTrue);
   });
 
   test('upsert preserves progress and pending state for the same schedule',
@@ -214,11 +257,7 @@ void main() {
       isAdopted: false,
     );
     await store.upsert(item);
-    await store.setPendingRemoval(
-      publicId: item.publicId,
-      isPendingRemoval: true,
-    );
-    expect(await store.suppressPendingRemoval(), 1);
+    expect(await store.suppressPublicIds([item.publicId]), 1);
     expect(await store.findAll(), isEmpty);
 
     await store.upsert(
