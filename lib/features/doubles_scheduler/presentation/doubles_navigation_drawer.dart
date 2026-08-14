@@ -22,7 +22,6 @@ class DoublesNavigationDrawer extends StatefulWidget {
     super.key,
     required this.onOpenSchedule,
     required this.hintController,
-    this.reloadToken = 0,
     this.onRefreshLatestInfo,
     this.onEditEventInfo,
     this.onChangeCourtDisplay,
@@ -31,7 +30,6 @@ class DoublesNavigationDrawer extends StatefulWidget {
 
   final ValueChanged<LocalScheduleHistoryItem> onOpenSchedule;
   final DoublesNavigationMenuHintController hintController;
-  final int reloadToken;
   final VoidCallback? onRefreshLatestInfo;
   final VoidCallback? onEditEventInfo;
   final VoidCallback? onChangeCourtDisplay;
@@ -148,7 +146,6 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
           child: switch (_view) {
             _DoublesDrawerView.menu => _buildMenu(context),
             _DoublesDrawerView.schedules => DoublesScheduleListPanel(
-                reloadToken: widget.reloadToken,
                 historyController: _historyController,
                 onBack: () {
                   unawaited(_showMenu());
