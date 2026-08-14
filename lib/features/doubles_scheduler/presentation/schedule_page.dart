@@ -55,7 +55,6 @@ class _SchedulePageState extends State<SchedulePage> {
   bool _isOpeningSharedDataDialog = false;
   bool _showAppBarRefresh = false;
   int _refreshRequestSequence = 0;
-  int _scheduleListReloadToken = 0;
   String? _errorMessage;
   String? _generatedScheduleId;
   String? _selectedPlayerId;
@@ -235,14 +234,6 @@ class _SchedulePageState extends State<SchedulePage> {
         publicId: item.publicId,
       ),
     );
-  }
-
-  void _handleEndDrawerChanged(bool isOpened) {
-    if (!isOpened) return;
-
-    setState(() {
-      _scheduleListReloadToken += 1;
-    });
   }
 
   Future<void> _requestGenerateSchedule() async {
@@ -985,7 +976,6 @@ class _SchedulePageState extends State<SchedulePage> {
         ],
       ),
       endDrawer: DoublesNavigationDrawer(
-        reloadToken: _scheduleListReloadToken,
         hintController: _menuHintController,
         onOpenSchedule: _openScheduleFromHistory,
         onRefreshLatestInfo: canRefresh
@@ -1003,7 +993,6 @@ class _SchedulePageState extends State<SchedulePage> {
             ? _requestGenerateSchedule
             : null,
       ),
-      onEndDrawerChanged: _handleEndDrawerChanged,
       body: SafeArea(
         child: showInitialLoading
             ? const Center(
