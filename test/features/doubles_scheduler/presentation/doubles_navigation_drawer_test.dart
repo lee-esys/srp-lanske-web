@@ -68,7 +68,7 @@ void main() {
 
     expect(find.text('最新の情報に更新'), findsOneWidget);
     expect(find.text('イベント情報を編集'), findsOneWidget);
-    expect(find.text('変更'), findsOneWidget);
+    expect(find.text('コート表示: 変更'), findsOneWidget);
     expect(find.text('再生成'), findsOneWidget);
 
     await tester.tap(find.text('最新の情報に更新'));
