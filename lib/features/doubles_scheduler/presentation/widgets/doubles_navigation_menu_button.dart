@@ -44,6 +44,7 @@ class _DoublesNavigationMenuButtonState
 
   final _tooltipKey = GlobalKey<TooltipState>();
   bool _initialHintScheduled = false;
+  Timer? _initialHintTimer;
 
   @override
   void initState() {
@@ -58,7 +59,12 @@ class _DoublesNavigationMenuButtonState
 
     _initialHintScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      unawaited(_showInitialHintIfNeeded());
+      if (!mounted) return;
+
+      _initialHintTimer = Timer(_initialHintDelay, () {
+        _initialHintTimer = null;
+        unawaited(_showInitialHintIfNeeded());
+      });
     });
   }
 
@@ -73,14 +79,12 @@ class _DoublesNavigationMenuButtonState
 
   @override
   void dispose() {
+    _initialHintTimer?.cancel();
     widget.hintController.detach(_showHint);
     super.dispose();
   }
 
   Future<void> _showInitialHintIfNeeded() async {
-    await Future<void>.delayed(_initialHintDelay);
-    if (!mounted) return;
-
     final prefs = await SharedPreferences.getInstance();
     if (!mounted || prefs.getBool(_hintShownKey) == true) return;
 
