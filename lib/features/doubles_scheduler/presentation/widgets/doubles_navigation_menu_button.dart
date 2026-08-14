@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
@@ -56,7 +58,7 @@ class _DoublesNavigationMenuButtonState
 
     _initialHintScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showInitialHintIfNeeded();
+      unawaited(_showInitialHintIfNeeded());
     });
   }
 
