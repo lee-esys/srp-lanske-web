@@ -908,7 +908,7 @@
   },
   "restoringTeamScheduleMessage": "Loading saved team match table...",
   "@restoringTeamScheduleMessage": {
-    "description": "Message shown while restoring a team schedule."
+    "description": "Loading message while restoring a team schedule."
   },
   "savingTeamScheduleDisplayMessage": "Saving display names...",
   "@savingTeamScheduleDisplayMessage": {
