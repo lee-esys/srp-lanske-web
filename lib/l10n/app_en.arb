@@ -346,6 +346,26 @@
   "@scheduleHistoryUnconfirmedLabel": {
     "description": "Label shown for a saved doubles schedule that has not been confirmed."
   },
+  "scheduleHistorySelectUnconfirmedAction": "Select unconfirmed",
+  "@scheduleHistorySelectUnconfirmedAction": {
+    "description": "Action label for selecting all visible unconfirmed doubles schedules."
+  },
+  "scheduleHistoryClearSelectionAction": "Clear selection",
+  "@scheduleHistoryClearSelectionAction": {
+    "description": "Action label for clearing selected doubles schedules."
+  },
+  "scheduleHistorySelectedRemoveConfirmTitle": "Remove selected match tables from the list?",
+  "@scheduleHistorySelectedRemoveConfirmTitle": {
+    "description": "Dialog title for removing selected doubles schedules from the local list."
+  },
+  "scheduleHistoryRemoveFromListAction": "Remove from list",
+  "@scheduleHistoryRemoveFromListAction": {
+    "description": "Action label for removing selected doubles schedules from the local list."
+  },
+  "scheduleHistorySelectedRemovedMessage": "Selected match tables removed from the list",
+  "@scheduleHistorySelectedRemovedMessage": {
+    "description": "Snack bar message shown after selected doubles schedules are removed from the local list."
+  },
   "scheduleHistoryCompletedMatchesLabel": "{completedMatchCount} / {totalMatchCount} matches completed",
   "@scheduleHistoryCompletedMatchesLabel": {
     "description": "Progress label showing completed and total match counts in doubles schedule history.",
@@ -888,7 +908,7 @@
   },
   "restoringTeamScheduleMessage": "Loading saved team match table...",
   "@restoringTeamScheduleMessage": {
-    "description": "Loading message while restoring a team schedule."
+    "description": "Message shown while restoring a team schedule."
   },
   "savingTeamScheduleDisplayMessage": "Saving display names...",
   "@savingTeamScheduleDisplayMessage": {
