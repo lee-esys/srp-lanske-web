@@ -15,7 +15,7 @@ class AppFooter extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
         child: Center(
           child: Text(
-            l10n.appFooterText(AppConfig.releaseVersion),
+            '${l10n.appTitle} · ${l10n.appFooterText(AppConfig.releaseVersion)}',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
