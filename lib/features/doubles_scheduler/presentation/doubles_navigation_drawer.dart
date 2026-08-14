@@ -166,7 +166,7 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
           child: Row(
             children: [
               Icon(
@@ -181,6 +181,14 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
                         fontWeight: FontWeight.w700,
                       ),
                 ),
+              ),
+              IconButton(
+                key: const ValueKey('doubles-navigation-drawer-close'),
+                tooltip: l10n.closeButton,
+                onPressed: () {
+                  unawaited(_closeDrawer());
+                },
+                icon: const Icon(Icons.close),
               ),
             ],
           ),
