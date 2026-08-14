@@ -130,32 +130,52 @@ void main() {
     await tester.tap(find.byIcon(Icons.delete_outline));
     await tester.pumpAndSettle();
     expect(find.byType(Checkbox), findsNWidgets(2));
+    expect(find.text('未確定を選択'), findsOneWidget);
+    expect(find.text('選択を解除'), findsNothing);
 
-    await tester.tap(find.byIcon(Icons.select_all));
+    await tester.tap(find.text('未確定を選択'));
     await tester.pumpAndSettle();
+    expect(find.text('選択を解除'), findsOneWidget);
 
     final prefsAfterMark = await SharedPreferences.getInstance();
-    final rawAfterMark = jsonDecode(
+    var rawAfterMark = jsonDecode(
       prefsAfterMark.getString('lanske_recent_schedules')!,
     ) as List<dynamic>;
-    final markedById = {
+    var markedById = {
       for (final value in rawAfterMark.cast<Map<String, dynamic>>())
         value['public_id'] as String: value['is_pending_removal'] as bool,
     };
     expect(markedById['UNCONFIRMED'], isTrue);
     expect(markedById['CONFIRMED'], isFalse);
 
+    await tester.tap(find.text('選択を解除'));
+    await tester.pumpAndSettle();
+    expect(find.text('選択を解除'), findsNothing);
+
+    rawAfterMark = jsonDecode(
+      prefsAfterMark.getString('lanske_recent_schedules')!,
+    ) as List<dynamic>;
+    markedById = {
+      for (final value in rawAfterMark.cast<Map<String, dynamic>>())
+        value['public_id'] as String: value['is_pending_removal'] as bool,
+    };
+    expect(markedById['UNCONFIRMED'], isFalse);
+    expect(markedById['CONFIRMED'], isFalse);
+
+    await tester.tap(find.text('未確定を選択'));
+    await tester.pumpAndSettle();
+
     await tester.tap(find.text('決定'));
     await tester.pumpAndSettle();
     expect(find.byType(Checkbox), findsNothing);
     expect(find.text('未確定イベント'), findsOneWidget);
 
-    await tester.tap(find.text('履歴を削除'));
+    await tester.tap(find.text('一覧から削除'));
     await tester.pumpAndSettle();
-    expect(find.text('対戦表表示履歴を削除しますか？'), findsOneWidget);
+    expect(find.text('選択した対戦表を一覧から削除しますか？'), findsOneWidget);
 
     await tester.tap(
-      find.widgetWithText(FilledButton, '履歴を削除').last,
+      find.widgetWithText(FilledButton, '一覧から削除').last,
     );
     await tester.pumpAndSettle();
 
