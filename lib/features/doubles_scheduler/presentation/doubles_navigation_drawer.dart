@@ -32,10 +32,10 @@ class DoublesNavigationDrawer extends StatefulWidget {
   final ValueChanged<LocalScheduleHistoryItem> onOpenSchedule;
   final DoublesNavigationMenuHintController hintController;
   final int reloadToken;
-  final Future<void> Function()? onRefreshLatestInfo;
-  final Future<void> Function()? onEditEventInfo;
-  final Future<void> Function()? onChangeCourtDisplay;
-  final Future<void> Function()? onRegenerate;
+  final VoidCallback? onRefreshLatestInfo;
+  final VoidCallback? onEditEventInfo;
+  final VoidCallback? onChangeCourtDisplay;
+  final VoidCallback? onRegenerate;
 
   static double menuWidthFor(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
@@ -89,10 +89,10 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
     Navigator.of(context).pop();
   }
 
-  Future<void> _runAction(Future<void> Function() action) async {
+  Future<void> _runAction(VoidCallback action) async {
     await _closeDrawer();
     if (!mounted) return;
-    await action();
+    action();
   }
 
   Future<void> _openSchedule(LocalScheduleHistoryItem item) async {
@@ -104,24 +104,16 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
   }
 
   void _openTop() {
-    unawaited(
-      _runAction(() async {
-        openUrlInCurrentTab('/');
-      }),
-    );
+    unawaited(_runAction(() => openUrlInCurrentTab('/')));
   }
 
   void _openSupport() {
-    unawaited(
-      _runAction(() async {
-        openUrlInCurrentTab(_supportPagePath);
-      }),
-    );
+    unawaited(_runAction(() => openUrlInCurrentTab(_supportPagePath)));
   }
 
   void _showOperationHint() {
     unawaited(
-      _runAction(() async {
+      _runAction(() {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           widget.hintController.showHint();
         });
