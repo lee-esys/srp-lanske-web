@@ -18,4 +18,10 @@ extension DoublesMatchNavigationLocalizations on AppLocalizations {
 
   String get doublesProgressAllCompletedLabel =>
       doublesMatchStatusCompletedLabel;
+
+  String get doublesNavigationMenuTooltip =>
+      localeName.startsWith('ja') ? '操作メニューを開く' : 'Open operations menu';
+
+  String get doublesNavigationShowHint =>
+      localeName.startsWith('ja') ? '操作ヒントを表示' : 'Show operation hint';
 }
