@@ -23,6 +23,7 @@ import 'models/event_draft.dart';
 import 'restored_schedule_page.dart';
 import 'widgets/court_display_settings_dialog.dart';
 import 'widgets/doubles_navigation_menu_button.dart';
+import 'widgets/doubles_scroll_refresh_action.dart';
 import 'widgets/schedule_event_summary_card.dart';
 import 'widgets/schedule_operation_panel.dart';
 import 'widgets/schedule_players_card.dart';
@@ -53,7 +54,6 @@ class _SchedulePageState extends State<SchedulePage> {
   bool _isRefreshing = false;
   bool _isCheckingRegenerate = false;
   bool _isOpeningSharedDataDialog = false;
-  bool _showAppBarRefresh = false;
   int _refreshRequestSequence = 0;
   String? _errorMessage;
   String? _generatedScheduleId;
@@ -78,7 +78,6 @@ class _SchedulePageState extends State<SchedulePage> {
       progressRepository: appScheduleProgressRepository,
       loadGeneratedSchedule: _service.getById,
     );
-    _scrollController.addListener(_handleScheduleScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -89,9 +88,7 @@ class _SchedulePageState extends State<SchedulePage> {
 
   @override
   void dispose() {
-    _scrollController
-      ..removeListener(_handleScheduleScroll)
-      ..dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -202,18 +199,6 @@ class _SchedulePageState extends State<SchedulePage> {
       progressSummary: _progressSummary,
       matches: _matchProgresses,
     );
-  }
-
-  void _handleScheduleScroll() {
-    if (!mounted || !_scrollController.hasClients) return;
-
-    final threshold = MediaQuery.sizeOf(context).height * 0.5;
-    final shouldShow = _scrollController.offset >= threshold;
-    if (shouldShow == _showAppBarRefresh) return;
-
-    setState(() {
-      _showAppBarRefresh = shouldShow;
-    });
   }
 
   void _toggleSelectedPlayer(String playerId) {
@@ -957,22 +942,17 @@ class _SchedulePageState extends State<SchedulePage> {
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
-          if (_showAppBarRefresh && _generatedScheduleId != null)
-            IconButton(
-              tooltip: l10n.refreshLatestButton,
-              onPressed: canRefresh && !_isRefreshing
-                  ? () {
-                      _reloadSchedule();
-                    }
-                  : null,
-              icon: _isRefreshing
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.sync),
-            ),
+          DoublesScrollRefreshAction(
+            scrollController: _scrollController,
+            tooltip: l10n.refreshLatestButton,
+            isAvailable: _generatedScheduleId != null,
+            isRefreshing: _isRefreshing,
+            onPressed: canRefresh && !_isRefreshing
+                ? () {
+                    _reloadSchedule();
+                  }
+                : null,
+          ),
           DoublesNavigationMenuButton(
             hintController: _menuHintController,
             onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
