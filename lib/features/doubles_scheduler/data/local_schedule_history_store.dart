@@ -132,6 +132,87 @@ class LocalScheduleHistoryStore {
     await _saveRetained(prefs, current);
   }
 
+  Future<void> replacePendingRemovalForPublicIds({
+    required Iterable<String> visiblePublicIds,
+    required Iterable<String> pendingPublicIds,
+  }) async {
+    final normalizedVisiblePublicIds = visiblePublicIds
+        .map(_normalizePublicId)
+        .where((publicId) => publicId.isNotEmpty)
+        .toSet();
+    if (normalizedVisiblePublicIds.isEmpty) {
+      return;
+    }
+
+    final normalizedPendingPublicIds = pendingPublicIds
+        .map(_normalizePublicId)
+        .where(normalizedVisiblePublicIds.contains)
+        .toSet();
+    final prefs = await SharedPreferences.getInstance();
+    final current = await _readAll(prefs);
+    var changed = false;
+
+    for (var index = 0; index < current.length; index += 1) {
+      final item = current[index];
+      final normalizedPublicId = _normalizePublicId(item.publicId);
+      if (!normalizedVisiblePublicIds.contains(normalizedPublicId)) {
+        continue;
+      }
+
+      final isPendingRemoval =
+          normalizedPendingPublicIds.contains(normalizedPublicId);
+      if (item.isPendingRemoval == isPendingRemoval) {
+        continue;
+      }
+
+      current[index] = _copyWithPendingRemoval(item, isPendingRemoval);
+      changed = true;
+    }
+
+    if (!changed) {
+      return;
+    }
+
+    await _saveRetained(prefs, current);
+  }
+
+  Future<int> suppressPublicIds(Iterable<String> publicIds) async {
+    final normalizedPublicIds = publicIds
+        .map(_normalizePublicId)
+        .where((publicId) => publicId.isNotEmpty)
+        .toSet();
+    if (normalizedPublicIds.isEmpty) {
+      return 0;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final current = await _readAll(prefs);
+    final targets = current
+        .where(
+          (item) => normalizedPublicIds.contains(
+            _normalizePublicId(item.publicId),
+          ),
+        )
+        .toList(growable: false);
+    if (targets.isEmpty) {
+      return 0;
+    }
+
+    final suppressedPublicIds = _readSuppressedPublicIds(prefs)
+      ..addAll(targets.map((item) => _normalizePublicId(item.publicId)));
+    final retained = current
+        .where(
+          (item) => !normalizedPublicIds.contains(
+            _normalizePublicId(item.publicId),
+          ),
+        )
+        .toList(growable: false);
+
+    await _saveSuppressedPublicIds(prefs, suppressedPublicIds);
+    await _saveRetained(prefs, retained);
+    return targets.length;
+  }
+
   Future<void> setPendingRemoval({
     required String publicId,
     required bool isPendingRemoval,
@@ -179,20 +260,12 @@ class LocalScheduleHistoryStore {
   Future<int> suppressPendingRemoval() async {
     final prefs = await SharedPreferences.getInstance();
     final current = await _readAll(prefs);
-    final pending =
-        current.where((item) => item.isPendingRemoval).toList(growable: false);
-    if (pending.isEmpty) {
-      return 0;
-    }
+    final pendingPublicIds = current
+        .where((item) => item.isPendingRemoval)
+        .map((item) => item.publicId)
+        .toList(growable: false);
 
-    final suppressedPublicIds = _readSuppressedPublicIds(prefs)
-      ..addAll(pending.map((item) => _normalizePublicId(item.publicId)));
-    final retained =
-        current.where((item) => !item.isPendingRemoval).toList(growable: false);
-
-    await _saveSuppressedPublicIds(prefs, suppressedPublicIds);
-    await _saveRetained(prefs, retained);
-    return pending.length;
+    return suppressPublicIds(pendingPublicIds);
   }
 
   Future<void> clearAll() async {
