@@ -23,6 +23,8 @@ void main() {
     expect(drawer.width, 300);
     expect(find.byIcon(Icons.sports_tennis_outlined), findsOneWidget);
     expect(find.text('ダブルス乱数表'), findsOneWidget);
+    expect(find.byKey(const ValueKey('doubles-navigation-drawer-close')),
+        findsOneWidget);
     expect(find.text('TOPへ'), findsOneWidget);
     expect(find.text('対戦表一覧'), findsOneWidget);
     expect(find.text('操作ヒントを表示'), findsOneWidget);
@@ -36,6 +38,8 @@ void main() {
     expect(find.byIcon(Icons.arrow_back), findsOneWidget);
     expect(find.text('対戦表一覧'), findsOneWidget);
     expect(find.text('TOPへ'), findsNothing);
+    expect(find.byKey(const ValueKey('doubles-navigation-drawer-close')),
+        findsNothing);
 
     await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pumpAndSettle();
@@ -43,6 +47,21 @@ void main() {
     drawer = tester.widget<Drawer>(find.byType(Drawer));
     expect(drawer.width, 300);
     expect(find.text('TOPへ'), findsOneWidget);
+  });
+
+  testWidgets('closes the operation menu from the header close button',
+      (tester) async {
+    await _pumpDrawer(tester, width: 400);
+
+    expect(find.byType(Drawer), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const ValueKey('doubles-navigation-drawer-close')),
+    );
+    await tester.pumpAndSettle();
+
+    final scaffold = tester.state<ScaffoldState>(find.byType(Scaffold));
+    expect(scaffold.isEndDrawerOpen, isFalse);
   });
 
   testWidgets('reloads local history when entering the schedule list',
