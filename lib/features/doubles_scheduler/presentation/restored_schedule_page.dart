@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
-import 'package:srp_lanske/features/doubles_scheduler/presentation/event_setup_page.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/infrastructure/generated_schedule_api_client.dart';
@@ -9,7 +8,6 @@ import 'package:srp_lanske/shared/presentation/app_message_type.dart';
 import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 import 'package:srp_lanske/shared/utils/browser_url.dart';
-import 'package:srp_lanske/shared/utils/external_link.dart';
 
 import '../application/doubles_schedule_refresh_service.dart';
 import '../application/event_repository.dart';
@@ -22,17 +20,16 @@ import '../data/local_schedule_history_store.dart';
 import '../domain/player_draft.dart';
 import '../domain/public_id.dart';
 import '../domain/saved_event_models.dart';
-import 'doubles_schedule_list_drawer.dart';
+import 'doubles_navigation_drawer.dart';
 import 'models/event_draft.dart';
 import 'widgets/court_display_settings_dialog.dart';
+import 'widgets/doubles_navigation_menu_button.dart';
 import 'widgets/schedule_event_summary_card.dart';
 import 'widgets/schedule_operation_panel.dart';
 import 'widgets/schedule_players_card.dart';
 import 'widgets/schedule_rounds_view.dart';
 import 'widgets/schedule_section_card.dart';
 import 'widgets/schedule_share_dialog.dart';
-
-const _supportPagePath = '/support/index.html';
 
 class RestoredSchedulePage extends StatefulWidget {
   const RestoredSchedulePage({
@@ -46,10 +43,11 @@ class RestoredSchedulePage extends StatefulWidget {
   State<RestoredSchedulePage> createState() => _RestoredSchedulePageState();
 }
 
-enum _ScheduleMenuAction { top, list, support }
-
 class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _menuHintController = DoublesNavigationMenuHintController();
+  final _eventSummaryController = ScheduleEventSummaryController();
+  final _scrollController = ScrollController();
 
   late final GeneratedScheduleService _service;
   late final DoublesScheduleRefreshService _refreshService;
@@ -59,6 +57,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   bool _isRefreshing = false;
   bool _isCheckingRegenerate = false;
   bool _isOpeningSharedDataDialog = false;
+  bool _showAppBarRefresh = false;
   int _refreshRequestSequence = 0;
   int _scheduleListReloadToken = 0;
   String? _errorMessage;
@@ -84,6 +83,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       progressRepository: appScheduleProgressRepository,
       loadGeneratedSchedule: _service.getById,
     );
+    _scrollController.addListener(_handleScheduleScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -92,17 +92,18 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     });
   }
 
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_handleScheduleScroll)
+      ..dispose();
+    super.dispose();
+  }
+
   bool get _isAdopted => _scheduleResponse?['adopted'] == true;
 
   bool get _hasAdoptedSchedule {
     return _isAdopted || (_savedEvent?.event.hasAdoptedSchedule ?? false);
-  }
-
-  String _generateButtonLabel(AppLocalizations l10n) {
-    final generatedScheduleId = _savedEvent?.event.displayGeneratedScheduleId;
-    return generatedScheduleId == null || generatedScheduleId.isEmpty
-        ? l10n.generateButton
-        : l10n.regenerateButton;
   }
 
   bool get _hasGeneratedSchedule {
@@ -179,6 +180,18 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     );
   }
 
+  void _handleScheduleScroll() {
+    if (!mounted || !_scrollController.hasClients) return;
+
+    final threshold = MediaQuery.sizeOf(context).height * 0.5;
+    final shouldShow = _scrollController.offset >= threshold;
+    if (shouldShow == _showAppBarRefresh) return;
+
+    setState(() {
+      _showAppBarRefresh = shouldShow;
+    });
+  }
+
   void _toggleSelectedPlayer(String playerId) {
     setState(() {
       _selectedPlayerId = _selectedPlayerId == playerId ? null : playerId;
@@ -186,7 +199,6 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   }
 
   void _openScheduleFromHistory(LocalScheduleHistoryItem item) {
-    Navigator.of(context).pop();
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
         builder: (_) => RestoredSchedulePage(publicId: item.publicId),
@@ -798,32 +810,6 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     }
   }
 
-  void _handleMenu(_ScheduleMenuAction action) {
-    switch (action) {
-      case _ScheduleMenuAction.top:
-        _goTop();
-        break;
-      case _ScheduleMenuAction.list:
-        _scaffoldKey.currentState?.openEndDrawer();
-        break;
-      case _ScheduleMenuAction.support:
-        openUrlInCurrentTab(_supportPagePath);
-        break;
-    }
-  }
-
-  void _goTop() {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const EventSetupPage()),
-      (_) => false,
-    );
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      replaceUrl('/');
-    });
-  }
-
   EventDraft _buildDraft(SavedEventAggregate aggregate) {
     return EventDraft(
       url: aggregate.event.sourceUrl ?? '',
@@ -876,25 +862,12 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     );
   }
 
-  Widget _buildSupportMenuItem(AppLocalizations l10n) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(l10n.supportMenuTitle),
-        Text(
-          l10n.supportMenuSubtitle,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      ],
-    );
-  }
-
   Widget _buildScheduleBody() {
     final l10n = AppLocalizations.of(context);
     final savedEvent = _savedEvent;
 
     return ListView(
+      controller: _scrollController,
       padding: const EdgeInsets.all(4),
       children: [
         if (savedEvent == null)
@@ -904,6 +877,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           )
         else ...[
           ScheduleEventSummaryCard(
+            controller: _eventSummaryController,
             aggregate: savedEvent,
             onShareUrl: _showShareDialog,
             onRefresh: () => _reloadSchedule(),
@@ -913,6 +887,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
                 !_isOpeningSharedDataDialog,
             isRefreshing: _isRefreshing,
             progressText: _progressText,
+            showEditAction: !_hasAdoptedSchedule,
           ),
           const SizedBox(height: 12),
           SchedulePlayersCard(
@@ -928,7 +903,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           ScheduleSectionCard(
             child: ScheduleOperationPanel(
               courtDisplaySummary: _courtDisplaySummary,
-              canChangeCourtDisplay: !_isRefreshing &&
+              canChangeCourtDisplay: !_hasAdoptedSchedule &&
+                  !_isRefreshing &&
                   !_isCheckingRegenerate &&
                   !_isOpeningSharedDataDialog,
               onChangeCourtDisplay: _changeCourtDisplay,
@@ -938,10 +914,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
                   _isCheckingRegenerate ||
                   _isOpeningSharedDataDialog,
               isAdopting: _isAdopting,
-              generateButtonLabel: _generateButtonLabel(l10n),
               canAdopt:
                   _generatedScheduleId != null && _scheduleResponse != null,
-              onGenerate: _requestGenerateSchedule,
               onAdopt: _adoptSchedule,
             ),
           ),
@@ -981,35 +955,65 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final showInitialLoading = _isLoading && _savedEvent == null;
+    final canRefresh = _generatedScheduleId != null &&
+        !_isLoading &&
+        !_isOpeningSharedDataDialog;
+    final canEditSharedData = _savedEvent != null &&
+        !_isRefreshing &&
+        !_isCheckingRegenerate &&
+        !_isOpeningSharedDataDialog;
 
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(l10n.eventSetupTitle),
+        title: Text(
+          l10n.eventSetupTitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         actions: [
-          PopupMenuButton<_ScheduleMenuAction>(
-            onSelected: _handleMenu,
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: _ScheduleMenuAction.top,
-                child: Text(l10n.topPageMenu),
-              ),
-              PopupMenuItem(
-                value: _ScheduleMenuAction.list,
-                child: Text(l10n.matchTableList),
-              ),
-              PopupMenuItem(
-                value: _ScheduleMenuAction.support,
-                child: _buildSupportMenuItem(l10n),
-              ),
-            ],
+          if (_showAppBarRefresh && _generatedScheduleId != null)
+            IconButton(
+              tooltip: l10n.refreshLatestButton,
+              onPressed: canRefresh && !_isRefreshing
+                  ? () {
+                      _reloadSchedule();
+                    }
+                  : null,
+              icon: _isRefreshing
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.sync),
+            ),
+          DoublesNavigationMenuButton(
+            hintController: _menuHintController,
+            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
           ),
         ],
       ),
-      endDrawer: DoublesScheduleListDrawer(
+      endDrawer: DoublesNavigationDrawer(
         reloadToken: _scheduleListReloadToken,
+        hintController: _menuHintController,
         onOpenSchedule: _openScheduleFromHistory,
+        onRefreshLatestInfo: canRefresh
+            ? () async {
+                await _reloadSchedule();
+              }
+            : null,
+        onEditEventInfo:
+            canEditSharedData ? _eventSummaryController.editEventInfo : null,
+        onChangeCourtDisplay:
+            canEditSharedData ? _changeCourtDisplay : null,
+        onRegenerate: !_hasAdoptedSchedule &&
+                !_isLoading &&
+                !_isAdopting &&
+                !_isCheckingRegenerate
+            ? _requestGenerateSchedule
+            : null,
       ),
       onEndDrawerChanged: _handleEndDrawerChanged,
       body: SafeArea(
