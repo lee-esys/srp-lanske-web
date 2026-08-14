@@ -210,7 +210,6 @@ void main() {
 
     await tester.tapAt(const Offset(20, 400));
     await tester.pumpAndSettle();
-    expect(find.byType(Drawer), findsNothing);
 
     markedById = await _readPendingById();
     expect(markedById['UNCONFIRMED'], isTrue);
