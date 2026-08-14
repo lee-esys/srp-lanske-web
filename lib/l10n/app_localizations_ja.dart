@@ -242,6 +242,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get scheduleHistoryUnconfirmedLabel => '未確定';
 
   @override
+  String get scheduleHistorySelectUnconfirmedAction => '未確定を選択';
+
+  @override
+  String get scheduleHistoryClearSelectionAction => '選択を解除';
+
+  @override
+  String get scheduleHistorySelectedRemoveConfirmTitle => '選択した対戦表を一覧から削除しますか？';
+
+  @override
+  String get scheduleHistoryRemoveFromListAction => '一覧から削除';
+
+  @override
+  String get scheduleHistorySelectedRemovedMessage => '選択した対戦表を一覧から削除しました';
+
+  @override
   String scheduleHistoryCompletedMatchesLabel(
       int completedMatchCount, int totalMatchCount) {
     return '$completedMatchCount / $totalMatchCount 試合終了';

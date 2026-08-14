@@ -249,6 +249,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleHistoryUnconfirmedLabel => 'Unconfirmed';
 
   @override
+  String get scheduleHistorySelectUnconfirmedAction => 'Select unconfirmed';
+
+  @override
+  String get scheduleHistoryClearSelectionAction => 'Clear selection';
+
+  @override
+  String get scheduleHistorySelectedRemoveConfirmTitle =>
+      'Remove selected match tables from the list?';
+
+  @override
+  String get scheduleHistoryRemoveFromListAction => 'Remove from list';
+
+  @override
+  String get scheduleHistorySelectedRemovedMessage =>
+      'Selected match tables removed from the list';
+
+  @override
   String scheduleHistoryCompletedMatchesLabel(
       int completedMatchCount, int totalMatchCount) {
     return '$completedMatchCount / $totalMatchCount matches completed';

@@ -89,8 +89,7 @@ void main() {
     expect(openedItem?.publicId, 'ABCDEFGH');
   });
 
-  testWidgets(
-      'keeps selection as draft until confirmation and then removes it',
+  testWidgets('keeps selection as draft until confirmation and then removes it',
       (tester) async {
     final unconfirmed = LocalScheduleHistoryItem(
       publicId: 'UNCONFIRMED',

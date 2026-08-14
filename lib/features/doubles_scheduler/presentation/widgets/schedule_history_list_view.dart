@@ -252,9 +252,8 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
   Future<void> _confirmSuppressPending() async {
     if (_isUpdating) return;
 
-    final selectedPublicIds = _draftPendingPublicIds
-        .where(_visiblePublicIds.contains)
-        .toSet();
+    final selectedPublicIds =
+        _draftPendingPublicIds.where(_visiblePublicIds.contains).toSet();
     if (selectedPublicIds.isEmpty) return;
 
     final l10n = AppLocalizations.of(context);
@@ -347,9 +346,8 @@ class _ScheduleHistoryListViewState extends State<ScheduleHistoryListView> {
           );
         }
 
-        final pendingCount = items
-            .where((item) => _isDraftPendingRemoval(item.publicId))
-            .length;
+        final pendingCount =
+            items.where((item) => _isDraftPendingRemoval(item.publicId)).length;
         final hasUnconfirmed = items.any((item) => item.isAdopted == false);
 
         return Column(

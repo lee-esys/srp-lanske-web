@@ -518,6 +518,36 @@ abstract class AppLocalizations {
   /// **'未確定'**
   String get scheduleHistoryUnconfirmedLabel;
 
+  /// Action label for selecting all visible unconfirmed doubles schedules.
+  ///
+  /// In ja, this message translates to:
+  /// **'未確定を選択'**
+  String get scheduleHistorySelectUnconfirmedAction;
+
+  /// Action label for clearing selected doubles schedules.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択を解除'**
+  String get scheduleHistoryClearSelectionAction;
+
+  /// Dialog title for removing selected doubles schedules from the local list.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択した対戦表を一覧から削除しますか？'**
+  String get scheduleHistorySelectedRemoveConfirmTitle;
+
+  /// Action label for removing selected doubles schedules from the local list.
+  ///
+  /// In ja, this message translates to:
+  /// **'一覧から削除'**
+  String get scheduleHistoryRemoveFromListAction;
+
+  /// Snack bar message shown after selected doubles schedules are removed from the local list.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択した対戦表を一覧から削除しました'**
+  String get scheduleHistorySelectedRemovedMessage;
+
   /// Progress label showing completed and total match counts in doubles schedule history.
   ///
   /// In ja, this message translates to:
