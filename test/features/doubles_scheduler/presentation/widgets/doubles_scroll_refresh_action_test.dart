@@ -10,23 +10,26 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: Scaffold(
-          appBar: AppBar(
-            actions: [
-              DoublesScrollRefreshAction(
-                scrollController: scrollController,
-                tooltip: '最新の情報に更新',
-                isAvailable: true,
-                isRefreshing: false,
-                onPressed: () {},
-              ),
-            ],
-          ),
-          body: ListView(
-            controller: scrollController,
-            children: const [
-              SizedBox(height: 1600),
-            ],
+        home: MediaQuery(
+          data: const MediaQueryData(size: Size(400, 800)),
+          child: Scaffold(
+            appBar: AppBar(
+              actions: [
+                DoublesScrollRefreshAction(
+                  scrollController: scrollController,
+                  tooltip: '最新の情報に更新',
+                  isAvailable: true,
+                  isRefreshing: false,
+                  onPressed: () {},
+                ),
+              ],
+            ),
+            body: ListView(
+              controller: scrollController,
+              children: const [
+                SizedBox(height: 1600),
+              ],
+            ),
           ),
         ),
       ),
@@ -55,23 +58,26 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: Scaffold(
-          appBar: AppBar(
-            actions: [
-              DoublesScrollRefreshAction(
-                scrollController: scrollController,
-                tooltip: '最新の情報に更新',
-                isAvailable: false,
-                isRefreshing: false,
-                onPressed: null,
-              ),
-            ],
-          ),
-          body: ListView(
-            controller: scrollController,
-            children: const [
-              SizedBox(height: 1600),
-            ],
+        home: MediaQuery(
+          data: const MediaQueryData(size: Size(400, 800)),
+          child: Scaffold(
+            appBar: AppBar(
+              actions: [
+                DoublesScrollRefreshAction(
+                  scrollController: scrollController,
+                  tooltip: '最新の情報に更新',
+                  isAvailable: false,
+                  isRefreshing: false,
+                  onPressed: null,
+                ),
+              ],
+            ),
+            body: ListView(
+              controller: scrollController,
+              children: const [
+                SizedBox(height: 1600),
+              ],
+            ),
           ),
         ),
       ),
