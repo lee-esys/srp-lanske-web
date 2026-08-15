@@ -105,6 +105,10 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
     unawaited(_runAction(() => openUrlInCurrentTab('/')));
   }
 
+  void _openTeam() {
+    unawaited(_runAction(() => openUrlInCurrentTab('/team')));
+  }
+
   void _openSupport() {
     unawaited(_runAction(() => openUrlInCurrentTab(_supportPagePath)));
   }
@@ -253,10 +257,41 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
                 subtitle: Text(l10n.supportMenuSubtitle),
                 onTap: _openSupport,
               ),
+              const Divider(height: 1),
+              _DoublesNavigationSectionHeader(
+                label: l10n.teamNavigationServiceList,
+              ),
+              _DoublesNavigationTile(
+                icon: Icons.groups_outlined,
+                label: l10n.teamScheduleTitle,
+                onTap: _openTeam,
+              ),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+class _DoublesNavigationSectionHeader extends StatelessWidget {
+  const _DoublesNavigationSectionHeader({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+            ),
+      ),
     );
   }
 }
