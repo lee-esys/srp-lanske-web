@@ -1023,8 +1023,8 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String appFooterText(String version) {
-    return '© 2026 S.R.P. · ver.$version';
+  String appFooterText(String releaseVersion) {
+    return '© 2026 S.R.P. · ver.$releaseVersion';
   }
 
   @override

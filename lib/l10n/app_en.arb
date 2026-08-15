@@ -210,7 +210,7 @@
   },
   "shareUrlCopiedMessage": "URL copied.",
   "@shareUrlCopiedMessage": {
-    "description": "Message shown after copying the schedule URL."
+    "description": "Message shown when the share URL was copied."
   },
   "generateScheduleFailedMessage": "Could not generate the match table: {error}",
   "@generateScheduleFailedMessage": {
@@ -1000,7 +1000,7 @@
   },
   "teamScheduleShareUrlCopiedMessage": "Copied share URL.",
   "@teamScheduleShareUrlCopiedMessage": {
-    "description": "Message shown after copying a team schedule share URL."
+    "description": "Message shown after copying the team schedule share URL."
   },
   "nextTeamMatchTitle": "Next match",
   "@nextTeamMatchTitle": {

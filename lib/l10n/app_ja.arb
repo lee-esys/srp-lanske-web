@@ -18,7 +18,7 @@
   },
   "supportMenuTitle": "サポート",
   "@supportMenuTitle": {
-    "description": "Menu item title for opening the support page link."
+    "description": "Menu item title for opening the support page."
   },
   "supportMenuSubtitle": "フィードバックもこちらから",
   "@supportMenuSubtitle": {
@@ -100,15 +100,15 @@
   },
   "eventInfoLoadFailedMessage": "取得できませんでした。URLを確認して再度お試しください",
   "@eventInfoLoadFailedMessage": {
-    "description": "Message shown when event information import failed."
+    "description": "Snack bar message shown when event information import failed."
   },
   "clipboardUrlNotFoundMessage": "クリップボードにURLがありません",
   "@clipboardUrlNotFoundMessage": {
-    "description": "Message shown when clipboard has no URL."
+    "description": "Snack bar message shown when clipboard has no URL."
   },
   "pasteTennisbearEventUrlMessage": "テニスベアのイベントURLを貼り付けてください",
   "@pasteTennisbearEventUrlMessage": {
-    "description": "Message shown when pasted text is not a TennisBear event URL."
+    "description": "Snack bar message shown when pasted text is not a TennisBear event URL."
   },
   "tennisbearEventUrlLabel": "テニスベアのイベントURL",
   "@tennisbearEventUrlLabel": {
