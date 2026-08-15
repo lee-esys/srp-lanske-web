@@ -27,6 +27,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get supportMenuSubtitle => 'フィードバックもこちらから';
 
   @override
+  String get doublesNavigationMenuTooltip => '操作メニューを開く';
+
+  @override
+  String get doublesNavigationShowHint => '操作ヒントを表示';
+
+  @override
   String get eventSetupInstruction => 'URLを貼るか、手動で面数・人数を入力してください。';
 
   @override
