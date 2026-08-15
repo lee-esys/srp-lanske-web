@@ -20,6 +20,14 @@
   "@supportMenuSubtitle": {
     "description": "Menu item subtitle for the support page link."
   },
+  "doublesNavigationMenuTooltip": "Open operations menu",
+  "@doublesNavigationMenuTooltip": {
+    "description": "Tooltip for opening the doubles operation menu."
+  },
+  "doublesNavigationShowHint": "Show operation hint",
+  "@doublesNavigationShowHint": {
+    "description": "Action label for showing the doubles operation menu hint again."
+  },
   "matchTableList": "Match table list",
   "@matchTableList": {
     "description": "Menu item label for the saved/generated match table list."

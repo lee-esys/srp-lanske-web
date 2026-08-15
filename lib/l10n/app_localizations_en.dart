@@ -27,6 +27,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get supportMenuSubtitle => 'Feedback form is linked there';
 
   @override
+  String get doublesNavigationMenuTooltip => 'Open operations menu';
+
+  @override
+  String get doublesNavigationShowHint => 'Show operation hint';
+
+  @override
   String get eventSetupInstruction =>
       'Paste a URL or enter the court and player counts manually.';
 

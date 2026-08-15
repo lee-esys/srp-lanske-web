@@ -9,6 +9,24 @@ import '../../application/event_repository.dart';
 import '../../domain/saved_event_models.dart';
 import 'doubles_event_info_dialog.dart';
 
+class ScheduleEventSummaryController {
+  Future<void> Function()? _editEventInfo;
+
+  void attach(Future<void> Function() editEventInfo) {
+    _editEventInfo = editEventInfo;
+  }
+
+  void detach(Future<void> Function() editEventInfo) {
+    if (_editEventInfo == editEventInfo) {
+      _editEventInfo = null;
+    }
+  }
+
+  Future<void> editEventInfo() async {
+    await _editEventInfo?.call();
+  }
+}
+
 class ScheduleEventSummaryCard extends StatefulWidget {
   const ScheduleEventSummaryCard({
     super.key,
@@ -20,6 +38,8 @@ class ScheduleEventSummaryCard extends StatefulWidget {
     this.canRefresh = true,
     this.isRefreshing = false,
     this.progressText,
+    this.controller,
+    this.showEditAction = true,
   });
 
   final SavedEventAggregate? aggregate;
@@ -30,6 +50,8 @@ class ScheduleEventSummaryCard extends StatefulWidget {
   final bool canRefresh;
   final bool isRefreshing;
   final String? progressText;
+  final ScheduleEventSummaryController? controller;
+  final bool showEditAction;
 
   @override
   State<ScheduleEventSummaryCard> createState() =>
@@ -52,6 +74,7 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
   void initState() {
     super.initState();
     _loadedAggregate = widget.aggregate;
+    widget.controller?.attach(_editEventInfo);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _loadLatestAggregate();
@@ -65,6 +88,16 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
     if (widget.aggregate != null && widget.aggregate != oldWidget.aggregate) {
       _loadedAggregate = widget.aggregate;
     }
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller?.detach(_editEventInfo);
+      widget.controller?.attach(_editEventInfo);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller?.detach(_editEventInfo);
+    super.dispose();
   }
 
   String? _resolvePublicId() {
@@ -347,7 +380,8 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
     final l10n = AppLocalizations.of(context);
     final event = _displayAggregate?.event;
     final hasAdoptedSchedule = event?.hasAdoptedSchedule ?? false;
-    final canEdit = event != null &&
+    final canEdit = widget.showEditAction &&
+        event != null &&
         !_isEditingEventInfo &&
         !widget.isRefreshing &&
         (widget.onRefreshForEdit != null || widget.onRefresh != null);
@@ -419,7 +453,7 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
                         : const Icon(Icons.sync),
                     label: Text(l10n.refreshLatestButton),
                   ),
-                if (event != null)
+                if (widget.showEditAction && event != null)
                   OutlinedButton.icon(
                     onPressed: canEdit ? _editEventInfo : null,
                     icon: _isEditingEventInfo

@@ -37,9 +37,11 @@ class ScheduleRoundsView extends StatefulWidget {
 
 class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   static const _floatingNavigationRevealTop = 240.0;
+  static const _floatingNavigationHideOffset = 48.0;
 
   late final DoublesMatchProgressService _progressService;
   final GlobalKey _floatingNavigationAnchorKey = GlobalKey();
+  final ValueNotifier<bool> _floatingNavigationVisible = ValueNotifier(false);
 
   DoublesMatchSaveRegistration? _saveRegistration;
   ScrollPosition? _parentScrollPosition;
@@ -78,6 +80,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     _parentScrollPosition?.removeListener(_handleParentScroll);
     _floatingNavigationEntry?.remove();
     _floatingNavigationEntry = null;
+    _floatingNavigationVisible.dispose();
     super.dispose();
   }
 
@@ -148,7 +151,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
           ? _scrollToBottom
           : null,
     );
-    _floatingNavigationEntry?.markNeedsBuild();
     _scheduleFloatingNavigationVisibilityCheck();
   }
 
@@ -161,9 +163,37 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _floatingVisibilityCheckScheduled = false;
       if (mounted) {
+        _ensureFloatingNavigationEntry();
         _updateFloatingNavigationVisibility();
       }
     });
+  }
+
+  void _ensureFloatingNavigationEntry() {
+    if (_floatingNavigationEntry != null) {
+      return;
+    }
+
+    final overlay = Overlay.maybeOf(context, rootOverlay: true);
+    if (overlay == null) {
+      return;
+    }
+
+    final entry = OverlayEntry(
+      builder: (context) {
+        return ValueListenableBuilder<bool>(
+          valueListenable: _floatingNavigationVisible,
+          builder: (context, visible, child) {
+            if (!visible) {
+              return const SizedBox.shrink();
+            }
+            return _buildFloatingNavigationOverlay(context);
+          },
+        );
+      },
+    );
+    _floatingNavigationEntry = entry;
+    overlay.insert(entry);
   }
 
   void _updateFloatingNavigationVisibility() {
@@ -183,30 +213,20 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       180.0,
       _floatingNavigationRevealTop,
     );
+    final hideTop = revealTop + _floatingNavigationHideOffset;
     final anchorTop = renderObject.localToGlobal(Offset.zero).dy;
+    final shouldShow = _floatingNavigationVisible.value
+        ? anchorTop <= hideTop
+        : anchorTop <= revealTop;
 
-    _setFloatingNavigationVisible(anchorTop <= revealTop);
+    _setFloatingNavigationVisible(shouldShow);
   }
 
   void _setFloatingNavigationVisible(bool visible) {
-    if (visible) {
-      if (_floatingNavigationEntry != null) {
-        return;
-      }
-
-      final overlay = Overlay.maybeOf(context, rootOverlay: true);
-      if (overlay == null) {
-        return;
-      }
-
-      final entry = OverlayEntry(builder: _buildFloatingNavigationOverlay);
-      _floatingNavigationEntry = entry;
-      overlay.insert(entry);
+    if (_floatingNavigationVisible.value == visible) {
       return;
     }
-
-    _floatingNavigationEntry?.remove();
-    _floatingNavigationEntry = null;
+    _floatingNavigationVisible.value = visible;
   }
 
   Widget _buildFloatingNavigationOverlay(BuildContext context) {

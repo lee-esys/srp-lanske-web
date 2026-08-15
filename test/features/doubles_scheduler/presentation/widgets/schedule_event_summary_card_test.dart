@@ -229,6 +229,34 @@ void main() {
     expect(refreshCount, 2);
     expect(repository.findCallCount, greaterThanOrEqualTo(2));
   });
+
+  testWidgets('can delegate event editing without showing the inline action',
+      (tester) async {
+    final aggregate = _aggregate(adopted: true);
+    final repository = _FakeEventRepository(aggregate);
+    final controller = ScheduleEventSummaryController();
+
+    await tester.pumpWidget(
+      _testApp(
+        ScheduleEventSummaryCard(
+          controller: controller,
+          aggregate: aggregate,
+          repository: repository,
+          onRefreshForEdit: () async => true,
+          showEditAction: false,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('イベント情報を編集'), findsNothing);
+
+    controller.editEventInfo();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byType(AlertDialog), findsOneWidget);
+  });
 }
 
 Widget _testApp(Widget child) {

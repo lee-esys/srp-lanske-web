@@ -24,6 +24,14 @@
   "@supportMenuSubtitle": {
     "description": "Menu item subtitle for the support page link."
   },
+  "doublesNavigationMenuTooltip": "操作メニューを開く",
+  "@doublesNavigationMenuTooltip": {
+    "description": "Tooltip for opening the doubles operation menu."
+  },
+  "doublesNavigationShowHint": "操作ヒントを表示",
+  "@doublesNavigationShowHint": {
+    "description": "Action label for showing the doubles operation menu hint again."
+  },
   "eventSetupInstruction": "URLを貼るか、手動で面数・人数を入力してください。",
   "@eventSetupInstruction": {
     "description": "Instruction text on the event setup page."

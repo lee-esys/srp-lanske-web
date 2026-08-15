@@ -134,6 +134,18 @@ abstract class AppLocalizations {
   /// **'フィードバックもこちらから'**
   String get supportMenuSubtitle;
 
+  /// Tooltip for opening the doubles operation menu.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作メニューを開く'**
+  String get doublesNavigationMenuTooltip;
+
+  /// Action label for showing the doubles operation menu hint again.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作ヒントを表示'**
+  String get doublesNavigationShowHint;
+
   /// Instruction text on the event setup page.
   ///
   /// In ja, this message translates to:

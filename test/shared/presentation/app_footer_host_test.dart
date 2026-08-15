@@ -17,6 +17,10 @@ void main() {
     );
 
     expect(find.byType(AppFooter), findsOneWidget);
+    expect(
+      find.textContaining('Lanske · © 2026 S.R.P. · ver.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('shows the footer only near the end of a long page',
