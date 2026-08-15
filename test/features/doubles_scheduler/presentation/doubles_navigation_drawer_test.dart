@@ -29,6 +29,9 @@ void main() {
     expect(find.text('対戦表一覧'), findsOneWidget);
     expect(find.text('操作ヒントを表示'), findsOneWidget);
     expect(find.text('サポート'), findsOneWidget);
+    expect(find.text('サービス一覧'), findsOneWidget);
+    expect(find.byIcon(Icons.groups_outlined), findsOneWidget);
+    expect(find.text('チーム対戦表'), findsOneWidget);
 
     await tester.tap(find.text('対戦表一覧'));
     await tester.pumpAndSettle();
