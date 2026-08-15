@@ -18,7 +18,7 @@
   },
   "supportMenuTitle": "サポート",
   "@supportMenuTitle": {
-    "description": "Menu item title for opening the support page."
+    "description": "Menu item title for opening the support page link."
   },
   "supportMenuSubtitle": "フィードバックもこちらから",
   "@supportMenuSubtitle": {
@@ -100,15 +100,15 @@
   },
   "eventInfoLoadFailedMessage": "取得できませんでした。URLを確認して再度お試しください",
   "@eventInfoLoadFailedMessage": {
-    "description": "Snack bar message shown when event information import failed."
+    "description": "Message shown when event information import failed."
   },
   "clipboardUrlNotFoundMessage": "クリップボードにURLがありません",
   "@clipboardUrlNotFoundMessage": {
-    "description": "Snack bar message shown when clipboard has no URL."
+    "description": "Message shown when clipboard has no URL."
   },
   "pasteTennisbearEventUrlMessage": "テニスベアのイベントURLを貼り付けてください",
   "@pasteTennisbearEventUrlMessage": {
-    "description": "Snack bar message shown when pasted text is not a TennisBear event URL."
+    "description": "Message shown when pasted text is not a TennisBear event URL."
   },
   "tennisbearEventUrlLabel": "テニスベアのイベントURL",
   "@tennisbearEventUrlLabel": {
@@ -1564,13 +1564,13 @@
       }
     }
   },
-  "appFooterText": "© 2026 S.R.P. · ver.{version}",
+  "appFooterText": "© 2026 S.R.P. · ver.{releaseVersion}",
   "@appFooterText": {
     "description": "Common application footer with release version.",
     "placeholders": {
-      "version": {
+      "releaseVersion": {
         "type": "String",
-        "example": "0.1.5"
+        "example": "0.1.6"
       }
     }
   },
