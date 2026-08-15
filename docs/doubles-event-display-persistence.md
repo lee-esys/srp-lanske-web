@@ -87,7 +87,9 @@ base、最新値、入力値を比較する高度な競合解消は別Issueで�
 
 ダブルス機能のサービス名は「らんすけ：ダブルス乱数表」とし、編集対象のイベントタイトルとは分離して表示する。
 
-アプリ共通フッターには、現在公開済みのrelease versionを表示する。ver0.1.6の完了前は `© 2026 S.R.P. · ver.0.1.5` とする。
+アプリ共通フッターには、現在公開しているrelease versionを表示する。表示値の正本は `AppConfig.releaseVersion` とし、Flutter package versionの `pubspec.yaml` も原則として同じrelease versionへ合わせる。
+
+ver0.1.6では途中版として `0.1.6+2` を公開した後、正式完了時に `0.1.6` へ統一する。
 
 ## 将来拡張
 
