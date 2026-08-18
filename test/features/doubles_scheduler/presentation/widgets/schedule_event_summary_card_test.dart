@@ -64,6 +64,24 @@ void main() {
     expect(refreshCount, 1);
   });
 
+  testWidgets('uses tap trigger for the event title tooltip', (tester) async {
+    final aggregate = _aggregate();
+    final repository = _FakeEventRepository(aggregate);
+
+    await tester.pumpWidget(
+      _testApp(
+        ScheduleEventSummaryCard(
+          aggregate: aggregate,
+          repository: repository,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
+    expect(tooltip.triggerMode, TooltipTriggerMode.tap);
+  });
+
   testWidgets('hides progress UI before the schedule is adopted',
       (tester) async {
     final aggregate = _aggregate();
@@ -135,8 +153,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('0 / 15'), findsOneWidget);
-    expect(find.text('次の対戦'), findsNWidgets(2));
-    expect(find.text('第2ラウンド / A'), findsOneWidget);
+    expect(find.text('次の対戦'), findsOneWidget);
+    expect(find.text('次の対戦：第2ラウンド / Aコート'), findsOneWidget);
     expect(find.text('参加者1 / 参加者2 vs 参加者3 / 参加者4'), findsOneWidget);
 
     await tester.tap(
@@ -174,7 +192,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('試合中'), findsNWidgets(2));
+    expect(find.text('試合中'), findsOneWidget);
+    expect(find.text('試合中：第3ラウンド / 2コート'), findsOneWidget);
     expect(find.byType(Badge), findsOneWidget);
     expect(find.text('2'), findsOneWidget);
 
