@@ -333,7 +333,8 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        title,
+                        '$title：$position',
+                        key: const ValueKey('doubles-progress-position'),
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                       if (isInProgress &&
@@ -346,11 +347,6 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
                     ],
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    position,
-                    key: const ValueKey('doubles-progress-position'),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
                   Text(
                     opponents,
                     key: const ValueKey('doubles-progress-opponents'),
@@ -399,6 +395,7 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
                   Expanded(
                     child: Tooltip(
                       message: event.title,
+                      triggerMode: TooltipTriggerMode.tap,
                       child: Text(
                         event.title,
                         maxLines: 1,
