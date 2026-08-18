@@ -8,7 +8,8 @@ extension DoublesMatchNavigationLocalizations on AppLocalizations {
   }
 
   String doublesProgressPositionLabel(int roundNo, String courtLabel) {
-    return '${teamRoundTitle(roundNo)}$teamMatchGroupSeparator$courtLabel';
+    final courtTitle = teamCourtTitle(0).replaceFirst('0', courtLabel);
+    return '${teamRoundTitle(roundNo)}$teamMatchGroupSeparator$courtTitle';
   }
 
   String get doublesProgressInProgressTitle =>
