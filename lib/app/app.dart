@@ -37,6 +37,7 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     final uri = Uri.base;
     final publicId = uri.queryParameters['sid']?.trim();
+    final isTeamRoute = uri.path == '/team' || uri.path.startsWith('/team/');
 
     final home = publicId == null || publicId.isEmpty
         ? _homeForPath(uri.path)
@@ -48,7 +49,7 @@ class _AppState extends State<App> {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       locale: const Locale('ja'),
-      theme: appTheme,
+      theme: isTeamRoute ? appTheme : doublesAppTheme,
       navigatorObservers: [_footerNavigatorObserver],
       builder: (context, child) {
         return AppFooterHost(
