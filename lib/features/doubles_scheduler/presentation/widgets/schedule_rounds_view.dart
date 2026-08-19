@@ -47,6 +47,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   ScrollPosition? _parentScrollPosition;
   OverlayEntry? _floatingNavigationEntry;
   bool _floatingVisibilityCheckScheduled = false;
+  bool _isRouteCurrent = true;
 
   @override
   void initState() {
@@ -61,6 +62,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _isRouteCurrent = ModalRoute.of(context)?.isCurrent ?? true;
     _syncParentScrollPosition();
     _scheduleFloatingNavigationVisibilityCheck();
   }
@@ -197,6 +199,11 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   }
 
   void _updateFloatingNavigationVisibility() {
+    if (!_isRouteCurrent) {
+      _setFloatingNavigationVisible(false);
+      return;
+    }
+
     final navigation = DoublesProgressUiStore.navigation.value;
     final anchorContext = _floatingNavigationAnchorKey.currentContext;
     final renderObject = anchorContext?.findRenderObject();
