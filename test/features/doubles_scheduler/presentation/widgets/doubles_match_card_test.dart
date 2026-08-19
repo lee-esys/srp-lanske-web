@@ -55,7 +55,8 @@ void main() {
     );
   });
 
-  testWidgets('compact header keeps score, status, note, and rest action separated',
+  testWidgets(
+      'compact header keeps score, status, note, and rest action separated',
       (tester) async {
     await tester.pumpWidget(
       _TestApp(
