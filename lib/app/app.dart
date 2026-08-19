@@ -3,6 +3,8 @@ import 'package:srp_lanske/l10n/l10n.dart';
 
 import '../features/doubles_scheduler/presentation/event_setup_page.dart';
 import '../features/doubles_scheduler/presentation/restored_schedule_page.dart';
+import '../features/doubles_scheduler/presentation/widgets/schedule_rounds_view.dart'
+    show doublesFloatingNavigationRouteObserver;
 import '../features/team_scheduler/presentation/team_schedule_list_page.dart';
 import '../features/team_scheduler/presentation/team_schedule_page.dart';
 import '../features/team_scheduler/presentation/team_setup_page.dart';
@@ -50,7 +52,10 @@ class _AppState extends State<App> {
       supportedLocales: AppLocalizations.supportedLocales,
       locale: const Locale('ja'),
       theme: isTeamRoute ? appTheme : doublesAppTheme,
-      navigatorObservers: [_footerNavigatorObserver],
+      navigatorObservers: [
+        _footerNavigatorObserver,
+        doublesFloatingNavigationRouteObserver,
+      ],
       builder: (context, child) {
         return AppFooterHost(
           controller: _footerController,
