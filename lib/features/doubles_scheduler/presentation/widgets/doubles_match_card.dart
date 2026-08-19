@@ -74,32 +74,39 @@ class DoublesMatchCardContent extends StatelessWidget {
 
     final statusSummary = hasAdoptedSchedule
         ? SizedBox(
-            width: 146,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: 46,
-                  child: scoreWidget,
+            key: const ValueKey('match-status-summary'),
+            width: 152,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: SizedBox(
+                width: 156,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 46,
+                      child: scoreWidget,
+                    ),
+                    const SizedBox(width: 4),
+                    Chip(
+                      key: ValueKey('match-status-${status.value}'),
+                      visualDensity: VisualDensity.compact,
+                      backgroundColor: visualStyle.statusBackgroundColor,
+                      side: BorderSide(color: visualStyle.statusBorderColor),
+                      labelStyle: TextStyle(
+                        color: visualStyle.statusForegroundColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      label: Text(statusLabel),
+                    ),
+                    const SizedBox(width: 4),
+                    SizedBox(
+                      width: 22,
+                      child: noteWidget,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 4),
-                Chip(
-                  key: ValueKey('match-status-${status.value}'),
-                  visualDensity: VisualDensity.compact,
-                  backgroundColor: visualStyle.statusBackgroundColor,
-                  side: BorderSide(color: visualStyle.statusBorderColor),
-                  labelStyle: TextStyle(
-                    color: visualStyle.statusForegroundColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  label: Text(statusLabel),
-                ),
-                const SizedBox(width: 4),
-                SizedBox(
-                  width: 22,
-                  child: noteWidget,
-                ),
-              ],
+              ),
             ),
           )
         : null;
@@ -127,7 +134,11 @@ class DoublesMatchCardContent extends StatelessWidget {
                   ),
                 ),
               ),
-              if (statusSummary != null) statusSummary,
+              if (statusSummary != null)
+                Transform.translate(
+                  offset: const Offset(-4, 0),
+                  child: statusSummary,
+                ),
               if (headerTrailing != null)
                 Align(
                   alignment: Alignment.centerRight,
