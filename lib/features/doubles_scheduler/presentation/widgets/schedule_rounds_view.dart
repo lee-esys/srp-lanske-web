@@ -13,8 +13,21 @@ import 'schedule_rounds_view_impl.dart' as impl;
 export 'doubles_match_card.dart';
 export 'schedule_rounds_view_impl.dart' hide ScheduleRoundsView;
 
-final RouteObserver<ModalRoute<dynamic>> doublesFloatingNavigationRouteObserver =
-    RouteObserver<ModalRoute<dynamic>>();
+final DoublesFloatingNavigationRouteObserver
+    doublesFloatingNavigationRouteObserver =
+    DoublesFloatingNavigationRouteObserver();
+
+class DoublesFloatingNavigationRouteObserver extends NavigatorObserver {
+  final ValueNotifier<bool> isPopupRouteTop = ValueNotifier(false);
+
+  @override
+  void didChangeTop(
+    Route<dynamic> topRoute,
+    Route<dynamic>? previousTopRoute,
+  ) {
+    isPopupRouteTop.value = topRoute is PopupRoute<dynamic>;
+  }
+}
 
 class ScheduleRoundsView extends StatefulWidget {
   const ScheduleRoundsView({
@@ -38,8 +51,7 @@ class ScheduleRoundsView extends StatefulWidget {
   State<ScheduleRoundsView> createState() => _ScheduleRoundsViewState();
 }
 
-class _ScheduleRoundsViewState extends State<ScheduleRoundsView>
-    with RouteAware {
+class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   static const _floatingNavigationRevealTop = 240.0;
   static const _floatingNavigationHideOffset = 48.0;
 
@@ -50,9 +62,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView>
   DoublesMatchSaveRegistration? _saveRegistration;
   ScrollPosition? _parentScrollPosition;
   OverlayEntry? _floatingNavigationEntry;
-  ModalRoute<dynamic>? _subscribedRoute;
   bool _floatingVisibilityCheckScheduled = false;
-  bool _isCoveredByRoute = false;
 
   @override
   void initState() {
@@ -61,13 +71,15 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView>
       repository: appScheduleProgressRepository,
     );
     DoublesProgressUiStore.navigation.addListener(_handleNavigationChanged);
+    doublesFloatingNavigationRouteObserver.isPopupRouteTop.addListener(
+      _handlePopupRouteChanged,
+    );
     _syncSaveRegistration();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _syncRouteObserver();
     _syncParentScrollPosition();
     _scheduleFloatingNavigationVisibilityCheck();
   }
@@ -84,7 +96,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView>
     DoublesMatchSaveRegistry.unregister(_saveRegistration);
     DoublesProgressUiStore.navigation.removeListener(_handleNavigationChanged);
     DoublesProgressUiStore.setCompletedNavigation(null);
-    doublesFloatingNavigationRouteObserver.unsubscribe(this);
+    doublesFloatingNavigationRouteObserver.isPopupRouteTop.removeListener(
+      _handlePopupRouteChanged,
+    );
     _parentScrollPosition?.removeListener(_handleParentScroll);
     _floatingNavigationEntry?.remove();
     _floatingNavigationEntry = null;
@@ -137,37 +151,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView>
     );
   }
 
-  void _syncRouteObserver() {
-    final nextRoute = ModalRoute.of(context);
-    if (identical(nextRoute, _subscribedRoute)) {
-      return;
-    }
-
-    doublesFloatingNavigationRouteObserver.unsubscribe(this);
-    _subscribedRoute = nextRoute;
-    if (nextRoute != null) {
-      doublesFloatingNavigationRouteObserver.subscribe(this, nextRoute);
-    }
-  }
-
-  @override
-  void didPush() {
-    _isCoveredByRoute = false;
-    _scheduleFloatingNavigationVisibilityCheck();
-  }
-
-  @override
-  void didPushNext() {
-    _isCoveredByRoute = true;
-    _setFloatingNavigationVisible(false);
-  }
-
-  @override
-  void didPopNext() {
-    _isCoveredByRoute = false;
-    _scheduleFloatingNavigationVisibilityCheck();
-  }
-
   void _syncParentScrollPosition() {
     final nextPosition = Scrollable.maybeOf(context)?.position;
     if (identical(nextPosition, _parentScrollPosition)) {
@@ -190,6 +173,14 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView>
           ? _scrollToBottom
           : null,
     );
+    _scheduleFloatingNavigationVisibilityCheck();
+  }
+
+  void _handlePopupRouteChanged() {
+    if (doublesFloatingNavigationRouteObserver.isPopupRouteTop.value) {
+      _setFloatingNavigationVisible(false);
+      return;
+    }
     _scheduleFloatingNavigationVisibilityCheck();
   }
 
@@ -236,7 +227,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView>
   }
 
   void _updateFloatingNavigationVisibility() {
-    if (_isCoveredByRoute) {
+    if (doublesFloatingNavigationRouteObserver.isPopupRouteTop.value) {
       _setFloatingNavigationVisible(false);
       return;
     }
