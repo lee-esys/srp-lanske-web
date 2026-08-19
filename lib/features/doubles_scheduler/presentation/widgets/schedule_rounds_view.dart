@@ -46,8 +46,8 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   DoublesMatchSaveRegistration? _saveRegistration;
   ScrollPosition? _parentScrollPosition;
   OverlayEntry? _floatingNavigationEntry;
+  Animation<double>? _routeSecondaryAnimation;
   bool _floatingVisibilityCheckScheduled = false;
-  bool _isRouteCurrent = true;
 
   @override
   void initState() {
@@ -62,7 +62,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _isRouteCurrent = ModalRoute.of(context)?.isCurrent ?? true;
+    _syncRouteTransitionListener();
     _syncParentScrollPosition();
     _scheduleFloatingNavigationVisibilityCheck();
   }
@@ -79,6 +79,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     DoublesMatchSaveRegistry.unregister(_saveRegistration);
     DoublesProgressUiStore.navigation.removeListener(_handleNavigationChanged);
     DoublesProgressUiStore.setCompletedNavigation(null);
+    _routeSecondaryAnimation?.removeListener(_handleRouteTransition);
     _parentScrollPosition?.removeListener(_handleParentScroll);
     _floatingNavigationEntry?.remove();
     _floatingNavigationEntry = null;
@@ -129,6 +130,21 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       generatedScheduleId: generatedScheduleId,
       onSave: _saveMatch,
     );
+  }
+
+  void _syncRouteTransitionListener() {
+    final nextAnimation = ModalRoute.of(context)?.secondaryAnimation;
+    if (identical(nextAnimation, _routeSecondaryAnimation)) {
+      return;
+    }
+
+    _routeSecondaryAnimation?.removeListener(_handleRouteTransition);
+    _routeSecondaryAnimation = nextAnimation;
+    _routeSecondaryAnimation?.addListener(_handleRouteTransition);
+  }
+
+  void _handleRouteTransition() {
+    _scheduleFloatingNavigationVisibilityCheck();
   }
 
   void _syncParentScrollPosition() {
@@ -199,7 +215,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   }
 
   void _updateFloatingNavigationVisibility() {
-    if (!_isRouteCurrent) {
+    if (!(ModalRoute.of(context)?.isCurrent ?? true)) {
       _setFloatingNavigationVisible(false);
       return;
     }
