@@ -199,6 +199,7 @@ Widget _testApp({required ScrollController scrollController}) {
     locale: const Locale('ja'),
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
+    navigatorObservers: [doublesFloatingNavigationRouteObserver],
     home: Scaffold(
       body: ListView(
         controller: scrollController,
