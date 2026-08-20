@@ -13,6 +13,22 @@ import 'schedule_rounds_view_impl.dart' as impl;
 export 'doubles_match_card.dart';
 export 'schedule_rounds_view_impl.dart' hide ScheduleRoundsView;
 
+final DoublesFloatingNavigationRouteObserver
+    doublesFloatingNavigationRouteObserver =
+    DoublesFloatingNavigationRouteObserver();
+
+class DoublesFloatingNavigationRouteObserver extends NavigatorObserver {
+  final ValueNotifier<bool> isPopupRouteTop = ValueNotifier(false);
+
+  @override
+  void didChangeTop(
+    Route<dynamic> topRoute,
+    Route<dynamic>? previousTopRoute,
+  ) {
+    isPopupRouteTop.value = topRoute is PopupRoute<dynamic>;
+  }
+}
+
 class ScheduleRoundsView extends StatefulWidget {
   const ScheduleRoundsView({
     super.key,
@@ -55,6 +71,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       repository: appScheduleProgressRepository,
     );
     DoublesProgressUiStore.navigation.addListener(_handleNavigationChanged);
+    doublesFloatingNavigationRouteObserver.isPopupRouteTop.addListener(
+      _handlePopupRouteChanged,
+    );
     _syncSaveRegistration();
   }
 
@@ -77,6 +96,9 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     DoublesMatchSaveRegistry.unregister(_saveRegistration);
     DoublesProgressUiStore.navigation.removeListener(_handleNavigationChanged);
     DoublesProgressUiStore.setCompletedNavigation(null);
+    doublesFloatingNavigationRouteObserver.isPopupRouteTop.removeListener(
+      _handlePopupRouteChanged,
+    );
     _parentScrollPosition?.removeListener(_handleParentScroll);
     _floatingNavigationEntry?.remove();
     _floatingNavigationEntry = null;
@@ -154,6 +176,14 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     _scheduleFloatingNavigationVisibilityCheck();
   }
 
+  void _handlePopupRouteChanged() {
+    if (doublesFloatingNavigationRouteObserver.isPopupRouteTop.value) {
+      _setFloatingNavigationVisible(false);
+      return;
+    }
+    _scheduleFloatingNavigationVisibilityCheck();
+  }
+
   void _scheduleFloatingNavigationVisibilityCheck() {
     if (_floatingVisibilityCheckScheduled) {
       return;
@@ -197,6 +227,11 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   }
 
   void _updateFloatingNavigationVisibility() {
+    if (doublesFloatingNavigationRouteObserver.isPopupRouteTop.value) {
+      _setFloatingNavigationVisible(false);
+      return;
+    }
+
     final navigation = DoublesProgressUiStore.navigation.value;
     final anchorContext = _floatingNavigationAnchorKey.currentContext;
     final renderObject = anchorContext?.findRenderObject();

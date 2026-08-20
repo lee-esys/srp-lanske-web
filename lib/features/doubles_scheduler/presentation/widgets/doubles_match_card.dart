@@ -54,37 +54,60 @@ class DoublesMatchCardContent extends StatelessWidget {
       matchPositionLabel,
     );
 
-    final statusSummary = hasAdoptedSchedule
-        ? Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Chip(
-                key: ValueKey('match-status-${status.value}'),
-                visualDensity: VisualDensity.compact,
-                backgroundColor: visualStyle.statusBackgroundColor,
-                side: BorderSide(color: visualStyle.statusBorderColor),
-                labelStyle: TextStyle(
-                  color: visualStyle.statusForegroundColor,
-                  fontWeight: FontWeight.w600,
-                ),
-                label: Text(statusLabel),
+    final scoreWidget = scores.length >= 2
+        ? FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              '${scores[0]} - ${scores[1]}',
+              key: const ValueKey('match-score'),
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
               ),
-              if (scores.length >= 2) ...[
-                const SizedBox(width: 8),
-                Text(
-                  '${scores[0]} - ${scores[1]}',
-                  key: const ValueKey('match-score'),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
+            ),
+          )
+        : null;
+    final noteWidget = progress?.note.trim().isNotEmpty ?? false
+        ? const Icon(Icons.note_alt_outlined, size: 18)
+        : null;
+
+    final statusSummary = hasAdoptedSchedule
+        ? SizedBox(
+            key: const ValueKey('match-status-summary'),
+            width: 152,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: SizedBox(
+                width: 156,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 46,
+                      child: scoreWidget,
+                    ),
+                    const SizedBox(width: 4),
+                    Chip(
+                      key: ValueKey('match-status-${status.value}'),
+                      visualDensity: VisualDensity.compact,
+                      backgroundColor: visualStyle.statusBackgroundColor,
+                      side: BorderSide(color: visualStyle.statusBorderColor),
+                      labelStyle: TextStyle(
+                        color: visualStyle.statusForegroundColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      label: Text(statusLabel),
+                    ),
+                    const SizedBox(width: 4),
+                    SizedBox(
+                      width: 22,
+                      child: noteWidget,
+                    ),
+                  ],
                 ),
-              ],
-              if (progress?.note.trim().isNotEmpty ?? false) ...[
-                const SizedBox(width: 6),
-                const Icon(Icons.note_alt_outlined, size: 18),
-              ],
-            ],
+              ),
+            ),
           )
         : null;
 
@@ -112,12 +135,9 @@ class DoublesMatchCardContent extends StatelessWidget {
                 ),
               ),
               if (statusSummary != null)
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 132),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: statusSummary,
-                  ),
+                Transform.translate(
+                  offset: const Offset(-4, 0),
+                  child: statusSummary,
                 ),
               if (headerTrailing != null)
                 Align(

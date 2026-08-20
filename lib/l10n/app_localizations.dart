@@ -1881,8 +1881,8 @@ abstract class AppLocalizations {
   /// Common application footer with release version.
   ///
   /// In ja, this message translates to:
-  /// **'© 2026 S.R.P. · ver.{version}'**
-  String appFooterText(String version);
+  /// **'© 2026 S.R.P. · ver.{releaseVersion}'**
+  String appFooterText(String releaseVersion);
 
   /// Button label for editing doubles event information.
   ///

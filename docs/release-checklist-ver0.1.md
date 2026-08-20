@@ -68,6 +68,12 @@
 
 ## 3. web deploy 確認
 
+### release version
+
+- [ ] `AppConfig.releaseVersion` が今回の正式release versionになっている
+- [ ] `pubspec.yaml` の `version` が `AppConfig.releaseVersion` と整合している
+- [ ] 共通フッターに今回の正式release versionが表示される
+
 ### Firebase Hosting
 
 - [ ] Firebase project を確認した

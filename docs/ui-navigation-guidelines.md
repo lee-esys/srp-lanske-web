@@ -91,6 +91,8 @@ Lanske の AppBar、ナビゲーション Drawer、画面内操作を追加・�
 
 サービス名が画面内に常時出ない場合でもアプリ名を識別できるよう、表示は次の構成とする。
 
-`Lanske · © 2026 S.R.P. · ver.<release version>`
+`Lanske · © 2026 S.R.P. · ver.<releaseVersion>`
+
+`<releaseVersion>` は `AppConfig.releaseVersion` を正本とし、l10n の `appFooterText` でも同じ `releaseVersion` 名のplaceholderを使用する。`pubspec.yaml` の `version` も原則として同じrelease versionへ合わせる。
 
 フッターの表示タイミングやスクロール末尾判定は、文言変更を理由に個別画面で上書きしない。

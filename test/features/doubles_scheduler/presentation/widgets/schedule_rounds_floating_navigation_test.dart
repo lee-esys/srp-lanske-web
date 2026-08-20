@@ -71,6 +71,62 @@ void main() {
     );
   });
 
+  testWidgets('hides floating navigation while a dialog route is open',
+      (tester) async {
+    final scrollController = ScrollController();
+    addTearDown(scrollController.dispose);
+
+    await tester.pumpWidget(
+      _testApp(
+        scrollController: scrollController,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    DoublesProgressUiStore.setNavigation(
+      DoublesProgressNavigationUiState(
+        kind: DoublesProgressNavigationUiKind.inProgress,
+        roundNo: 3,
+        courtLabel: '1',
+        side1PlayerNames: const ['1', '2'],
+        side2PlayerNames: const ['3', '4'],
+        inProgressMatchCount: 1,
+        targetKey: '3_1',
+        onNavigate: () async {},
+      ),
+    );
+    scrollController.jumpTo(500);
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('doubles-schedule-floating-navigation')),
+      findsOneWidget,
+    );
+
+    showDialog<void>(
+      context: tester.element(find.byType(ScheduleRoundsView)),
+      builder: (context) => const AlertDialog(
+        content: Text('dialog'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('dialog'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('doubles-schedule-floating-navigation')),
+      findsNothing,
+    );
+
+    Navigator.of(tester.element(find.byType(AlertDialog))).pop();
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('doubles-schedule-floating-navigation')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('completed floating navigation scrolls to page bottom',
       (tester) async {
     final scrollController = ScrollController();
@@ -143,6 +199,7 @@ Widget _testApp({required ScrollController scrollController}) {
     locale: const Locale('ja'),
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
+    navigatorObservers: [doublesFloatingNavigationRouteObserver],
     home: Scaffold(
       body: ListView(
         controller: scrollController,

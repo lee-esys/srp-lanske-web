@@ -3,6 +3,8 @@ import 'package:srp_lanske/l10n/l10n.dart';
 
 import '../features/doubles_scheduler/presentation/event_setup_page.dart';
 import '../features/doubles_scheduler/presentation/restored_schedule_page.dart';
+import '../features/doubles_scheduler/presentation/widgets/schedule_rounds_view.dart'
+    show doublesFloatingNavigationRouteObserver;
 import '../features/team_scheduler/presentation/team_schedule_list_page.dart';
 import '../features/team_scheduler/presentation/team_schedule_page.dart';
 import '../features/team_scheduler/presentation/team_setup_page.dart';
@@ -37,6 +39,7 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     final uri = Uri.base;
     final publicId = uri.queryParameters['sid']?.trim();
+    final isTeamRoute = uri.path == '/team' || uri.path.startsWith('/team/');
 
     final home = publicId == null || publicId.isEmpty
         ? _homeForPath(uri.path)
@@ -48,8 +51,11 @@ class _AppState extends State<App> {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       locale: const Locale('ja'),
-      theme: appTheme,
-      navigatorObservers: [_footerNavigatorObserver],
+      theme: isTeamRoute ? appTheme : doublesAppTheme,
+      navigatorObservers: [
+        _footerNavigatorObserver,
+        doublesFloatingNavigationRouteObserver,
+      ],
       builder: (context, child) {
         return AppFooterHost(
           controller: _footerController,

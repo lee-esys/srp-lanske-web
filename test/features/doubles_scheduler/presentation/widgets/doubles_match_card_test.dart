@@ -55,6 +55,41 @@ void main() {
     );
   });
 
+  testWidgets(
+      'compact header keeps score, status, note, and rest action separated',
+      (tester) async {
+    await tester.pumpWidget(
+      _TestApp(
+        hasAdoptedSchedule: true,
+        status: ScheduleMatchStatus.inProgress,
+        progress: _progress(
+          status: ScheduleMatchStatus.inProgress,
+          scores: const <int>[0, 2],
+          note: 'メモ',
+        ),
+        headerTrailing: const SizedBox(
+          key: ValueKey('test-header-trailing'),
+          width: 96,
+          child: Center(child: Text('休憩：2人')),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('0 - 2'), findsOneWidget);
+    expect(find.text('試合中'), findsOneWidget);
+    expect(find.byIcon(Icons.note_alt_outlined), findsOneWidget);
+
+    final statusRect = tester.getRect(
+      find.byKey(const ValueKey('match-status-summary')),
+    );
+    final trailingRect = tester.getRect(
+      find.byKey(const ValueKey('test-header-trailing')),
+    );
+    expect(statusRect.right, lessThanOrEqualTo(trailingRect.left));
+  });
+
   testWidgets('completed card overlays one WIN and one LOSE without added size',
       (
     tester,
@@ -185,6 +220,7 @@ void main() {
 ScheduleMatchProgress _progress({
   required ScheduleMatchStatus status,
   List<int>? scores,
+  String note = '',
 }) {
   final now = DateTime(2026, 8, 5, 20);
 
@@ -198,7 +234,7 @@ ScheduleMatchProgress _progress({
     status: status,
     result:
         scores == null ? null : ScheduleMatchResultSummary.simpleScore(scores),
-    note: '',
+    note: note,
     startedAt: status == ScheduleMatchStatus.scheduled ? null : now,
     finishedAt: status == ScheduleMatchStatus.completed ? now : null,
     createdAt: now,
@@ -212,11 +248,13 @@ class _TestApp extends StatelessWidget {
     required this.hasAdoptedSchedule,
     required this.status,
     this.progress,
+    this.headerTrailing,
   });
 
   final bool hasAdoptedSchedule;
   final ScheduleMatchStatus status;
   final ScheduleMatchProgress? progress;
+  final Widget? headerTrailing;
 
   @override
   Widget build(BuildContext context) {
@@ -230,6 +268,7 @@ class _TestApp extends StatelessWidget {
                 return DoublesMatchCardContent(
                   hasAdoptedSchedule: hasAdoptedSchedule,
                   matchPositionLabel: 'R 1 / C A',
+                  headerTrailing: headerTrailing,
                   side1: const SizedBox(
                     width: 120,
                     height: 56,

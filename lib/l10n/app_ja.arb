@@ -1564,13 +1564,13 @@
       }
     }
   },
-  "appFooterText": "© 2026 S.R.P. · ver.{version}",
+  "appFooterText": "© 2026 S.R.P. · ver.{releaseVersion}",
   "@appFooterText": {
     "description": "Common application footer with release version.",
     "placeholders": {
-      "version": {
+      "releaseVersion": {
         "type": "String",
-        "example": "0.1.5"
+        "example": "0.1.6"
       }
     }
   },
