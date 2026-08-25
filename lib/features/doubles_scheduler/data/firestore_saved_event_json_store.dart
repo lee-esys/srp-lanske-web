@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:srp_lanske/shared/infrastructure/firestore_provenance.dart';
 
 import 'saved_event_json_store.dart';
 
@@ -8,11 +9,14 @@ class FirestoreSavedEventJsonStore implements SavedEventJsonStore {
   FirestoreSavedEventJsonStore({
     FirebaseFirestore? firestore,
     String collectionPath = 'events',
+    FirestoreWriteOrigin Function()? writeOriginProvider,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _collectionPath = collectionPath;
+        _collectionPath = collectionPath,
+        _writeOriginProvider = writeOriginProvider;
 
   final FirebaseFirestore _firestore;
   final String _collectionPath;
+  final FirestoreWriteOrigin Function()? _writeOriginProvider;
 
   CollectionReference<Map<String, dynamic>> get _collection {
     return _firestore.collection(_collectionPath);
@@ -23,7 +27,11 @@ class FirestoreSavedEventJsonStore implements SavedEventJsonStore {
     required String publicId,
     required Map<String, dynamic> data,
   }) async {
-    await _collection.doc(publicId).set(_copy(data));
+    final stored = withCreatedFirestoreProvenance(
+      data: _copy(data),
+      origin: _currentWriteOrigin(),
+    );
+    await _collection.doc(publicId).set(_copy(stored));
   }
 
   @override
@@ -66,13 +74,35 @@ class FirestoreSavedEventJsonStore implements SavedEventJsonStore {
         }
 
         final result = update(_copy(data));
-        if (!result.isNoOp) {
-          transaction.update(reference, _copy(result.fields));
+        if (result.isNoOp) {
+          return _copy(result.data);
         }
 
-        return _copy(result.data);
+        final updatedData = withUpdatedFirestoreProvenance(
+          data: _copy(result.data),
+          currentProvenance: data['provenance'],
+          origin: _currentWriteOrigin(),
+        );
+        final provenance = updatedData['provenance'];
+
+        transaction.update(
+          reference,
+          _copy(<String, dynamic>{
+            ...result.fields,
+            'provenance': provenance,
+          }),
+        );
+
+        return _copy(updatedData);
       },
     );
+  }
+
+  FirestoreWriteOrigin _currentWriteOrigin() {
+    return _writeOriginProvider?.call() ??
+        FirestoreWriteOrigin.current(
+          firebaseProjectId: _firestore.app.options.projectId,
+        );
   }
 
   Map<String, dynamic> _copy(Map<String, dynamic> data) {

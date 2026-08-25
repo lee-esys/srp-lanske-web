@@ -25,11 +25,14 @@ flutter pub get
 flutter run -d web-server \
   --web-hostname 0.0.0.0 \
   --web-port 3000 \
+  --dart-define=LANSKE_APP_ENV=dev \
   --dart-define=LANSKE_CORE_API_BASE_URL=https://<core-api-url> \
   --dart-define=LANSKE_EVENT_REPOSITORY=firestore
 ```
 
 `<core-api-url>` には、確認に使用する公開 core API URL を指定する。
+
+Codespaces から Firestore へ保存するデータは `environment = dev` として provenance に記録する。具体的な Codespace は実際の browser host で識別する。
 
 本番の core API と Firestore を指定した場合、開発中の画面から本番データを作成・更新する可能性がある。表示確認だけのつもりでも、保存操作を行う場合は接続先を確認する。
 
@@ -108,6 +111,7 @@ process が存在しない場合や、別 port で起動している場合は、
 ## 関連
 
 - [README](../README.md)
+- [Firestore provenance metadata](firestore-provenance.md)
 - [Firebase Hosting deploy memo](firebase-hosting-deploy.md)
 - [GitHub Docs: Forwarding ports in your codespace](https://docs.github.com/en/codespaces/developing-in-a-codespace/forwarding-ports-in-your-codespace)
 - [GitHub Docs: Security in GitHub Codespaces](https://docs.github.com/en/codespaces/reference/security-in-github-codespaces)
