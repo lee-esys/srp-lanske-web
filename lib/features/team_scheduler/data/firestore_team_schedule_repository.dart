@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:srp_lanske/features/doubles_scheduler/domain/public_id.dart';
+import 'package:srp_lanske/shared/infrastructure/firestore_provenance.dart';
 
 import '../application/team_schedule_repository.dart';
 import '../domain/saved_team_schedule.dart';
@@ -11,13 +12,16 @@ class FirestoreTeamScheduleRepository implements TeamScheduleRepository {
     FirebaseFirestore? firestore,
     String collectionPath = 'team_schedules',
     String Function()? shareIdGenerator,
+    FirestoreWriteOrigin Function()? writeOriginProvider,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
         _collectionPath = collectionPath,
-        _shareIdGenerator = shareIdGenerator ?? generatePublicId;
+        _shareIdGenerator = shareIdGenerator ?? generatePublicId,
+        _writeOriginProvider = writeOriginProvider;
 
   final FirebaseFirestore _firestore;
   final String _collectionPath;
   final String Function() _shareIdGenerator;
+  final FirestoreWriteOrigin Function()? _writeOriginProvider;
 
   CollectionReference<Map<String, dynamic>> get _collection {
     return _firestore.collection(_collectionPath);
@@ -57,7 +61,11 @@ class FirestoreTeamScheduleRepository implements TeamScheduleRepository {
       scores: const <String, dynamic>{},
     );
 
-    await _collection.doc(shareId).set(saved.toJson());
+    final stored = withCreatedFirestoreProvenance(
+      data: saved.toJson(),
+      origin: _currentWriteOrigin(),
+    );
+    await _collection.doc(shareId).set(stored);
 
     return saved;
   }
@@ -79,14 +87,19 @@ class FirestoreTeamScheduleRepository implements TeamScheduleRepository {
     required String shareId,
     required SavedTeamScheduleDisplay display,
   }) async {
-    final current = await _readExisting(shareId);
+    final currentData = await _readExistingData(shareId);
+    final current = SavedTeamSchedule.fromJson(currentData);
 
     final updated = current.copyWith(
       display: display,
       updatedAt: DateTime.now(),
     );
 
-    await _collection.doc(shareId).set(updated.toJson());
+    await _writeUpdated(
+      shareId: shareId,
+      data: updated.toJson(),
+      currentProvenance: currentData['provenance'],
+    );
 
     return updated;
   }
@@ -96,25 +109,50 @@ class FirestoreTeamScheduleRepository implements TeamScheduleRepository {
     required String shareId,
     required Map<String, dynamic> scores,
   }) async {
-    final current = await _readExisting(shareId);
+    final currentData = await _readExistingData(shareId);
+    final current = SavedTeamSchedule.fromJson(currentData);
 
     final updated = current.copyWith(
       scores: Map<String, dynamic>.unmodifiable(scores),
       updatedAt: DateTime.now(),
     );
 
-    await _collection.doc(shareId).set(updated.toJson());
+    await _writeUpdated(
+      shareId: shareId,
+      data: updated.toJson(),
+      currentProvenance: currentData['provenance'],
+    );
 
     return updated;
   }
 
-  Future<SavedTeamSchedule> _readExisting(String shareId) async {
-    final current = await findByShareId(shareId);
-    if (current == null) {
+  Future<Map<String, dynamic>> _readExistingData(String shareId) async {
+    final snapshot = await _collection.doc(shareId).get();
+    final data = snapshot.data();
+    if (!snapshot.exists || data == null) {
       throw StateError('team schedule not found: $shareId');
     }
+    return data;
+  }
 
-    return current;
+  Future<void> _writeUpdated({
+    required String shareId,
+    required Map<String, dynamic> data,
+    required Object? currentProvenance,
+  }) async {
+    final stored = withUpdatedFirestoreProvenance(
+      data: data,
+      currentProvenance: currentProvenance,
+      origin: _currentWriteOrigin(),
+    );
+    await _collection.doc(shareId).set(stored);
+  }
+
+  FirestoreWriteOrigin _currentWriteOrigin() {
+    return _writeOriginProvider?.call() ??
+        FirestoreWriteOrigin.current(
+          firebaseProjectId: _firestore.app.options.projectId,
+        );
   }
 
   Future<String> _generateUniqueShareId() async {

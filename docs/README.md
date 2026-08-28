@@ -24,6 +24,7 @@ Lanske を使う人が、機能・使い方・注意点を確認するための�
 - [Architecture](architecture.md)
 - [UI ナビゲーション・操作配置方針](ui-navigation-guidelines.md)
 - [ダブルス試合結果入力の保存継続と未保存制御](doubles-match-result-editing.md)
+- [Firestore provenance metadata](firestore-provenance.md)
 - [Contributing Guide](contributing.md)
 - [Codespaces での実機表示確認](codespaces-device-testing.md)
 - [Firebase Hosting deploy memo](firebase-hosting-deploy.md)
@@ -49,6 +50,7 @@ docs/
 ├─ architecture.md                 # 開発者向け設計メモ
 ├─ ui-navigation-guidelines.md     # AppBar / Drawer / 操作配置方針
 ├─ doubles-match-result-editing.md # 試合結果入力の保存継続・未保存制御
+├─ firestore-provenance.md         # Firestore 作成元・更新元メタデータ
 ├─ contributing.md                 # 開発ルール・運用方針
 ├─ codespaces-device-testing.md    # Codespaces での実機表示確認
 ├─ firebase-hosting-deploy.md      # Firebase Hosting deploy memo

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:srp_lanske/shared/infrastructure/firestore_provenance.dart';
 
 import '../application/schedule_progress_repository.dart';
 import '../domain/schedule_progress_models.dart';
@@ -9,11 +10,14 @@ class FirestoreScheduleProgressRepository
   FirestoreScheduleProgressRepository({
     FirebaseFirestore? firestore,
     DateTime Function()? clock,
+    FirestoreWriteOrigin Function()? writeOriginProvider,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _clock = clock ?? DateTime.now;
+        _clock = clock ?? DateTime.now,
+        _writeOriginProvider = writeOriginProvider;
 
   final FirebaseFirestore _firestore;
   final DateTime Function() _clock;
+  final FirestoreWriteOrigin Function()? _writeOriginProvider;
 
   @override
   Future<ScheduleProgressSummary> ensureSummary({
@@ -40,7 +44,13 @@ class FirestoreScheduleProgressRepository
         totalMatchCount: totalMatchCount,
         now: _clock(),
       );
-      transaction.set(progressReference, summary.toJson());
+      transaction.set(
+        progressReference,
+        withCreatedFirestoreProvenance(
+          data: summary.toJson(),
+          origin: _currentWriteOrigin(),
+        ),
+      );
       return summary;
     });
   }
@@ -149,12 +159,44 @@ class FirestoreScheduleProgressRepository
         totalMatchCount: totalMatchCount,
         now: now,
       );
+      final origin = _currentWriteOrigin();
 
-      transaction.set(matchReference, nextMatch.toJson());
-      transaction.set(progressReference, nextSummary.toJson());
+      transaction.set(
+        matchReference,
+        currentMatchData == null
+            ? withCreatedFirestoreProvenance(
+                data: nextMatch.toJson(),
+                origin: origin,
+              )
+            : withUpdatedFirestoreProvenance(
+                data: nextMatch.toJson(),
+                currentProvenance: currentMatchData['provenance'],
+                origin: origin,
+              ),
+      );
+      transaction.set(
+        progressReference,
+        currentSummaryData == null
+            ? withCreatedFirestoreProvenance(
+                data: nextSummary.toJson(),
+                origin: origin,
+              )
+            : withUpdatedFirestoreProvenance(
+                data: nextSummary.toJson(),
+                currentProvenance: currentSummaryData['provenance'],
+                origin: origin,
+              ),
+      );
 
       return nextMatch;
     });
+  }
+
+  FirestoreWriteOrigin _currentWriteOrigin() {
+    return _writeOriginProvider?.call() ??
+        FirestoreWriteOrigin.current(
+          firebaseProjectId: _firestore.app.options.projectId,
+        );
   }
 
   DocumentReference<Map<String, dynamic>> _progressDocument(
