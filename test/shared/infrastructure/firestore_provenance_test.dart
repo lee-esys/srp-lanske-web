@@ -46,7 +46,8 @@ void main() {
     );
   });
 
-  test('update provenance preserves createdFrom and replaces lastWrittenFrom', () {
+  test('update provenance preserves createdFrom and replaces lastWrittenFrom',
+      () {
     final updated = updateFirestoreProvenance(
       current: <String, dynamic>{
         'createdFrom': <String, dynamic>{
