@@ -7,11 +7,11 @@ import 'auth_repository.dart';
 
 class AuthSessionController extends ChangeNotifier {
   AuthSessionController(this._repository)
-    : _session = _repository.currentSession {
+      : _session = _repository.currentSession {
     _subscription = _repository.sessionChanges().listen(
-      _handleSessionChanged,
-      onError: _handleSessionError,
-    );
+          _handleSessionChanged,
+          onError: _handleSessionError,
+        );
   }
 
   final AuthRepository _repository;

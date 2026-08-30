@@ -64,8 +64,7 @@ class _AuthScopeState extends State<AuthScope> {
   }
 }
 
-class _AuthInheritedNotifier
-    extends InheritedNotifier<AuthSessionController> {
+class _AuthInheritedNotifier extends InheritedNotifier<AuthSessionController> {
   const _AuthInheritedNotifier({
     required AuthSessionController controller,
     required super.child,

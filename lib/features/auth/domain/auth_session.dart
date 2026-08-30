@@ -5,17 +5,24 @@ enum AuthSessionKind {
 }
 
 class AuthSession {
-  const AuthSession.signedOut()
-    : kind = AuthSessionKind.signedOut,
-      uid = null;
+  const AuthSession._({
+    required this.kind,
+    this.uid,
+  });
+
+  const AuthSession.signedOut() : this._(kind: AuthSessionKind.signedOut);
 
   const AuthSession.anonymous(String uid)
-    : kind = AuthSessionKind.anonymous,
-      uid = uid;
+      : this._(
+          kind: AuthSessionKind.anonymous,
+          uid: uid,
+        );
 
   const AuthSession.account(String uid)
-    : kind = AuthSessionKind.account,
-      uid = uid;
+      : this._(
+          kind: AuthSessionKind.account,
+          uid: uid,
+        );
 
   final AuthSessionKind kind;
   final String? uid;

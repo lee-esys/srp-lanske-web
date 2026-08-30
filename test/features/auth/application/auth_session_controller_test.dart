@@ -34,7 +34,8 @@ void main() {
     );
   });
 
-  test('creates an anonymous session lazily and coalesces concurrent calls', () async {
+  test('creates an anonymous session lazily and coalesces concurrent calls',
+      () async {
     final repository = FakeAuthRepository();
     final completer = Completer<AuthSession>();
     repository.ensureAnonymousHandler = () async {
@@ -61,7 +62,8 @@ void main() {
     expect(controller.session, session);
   });
 
-  test('does not create another anonymous user when already signed in', () async {
+  test('does not create another anonymous user when already signed in',
+      () async {
     final repository = FakeAuthRepository(
       initialSession: const AuthSession.anonymous('anonymous-uid'),
     );
@@ -93,7 +95,8 @@ void main() {
     expect(controller.session, const AuthSession.signedOut());
   });
 
-  test('keeps auth errors observable without changing the current session', () async {
+  test('keeps auth errors observable without changing the current session',
+      () async {
     final repository = FakeAuthRepository();
     repository.ensureAnonymousHandler = () async {
       throw StateError('anonymous sign-in failed');
