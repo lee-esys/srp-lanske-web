@@ -69,7 +69,7 @@ class AuthSessionController extends ChangeNotifier {
     _setSession(session);
   }
 
-  void _handleSessionError(Object error, StackTrace stackTrace) {
+  void _handleSessionError(Object error, StackTrace _) {
     _setError(error);
   }
 

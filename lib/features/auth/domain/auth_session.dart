@@ -9,10 +9,13 @@ class AuthSession {
     : kind = AuthSessionKind.signedOut,
       uid = null;
 
-  const AuthSession.anonymous(String this.uid)
-    : kind = AuthSessionKind.anonymous;
+  const AuthSession.anonymous(String uid)
+    : kind = AuthSessionKind.anonymous,
+      uid = uid;
 
-  const AuthSession.account(String this.uid) : kind = AuthSessionKind.account;
+  const AuthSession.account(String uid)
+    : kind = AuthSessionKind.account,
+      uid = uid;
 
   final AuthSessionKind kind;
   final String? uid;
