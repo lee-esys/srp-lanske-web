@@ -108,9 +108,11 @@ void main() {
     expect(auth.googleSignInCalls, 0);
   });
 
-  test('keeps the Firebase account session when user document setup fails', () async {
+  test('keeps the Firebase account session when user document setup fails',
+      () async {
     final auth = FakeAccountAuthRepository();
-    final users = FakeLanskeUserRepository()..error = StateError('write failed');
+    final users = FakeLanskeUserRepository()
+      ..error = StateError('write failed');
     final service = AccountService(
       authRepository: auth,
       userRepository: users,

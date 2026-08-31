@@ -12,7 +12,8 @@ class FirestoreLanskeUserRepository implements LanskeUserRepository {
   Future<LanskeUser> ensureUser(String uid) async {
     final ref = _firestore.collection('users').doc(uid);
 
-    final existing = await _firestore.runTransaction<LanskeUser?>((transaction) async {
+    final existing =
+        await _firestore.runTransaction<LanskeUser?>((transaction) async {
       final snapshot = await transaction.get(ref);
       if (snapshot.exists) {
         return _fromSnapshot(snapshot);

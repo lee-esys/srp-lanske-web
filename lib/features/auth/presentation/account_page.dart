@@ -75,8 +75,7 @@ class _AccountPageState extends State<AccountPage> {
       if (AuthScope.of(context).session.uid != uid) return;
       setState(() {
         _ensuringUid = null;
-        _statusMessage =
-            'Lanske アカウント情報を準備できませんでした。通信状態を確認して、もう一度お試しください。';
+        _statusMessage = 'Lanske アカウント情報を準備できませんでした。通信状態を確認して、もう一度お試しください。';
         _statusIsError = true;
       });
     }
@@ -332,9 +331,7 @@ class _AccountPageState extends State<AccountPage> {
                 TextButton(
                   onPressed: _busy ? null : _toggleRegisterMode,
                   child: Text(
-                    _registerMode
-                        ? 'すでにアカウントをお持ちの方はこちら'
-                        : '新しくアカウントを作成する',
+                    _registerMode ? 'すでにアカウントをお持ちの方はこちら' : '新しくアカウントを作成する',
                   ),
                 ),
                 if (_busy) ...[
@@ -426,9 +423,10 @@ class _AccountPageState extends State<AccountPage> {
                       if (session.email?.trim().isNotEmpty == true)
                         Text(
                           session.email!.trim(),
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                         ),
                     ],
                   ),
@@ -488,12 +486,15 @@ class _AccountPageState extends State<AccountPage> {
         'email-already-in-use' => 'このメールアドレスはすでに使用されています。',
         'invalid-email' => 'メールアドレスの形式を確認してください。',
         'user-disabled' => 'このアカウントは現在利用できません。',
-        'user-not-found' || 'wrong-password' || 'invalid-credential' =>
+        'user-not-found' ||
+        'wrong-password' ||
+        'invalid-credential' =>
           'メールアドレスまたはパスワードを確認してください。',
         'too-many-requests' => '試行回数が多すぎます。時間をおいてからもう一度お試しください。',
         'network-request-failed' => '通信に失敗しました。ネットワーク接続を確認してください。',
         'operation-not-allowed' => 'このログイン方法は現在利用できません。',
-        'popup-closed-by-user' || 'cancelled-popup-request' =>
+        'popup-closed-by-user' ||
+        'cancelled-popup-request' =>
           'Googleログインをキャンセルしました。',
         'popup-blocked' => 'Googleログインのポップアップがブロックされました。ブラウザ設定を確認してください。',
         'account-exists-with-different-credential' =>
@@ -518,12 +519,10 @@ class _StatusMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final background = isError
-        ? colorScheme.errorContainer
-        : colorScheme.primaryContainer;
-    final foreground = isError
-        ? colorScheme.onErrorContainer
-        : colorScheme.onPrimaryContainer;
+    final background =
+        isError ? colorScheme.errorContainer : colorScheme.primaryContainer;
+    final foreground =
+        isError ? colorScheme.onErrorContainer : colorScheme.onPrimaryContainer;
 
     return Container(
       padding: const EdgeInsets.all(12),
