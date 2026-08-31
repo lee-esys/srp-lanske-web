@@ -6,6 +6,24 @@ service cloud.firestore {
       return collectionId.matches('^core_.*$');
     }
 
+    function isRegisteredAccount() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    // Registered Lanske account documents. Anonymous Firebase users do not
+    // create or read users/{uid} documents.
+    match /users/{uid} {
+      allow get: if isRegisteredAccount() && request.auth.uid == uid;
+      allow list: if false;
+      allow create: if isRegisteredAccount()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['schemaVersion', 'createdAt'])
+        && request.resource.data.schemaVersion == 1
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
     // Public share documents used by doubles schedules.
     match /events/{publicId} {
       allow read, create, update: if true;

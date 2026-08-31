@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
+import '../features/auth/presentation/account_page.dart';
+import '../features/auth/presentation/account_routes.dart';
 import '../features/doubles_scheduler/presentation/event_setup_page.dart';
 import '../features/doubles_scheduler/presentation/restored_schedule_page.dart';
 import '../features/doubles_scheduler/presentation/widgets/schedule_rounds_view.dart'
@@ -41,9 +43,11 @@ class _AppState extends State<App> {
     final publicId = uri.queryParameters['sid']?.trim();
     final isTeamRoute = uri.path == '/team' || uri.path.startsWith('/team/');
 
-    final home = publicId == null || publicId.isEmpty
-        ? _homeForPath(uri.path)
-        : RestoredSchedulePage(publicId: publicId);
+    final home = uri.path == accountPagePath
+        ? const AccountPage()
+        : publicId == null || publicId.isEmpty
+            ? _homeForPath(uri.path)
+            : RestoredSchedulePage(publicId: publicId);
 
     return MaterialApp(
       title: 'Lanske',
