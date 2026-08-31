@@ -66,22 +66,22 @@ void main() {
       userRepository: users,
     );
 
-    expect(
-      () => service.createAccountWithEmailPassword(
+    await expectLater(
+      service.createAccountWithEmailPassword(
         email: 'user@example.com',
         password: 'secret12',
       ),
       throwsA(isA<AccountTransitionRequiredException>()),
     );
-    expect(
-      () => service.signInWithEmailPassword(
+    await expectLater(
+      service.signInWithEmailPassword(
         email: 'user@example.com',
         password: 'secret12',
       ),
       throwsA(isA<AccountTransitionRequiredException>()),
     );
-    expect(
-      service.signInWithGoogle,
+    await expectLater(
+      service.signInWithGoogle(),
       throwsA(isA<AccountTransitionRequiredException>()),
     );
 
@@ -101,8 +101,8 @@ void main() {
       userRepository: users,
     );
 
-    expect(
-      service.signInWithGoogle,
+    await expectLater(
+      service.signInWithGoogle(),
       throwsA(isA<AccountAlreadySignedInException>()),
     );
     expect(auth.googleSignInCalls, 0);

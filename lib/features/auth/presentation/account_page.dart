@@ -61,15 +61,18 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   Future<void> _ensureCurrentUser(String uid) async {
+    final service = AccountScope.of(context);
     try {
-      await AccountScope.of(context).ensureCurrentUser();
-      if (!mounted || AuthScope.of(context).session.uid != uid) return;
+      await service.ensureCurrentUser();
+      if (!mounted) return;
+      if (AuthScope.of(context).session.uid != uid) return;
       setState(() {
         _ensuredUid = uid;
         _ensuringUid = null;
       });
-    } catch (error) {
-      if (!mounted || AuthScope.of(context).session.uid != uid) return;
+    } catch (_) {
+      if (!mounted) return;
+      if (AuthScope.of(context).session.uid != uid) return;
       setState(() {
         _ensuringUid = null;
         _statusMessage =
