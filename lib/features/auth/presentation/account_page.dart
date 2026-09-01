@@ -184,8 +184,7 @@ class _AccountPageState extends State<AccountPage> {
         _statusMessage = 'ログインなしの利用状態を引き継いでLanskeアカウントへ移行しました。';
         _statusIsError = false;
       } else {
-        _statusMessage =
-            '既存のLanskeアカウントに紐付いた認証情報が見つかりました。'
+        _statusMessage = '既存のLanskeアカウントに紐付いた認証情報が見つかりました。'
             '現在のログインなし利用状態は保持されており、アカウントも切り替えていません。'
             'データを安全に引き継げるようになるまでは、通常の対戦表利用をそのまま継続できます。';
         _statusIsError = false;
@@ -385,9 +384,7 @@ class _AccountPageState extends State<AccountPage> {
                 TextButton(
                   onPressed: _busy ? null : _toggleRegisterMode,
                   child: Text(
-                    _registerMode
-                        ? 'すでにアカウントをお持ちの方はこちら'
-                        : '新しくアカウントを作成する',
+                    _registerMode ? 'すでにアカウントをお持ちの方はこちら' : '新しくアカウントを作成する',
                   ),
                 ),
                 if (_busy) ...[
@@ -507,8 +504,7 @@ class _AccountPageState extends State<AccountPage> {
                 ),
                 const SizedBox(height: 16),
                 FilledButton(
-                  onPressed:
-                      _busy ? null : _linkAnonymousWithEmailPassword,
+                  onPressed: _busy ? null : _linkAnonymousWithEmailPassword,
                   child: const Text('Email / Password でアカウントへ引き継ぐ'),
                 ),
                 const SizedBox(height: 12),

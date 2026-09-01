@@ -14,9 +14,8 @@ class AccountTransitionResult {
   const AccountTransitionResult.linked({
     required this.sourceUid,
     required this.provider,
-    required LanskeUser user,
-  })  : status = AccountTransitionStatus.linked,
-        user = user;
+    required this.user,
+  }) : status = AccountTransitionStatus.linked;
 
   const AccountTransitionResult.existingAccountCollision({
     required this.sourceUid,

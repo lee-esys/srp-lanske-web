@@ -159,8 +159,7 @@ void main() {
     expect(auth.currentSession, const AuthSession.signedOut());
   });
 
-  test('links an anonymous user with email while preserving the UID',
-      () async {
+  test('links an anonymous user with email while preserving the UID', () async {
     final auth = FakeAccountAuthRepository(
       initialSession: const AuthSession.anonymous('anonymous-uid'),
     );
