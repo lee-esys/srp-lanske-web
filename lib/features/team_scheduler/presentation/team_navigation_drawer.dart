@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:srp_lanske/shared/utils/external_link.dart';
 
 import 'package:srp_lanske/l10n/l10n.dart';
+import '../../auth/presentation/account_routes.dart';
 import '../data/local_team_schedule_history_item.dart';
 import 'team_schedule_page.dart';
 import 'widgets/team_schedule_history_list_view.dart';
@@ -147,6 +148,11 @@ class _TeamNavigationDrawerState extends State<TeamNavigationDrawer> {
             },
           ),
         const Divider(height: 1),
+        _TeamNavigationTile(
+          icon: Icons.person_outline,
+          label: 'アカウント',
+          onTap: () => _openPath(context, accountPagePath),
+        ),
         _TeamNavigationTile(
           icon: Icons.help_outline,
           label: l10n.teamNavigationSupport,

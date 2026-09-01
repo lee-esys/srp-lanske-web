@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/utils/external_link.dart';
 
+import '../../auth/presentation/account_routes.dart';
 import '../data/local_schedule_history_item.dart';
 import 'doubles_schedule_list_drawer.dart';
 import 'widgets/doubles_navigation_menu_button.dart';
@@ -103,6 +104,10 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
 
   void _openTop() {
     unawaited(_runAction(() => openUrlInCurrentTab('/')));
+  }
+
+  void _openAccount() {
+    unawaited(_runAction(() => openUrlInCurrentTab(accountPagePath)));
   }
 
   void _openTeam() {
@@ -251,6 +256,11 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
                 onTap: _showOperationHint,
               ),
               const Divider(height: 1),
+              _DoublesNavigationTile(
+                icon: Icons.person_outline,
+                label: 'アカウント',
+                onTap: _openAccount,
+              ),
               ListTile(
                 leading: const Icon(Icons.help_outline),
                 title: Text(l10n.supportMenuTitle),
