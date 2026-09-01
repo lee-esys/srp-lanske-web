@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:srp_lanske/features/auth/application/account_auth_repository.dart';
 import 'package:srp_lanske/features/auth/application/account_service.dart';
 import 'package:srp_lanske/features/auth/application/lanske_user_repository.dart';
+import 'package:srp_lanske/features/auth/domain/account_transition.dart';
 import 'package:srp_lanske/features/auth/domain/auth_session.dart';
 import 'package:srp_lanske/features/auth/domain/lanske_user.dart';
 
@@ -56,7 +57,8 @@ void main() {
     expect(users.ensuredUids, ['account-uid']);
   });
 
-  test('blocks account auth while an anonymous session exists', () async {
+  test('blocks regular account auth while an anonymous session exists',
+      () async {
     final auth = FakeAccountAuthRepository(
       initialSession: const AuthSession.anonymous('anonymous-uid'),
     );
@@ -156,6 +158,175 @@ void main() {
     expect(auth.passwordResetEmails, ['user@example.com']);
     expect(auth.currentSession, const AuthSession.signedOut());
   });
+
+  test('links an anonymous user with email while preserving the UID',
+      () async {
+    final auth = FakeAccountAuthRepository(
+      initialSession: const AuthSession.anonymous('anonymous-uid'),
+    );
+    final users = FakeLanskeUserRepository();
+    final service = AccountService(
+      authRepository: auth,
+      userRepository: users,
+    );
+
+    final result = await service.linkAnonymousWithEmailPassword(
+      email: 'new@example.com',
+      password: 'secret12',
+    );
+
+    expect(result.status, AccountTransitionStatus.linked);
+    expect(result.provider, AccountTransitionProvider.emailPassword);
+    expect(result.sourceUid, 'anonymous-uid');
+    expect(result.user?.uid, 'anonymous-uid');
+    expect(auth.emailLinkCalls, 1);
+    expect(auth.currentSession.uid, 'anonymous-uid');
+    expect(auth.currentSession.isAccount, isTrue);
+    expect(users.ensuredUids, ['anonymous-uid']);
+  });
+
+  test('links an anonymous user with Google while preserving the UID',
+      () async {
+    final auth = FakeAccountAuthRepository(
+      initialSession: const AuthSession.anonymous('anonymous-uid'),
+    );
+    final users = FakeLanskeUserRepository();
+    final service = AccountService(
+      authRepository: auth,
+      userRepository: users,
+    );
+
+    final result = await service.linkAnonymousWithGoogle();
+
+    expect(result.status, AccountTransitionStatus.linked);
+    expect(result.provider, AccountTransitionProvider.google);
+    expect(result.sourceUid, 'anonymous-uid');
+    expect(result.user?.uid, 'anonymous-uid');
+    expect(auth.googleLinkCalls, 1);
+    expect(auth.currentSession.uid, 'anonymous-uid');
+    expect(auth.currentSession.isAccount, isTrue);
+    expect(users.ensuredUids, ['anonymous-uid']);
+  });
+
+  test('treats an existing email account as a collision and keeps anonymous',
+      () async {
+    final auth = FakeAccountAuthRepository(
+      initialSession: const AuthSession.anonymous('anonymous-uid'),
+    )..emailLinkError = const AccountAuthException(
+        code: 'email-already-in-use',
+      );
+    final users = FakeLanskeUserRepository();
+    final service = AccountService(
+      authRepository: auth,
+      userRepository: users,
+    );
+
+    final result = await service.linkAnonymousWithEmailPassword(
+      email: 'existing@example.com',
+      password: 'secret12',
+    );
+
+    expect(result.status, AccountTransitionStatus.existingAccountCollision);
+    expect(result.provider, AccountTransitionProvider.emailPassword);
+    expect(result.sourceUid, 'anonymous-uid');
+    expect(result.user, isNull);
+    expect(auth.currentSession, const AuthSession.anonymous('anonymous-uid'));
+    expect(users.ensuredUids, isEmpty);
+  });
+
+  test('treats an existing Google account as a collision and keeps anonymous',
+      () async {
+    final auth = FakeAccountAuthRepository(
+      initialSession: const AuthSession.anonymous('anonymous-uid'),
+    )..googleLinkError = const AccountAuthException(
+        code: 'credential-already-in-use',
+      );
+    final users = FakeLanskeUserRepository();
+    final service = AccountService(
+      authRepository: auth,
+      userRepository: users,
+    );
+
+    final result = await service.linkAnonymousWithGoogle();
+
+    expect(result.status, AccountTransitionStatus.existingAccountCollision);
+    expect(result.provider, AccountTransitionProvider.google);
+    expect(result.sourceUid, 'anonymous-uid');
+    expect(result.user, isNull);
+    expect(auth.currentSession, const AuthSession.anonymous('anonymous-uid'));
+    expect(users.ensuredUids, isEmpty);
+  });
+
+  test('rethrows a non-collision link error without changing anonymous state',
+      () async {
+    final auth = FakeAccountAuthRepository(
+      initialSession: const AuthSession.anonymous('anonymous-uid'),
+    )..googleLinkError = const AccountAuthException(
+        code: 'network-request-failed',
+      );
+    final users = FakeLanskeUserRepository();
+    final service = AccountService(
+      authRepository: auth,
+      userRepository: users,
+    );
+
+    await expectLater(
+      service.linkAnonymousWithGoogle(),
+      throwsA(
+        isA<AccountAuthException>().having(
+          (error) => error.code,
+          'code',
+          'network-request-failed',
+        ),
+      ),
+    );
+
+    expect(auth.currentSession, const AuthSession.anonymous('anonymous-uid'));
+    expect(users.ensuredUids, isEmpty);
+  });
+
+  test('rejects an anonymous link result that changes the Firebase UID',
+      () async {
+    final auth = FakeAccountAuthRepository(
+      initialSession: const AuthSession.anonymous('anonymous-uid'),
+    )..emailLinkResult = const AuthSession.account('different-uid');
+    final users = FakeLanskeUserRepository();
+    final service = AccountService(
+      authRepository: auth,
+      userRepository: users,
+    );
+
+    await expectLater(
+      service.linkAnonymousWithEmailPassword(
+        email: 'new@example.com',
+        password: 'secret12',
+      ),
+      throwsA(isA<StateError>()),
+    );
+
+    expect(users.ensuredUids, isEmpty);
+  });
+
+  test('keeps linked account auth when user document creation fails', () async {
+    final auth = FakeAccountAuthRepository(
+      initialSession: const AuthSession.anonymous('anonymous-uid'),
+    );
+    final users = FakeLanskeUserRepository()
+      ..error = StateError('write failed');
+    final service = AccountService(
+      authRepository: auth,
+      userRepository: users,
+    );
+
+    await expectLater(
+      service.linkAnonymousWithGoogle(),
+      throwsA(isA<StateError>()),
+    );
+
+    expect(auth.currentSession.uid, 'anonymous-uid');
+    expect(auth.currentSession.isAccount, isTrue);
+    expect(users.ensuredUids, ['anonymous-uid']);
+  });
 }
 
 class FakeAccountAuthRepository implements AccountAuthRepository {
@@ -167,7 +338,14 @@ class FakeAccountAuthRepository implements AccountAuthRepository {
   int createCalls = 0;
   int emailSignInCalls = 0;
   int googleSignInCalls = 0;
+  int emailLinkCalls = 0;
+  int googleLinkCalls = 0;
   final List<String> passwordResetEmails = [];
+
+  AccountAuthException? emailLinkError;
+  AccountAuthException? googleLinkError;
+  AuthSession? emailLinkResult;
+  AuthSession? googleLinkResult;
 
   @override
   AuthSession get currentSession => _currentSession;
@@ -197,6 +375,40 @@ class FakeAccountAuthRepository implements AccountAuthRepository {
     googleSignInCalls += 1;
     _currentSession = const AuthSession.account('account-uid');
     return _currentSession;
+  }
+
+  @override
+  Future<AuthSession> linkAnonymousWithEmailPassword({
+    required String email,
+    required String password,
+  }) async {
+    emailLinkCalls += 1;
+    final error = emailLinkError;
+    if (error != null) {
+      throw error;
+    }
+
+    final result = emailLinkResult ??
+        AuthSession.account(
+          _currentSession.uid ?? 'anonymous-uid',
+          email: email,
+        );
+    _currentSession = result;
+    return result;
+  }
+
+  @override
+  Future<AuthSession> linkAnonymousWithGoogle() async {
+    googleLinkCalls += 1;
+    final error = googleLinkError;
+    if (error != null) {
+      throw error;
+    }
+
+    final result = googleLinkResult ??
+        AuthSession.account(_currentSession.uid ?? 'anonymous-uid');
+    _currentSession = result;
+    return result;
   }
 
   @override

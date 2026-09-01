@@ -44,6 +44,10 @@ class AuthSessionController extends ChangeNotifier {
     return future;
   }
 
+  void syncCurrentSession() {
+    _setSession(_repository.currentSession);
+  }
+
   Future<void> signOut() async {
     try {
       await _repository.signOut();

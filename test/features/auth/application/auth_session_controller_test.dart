@@ -79,6 +79,34 @@ void main() {
     expect(repository.ensureAnonymousCalls, 0);
   });
 
+  test('synchronizes a repository session change that emitted no auth event',
+      () async {
+    final repository = FakeAuthRepository(
+      initialSession: const AuthSession.anonymous('anonymous-uid'),
+    );
+    final controller = AuthSessionController(repository);
+    addTearDown(() async {
+      controller.dispose();
+      await repository.close();
+    });
+
+    repository.setCurrentWithoutEmit(
+      const AuthSession.account('anonymous-uid'),
+    );
+
+    expect(
+      controller.session,
+      const AuthSession.anonymous('anonymous-uid'),
+    );
+
+    controller.syncCurrentSession();
+
+    expect(
+      controller.session,
+      const AuthSession.account('anonymous-uid'),
+    );
+  });
+
   test('sign out returns the controller to signed-out state', () async {
     final repository = FakeAuthRepository(
       initialSession: const AuthSession.account('account-uid'),
@@ -153,6 +181,10 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> signOut() async {
     signOutCalls += 1;
     emit(const AuthSession.signedOut());
+  }
+
+  void setCurrentWithoutEmit(AuthSession session) {
+    _currentSession = session;
   }
 
   void emit(AuthSession session) {

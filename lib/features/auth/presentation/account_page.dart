@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../shared/utils/external_link.dart';
 import '../application/account_auth_repository.dart';
 import '../application/account_service.dart';
+import '../domain/account_transition.dart';
 import '../domain/auth_session.dart';
 import 'account_scope.dart';
 import 'auth_scope.dart';
@@ -18,6 +19,7 @@ class AccountPage extends StatefulWidget {
 
 class _AccountPageState extends State<AccountPage> {
   final _formKey = GlobalKey<FormState>();
+  final _anonymousFormKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -136,6 +138,58 @@ class _AccountPageState extends State<AccountPage> {
     final service = AccountScope.of(context);
     await _runAction(() async {
       await service.signInWithGoogle();
+    });
+  }
+
+  Future<void> _linkAnonymousWithEmailPassword() async {
+    if (!(_anonymousFormKey.currentState?.validate() ?? false)) return;
+
+    final service = AccountScope.of(context);
+    await _runAnonymousTransition(
+      () => service.linkAnonymousWithEmailPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      ),
+    );
+  }
+
+  Future<void> _linkAnonymousWithGoogle() async {
+    final service = AccountScope.of(context);
+    await _runAnonymousTransition(service.linkAnonymousWithGoogle);
+  }
+
+  Future<void> _runAnonymousTransition(
+    Future<AccountTransitionResult> Function() action,
+  ) async {
+    AccountTransitionResult? result;
+    final succeeded = await _runAction(() async {
+      result = await action();
+    });
+
+    if (!mounted) return;
+
+    final resolved = result;
+    if (succeeded && resolved != null && resolved.isLinked) {
+      _ensuredUid = resolved.user?.uid;
+    }
+
+    // Account linking does not reliably emit authStateChanges(), so always
+    // synchronize the controller with FirebaseAuth.currentUser explicitly.
+    AuthScope.of(context).syncCurrentSession();
+
+    if (!mounted || !succeeded || resolved == null) return;
+
+    setState(() {
+      if (resolved.isLinked) {
+        _statusMessage = 'ログインなしの利用状態を引き継いでLanskeアカウントへ移行しました。';
+        _statusIsError = false;
+      } else {
+        _statusMessage =
+            '既存のLanskeアカウントに紐付いた認証情報が見つかりました。'
+            '現在のログインなし利用状態は保持されており、アカウントも切り替えていません。'
+            'データを安全に引き継げるようになるまでは、通常の対戦表利用をそのまま継続できます。';
+        _statusIsError = false;
+      }
     });
   }
 
@@ -331,7 +385,9 @@ class _AccountPageState extends State<AccountPage> {
                 TextButton(
                   onPressed: _busy ? null : _toggleRegisterMode,
                   child: Text(
-                    _registerMode ? 'すでにアカウントをお持ちの方はこちら' : '新しくアカウントを作成する',
+                    _registerMode
+                        ? 'すでにアカウントをお持ちの方はこちら'
+                        : '新しくアカウントを作成する',
                   ),
                 ),
                 if (_busy) ...[
@@ -352,35 +408,123 @@ class _AccountPageState extends State<AccountPage> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              Icons.person_outline,
-              size: 40,
-              color: colorScheme.primary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'ログインなしで利用中',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
+        child: AutofillGroup(
+          child: Form(
+            key: _anonymousFormKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Icon(
+                    Icons.person_outline,
+                    size: 40,
+                    color: colorScheme.primary,
                   ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'この端末にはログインなしで利用している識別情報があります。'
-              '作成済みデータを安全に保持したままアカウントへ移行する機能を準備しているため、'
-              '現在はこの状態からの登録・ログインを停止しています。',
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '通常の対戦表利用はそのまま継続できます。',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'ログインなしで利用中',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'この端末のログインなし利用状態を、新しいLanskeアカウントへ引き継げます。'
+                  '新規アカウントへ移行できる場合は現在の識別情報をそのまま維持します。',
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '入力した認証情報が既存アカウントに紐付いている場合は、現在の利用状態を保持したまま停止し、'
+                  'アカウントを勝手に切り替えません。',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                ),
+                const SizedBox(height: 24),
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : _linkAnonymousWithGoogle,
+                  icon: const Icon(Icons.login),
+                  label: const Text('Google でアカウントへ引き継ぐ'),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        'または',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _emailController,
+                  enabled: !_busy,
+                  keyboardType: TextInputType.emailAddress,
+                  autofillHints: const [AutofillHints.email],
+                  decoration: const InputDecoration(
+                    labelText: 'メールアドレス',
+                    border: OutlineInputBorder(),
                   ),
+                  validator: (value) {
+                    if (!_looksLikeEmail(value?.trim() ?? '')) {
+                      return '有効なメールアドレスを入力してください。';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _passwordController,
+                  enabled: !_busy,
+                  obscureText: true,
+                  autofillHints: const [AutofillHints.password],
+                  decoration: const InputDecoration(
+                    labelText: 'パスワード',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    final password = value ?? '';
+                    if (password.isEmpty) {
+                      return 'パスワードを入力してください。';
+                    }
+                    if (password.length < 6) {
+                      return 'パスワードは6文字以上で入力してください。';
+                    }
+                    return null;
+                  },
+                  onFieldSubmitted: (_) {
+                    if (!_busy) {
+                      unawaited(_linkAnonymousWithEmailPassword());
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed:
+                      _busy ? null : _linkAnonymousWithEmailPassword,
+                  child: const Text('Email / Password でアカウントへ引き継ぐ'),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '通常の対戦表利用は、アカウントへ引き継がなくてもそのまま継続できます。',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                ),
+                if (_busy) ...[
+                  const SizedBox(height: 12),
+                  const LinearProgressIndicator(),
+                ],
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -475,7 +619,7 @@ class _AccountPageState extends State<AccountPage> {
 
   String _messageForError(Object error) {
     if (error is AccountTransitionRequiredException) {
-      return 'ログインなしで作成したデータを保持したまま移行する必要があります。引継ぎ機能の対応後に操作してください。';
+      return 'ログインなし利用の引継ぎを開始できる状態ではありません。現在の認証状態を確認して、もう一度お試しください。';
     }
     if (error is AccountAlreadySignedInException) {
       return 'すでにLanskeアカウントへログインしています。';
@@ -492,14 +636,15 @@ class _AccountPageState extends State<AccountPage> {
           'メールアドレスまたはパスワードを確認してください。',
         'too-many-requests' => '試行回数が多すぎます。時間をおいてからもう一度お試しください。',
         'network-request-failed' => '通信に失敗しました。ネットワーク接続を確認してください。',
-        'operation-not-allowed' => 'このログイン方法は現在利用できません。',
+        'operation-not-allowed' => 'この認証方法は現在利用できません。',
         'popup-closed-by-user' ||
         'cancelled-popup-request' =>
-          'Googleログインをキャンセルしました。',
-        'popup-blocked' => 'Googleログインのポップアップがブロックされました。ブラウザ設定を確認してください。',
+          'Google認証をキャンセルしました。',
+        'popup-blocked' => 'Google認証のポップアップがブロックされました。ブラウザ設定を確認してください。',
         'account-exists-with-different-credential' =>
           '同じメールアドレスで別のログイン方法が登録されています。',
         'credential-already-in-use' => 'この認証情報は別のアカウントで使用されています。',
+        'provider-already-linked' => 'このログイン方法はすでにアカウントに紐付いています。',
         _ => '認証処理に失敗しました。もう一度お試しください。',
       };
     }
