@@ -6,6 +6,8 @@ This document covers the registered-account layer introduced by web #203 on top 
 
 The account page is available at `/account`. Lanske remains usable without an explicit login; account registration is optional and is used by later My Page, ownership, profile-linking, role, and entitlement features.
 
+Anonymous user account transition is implemented by web #204 and documented separately in [`firebase-account-transition.md`](./firebase-account-transition.md).
+
 ## Registered Lanske user document
 
 A registered Lanske account uses the Firebase Auth UID as its internal identifier.
@@ -18,7 +20,7 @@ users/{firebaseAuthUid}
 
 The Firebase UID is internal and is not intended to be exposed as a public user ID.
 
-Provider-owned profile data such as email, Google display name, and profile image is not copied into the Firestore user document in this issue. Firebase Authentication remains the source for those values.
+Provider-owned profile data such as email, Google display name, and profile image is not copied into the Firestore user document. Firebase Authentication remains the source for those values.
 
 Anonymous Firebase users do not create `users/{uid}` documents.
 
@@ -42,7 +44,9 @@ This keeps authentication success separate from Firestore availability.
 - Anonymous users cannot read or create Lanske user documents.
 - Update and delete are denied for now and will be opened only when later issues define protected fields and update responsibilities.
 
-Event and team-schedule share permissions are unchanged by #203.
+For an anonymous user upgraded by provider linking, the ID token may still report `anonymous` as the sign-in provider for the current authentication session. The rules therefore also accept a non-empty Firebase linked-identities map when deciding whether the user is now a registered account.
+
+Event and team-schedule share permissions remain unchanged by the account work.
 
 ## Email / Password
 
@@ -59,7 +63,7 @@ The UI performs only basic input validation. Firebase Authentication remains aut
 
 ## Google login
 
-Google is the first federated provider implemented by #203.
+Google is the first federated provider implemented for the ver0.2.0 MVP.
 
 - Web uses `signInWithPopup()`.
 - Non-Web platforms use `signInWithProvider()`.
@@ -75,35 +79,24 @@ For Web initialization, Lanske overrides only the runtime `authDomain` to `lansk
 
 The custom domain requires corresponding Firebase Authentication Authorized Domains and Google OAuth redirect configuration, including the Firebase Hosting Auth handler path under `lanske.jp`.
 
-## Anonymous session boundary
+## Anonymous account transition
 
-#203 does not convert an existing anonymous Firebase user into a registered account.
+When `/account` is opened with an anonymous Firebase session, the user can now attempt to link Email / Password or Google authentication to the anonymous user.
 
-If `/account` is opened while the current session is anonymous, registration and login are intentionally blocked. Replacing the anonymous session directly could lose the UID that later event ownership relies on.
+- If the credential is new, the provider is linked to the anonymous Firebase user and the UID is preserved.
+- After a successful link, `users/{uid}` is ensured for the same UID.
+- If the credential is already associated with another Firebase account, Lanske treats that as an expected ownership-migration collision.
+- A collision does not sign in to the existing target account. The anonymous session and source UID remain active.
+- Target-account identity and event ownership migration are intentionally deferred to #196, where both sides of the transfer can be authenticated safely.
 
-The following flows belong to web #204:
-
-```text
-Anonymous user -> new registered account (credential link, UID retained)
-Anonymous user -> existing registered account (ownership migration required)
-```
-
-Until #204 is implemented, normal login-free schedule use remains available while account conversion is disabled for anonymous sessions.
+See [`firebase-account-transition.md`](./firebase-account-transition.md) for the detailed boundary.
 
 ## Restored account sessions
 
 When `/account` is opened with an already restored registered Firebase session, the page calls `ensureCurrentUser()` so a missing `users/{uid}` document can be created or repaired.
 
-## Apple / X decision
+## Additional providers
 
-Apple and X remain candidate Firebase Authentication providers but are not implemented as part of the initial #203 change.
+The ver0.2.0 MVP uses Email / Password and Google.
 
-After Email/Password and Google have been verified, review:
-
-- provider-side setup and maintenance cost
-- callback / redirect configuration
-- Firebase Hosting, Preview, local, and device verification effort
-- additional UI complexity
-- whether both providers are necessary for the ver0.2.0 MVP
-
-If the work is small, they may be added before #203 is completed. If the setup and verification are independent enough, create a follow-up A4 issue for Apple / X providers.
+Apple, X, Facebook, Yahoo! JAPAN, and Instagram were reviewed separately and are not being added at this stage. The need for additional providers can be revisited during the later authentication branding / mail work or when actual usage produces a concrete demand.

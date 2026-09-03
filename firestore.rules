@@ -8,11 +8,16 @@ service cloud.firestore {
 
     function isRegisteredAccount() {
       return request.auth != null
-        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+        && (
+          request.auth.token.firebase.sign_in_provider != 'anonymous'
+          || request.auth.token.firebase.get('identities', {}).size() > 0
+        );
     }
 
     // Registered Lanske account documents. Anonymous Firebase users do not
-    // create or read users/{uid} documents.
+    // create or read users/{uid} documents. A newly linked anonymous account
+    // may still carry anonymous as the token's sign-in provider, so linked
+    // identities are also accepted as evidence of a registered account.
     match /users/{uid} {
       allow get: if isRegisteredAccount() && request.auth.uid == uid;
       allow list: if false;

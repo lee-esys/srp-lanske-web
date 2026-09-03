@@ -79,6 +79,30 @@ class FirebaseAuthRepository implements AuthRepository, AccountAuthRepository {
   }
 
   @override
+  Future<AuthSession> linkAnonymousWithEmailPassword({
+    required String email,
+    required String password,
+  }) async {
+    final credential = firebase.EmailAuthProvider.credential(
+      email: email,
+      password: password,
+    );
+    return _linkAnonymousUser(
+      (user) => user.linkWithCredential(credential),
+    );
+  }
+
+  @override
+  Future<AuthSession> linkAnonymousWithGoogle() {
+    final provider = firebase.GoogleAuthProvider();
+    return _linkAnonymousUser(
+      (user) => kIsWeb
+          ? user.linkWithPopup(provider)
+          : user.linkWithProvider(provider),
+    );
+  }
+
+  @override
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
@@ -89,6 +113,31 @@ class FirebaseAuthRepository implements AuthRepository, AccountAuthRepository {
 
   @override
   Future<void> signOut() => _auth.signOut();
+
+  Future<AuthSession> _linkAnonymousUser(
+    Future<firebase.UserCredential> Function(firebase.User user) link,
+  ) async {
+    try {
+      final currentUser = _auth.currentUser;
+      if (currentUser == null || !currentUser.isAnonymous) {
+        throw StateError('An anonymous Firebase user is required for linking.');
+      }
+
+      final credential = await link(currentUser);
+      final linkedUser = credential.user;
+      if (linkedUser == null) {
+        throw StateError('Account linking completed without a Firebase user.');
+      }
+
+      // Account linking does not reliably emit authStateChanges(). Refresh the
+      // token and return the updated session explicitly instead of relying on
+      // the auth stream to observe the anonymous -> account transition.
+      await linkedUser.getIdToken(true);
+      return _requireAccountSession(linkedUser);
+    } on firebase.FirebaseAuthException catch (error) {
+      throw _toAccountAuthException(error);
+    }
+  }
 
   AuthSession _requireAccountSession(firebase.User? user) {
     final session = _toSession(user);

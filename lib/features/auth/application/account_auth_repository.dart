@@ -15,6 +15,13 @@ abstract interface class AccountAuthRepository {
 
   Future<AuthSession> signInWithGoogle();
 
+  Future<AuthSession> linkAnonymousWithEmailPassword({
+    required String email,
+    required String password,
+  });
+
+  Future<AuthSession> linkAnonymousWithGoogle();
+
   Future<void> sendPasswordResetEmail(String email);
 }
 

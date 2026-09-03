@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
+import '../features/auth/domain/auth_session.dart';
 import '../features/auth/presentation/account_page.dart';
 import '../features/auth/presentation/account_routes.dart';
+import '../features/auth/presentation/auth_scope.dart';
 import '../features/doubles_scheduler/presentation/event_setup_page.dart';
 import '../features/doubles_scheduler/presentation/restored_schedule_page.dart';
 import '../features/doubles_scheduler/presentation/widgets/schedule_rounds_view.dart'
@@ -44,7 +47,7 @@ class _AppState extends State<App> {
     final isTeamRoute = uri.path == '/team' || uri.path.startsWith('/team/');
 
     final home = uri.path == accountPagePath
-        ? const AccountPage()
+        ? const _DebugAccountPage()
         : publicId == null || publicId.isEmpty
             ? _homeForPath(uri.path)
             : RestoredSchedulePage(publicId: publicId);
@@ -88,5 +91,49 @@ class _AppState extends State<App> {
     }
 
     return const EventSetupPage();
+  }
+}
+
+class _DebugAccountPage extends StatelessWidget {
+  const _DebugAccountPage();
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = AuthScope.of(context);
+    final showDebugAnonymousButton =
+        kDebugMode && auth.session.kind == AuthSessionKind.signedOut;
+
+    return Stack(
+      children: [
+        const AccountPage(),
+        if (showDebugAnonymousButton)
+          Positioned(
+            left: 20,
+            right: 20,
+            bottom: 20,
+            child: SafeArea(
+              top: false,
+              child: Center(
+                child: FilledButton.tonalIcon(
+                  onPressed: () async {
+                    try {
+                      await auth.ensureAnonymousSession();
+                    } catch (_) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Anonymous session の作成に失敗しました。'),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.bug_report_outlined),
+                  label: const Text('開発用: Anonymous sessionを作成'),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
