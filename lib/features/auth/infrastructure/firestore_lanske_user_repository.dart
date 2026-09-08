@@ -52,6 +52,27 @@ class FirestoreLanskeUserRepository implements LanskeUserRepository {
       uid: snapshot.id,
       schemaVersion: schemaVersion,
       createdAt: createdAt.toDate().toUtc(),
+      externalIdentityIds: _externalIdentityIds(data?['externalIdentityIds']),
     );
+  }
+
+  Map<String, String> _externalIdentityIds(Object? value) {
+    if (value == null) {
+      return const <String, String>{};
+    }
+    if (value is! Map) {
+      throw StateError('Invalid externalIdentityIds.');
+    }
+
+    final result = <String, String>{};
+    for (final entry in value.entries) {
+      final key = entry.key;
+      final mappingId = entry.value;
+      if (key is! String || mappingId is! String || mappingId.isEmpty) {
+        throw StateError('Invalid externalIdentityIds entry.');
+      }
+      result[key] = mappingId;
+    }
+    return Map<String, String>.unmodifiable(result);
   }
 }

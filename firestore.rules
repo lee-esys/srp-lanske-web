@@ -14,6 +14,164 @@ service cloud.firestore {
         );
     }
 
+    function userExists(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function userExternalIdentityIds(uid) {
+      return get(/databases/$(database)/documents/users/$(uid))
+        .data.get('externalIdentityIds', {});
+    }
+
+    function hasActiveSourceMapping(uid, sourceType) {
+      return userExists(uid)
+        && userExternalIdentityIds(uid).get(sourceType, null) != null;
+    }
+
+    function isSupportedExternalIdentity(sourceType, sourceUserId, profileUrl) {
+      return sourceType == 'tennisbear'
+        && sourceUserId is string
+        && sourceUserId.matches('^[0-9]+$')
+        && profileUrl is string
+        && profileUrl.matches('^https://www\\.tennisbear\\.net/user/[0-9]+/info$');
+    }
+
+    function requestLockId(uid, sourceType) {
+      return uid + '_' + sourceType;
+    }
+
+    function mappingId(sourceType, sourceUserId) {
+      return sourceType + '_' + sourceUserId;
+    }
+
+    function requestPath(requestId) {
+      return /databases/$(database)/documents/externalIdentityLinkRequests/$(requestId);
+    }
+
+    function requestLockPath(uid, sourceType) {
+      return /databases/$(database)/documents/externalIdentityLinkRequestLocks/$(requestLockId(uid, sourceType));
+    }
+
+    function mappingPath(mappingDocumentId) {
+      return /databases/$(database)/documents/externalIdentityMappings/$(mappingDocumentId);
+    }
+
+    function isValidNewLinkRequest(requestId) {
+      let data = request.resource.data;
+      let lock = getAfter(requestLockPath(data.lanskeUserId, data.sourceType));
+      return isRegisteredAccount()
+        && data.keys().hasOnly([
+          'schemaVersion',
+          'lanskeUserId',
+          'sourceType',
+          'sourceUserId',
+          'mappingId',
+          'profileUrl',
+          'state',
+          'confirmationCodeHash',
+          'confirmationCodeExpiresAt',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.schemaVersion == 1
+        && data.lanskeUserId == request.auth.uid
+        && userExists(data.lanskeUserId)
+        && isSupportedExternalIdentity(
+          data.sourceType,
+          data.sourceUserId,
+          data.profileUrl
+        )
+        && data.mappingId == mappingId(data.sourceType, data.sourceUserId)
+        && data.state == 'pending'
+        && data.confirmationCodeHash is string
+        && data.confirmationCodeHash.matches('^[0-9a-f]{64}$')
+        && data.confirmationCodeExpiresAt is timestamp
+        && data.confirmationCodeExpiresAt > request.time
+        && data.confirmationCodeExpiresAt <= request.time + duration.value(7, 'd')
+        && data.createdAt == request.time
+        && data.updatedAt == request.time
+        && !exists(mappingPath(data.mappingId))
+        && !hasActiveSourceMapping(data.lanskeUserId, data.sourceType)
+        && lock != null
+        && lock.data.lanskeUserId == data.lanskeUserId
+        && lock.data.sourceType == data.sourceType
+        && lock.data.requestId == requestId;
+    }
+
+    function isUserCancelLinkRequest() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return isRegisteredAccount()
+        && resource.data.lanskeUserId == request.auth.uid
+        && resource.data.state == 'pending'
+        && request.resource.data.state == 'canceled'
+        && changed.hasOnly(['state', 'canceledAt', 'updatedAt'])
+        && request.resource.data.canceledAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && !existsAfter(requestLockPath(
+          resource.data.lanskeUserId,
+          resource.data.sourceType
+        ));
+    }
+
+    function isUserSupersedeLinkRequest() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      let newRequestId = request.resource.data.supersededByRequestId;
+      let newRequest = getAfter(requestPath(newRequestId));
+      let lock = getAfter(requestLockPath(
+        resource.data.lanskeUserId,
+        resource.data.sourceType
+      ));
+      return isRegisteredAccount()
+        && resource.data.lanskeUserId == request.auth.uid
+        && resource.data.state == 'pending'
+        && request.resource.data.state == 'superseded'
+        && newRequestId is string
+        && changed.hasOnly(['state', 'supersededByRequestId', 'updatedAt'])
+        && request.resource.data.updatedAt == request.time
+        && newRequest != null
+        && newRequest.data.lanskeUserId == resource.data.lanskeUserId
+        && newRequest.data.sourceType == resource.data.sourceType
+        && newRequest.data.state == 'pending'
+        && lock != null
+        && lock.data.requestId == newRequestId;
+    }
+
+    function isUserUnlinkRequestHistoryUpdate() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      let userAfter = getAfter(
+        /databases/$(database)/documents/users/$(resource.data.lanskeUserId)
+      );
+      return isRegisteredAccount()
+        && resource.data.lanskeUserId == request.auth.uid
+        && resource.data.state == 'approved'
+        && resource.data.get('unlinkedAt', null) == null
+        && request.resource.data.state == 'approved'
+        && changed.hasOnly(['unlinkedAt', 'updatedAt'])
+        && request.resource.data.unlinkedAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && !existsAfter(mappingPath(resource.data.mappingId))
+        && userAfter != null
+        && userAfter.data.get('externalIdentityIds', {})
+          .get(resource.data.sourceType, null) == null;
+    }
+
+    function isUserExternalIdentityPointerRemoval() {
+      let oldIds = resource.data.get('externalIdentityIds', {});
+      let newIds = request.resource.data.get('externalIdentityIds', {});
+      let nestedDiff = newIds.diff(oldIds);
+      let removedMappingId = oldIds.get('tennisbear', null);
+      return isRegisteredAccount()
+        && request.auth.uid != null
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['externalIdentityIds'])
+        && nestedDiff.addedKeys().size() == 0
+        && nestedDiff.changedKeys().size() == 0
+        && nestedDiff.removedKeys().hasOnly(['tennisbear'])
+        && nestedDiff.removedKeys().hasAll(['tennisbear'])
+        && removedMappingId is string
+        && !existsAfter(mappingPath(removedMappingId));
+    }
+
     // Registered Lanske account documents. Anonymous Firebase users do not
     // create or read users/{uid} documents. A newly linked anonymous account
     // may still carry anonymous as the token's sign-in provider, so linked
@@ -26,7 +184,94 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['schemaVersion', 'createdAt'])
         && request.resource.data.schemaVersion == 1
         && request.resource.data.createdAt == request.time;
-      allow update, delete: if false;
+      allow update: if isRegisteredAccount()
+        && request.auth.uid == uid
+        && isUserExternalIdentityPointerRemoval();
+      allow delete: if false;
+    }
+
+    // A deterministic per-user/per-source lock keeps at most one active link
+    // request. Users can get only their own supported-source lock, including
+    // an absent lock during transaction preflight. Listing is never allowed.
+    match /externalIdentityLinkRequestLocks/{lockId} {
+      allow get: if isRegisteredAccount()
+        && lockId == request.auth.uid + '_tennisbear';
+      allow list: if false;
+
+      allow create: if isRegisteredAccount()
+        && request.resource.data.keys().hasOnly([
+          'schemaVersion',
+          'lanskeUserId',
+          'sourceType',
+          'requestId',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.schemaVersion == 1
+        && request.resource.data.lanskeUserId == request.auth.uid
+        && lockId == requestLockId(
+          request.resource.data.lanskeUserId,
+          request.resource.data.sourceType
+        )
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && existsAfter(requestPath(request.resource.data.requestId))
+        && getAfter(requestPath(request.resource.data.requestId))
+          .data.lanskeUserId == request.resource.data.lanskeUserId
+        && getAfter(requestPath(request.resource.data.requestId))
+          .data.sourceType == request.resource.data.sourceType
+        && getAfter(requestPath(request.resource.data.requestId))
+          .data.state == 'pending';
+
+      allow update: if isRegisteredAccount()
+        && resource.data.lanskeUserId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['requestId', 'updatedAt'])
+        && request.resource.data.updatedAt == request.time
+        && existsAfter(requestPath(request.resource.data.requestId))
+        && getAfter(requestPath(request.resource.data.requestId))
+          .data.lanskeUserId == resource.data.lanskeUserId
+        && getAfter(requestPath(request.resource.data.requestId))
+          .data.sourceType == resource.data.sourceType
+        && getAfter(requestPath(request.resource.data.requestId))
+          .data.state == 'pending'
+        && getAfter(requestPath(resource.data.requestId))
+          .data.state == 'superseded'
+        && getAfter(requestPath(resource.data.requestId))
+          .data.supersededByRequestId == request.resource.data.requestId;
+
+      allow delete: if isRegisteredAccount()
+        && resource.data.lanskeUserId == request.auth.uid
+        && getAfter(requestPath(resource.data.requestId)).data.state == 'canceled';
+    }
+
+    // Users can create and read only their own request history. Approval and
+    // rejection remain denied until the admin role foundation is introduced.
+    match /externalIdentityLinkRequests/{requestId} {
+      allow get, list: if isRegisteredAccount()
+        && resource.data.lanskeUserId == request.auth.uid;
+      allow create: if isValidNewLinkRequest(requestId);
+      allow update: if isUserCancelLinkRequest()
+        || isUserSupersedeLinkRequest()
+        || isUserUnlinkRequestHistoryUpdate();
+      allow delete: if false;
+    }
+
+    // Active mapping documents are the source of truth. A user may get only
+    // their own mapping as part of unlink processing; listing is never allowed.
+    // Mapping creation remains admin-only and is intentionally denied for now.
+    match /externalIdentityMappings/{mappingDocumentId} {
+      allow get: if isRegisteredAccount()
+        && resource.data.lanskeUserId == request.auth.uid;
+      allow list, create, update: if false;
+      allow delete: if isRegisteredAccount()
+        && resource.data.lanskeUserId == request.auth.uid
+        && getAfter(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        ).data.get('externalIdentityIds', {})
+          .get(resource.data.sourceType, null) == null
+        && getAfter(requestPath(resource.data.requestId)).data.state == 'approved'
+        && getAfter(requestPath(resource.data.requestId)).data.unlinkedAt == request.time;
     }
 
     // Public share documents used by doubles schedules.
