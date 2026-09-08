@@ -236,6 +236,45 @@ Before those calls are usable from the Web client, #198 must introduce the minim
 
 Approval rechecks the request, code hash/expiry, user document, active request lock, source-side mapping uniqueness, per-user source uniqueness, and absence of an earlier audit record immediately before writing.
 
+## Firestore Rules tests
+
+The external identity rules are covered by Emulator-based tests in:
+
+```text
+test/firestore_rules/external_identity_rules.test.js
+```
+
+The tests use `@firebase/rules-unit-testing` with a `demo-*` project ID, so they never target the production Firestore project.
+
+Install/update the Node dependencies after pulling changes:
+
+```bash
+npm install
+```
+
+Run the Rules suite with:
+
+```bash
+npm run test:firestore-rules
+```
+
+The command starts only the Firestore Emulator through `firebase emulators:exec`, loads the repository `firestore.rules`, executes the Node test suite, and shuts the emulator down afterward.
+
+Coverage includes:
+
+- registered / anonymous / unauthenticated request creation,
+- required `users/{uid}` existence,
+- canonical TennisBear identity validation and seven-day expiry limit,
+- duplicate mapping and one-identity-per-source constraints,
+- atomic reissue and cancel transitions,
+- protected `externalIdentityIds` mutation,
+- atomic unlink across mapping / user pointer / request history,
+- denial of ordinary-user approval, mapping creation, and admin audit access,
+- cross-user read denial,
+- regression coverage for existing event / team schedule / core rules.
+
+Admin approval itself is intentionally not an allow-case in #211; it remains denied until the #198 admin-role foundation and #213 are implemented.
+
 ## Deliberately not implemented here
 
 - event participant external identity persistence
