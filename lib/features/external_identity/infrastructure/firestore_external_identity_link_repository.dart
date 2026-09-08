@@ -37,9 +37,8 @@ class FirestoreExternalIdentityLinkRepository
     required String lanskeUserId,
     required ExternalIdentitySourceType sourceType,
   }) async {
-    final lockSnapshot = await _requestLocks
-        .doc(_requestLockId(lanskeUserId, sourceType))
-        .get();
+    final lockSnapshot =
+        await _requestLocks.doc(_requestLockId(lanskeUserId, sourceType)).get();
     if (!lockSnapshot.exists) {
       return null;
     }

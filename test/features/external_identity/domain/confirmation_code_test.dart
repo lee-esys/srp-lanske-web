@@ -9,7 +9,8 @@ void main() {
 
     final issue = issuer.issue();
 
-    expect(issue.displayCode, matches(RegExp(r'^LSK-[A-Z2-9]{4}-[A-Z2-9]{4}$')));
+    expect(
+        issue.displayCode, matches(RegExp(r'^LSK-[A-Z2-9]{4}-[A-Z2-9]{4}$')));
     expect(issue.hash, matches(RegExp(r'^[0-9a-f]{64}$')));
     expect(issue.hash, issuer.hash(issue.displayCode));
   });

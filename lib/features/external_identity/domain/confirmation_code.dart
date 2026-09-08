@@ -14,7 +14,8 @@ class ConfirmationCodeIssue {
 }
 
 class ConfirmationCodeIssuer {
-  ConfirmationCodeIssuer({Random? random}) : _random = random ?? Random.secure();
+  ConfirmationCodeIssuer({Random? random})
+      : _random = random ?? Random.secure();
 
   static const _alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   static const _prefix = 'LSK';
@@ -37,10 +38,7 @@ class ConfirmationCodeIssuer {
   }
 
   String normalize(String code) {
-    return code
-        .trim()
-        .toUpperCase()
-        .replaceAll(RegExp(r'[^A-Z0-9]'), '');
+    return code.trim().toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
   }
 
   String _randomPart(int length) {

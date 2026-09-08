@@ -34,7 +34,8 @@ void main() {
     expect(repository.lastCreatedCodeHash, hasLength(64));
   });
 
-  test('does not call approval when the confirmation code is expired', () async {
+  test('does not call approval when the confirmation code is expired',
+      () async {
     final repository = _FakeExternalIdentityLinkRepository(now: now)
       ..requestByCodeHash = ExternalIdentityLinkRequest(
         id: 'request-1',
