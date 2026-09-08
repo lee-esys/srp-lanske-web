@@ -102,12 +102,14 @@ updatedAt
 Terminal/history fields are added when applicable:
 
 ```text
-approvedAt / approvedBy
-rejectedAt / rejectedBy
+approvedAt
+rejectedAt
 canceledAt
 unlinkedAt
 supersededByRequestId
 ```
+
+The request document is readable by the requesting user, so internal administrator Firebase UIDs are intentionally not stored there.
 
 Request states currently modeled:
 
@@ -121,6 +123,21 @@ superseded
 ```
 
 Expiration is always checked from `confirmationCodeExpiresAt`; a separate background process is not required to rewrite a stale `pending` request to `expired` immediately.
+
+## Administrator audit
+
+Administrator actor information is stored separately from the user-readable request:
+
+```text
+externalIdentityLinkRequestAudits/{requestId}
+  schemaVersion: 1
+  requestId
+  action: approved | rejected
+  actorUserId: <admin firebase uid>
+  createdAt: Timestamp
+```
+
+Ordinary Web users cannot read or write this collection. The minimum admin-role foundation under #198 will later open only the administrator access required by #213.
 
 ## Active request lock
 
@@ -170,6 +187,12 @@ https://www.tennisbear.net/user/{numericUserId}/info
 
 No external fetch is performed during request creation. Actual profile ownership is checked later through the manual confirmation flow.
 
+## Duplicate/privacy handling
+
+Request creation does not directly read the target deterministic mapping document from the Web client. Firestore Security Rules check whether that mapping already exists and deny the write if it does.
+
+This avoids turning the mapping collection into an existence oracle. A denied mapping conflict is converted to a generic domain conflict; #212 must not reveal whether another Lanske user already owns the profile.
+
 ## Unlink / relink
 
 Unlink removes:
@@ -199,10 +222,11 @@ Users cannot:
 
 - list active mappings,
 - read another user's mapping or request,
+- read administrator audit records,
 - create an approved mapping directly,
 - write arbitrary `externalIdentityIds` values.
 
-Approval/rejection and mapping creation intentionally remain denied by the current rules. Those operations become available only after the admin-role foundation under #198 is implemented and #213 connects the minimal administrator confirmation flow.
+Approval/rejection, audit creation, and mapping creation intentionally remain denied by the current rules. Those operations become available only after the admin-role foundation under #198 is implemented and #213 connects the minimal administrator confirmation flow.
 
 ## Admin operation boundary
 
@@ -210,7 +234,7 @@ Approval/rejection and mapping creation intentionally remain denied by the curre
 
 Before those calls are usable from the Web client, #198 must introduce the minimum admin-role authorization and the Firestore Rules must explicitly permit the corresponding admin reads/writes.
 
-Approval rechecks the request, code hash/expiry, user document, active request lock, source-side mapping uniqueness, and per-user source uniqueness immediately before writing.
+Approval rechecks the request, code hash/expiry, user document, active request lock, source-side mapping uniqueness, per-user source uniqueness, and absence of an earlier audit record immediately before writing.
 
 ## Deliberately not implemented here
 

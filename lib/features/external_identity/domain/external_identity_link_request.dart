@@ -33,9 +33,7 @@ class ExternalIdentityLinkRequest {
     required this.createdAt,
     required this.updatedAt,
     this.approvedAt,
-    this.approvedBy,
     this.rejectedAt,
-    this.rejectedBy,
     this.canceledAt,
     this.unlinkedAt,
     this.supersededByRequestId,
@@ -52,9 +50,7 @@ class ExternalIdentityLinkRequest {
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? approvedAt;
-  final String? approvedBy;
   final DateTime? rejectedAt;
-  final String? rejectedBy;
   final DateTime? canceledAt;
   final DateTime? unlinkedAt;
   final String? supersededByRequestId;

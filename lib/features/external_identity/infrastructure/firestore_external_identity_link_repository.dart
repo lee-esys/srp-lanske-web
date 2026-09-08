@@ -11,6 +11,7 @@ class FirestoreExternalIdentityLinkRepository
 
   static const _requestsCollection = 'externalIdentityLinkRequests';
   static const _requestLocksCollection = 'externalIdentityLinkRequestLocks';
+  static const _requestAuditsCollection = 'externalIdentityLinkRequestAudits';
   static const _mappingsCollection = 'externalIdentityMappings';
   static const _usersCollection = 'users';
 
@@ -21,6 +22,9 @@ class FirestoreExternalIdentityLinkRepository
 
   CollectionReference<Map<String, dynamic>> get _requestLocks =>
       _firestore.collection(_requestLocksCollection);
+
+  CollectionReference<Map<String, dynamic>> get _requestAudits =>
+      _firestore.collection(_requestAuditsCollection);
 
   CollectionReference<Map<String, dynamic>> get _mappings =>
       _firestore.collection(_mappingsCollection);
@@ -277,6 +281,7 @@ class FirestoreExternalIdentityLinkRepository
     required DateTime now,
   }) async {
     final requestRef = _requests.doc(requestId);
+    final auditRef = _requestAudits.doc(requestId);
     late DocumentReference<Map<String, dynamic>> mappingRef;
 
     await _firestore.runTransaction<void>((transaction) async {
@@ -296,6 +301,7 @@ class FirestoreExternalIdentityLinkRepository
       final userSnapshot = await transaction.get(userRef);
       final lockSnapshot = await transaction.get(lockRef);
       final mappingSnapshot = await transaction.get(mappingRef);
+      final auditSnapshot = await transaction.get(auditRef);
 
       if (request.state != ExternalIdentityLinkRequestState.pending ||
           request.confirmationCodeHash != expectedConfirmationCodeHash) {
@@ -316,6 +322,11 @@ class FirestoreExternalIdentityLinkRepository
       if (mappingSnapshot.exists) {
         throw const ExternalIdentityLinkException(
           ExternalIdentityLinkFailureCode.identityAlreadyLinked,
+        );
+      }
+      if (auditSnapshot.exists) {
+        throw const ExternalIdentityLinkException(
+          ExternalIdentityLinkFailureCode.conflict,
         );
       }
       if (_hasSourceMapping(userSnapshot.data(), request.identity.sourceType)) {
@@ -344,8 +355,14 @@ class FirestoreExternalIdentityLinkRepository
       transaction.update(requestRef, <String, Object?>{
         'state': ExternalIdentityLinkRequestState.approved.value,
         'approvedAt': FieldValue.serverTimestamp(),
-        'approvedBy': approvedBy,
         'updatedAt': FieldValue.serverTimestamp(),
+      });
+      transaction.set(auditRef, <String, Object?>{
+        'schemaVersion': 1,
+        'requestId': request.id,
+        'action': 'approved',
+        'actorUserId': approvedBy,
+        'createdAt': FieldValue.serverTimestamp(),
       });
       transaction.update(userRef, <String, Object?>{
         'externalIdentityIds.${request.identity.sourceType.value}':
@@ -373,6 +390,7 @@ class FirestoreExternalIdentityLinkRepository
     required DateTime now,
   }) async {
     final requestRef = _requests.doc(requestId);
+    final auditRef = _requestAudits.doc(requestId);
 
     await _firestore.runTransaction<void>((transaction) async {
       final requestSnapshot = await transaction.get(requestRef);
@@ -386,6 +404,7 @@ class FirestoreExternalIdentityLinkRepository
         _requestLockId(request.lanskeUserId, request.identity.sourceType),
       );
       final lockSnapshot = await transaction.get(lockRef);
+      final auditSnapshot = await transaction.get(auditRef);
 
       if (request.state != ExternalIdentityLinkRequestState.pending ||
           request.confirmationCodeHash != expectedConfirmationCodeHash) {
@@ -398,7 +417,8 @@ class FirestoreExternalIdentityLinkRepository
           ExternalIdentityLinkFailureCode.confirmationCodeExpired,
         );
       }
-      if (!lockSnapshot.exists ||
+      if (auditSnapshot.exists ||
+          !lockSnapshot.exists ||
           lockSnapshot.data()?['requestId'] != request.id) {
         throw const ExternalIdentityLinkException(
           ExternalIdentityLinkFailureCode.conflict,
@@ -408,8 +428,14 @@ class FirestoreExternalIdentityLinkRepository
       transaction.update(requestRef, <String, Object?>{
         'state': ExternalIdentityLinkRequestState.rejected.value,
         'rejectedAt': FieldValue.serverTimestamp(),
-        'rejectedBy': rejectedBy,
         'updatedAt': FieldValue.serverTimestamp(),
+      });
+      transaction.set(auditRef, <String, Object?>{
+        'schemaVersion': 1,
+        'requestId': request.id,
+        'action': 'rejected',
+        'actorUserId': rejectedBy,
+        'createdAt': FieldValue.serverTimestamp(),
       });
       transaction.delete(lockRef);
     });
@@ -544,9 +570,7 @@ class FirestoreExternalIdentityLinkRepository
       createdAt: _requiredTimestamp(data, 'createdAt'),
       updatedAt: _requiredTimestamp(data, 'updatedAt'),
       approvedAt: _optionalTimestamp(data, 'approvedAt'),
-      approvedBy: data['approvedBy'] as String?,
       rejectedAt: _optionalTimestamp(data, 'rejectedAt'),
-      rejectedBy: data['rejectedBy'] as String?,
       canceledAt: _optionalTimestamp(data, 'canceledAt'),
       unlinkedAt: _optionalTimestamp(data, 'unlinkedAt'),
       supersededByRequestId: data['supersededByRequestId'] as String?,
