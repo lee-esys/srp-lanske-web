@@ -1,5 +1,10 @@
 {
+  "scripts": {
+    "test:firestore-rules": "firebase emulators:exec --only firestore --project demo-lanske-rules \"node --test test/firestore_rules/*.test.js\""
+  },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "firebase": "^12.18.0",
     "firebase-tools": "^15.18.0"
   }
 }
