@@ -31,9 +31,9 @@ service cloud.firestore {
     function isSupportedExternalIdentity(sourceType, sourceUserId, profileUrl) {
       return sourceType == 'tennisbear'
         && sourceUserId is string
-        && sourceUserId.matches('^[0-9]+$')
+        && sourceUserId.matches('^[0-9]{1,20}$')
         && profileUrl is string
-        && profileUrl.matches('^https://www\\.tennisbear\\.net/user/[0-9]+/info$');
+        && profileUrl == 'https://www.tennisbear.net/user/' + sourceUserId + '/info';
     }
 
     function requestLockId(uid, sourceType) {
@@ -255,6 +255,12 @@ service cloud.firestore {
         || isUserSupersedeLinkRequest()
         || isUserUnlinkRequestHistoryUpdate();
       allow delete: if false;
+    }
+
+    // Administrator actor IDs stay outside user-readable request documents.
+    // #198/#213 will open only the minimum admin read/write operations later.
+    match /externalIdentityLinkRequestAudits/{requestId} {
+      allow read, write: if false;
     }
 
     // Active mapping documents are the source of truth. A user may get only

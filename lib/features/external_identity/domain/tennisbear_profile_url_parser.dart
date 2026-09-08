@@ -4,6 +4,7 @@ class TennisBearProfileUrlParser {
   const TennisBearProfileUrlParser();
 
   static const _canonicalHost = 'www.tennisbear.net';
+  static final _userIdPattern = RegExp(r'^\d{1,20}$');
 
   ExternalIdentity parse(String rawUrl) {
     final uri = Uri.tryParse(rawUrl.trim());
@@ -13,7 +14,8 @@ class TennisBearProfileUrlParser {
       throw const FormatException('Invalid TennisBear profile URL.');
     }
 
-    final segments = uri.pathSegments.where((segment) => segment.isNotEmpty).toList();
+    final segments =
+        uri.pathSegments.where((segment) => segment.isNotEmpty).toList();
     if (segments.length != 3 ||
         segments[0] != 'user' ||
         segments[2] != 'info') {
@@ -21,7 +23,7 @@ class TennisBearProfileUrlParser {
     }
 
     final sourceUserId = segments[1];
-    if (!RegExp(r'^\d+$').hasMatch(sourceUserId)) {
+    if (!_userIdPattern.hasMatch(sourceUserId)) {
       throw const FormatException('Invalid TennisBear user ID.');
     }
 

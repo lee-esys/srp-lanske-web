@@ -41,4 +41,13 @@ void main() {
       throwsFormatException,
     );
   });
+
+  test('rejects an unexpectedly long TennisBear user ID', () {
+    expect(
+      () => parser.parse(
+        'https://www.tennisbear.net/user/123456789012345678901/info',
+      ),
+      throwsFormatException,
+    );
+  });
 }
