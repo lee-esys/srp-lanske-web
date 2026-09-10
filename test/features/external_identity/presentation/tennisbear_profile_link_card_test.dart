@@ -11,6 +11,7 @@ import 'package:srp_lanske/features/external_identity/domain/external_identity.d
 import 'package:srp_lanske/features/external_identity/domain/external_identity_link_request.dart';
 import 'package:srp_lanske/features/external_identity/presentation/external_identity_link_scope.dart';
 import 'package:srp_lanske/features/external_identity/presentation/tennisbear_profile_link_card.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 
 void main() {
   final now = DateTime.utc(2026, 9, 10, 3);
@@ -91,6 +92,9 @@ void main() {
 
 Widget _testApp(TennisBearProfileLinkService service) {
   return MaterialApp(
+    locale: const Locale('ja'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: ExternalIdentityLinkScope(
         service: service,
