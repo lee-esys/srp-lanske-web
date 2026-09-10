@@ -10,6 +10,11 @@ import 'features/auth/infrastructure/firebase_auth_repository.dart';
 import 'features/auth/infrastructure/firestore_lanske_user_repository.dart';
 import 'features/auth/presentation/account_scope.dart';
 import 'features/auth/presentation/auth_scope.dart';
+import 'features/external_identity/application/external_identity_link_service.dart';
+import 'features/external_identity/application/tennisbear_profile_link_service.dart';
+import 'features/external_identity/infrastructure/firestore_external_identity_link_repository.dart';
+import 'features/external_identity/infrastructure/firestore_external_identity_user_reader.dart';
+import 'features/external_identity/presentation/external_identity_link_scope.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -22,10 +27,18 @@ Future<void> main() async {
         : firebaseOptions,
   );
 
+  final firestore = FirebaseFirestore.instance;
   final authRepository = FirebaseAuthRepository(FirebaseAuth.instance);
   final accountService = AccountService(
     authRepository: authRepository,
-    userRepository: FirestoreLanskeUserRepository(FirebaseFirestore.instance),
+    userRepository: FirestoreLanskeUserRepository(firestore),
+  );
+  final externalIdentityLinkService = ExternalIdentityLinkService(
+    repository: FirestoreExternalIdentityLinkRepository(firestore),
+  );
+  final tennisBearProfileLinkService = TennisBearProfileLinkService(
+    linkService: externalIdentityLinkService,
+    userReader: FirestoreExternalIdentityUserReader(firestore),
   );
 
   runApp(
@@ -33,7 +46,10 @@ Future<void> main() async {
       repository: authRepository,
       child: AccountScope(
         service: accountService,
-        child: const App(),
+        child: ExternalIdentityLinkScope(
+          service: tennisBearProfileLinkService,
+          child: const App(),
+        ),
       ),
     ),
   );
