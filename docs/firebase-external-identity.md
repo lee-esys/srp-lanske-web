@@ -246,6 +246,8 @@ test/firestore_rules/external_identity_rules.test.js
 
 The tests use `@firebase/rules-unit-testing` with a `demo-*` project ID, so they never target the production Firestore project.
 
+The Firestore Emulator requires Java. Use Java 21 for the local test environment.
+
 Install/update the Node dependencies after pulling changes:
 
 ```bash
