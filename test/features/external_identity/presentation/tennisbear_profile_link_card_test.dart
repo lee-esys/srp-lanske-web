@@ -38,7 +38,9 @@ void main() {
       find.byType(TextFormField),
       'https://www.tennisbear.net/user/899212/info',
     );
-    await tester.tap(find.text('このプロフィールで連携を申請'));
+    final submit = find.text('このプロフィールで連携を申請');
+    await tester.ensureVisible(submit);
+    await tester.tap(submit);
     await tester.pumpAndSettle();
 
     expect(find.text('申請中'), findsOneWidget);
