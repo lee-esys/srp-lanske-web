@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../shared/utils/external_link.dart';
 import '../application/external_identity_link_exception.dart';
 import '../application/external_identity_link_service.dart';
@@ -36,6 +37,8 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
   bool _busy = false;
   String? _message;
   bool _messageIsError = false;
+
+  AppLocalizations get _l10n => AppLocalizations.of(context);
 
   @override
   void initState() {
@@ -101,17 +104,18 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
       _profileUrlController.text = issued.request.identity.profileUrl;
       _snapshot = await ExternalIdentityLinkScope.of(context)
           .load(widget.lanskeUserId);
-      _message = '連携申請を作成しました。確認コードをテニスベア個人チャットから送信してください。';
+      _message = _l10n.tennisBearProfileLinkCreateSuccess;
       _messageIsError = false;
     });
   }
 
   Future<void> _reissue() async {
     if (_busy) return;
+    final l10n = _l10n;
     final confirmed = await _confirm(
-      title: '確認コードを再発行しますか？',
-      body: '現在の確認コードは無効になります。新しいコードを発行したあと、テニスベア個人チャットから送信してください。',
-      actionLabel: '再発行する',
+      title: l10n.tennisBearProfileLinkReissueDialogTitle,
+      body: l10n.tennisBearProfileLinkReissueDialogBody,
+      actionLabel: l10n.tennisBearProfileLinkReissueDialogAction,
     );
     if (!confirmed || !mounted) return;
 
@@ -121,17 +125,18 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
       _confirmationCode = issued.confirmationCode;
       _snapshot = await ExternalIdentityLinkScope.of(context)
           .load(widget.lanskeUserId);
-      _message = '新しい確認コードを発行しました。旧コードは無効です。';
+      _message = _l10n.tennisBearProfileLinkReissueSuccess;
       _messageIsError = false;
     });
   }
 
   Future<void> _cancelRequest() async {
     if (_busy) return;
+    final l10n = _l10n;
     final confirmed = await _confirm(
-      title: '申請を取り消しますか？',
-      body: '現在の連携申請と確認コードを無効にします。必要になった場合は、プロフィールURLの入力から改めて申請できます。',
-      actionLabel: '申請を取り消す',
+      title: l10n.tennisBearProfileLinkCancelDialogTitle,
+      body: l10n.tennisBearProfileLinkCancelDialogBody,
+      actionLabel: l10n.tennisBearProfileLinkCancelDialogAction,
     );
     if (!confirmed || !mounted) return;
 
@@ -140,7 +145,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
       _confirmationCode = null;
       _snapshot = await ExternalIdentityLinkScope.of(context)
           .load(widget.lanskeUserId);
-      _message = '連携申請を取り消しました。';
+      _message = _l10n.tennisBearProfileLinkCancelSuccess;
       _messageIsError = false;
     });
   }
@@ -150,10 +155,12 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
     final mapping = _snapshot?.activeMapping;
     if (mapping == null) return;
 
+    final l10n = _l10n;
     final confirmed = await _confirm(
-      title: 'テニスベアプロフィール連携を解除しますか？',
-      body: '${mapping.identity.profileUrl}\n\n連携を解除しても、過去のイベント・参加者・試合結果などの元データは削除されません。再連携する場合は、新しい確認コードによる確認が必要です。',
-      actionLabel: '連携を解除する',
+      title: l10n.tennisBearProfileLinkUnlinkDialogTitle,
+      body:
+          '${mapping.identity.profileUrl}\n\n${l10n.tennisBearProfileLinkUnlinkDialogBody}',
+      actionLabel: l10n.tennisBearProfileLinkUnlinkDialogAction,
       destructive: true,
     );
     if (!confirmed || !mounted) return;
@@ -164,7 +171,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
       _profileUrlController.text = mapping.identity.profileUrl;
       _snapshot = await ExternalIdentityLinkScope.of(context)
           .load(widget.lanskeUserId);
-      _message = 'テニスベアプロフィール連携を解除しました。必要な場合は改めて申請できます。';
+      _message = _l10n.tennisBearProfileLinkUnlinkSuccess;
       _messageIsError = false;
     });
   }
@@ -181,16 +188,27 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
       await action();
     } catch (error) {
       if (!mounted) return;
-      setState(() {
-        _message = _messageForError(error);
-        _messageIsError = true;
-      });
+      final message = _messageForError(error);
+      TennisBearProfileLinkSnapshot? refreshedSnapshot;
       if (error is ExternalIdentityLinkException &&
           (error.code == ExternalIdentityLinkFailureCode.requestAlreadyExists ||
               error.code == ExternalIdentityLinkFailureCode.invalidState ||
               error.code == ExternalIdentityLinkFailureCode.requestNotFound)) {
-        await _load();
+        try {
+          refreshedSnapshot = await ExternalIdentityLinkScope.of(context)
+              .load(widget.lanskeUserId);
+        } catch (_) {
+          // Keep the original action error. Refresh is best effort only.
+        }
       }
+      if (!mounted) return;
+      setState(() {
+        if (refreshedSnapshot != null) {
+          _snapshot = refreshedSnapshot;
+        }
+        _message = message;
+        _messageIsError = true;
+      });
     } finally {
       if (mounted) {
         setState(() {
@@ -206,6 +224,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
     required String actionLabel,
     bool destructive = false,
   }) async {
+    final l10n = _l10n;
     final result = await showDialog<bool>(
       context: context,
       builder: (context) {
@@ -215,7 +234,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('キャンセル'),
+              child: Text(l10n.cancelButton),
             ),
             destructive
                 ? FilledButton(
@@ -243,13 +262,14 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
     await Clipboard.setData(ClipboardData(text: code));
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('確認コードをコピーしました。')),
+      SnackBar(content: Text(_l10n.tennisBearProfileLinkCodeCopied)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = _l10n;
 
     return Card(
       child: Padding(
@@ -263,14 +283,14 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'テニスベアプロフィール連携',
+                    l10n.tennisBearProfileLinkTitle,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
                   ),
                 ),
                 IconButton(
-                  tooltip: '最新の状態に更新',
+                  tooltip: l10n.tennisBearProfileLinkRefreshTooltip,
                   onPressed: _busy || _loading ? null : _load,
                   icon: const Icon(Icons.refresh),
                 ),
@@ -278,7 +298,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Lanskeアカウントと、ご自身のテニスベア公開プロフィールを対応付ける補助機能です。',
+              l10n.tennisBearProfileLinkSubtitle,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -312,13 +332,14 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
   Widget _buildLinked(BuildContext context) {
     final mapping = _snapshot!.activeMapping!;
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = _l10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _StatusRow(
           icon: Icons.verified_outlined,
-          label: '承認済み',
+          label: l10n.tennisBearProfileLinkLinkedStatus,
           color: colorScheme.primary,
         ),
         const SizedBox(height: 12),
@@ -329,18 +350,16 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
           child: TextButton.icon(
             onPressed: () => openExternalUrl(mapping.identity.profileUrl),
             icon: const Icon(Icons.open_in_new),
-            label: const Text('テニスベアでプロフィールを開く'),
+            label: Text(l10n.tennisBearProfileLinkOpenProfileButton),
           ),
         ),
         const SizedBox(height: 12),
-        const Text(
-          'プロフィール連携だけを理由に、イベントや対戦表全体の閲覧権が付与されることはありません。',
-        ),
+        Text(l10n.tennisBearProfileLinkPermissionNotice),
         const SizedBox(height: 16),
         OutlinedButton.icon(
           onPressed: _busy ? null : _unlink,
           icon: const Icon(Icons.link_off),
-          label: const Text('プロフィール連携を解除'),
+          label: Text(l10n.tennisBearProfileLinkUnlinkButton),
         ),
       ],
     );
@@ -352,13 +371,16 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
   ) {
     final expired = request.isConfirmationCodeExpired(DateTime.now().toUtc());
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = _l10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _StatusRow(
           icon: expired ? Icons.schedule_outlined : Icons.hourglass_top,
-          label: expired ? '確認コードの期限切れ' : '申請中',
+          label: expired
+              ? l10n.tennisBearProfileLinkExpiredStatus
+              : l10n.tennisBearProfileLinkPendingStatus,
           color: expired ? colorScheme.error : colorScheme.primary,
         ),
         const SizedBox(height: 12),
@@ -366,7 +388,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
         const SizedBox(height: 16),
         if (_confirmationCode != null) ...[
           Text(
-            '確認コード',
+            l10n.tennisBearProfileLinkConfirmationCodeLabel,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -390,7 +412,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
                   ),
                 ),
                 IconButton(
-                  tooltip: '確認コードをコピー',
+                  tooltip: l10n.tennisBearProfileLinkCopyCodeTooltip,
                   onPressed: _copyCode,
                   icon: const Icon(Icons.copy),
                 ),
@@ -399,26 +421,30 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
           ),
         ] else if (!expired) ...[
           _InlineMessage(
-            message: '確認コードは安全のため保存していません。この画面を再読み込みした場合、同じコードは再表示できません。必要なら新しいコードを再発行してください。',
+            message: l10n.tennisBearProfileLinkCodeNotRestoredMessage,
             isError: false,
           ),
         ],
         const SizedBox(height: 16),
         Text(
           expired
-              ? '確認コードのシステム上の有効期限（7日間）が過ぎています。再発行すると新しいコードで確認をやり直せます。'
-              : '発行後1時間以内を目安に、確認コードをテニスベア個人チャットからLanske管理者へ送信してください。システム上の有効期限は7日間です。送信後は2営業日以内を目安に確認します。',
+              ? l10n.tennisBearProfileLinkExpiredMessage
+              : l10n.tennisBearProfileLinkPendingInstruction,
         ),
         const SizedBox(height: 16),
         FilledButton.icon(
           onPressed: _busy ? null : _reissue,
           icon: const Icon(Icons.refresh),
-          label: Text(expired ? '確認コードを再発行' : '新しい確認コードを再発行'),
+          label: Text(
+            expired
+                ? l10n.tennisBearProfileLinkReissueExpiredButton
+                : l10n.tennisBearProfileLinkReissueButton,
+          ),
         ),
         const SizedBox(height: 8),
         TextButton(
           onPressed: _busy ? null : _cancelRequest,
-          child: const Text('申請を取り消す'),
+          child: Text(l10n.tennisBearProfileLinkCancelRequestButton),
         ),
       ],
     );
@@ -427,6 +453,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
   Widget _buildRequestForm(BuildContext context) {
     final latest = _snapshot?.latestRequest;
     final retryReason = _retryReason(latest);
+    final l10n = _l10n;
 
     return Form(
       key: _formKey,
@@ -435,7 +462,9 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
         children: [
           _StatusRow(
             icon: Icons.link_outlined,
-            label: retryReason == null ? '未連携' : '再申請できます',
+            label: retryReason == null
+                ? l10n.tennisBearProfileLinkNotLinkedStatus
+                : l10n.tennisBearProfileLinkRetryStatus,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           if (retryReason != null) ...[
@@ -447,21 +476,21 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
             controller: _profileUrlController,
             enabled: !_busy,
             keyboardType: TextInputType.url,
-            decoration: const InputDecoration(
-              labelText: 'テニスベア公開プロフィールURL',
+            decoration: InputDecoration(
+              labelText: l10n.tennisBearProfileLinkProfileUrlLabel,
               hintText: 'https://www.tennisbear.net/user/899212/info',
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
             ),
             validator: (value) {
               final raw = value?.trim() ?? '';
               if (raw.isEmpty) {
-                return 'プロフィールURLを入力してください。';
+                return l10n.tennisBearProfileLinkProfileUrlEmptyError;
               }
               try {
                 _parser.parse(raw);
                 return null;
               } on FormatException {
-                return 'テニスベアの公開プロフィールURLを入力してください。';
+                return l10n.tennisBearProfileLinkProfileUrlInvalidError;
               }
             },
             onFieldSubmitted: (_) {
@@ -474,7 +503,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
           FilledButton.icon(
             onPressed: _busy ? null : _createRequest,
             icon: const Icon(Icons.link),
-            label: const Text('このプロフィールで連携を申請'),
+            label: Text(l10n.tennisBearProfileLinkSubmitButton),
           ),
         ],
       ),
@@ -483,11 +512,12 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
 
   Widget _buildRiskNotice(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    const items = [
-      'TennisBear公式のアカウント連携・本人確認機能ではなく、Lanske独自の補助機能です。',
-      '誤ったプロフィールを連携すると、将来そのプロフィールに紐づく本人向け履歴・統計が自分の情報として表示される可能性があります。',
-      'プロフィール連携だけでは、イベントや対戦表全体の閲覧権は付与されません。',
-      '連携を解除しても、過去のイベント・試合結果などの元データは削除されません。',
+    final l10n = _l10n;
+    final items = [
+      l10n.tennisBearProfileLinkRiskOfficial,
+      l10n.tennisBearProfileLinkRiskWrongProfile,
+      l10n.tennisBearProfileLinkRiskPermission,
+      l10n.tennisBearProfileLinkRiskUnlinkData,
     ];
 
     return Container(
@@ -500,7 +530,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '申請前に確認してください',
+            l10n.tennisBearProfileLinkRiskTitle,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -512,7 +542,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('・'),
+                  const Text('• '),
                   Expanded(child: Text(item)),
                 ],
               ),
@@ -524,43 +554,45 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
 
   String? _retryReason(ExternalIdentityLinkRequest? request) {
     if (request == null) return null;
+    final l10n = _l10n;
     if (request.unlinkedAt != null) {
-      return '以前のプロフィール連携は解除されています。再連携する場合は、新しい確認コードで改めて申請してください。';
+      return l10n.tennisBearProfileLinkRetryUnlinked;
     }
     return switch (request.state) {
       ExternalIdentityLinkRequestState.rejected =>
-        '以前の申請は承認されませんでした。内容を確認して改めて申請できます。',
+        l10n.tennisBearProfileLinkRetryRejected,
       ExternalIdentityLinkRequestState.canceled =>
-        '以前の申請は取り消されています。改めて申請できます。',
+        l10n.tennisBearProfileLinkRetryCanceled,
       ExternalIdentityLinkRequestState.expired =>
-        '以前の申請は期限切れです。改めて申請できます。',
+        l10n.tennisBearProfileLinkRetryExpired,
       _ => null,
     };
   }
 
   String _messageForError(Object error) {
+    final l10n = _l10n;
     if (error is FormatException) {
-      return 'テニスベアの公開プロフィールURLの形式を確認してください。';
+      return l10n.tennisBearProfileLinkInvalidUrlMessage;
     }
     if (error is ExternalIdentityLinkException) {
       return switch (error.code) {
         ExternalIdentityLinkFailureCode.userNotFound =>
-          'Lanskeアカウント情報を確認できませんでした。アカウント情報を再確認してからお試しください。',
+          l10n.tennisBearProfileLinkUserNotFoundMessage,
         ExternalIdentityLinkFailureCode.requestAlreadyExists =>
-          '申請状態が更新されています。最新の状態を確認してください。',
+          l10n.tennisBearProfileLinkRequestUpdatedMessage,
         ExternalIdentityLinkFailureCode.requestNotFound ||
         ExternalIdentityLinkFailureCode.invalidState =>
-          '申請状態が変更されています。最新の状態を確認してからもう一度お試しください。',
+          l10n.tennisBearProfileLinkRequestChangedMessage,
         ExternalIdentityLinkFailureCode.confirmationCodeExpired =>
-          '確認コードの有効期限が切れています。新しいコードを再発行してください。',
+          l10n.tennisBearProfileLinkCodeExpiredMessage,
         ExternalIdentityLinkFailureCode.identityAlreadyLinked ||
         ExternalIdentityLinkFailureCode.sourceAlreadyLinked ||
         ExternalIdentityLinkFailureCode.conflict =>
-          'このテニスベアプロフィールとは連携できません。不明点がある場合はお問い合わせください。',
-        _ => 'プロフィール連携の処理に失敗しました。通信状態を確認して、もう一度お試しください。',
+          l10n.tennisBearProfileLinkGenericConflictMessage,
+        _ => l10n.tennisBearProfileLinkGenericFailureMessage,
       };
     }
-    return 'プロフィール連携の処理に失敗しました。通信状態を確認して、もう一度お試しください。';
+    return l10n.tennisBearProfileLinkGenericFailureMessage;
   }
 }
 
