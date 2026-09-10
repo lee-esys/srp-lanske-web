@@ -1,6 +1,6 @@
 # Firebase external identity link foundation
 
-This document describes the Firestore/domain foundation introduced by web #211.
+This document describes the Firestore/domain foundation introduced by web #211 and the initial user-facing TennisBear link flow introduced by web #212.
 
 ## Scope
 
@@ -8,7 +8,7 @@ The foundation links a registered Lanske user to an approved public identity fro
 
 The first supported source is TennisBear, but the model keeps `sourceType` separate from `sourceUserId` so additional sources such as TennisOff can be added later.
 
-This issue does not connect imported event participants to approved mappings at runtime and does not implement personal statistics.
+This work does not connect imported event participants to approved mappings at runtime and does not implement personal statistics.
 
 ## Canonical identity
 
@@ -173,9 +173,11 @@ LSK-7K3M-Q2PX
 
 Only its SHA-256 hash is stored in Firestore.
 
-The system validity period is seven days. User-facing UI in #212 will ask the user to send the code through TennisBear chat within about one hour; that one-hour period is an operational prompt, not a hard expiry.
+The system validity period is seven days. The user-facing flow asks the user to send the code through TennisBear chat within about one hour; that one-hour period is an operational prompt, not a hard expiry.
 
 Reissue always creates a new code and supersedes the old request. The old expiry is never extended.
+
+The plaintext confirmation code exists only in the immediate create/reissue response and in the current UI memory. It is not persisted and therefore cannot be reconstructed after page reload. A user who loses the code must reissue a new one.
 
 ## TennisBear URL validation
 
@@ -187,11 +189,51 @@ https://www.tennisbear.net/user/{numericUserId}/info
 
 No external fetch is performed during request creation. Actual profile ownership is checked later through the manual confirmation flow.
 
+## User-facing flow
+
+web #212 places the initial profile-link controls on `/account` as a separate feature card. The card is rendered only after the current Firebase session is a registered Lanske account and the matching `users/{uid}` document has been ensured.
+
+The card intentionally remains independent from the permanent My Page design so it can be moved or hidden later without coupling profile-link logic to account authentication UI.
+
+The user can:
+
+- enter a TennisBear public profile URL,
+- create a link request,
+- copy the newly issued confirmation code,
+- view pending / expired / approved / retryable states,
+- reissue a confirmation code,
+- cancel a pending request,
+- unlink an approved mapping,
+- start a fresh request after unlink.
+
+The initial UI explains that:
+
+- this is a Lanske-specific helper and not an official TennisBear account-link feature,
+- linking the wrong profile can affect future personal history/statistics display,
+- a profile mapping does not itself grant event or schedule access,
+- unlink does not delete historical event, participant, match, or result data.
+
+The UI uses a generic conflict message when a request cannot be created because of mapping/uniqueness conflicts. It does not expose whether another Lanske user already owns the external identity.
+
+## User-facing state reads
+
+`FirestoreExternalIdentityUserReader` provides the read side used by the account card.
+
+For an approved mapping it:
+
+1. reads the current user's `externalIdentityIds` pointer,
+2. reads only the pointed active mapping document,
+3. validates the mapping owner/source before returning it.
+
+For retryable history it queries `externalIdentityLinkRequests` with an explicit `lanskeUserId == currentUid` constraint and selects the latest request for the requested source in application code. This avoids requiring a new composite index while keeping the Firestore query compatible with the owner-only list rule.
+
+The user-facing facade `TennisBearProfileLinkService` combines these reads with the #211 request/reissue/cancel/unlink operations.
+
 ## Duplicate/privacy handling
 
 Request creation does not directly read the target deterministic mapping document from the Web client. Firestore Security Rules check whether that mapping already exists and deny the write if it does.
 
-This avoids turning the mapping collection into an existence oracle. A denied mapping conflict is converted to a generic domain conflict; #212 must not reveal whether another Lanske user already owns the profile.
+This avoids turning the mapping collection into an existence oracle. A denied mapping conflict is converted to a generic domain conflict; the user UI must not reveal whether another Lanske user already owns the profile.
 
 ## Unlink / relink
 
@@ -214,14 +256,16 @@ Registered users can:
 
 - create their own link request,
 - read their own active request lock/request,
+- query their own request history with an owner constraint,
 - supersede or cancel their own pending request,
-- read their own active mapping only when required for unlink,
+- read their own active mapping only when required for account state/unlink,
 - unlink their own active mapping atomically.
 
 Users cannot:
 
 - list active mappings,
 - read another user's mapping or request,
+- query another user's request history,
 - read administrator audit records,
 - create an approved mapping directly,
 - write arbitrary `externalIdentityIds` values.
@@ -242,9 +286,10 @@ The external identity rules are covered by Emulator-based tests in:
 
 ```text
 test/firestore_rules/external_identity_rules.test.js
+test/firestore_rules/external_identity_user_read_rules.test.js
 ```
 
-The tests use `@firebase/rules-unit-testing` with a `demo-*` project ID, so they never target the production Firestore project.
+The tests use `@firebase/rules-unit-testing` with `demo-*` project IDs, so they never target the production Firestore project.
 
 The Firestore Emulator requires Java. Use Java 21 for the local test environment.
 
@@ -273,9 +318,11 @@ Coverage includes:
 - atomic unlink across mapping / user pointer / request history,
 - denial of ordinary-user approval, mapping creation, and admin audit access,
 - cross-user read denial,
+- owner-constrained request-history queries,
+- denial of unscoped or cross-user request-history queries,
 - regression coverage for existing event / team schedule / core rules.
 
-Admin approval itself is intentionally not an allow-case in #211; it remains denied until the #198 admin-role foundation and #213 are implemented.
+Admin approval itself is intentionally not an allow-case in #211/#212; it remains denied until the #198 admin-role foundation and #213 are implemented.
 
 ## Deliberately not implemented here
 
@@ -288,5 +335,6 @@ Admin approval itself is intentionally not an allow-case in #211; it remains den
 - statistics batch/schema/My Page statistics
 - TennisBear user detail enrichment
 - permanent `/admin` UI
+- permanent My Page placement for the profile-link card
 
 These items should be reconsidered after #195 is complete and split into existing/new issues only when their privacy and permission boundaries are ready.
