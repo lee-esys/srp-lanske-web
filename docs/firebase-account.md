@@ -16,7 +16,19 @@ A registered Lanske account uses the Firebase Auth UID as its internal identifie
 users/{firebaseAuthUid}
   schemaVersion: 1
   createdAt: Timestamp
+  externalIdentityIds: Map<String, String> // optional
 ```
+
+`externalIdentityIds` was added by web #211 as an optional reverse-lookup pointer to currently approved external identity mappings. Existing user documents without this field remain valid.
+
+Example:
+
+```text
+externalIdentityIds:
+  tennisbear: tennisbear_899212
+```
+
+The active mapping itself is stored separately in `externalIdentityMappings`; the user-document field is not the identity source of truth. See [`firebase-external-identity.md`](./firebase-external-identity.md).
 
 The Firebase UID is internal and is not intended to be exposed as a public user ID.
 
@@ -28,7 +40,7 @@ Anonymous Firebase users do not create `users/{uid}` documents.
 
 After registered-account authentication succeeds, `FirestoreLanskeUserRepository.ensureUser()` ensures that the matching document exists.
 
-- Existing documents keep their original `createdAt`.
+- Existing documents keep their original `createdAt` and optional `externalIdentityIds`.
 - Missing documents are created with `schemaVersion = 1` and a server timestamp.
 - If Firestore setup fails after Firebase Authentication succeeds, the Firebase account session is not rolled back. The account page can retry user-document setup.
 
@@ -42,7 +54,9 @@ This keeps authentication success separate from Firestore availability.
 - Collection listing is denied.
 - A registered account can create only its own document with the initial allowed fields.
 - Anonymous users cannot read or create Lanske user documents.
-- Update and delete are denied for now and will be opened only when later issues define protected fields and update responsibilities.
+- Arbitrary user-document update and delete remain denied.
+- web #211 permits only the narrowly validated removal of an approved `externalIdentityIds` pointer as part of the same atomic unlink operation that removes the active mapping and records `unlinkedAt`.
+- Adding/changing approved mapping pointers remains denied to ordinary users; admin-side approval is enabled only after the #198 admin-role foundation is implemented.
 
 For an anonymous user upgraded by provider linking, the ID token may still report `anonymous` as the sign-in provider for the current authentication session. The rules therefore also accept a non-empty Firebase linked-identities map when deciding whether the user is now a registered account.
 
