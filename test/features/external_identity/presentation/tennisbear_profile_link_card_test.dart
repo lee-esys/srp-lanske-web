@@ -115,7 +115,7 @@ ExternalIdentityLinkRequest _request({
       profileUrl: 'https://www.tennisbear.net/user/899212/info',
     ),
     state: state,
-    confirmationCodeHash: 'a' * 64,
+    confirmationCodeHash: List<String>.filled(64, 'a').join(),
     confirmationCodeExpiresAt: now.add(const Duration(days: 7)),
     createdAt: now,
     updatedAt: now,
