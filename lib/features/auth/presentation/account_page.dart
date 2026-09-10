@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../shared/utils/external_link.dart';
+import '../../external_identity/presentation/tennisbear_profile_link_card.dart';
 import '../application/account_auth_repository.dart';
 import '../application/account_service.dart';
 import '../domain/account_transition.dart';
@@ -532,79 +533,96 @@ class _AccountPageState extends State<AccountPage> {
     final userReady = uid != null && _ensuredUid == uid;
     final userLoading = uid != null && _ensuringUid == uid;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                CircleAvatar(
-                  backgroundColor: colorScheme.primaryContainer,
-                  child: Icon(
-                    Icons.person,
-                    color: colorScheme.onPrimaryContainer,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        session.displayName?.trim().isNotEmpty == true
-                            ? session.displayName!.trim()
-                            : 'Lanske アカウント',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: colorScheme.primaryContainer,
+                      child: Icon(
+                        Icons.person,
+                        color: colorScheme.onPrimaryContainer,
                       ),
-                      if (session.email?.trim().isNotEmpty == true)
-                        Text(
-                          session.email!.trim(),
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            session.displayName?.trim().isNotEmpty == true
+                                ? session.displayName!.trim()
+                                : 'Lanske アカウント',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          if (session.email?.trim().isNotEmpty == true)
+                            Text(
+                              session.email!.trim(),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
                                     color: colorScheme.onSurfaceVariant,
                                   ),
-                        ),
-                    ],
-                  ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 20),
+                if (userLoading) ...[
+                  const LinearProgressIndicator(),
+                  const SizedBox(height: 8),
+                  const Text('Lanske アカウント情報を確認しています…'),
+                ] else if (userReady)
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline,
+                        color: colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text('Lanske アカウント情報を確認済みです。'),
+                      ),
+                    ],
+                  )
+                else
+                  OutlinedButton.icon(
+                    onPressed: _retryEnsureUser,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('アカウント情報を再確認'),
+                  ),
+                const SizedBox(height: 24),
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : _signOut,
+                  icon: const Icon(Icons.logout),
+                  label: const Text('ログアウト'),
+                ),
+                if (_busy) ...[
+                  const SizedBox(height: 12),
+                  const LinearProgressIndicator(),
+                ],
               ],
             ),
-            const SizedBox(height: 20),
-            if (userLoading) ...[
-              const LinearProgressIndicator(),
-              const SizedBox(height: 8),
-              const Text('Lanske アカウント情報を確認しています…'),
-            ] else if (userReady)
-              Row(
-                children: [
-                  Icon(Icons.check_circle_outline, color: colorScheme.primary),
-                  const SizedBox(width: 8),
-                  const Expanded(child: Text('Lanske アカウント情報を確認済みです。')),
-                ],
-              )
-            else
-              OutlinedButton.icon(
-                onPressed: _retryEnsureUser,
-                icon: const Icon(Icons.refresh),
-                label: const Text('アカウント情報を再確認'),
-              ),
-            const SizedBox(height: 24),
-            OutlinedButton.icon(
-              onPressed: _busy ? null : _signOut,
-              icon: const Icon(Icons.logout),
-              label: const Text('ログアウト'),
-            ),
-            if (_busy) ...[
-              const SizedBox(height: 12),
-              const LinearProgressIndicator(),
-            ],
-          ],
+          ),
         ),
-      ),
+        if (userReady && uid != null) ...[
+          const SizedBox(height: 16),
+          TennisBearProfileLinkCard(lanskeUserId: uid),
+        ],
+      ],
     );
   }
 
