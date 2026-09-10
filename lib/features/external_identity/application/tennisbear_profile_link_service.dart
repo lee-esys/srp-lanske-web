@@ -26,23 +26,37 @@ class TennisBearProfileLinkService {
   final ExternalIdentityUserReader _userReader;
 
   Future<TennisBearProfileLinkSnapshot> load(String lanskeUserId) async {
-    final activeRequest = await _linkService.getActiveRequest(
-      lanskeUserId: lanskeUserId,
-      sourceType: ExternalIdentitySourceType.tennisbear,
-    );
     final activeMapping = await _userReader.getActiveMapping(
       lanskeUserId: lanskeUserId,
       sourceType: ExternalIdentitySourceType.tennisbear,
     );
-    final latestRequest = activeRequest ??
-        await _userReader.getLatestRequest(
-          lanskeUserId: lanskeUserId,
-          sourceType: ExternalIdentitySourceType.tennisbear,
-        );
+    if (activeMapping != null) {
+      return TennisBearProfileLinkSnapshot(
+        activeMapping: activeMapping,
+        activeRequest: null,
+        latestRequest: null,
+      );
+    }
 
+    final activeRequest = await _linkService.getActiveRequest(
+      lanskeUserId: lanskeUserId,
+      sourceType: ExternalIdentitySourceType.tennisbear,
+    );
+    if (activeRequest != null) {
+      return TennisBearProfileLinkSnapshot(
+        activeMapping: null,
+        activeRequest: activeRequest,
+        latestRequest: activeRequest,
+      );
+    }
+
+    final latestRequest = await _userReader.getLatestRequest(
+      lanskeUserId: lanskeUserId,
+      sourceType: ExternalIdentitySourceType.tennisbear,
+    );
     return TennisBearProfileLinkSnapshot(
-      activeMapping: activeMapping,
-      activeRequest: activeRequest,
+      activeMapping: null,
+      activeRequest: null,
       latestRequest: latestRequest,
     );
   }
