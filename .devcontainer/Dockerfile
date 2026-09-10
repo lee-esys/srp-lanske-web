@@ -7,7 +7,6 @@ RUN apt-get update && apt-get install -y \
     xz-utils \
     zip \
     libglu1-mesa \
-    openjdk-21-jre-headless \
     && rm -rf /var/lib/apt/lists/*
 
 ENV FLUTTER_HOME=/usr/local/flutter
