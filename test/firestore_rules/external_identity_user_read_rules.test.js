@@ -135,7 +135,6 @@ test('user cannot query another users request history', async () => {
   );
 });
 
-
 test('admin claim alone does not broaden request access before #213', async () => {
   await seedRequest({
     uid: 'bob',
