@@ -1100,4 +1100,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String doublesEventInfoSaveFailedMessage(String error) {
     return 'Could not save event information: $error';
   }
+
+  @override
+  String get adminRoleLabel => 'Administrator';
 }

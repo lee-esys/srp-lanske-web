@@ -573,8 +573,7 @@ class _AccountPageState extends State<AccountPage> {
     final uid = session.uid;
     final userReady = uid != null && _ensuredUid == uid;
     final userLoading = uid != null && _ensuringUid == uid;
-    final isAdmin =
-        uid != null && _resolvedAdminRoleUid == uid && _isAdmin;
+    final isAdmin = uid != null && _resolvedAdminRoleUid == uid && _isAdmin;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
