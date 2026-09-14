@@ -5,7 +5,8 @@ import '../application/external_identity_user_reader.dart';
 import '../domain/external_identity.dart';
 import '../domain/external_identity_link_request.dart';
 
-class FirestoreExternalIdentityUserReader implements ExternalIdentityUserReader {
+class FirestoreExternalIdentityUserReader
+    implements ExternalIdentityUserReader {
   FirestoreExternalIdentityUserReader(this._firestore);
 
   final FirebaseFirestore _firestore;
@@ -72,9 +73,8 @@ class FirestoreExternalIdentityUserReader implements ExternalIdentityUserReader 
     required String lanskeUserId,
     required ExternalIdentitySourceType sourceType,
   }) async {
-    final snapshot = await _requests
-        .where('lanskeUserId', isEqualTo: lanskeUserId)
-        .get();
+    final snapshot =
+        await _requests.where('lanskeUserId', isEqualTo: lanskeUserId).get();
 
     ExternalIdentityLinkRequest? latest;
     for (final document in snapshot.docs) {

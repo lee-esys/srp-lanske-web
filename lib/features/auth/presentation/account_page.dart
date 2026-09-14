@@ -618,7 +618,7 @@ class _AccountPageState extends State<AccountPage> {
             ),
           ),
         ),
-        if (userReady && uid != null) ...[
+        if (userReady) ...[
           const SizedBox(height: 16),
           TennisBearProfileLinkCard(lanskeUserId: uid),
         ],

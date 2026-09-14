@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/utils/external_link.dart';
 import '../application/external_identity_link_exception.dart';
-import '../application/external_identity_link_service.dart';
 import '../application/tennisbear_profile_link_service.dart';
 import '../domain/external_identity_link_request.dart';
 import '../domain/tennisbear_profile_url_parser.dart';
@@ -75,8 +74,8 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
     });
 
     try {
-      final snapshot = await ExternalIdentityLinkScope.of(context)
-          .load(widget.lanskeUserId);
+      final snapshot =
+          await ExternalIdentityLinkScope.of(context).load(widget.lanskeUserId);
       if (!mounted) return;
       setState(() {
         _snapshot = snapshot;
@@ -95,22 +94,25 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
   Future<void> _createRequest() async {
     if (!(_formKey.currentState?.validate() ?? false) || _busy) return;
 
+    final service = ExternalIdentityLinkScope.of(context);
+    final l10n = _l10n;
+
     await _runAction(() async {
-      final issued = await ExternalIdentityLinkScope.of(context).createRequest(
+      final issued = await service.createRequest(
         lanskeUserId: widget.lanskeUserId,
         profileUrl: _profileUrlController.text.trim(),
       );
       _confirmationCode = issued.confirmationCode;
       _profileUrlController.text = issued.request.identity.profileUrl;
-      _snapshot = await ExternalIdentityLinkScope.of(context)
-          .load(widget.lanskeUserId);
-      _message = _l10n.tennisBearProfileLinkCreateSuccess;
+      _snapshot = await service.load(widget.lanskeUserId);
+      _message = l10n.tennisBearProfileLinkCreateSuccess;
       _messageIsError = false;
     });
   }
 
   Future<void> _reissue() async {
     if (_busy) return;
+    final service = ExternalIdentityLinkScope.of(context);
     final l10n = _l10n;
     final confirmed = await _confirm(
       title: l10n.tennisBearProfileLinkReissueDialogTitle,
@@ -120,11 +122,9 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
     if (!confirmed || !mounted) return;
 
     await _runAction(() async {
-      final issued = await ExternalIdentityLinkScope.of(context)
-          .reissue(widget.lanskeUserId);
+      final issued = await service.reissue(widget.lanskeUserId);
       _confirmationCode = issued.confirmationCode;
-      _snapshot = await ExternalIdentityLinkScope.of(context)
-          .load(widget.lanskeUserId);
+      _snapshot = await service.load(widget.lanskeUserId);
       _message = _l10n.tennisBearProfileLinkReissueSuccess;
       _messageIsError = false;
     });
@@ -132,6 +132,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
 
   Future<void> _cancelRequest() async {
     if (_busy) return;
+    final service = ExternalIdentityLinkScope.of(context);
     final l10n = _l10n;
     final confirmed = await _confirm(
       title: l10n.tennisBearProfileLinkCancelDialogTitle,
@@ -141,10 +142,9 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
     if (!confirmed || !mounted) return;
 
     await _runAction(() async {
-      await ExternalIdentityLinkScope.of(context).cancel(widget.lanskeUserId);
+      await service.cancel(widget.lanskeUserId);
       _confirmationCode = null;
-      _snapshot = await ExternalIdentityLinkScope.of(context)
-          .load(widget.lanskeUserId);
+      _snapshot = await service.load(widget.lanskeUserId);
       _message = _l10n.tennisBearProfileLinkCancelSuccess;
       _messageIsError = false;
     });
@@ -155,6 +155,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
     final mapping = _snapshot?.activeMapping;
     if (mapping == null) return;
 
+    final service = ExternalIdentityLinkScope.of(context);
     final l10n = _l10n;
     final confirmed = await _confirm(
       title: l10n.tennisBearProfileLinkUnlinkDialogTitle,
@@ -166,11 +167,10 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
     if (!confirmed || !mounted) return;
 
     await _runAction(() async {
-      await ExternalIdentityLinkScope.of(context).unlink(widget.lanskeUserId);
+      await service.unlink(widget.lanskeUserId);
       _confirmationCode = null;
       _profileUrlController.text = mapping.identity.profileUrl;
-      _snapshot = await ExternalIdentityLinkScope.of(context)
-          .load(widget.lanskeUserId);
+      _snapshot = await service.load(widget.lanskeUserId);
       _message = _l10n.tennisBearProfileLinkUnlinkSuccess;
       _messageIsError = false;
     });

@@ -48,7 +48,8 @@ void main() {
     expect(find.text('新しい確認コードを再発行'), findsOneWidget);
   });
 
-  testWidgets('does not reconstruct plaintext code after reloading pending state',
+  testWidgets(
+      'does not reconstruct plaintext code after reloading pending state',
       (tester) async {
     final fixture = _Fixture(now: now)
       ..repository.activeRequest = _request(

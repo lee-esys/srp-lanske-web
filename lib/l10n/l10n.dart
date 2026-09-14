@@ -96,9 +96,8 @@ extension TennisBearProfileLinkLocalizations on AppLocalizations {
       ? 'テニスベアの公開プロフィールURLを入力してください。'
       : 'Enter a valid public TennisBear profile URL.';
 
-  String get tennisBearProfileLinkSubmitButton => _isJapanese
-      ? 'このプロフィールで連携を申請'
-      : 'Request link with this profile';
+  String get tennisBearProfileLinkSubmitButton =>
+      _isJapanese ? 'このプロフィールで連携を申請' : 'Request link with this profile';
 
   String get tennisBearProfileLinkRiskTitle =>
       _isJapanese ? '申請前に確認してください' : 'Before you apply';
@@ -139,9 +138,8 @@ extension TennisBearProfileLinkLocalizations on AppLocalizations {
       ? '連携申請を作成しました。確認コードをテニスベア個人チャットから送信してください。'
       : 'Link request created. Send the confirmation code through TennisBear direct chat.';
 
-  String get tennisBearProfileLinkReissueDialogTitle => _isJapanese
-      ? '確認コードを再発行しますか？'
-      : 'Reissue the confirmation code?';
+  String get tennisBearProfileLinkReissueDialogTitle =>
+      _isJapanese ? '確認コードを再発行しますか？' : 'Reissue the confirmation code?';
 
   String get tennisBearProfileLinkReissueDialogBody => _isJapanese
       ? '現在の確認コードは無効になります。新しいコードを発行したあと、テニスベア個人チャットから送信してください。'
@@ -167,9 +165,8 @@ extension TennisBearProfileLinkLocalizations on AppLocalizations {
   String get tennisBearProfileLinkCancelSuccess =>
       _isJapanese ? '連携申請を取り消しました。' : 'The link request was canceled.';
 
-  String get tennisBearProfileLinkUnlinkDialogTitle => _isJapanese
-      ? 'テニスベアプロフィール連携を解除しますか？'
-      : 'Unlink the TennisBear profile?';
+  String get tennisBearProfileLinkUnlinkDialogTitle =>
+      _isJapanese ? 'テニスベアプロフィール連携を解除しますか？' : 'Unlink the TennisBear profile?';
 
   String get tennisBearProfileLinkUnlinkDialogBody => _isJapanese
       ? '連携を解除しても、過去のイベント・参加者・試合結果などの元データは削除されません。再連携する場合は、新しい確認コードによる確認が必要です。'
