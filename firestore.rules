@@ -14,6 +14,11 @@ service cloud.firestore {
         );
     }
 
+    function isAdmin() {
+      return isRegisteredAccount()
+        && request.auth.token.get('admin', false) == true;
+    }
+
     function userExists(uid) {
       return exists(/databases/$(database)/documents/users/$(uid));
     }
@@ -246,7 +251,7 @@ service cloud.firestore {
     }
 
     // Users can create and read only their own request history. Approval and
-    // rejection remain denied until the admin role foundation is introduced.
+    // rejection remain denied until #213 adds narrowly scoped admin operations.
     match /externalIdentityLinkRequests/{requestId} {
       allow get, list: if isRegisteredAccount()
         && resource.data.lanskeUserId == request.auth.uid;
@@ -258,7 +263,7 @@ service cloud.firestore {
     }
 
     // Administrator actor IDs stay outside user-readable request documents.
-    // #198/#213 will open only the minimum admin read/write operations later.
+    // #216 provides isAdmin(); #213 will open only the minimum admin operations.
     match /externalIdentityLinkRequestAudits/{requestId} {
       allow read, write: if false;
     }
