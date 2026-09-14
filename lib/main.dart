@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 
 import 'app/app.dart';
 import 'features/auth/application/account_service.dart';
+import 'features/auth/infrastructure/firebase_admin_role_reader.dart';
 import 'features/auth/infrastructure/firebase_auth_repository.dart';
 import 'features/auth/infrastructure/firestore_lanske_user_repository.dart';
 import 'features/auth/presentation/account_scope.dart';
+import 'features/auth/presentation/admin_role_scope.dart';
 import 'features/auth/presentation/auth_scope.dart';
 import 'features/external_identity/application/external_identity_link_service.dart';
 import 'features/external_identity/application/tennisbear_profile_link_service.dart';
@@ -28,7 +30,9 @@ Future<void> main() async {
   );
 
   final firestore = FirebaseFirestore.instance;
-  final authRepository = FirebaseAuthRepository(FirebaseAuth.instance);
+  final firebaseAuth = FirebaseAuth.instance;
+  final authRepository = FirebaseAuthRepository(firebaseAuth);
+  final adminRoleReader = FirebaseAdminRoleReader(firebaseAuth);
   final accountService = AccountService(
     authRepository: authRepository,
     userRepository: FirestoreLanskeUserRepository(firestore),
@@ -44,11 +48,14 @@ Future<void> main() async {
   runApp(
     AuthScope(
       repository: authRepository,
-      child: AccountScope(
-        service: accountService,
-        child: ExternalIdentityLinkScope(
-          service: tennisBearProfileLinkService,
-          child: const App(),
+      child: AdminRoleScope(
+        reader: adminRoleReader,
+        child: AccountScope(
+          service: accountService,
+          child: ExternalIdentityLinkScope(
+            service: tennisBearProfileLinkService,
+            child: const App(),
+          ),
         ),
       ),
     ),

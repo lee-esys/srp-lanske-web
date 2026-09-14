@@ -33,10 +33,11 @@ after(async () => {
   await testEnv.cleanup();
 });
 
-function registeredDb(uid) {
+function registeredDb(uid, customClaims = {}) {
   const email = `${uid}@example.test`;
   return testEnv
     .authenticatedContext(uid, {
+      ...customClaims,
       email,
       email_verified: true,
       firebase: {
@@ -131,5 +132,23 @@ test('user cannot query another users request history', async () => {
       .collection('externalIdentityLinkRequests')
       .where('lanskeUserId', '==', 'bob')
       .get(),
+  );
+});
+
+test('admin claim alone does not broaden request access before #213', async () => {
+  await seedRequest({
+    uid: 'bob',
+    requestId: 'bob-1',
+    sourceUserId: '999999',
+    minutesAgo: 1,
+  });
+
+  const admin = registeredDb('admin-user', { admin: true });
+
+  await assertFails(
+    admin.doc('externalIdentityLinkRequests/bob-1').get(),
+  );
+  await assertFails(
+    admin.collection('externalIdentityLinkRequests').get(),
   );
 });

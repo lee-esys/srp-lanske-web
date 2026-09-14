@@ -1060,4 +1060,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String doublesEventInfoSaveFailedMessage(String error) {
     return 'イベント情報を保存できませんでした: $error';
   }
+
+  @override
+  String get adminRoleLabel => '管理者';
 }

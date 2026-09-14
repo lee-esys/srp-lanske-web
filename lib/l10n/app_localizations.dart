@@ -1943,6 +1943,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'イベント情報を保存できませんでした: {error}'**
   String doublesEventInfoSaveFailedMessage(String error);
+
+  /// Label shown on the account page when the signed-in user has the admin custom claim.
+  ///
+  /// In ja, this message translates to:
+  /// **'管理者'**
+  String get adminRoleLabel;
 }
 
 class _AppLocalizationsDelegate

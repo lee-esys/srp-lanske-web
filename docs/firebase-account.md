@@ -62,6 +62,16 @@ For an anonymous user upgraded by provider linking, the ID token may still repor
 
 Event and team-schedule share permissions remain unchanged by the account work.
 
+## Administrator role
+
+The minimum administrator role introduced by web #216 is stored in Firebase
+Authentication Custom Claims rather than in `users/{uid}`. Client-side role
+lookup and Firestore Security Rules use the same `admin: true` claim while
+keeping Plan, Entitlement, and resource Permission separate.
+
+Initial role provisioning, removal, and token-refresh behavior are documented
+in [`firebase-admin-role.md`](./firebase-admin-role.md).
+
 ## Email / Password
 
 The account page supports:
