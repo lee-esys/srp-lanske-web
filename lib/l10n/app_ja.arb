@@ -1619,5 +1619,9 @@
         "example": "network error"
       }
     }
+  },
+  "adminRoleLabel": "管理者",
+  "@adminRoleLabel": {
+    "description": "Label shown on the account page when the signed-in user has the admin custom claim."
   }
 }
