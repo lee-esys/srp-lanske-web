@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:srp_lanske/l10n/l10n.dart';
 
 import '../../../shared/utils/external_link.dart';
 import '../../external_identity/presentation/tennisbear_profile_link_card.dart';
@@ -9,6 +10,7 @@ import '../application/account_service.dart';
 import '../domain/account_transition.dart';
 import '../domain/auth_session.dart';
 import 'account_scope.dart';
+import 'admin_role_scope.dart';
 import 'auth_scope.dart';
 
 class AccountPage extends StatefulWidget {
@@ -30,12 +32,31 @@ class _AccountPageState extends State<AccountPage> {
   bool _statusIsError = false;
   String? _ensuredUid;
   String? _ensuringUid;
+  String? _resolvedAdminRoleUid;
+  String? _resolvingAdminRoleUid;
+  bool _isAdmin = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final session = AuthScope.of(context).session;
     final uid = session.uid;
+
+    if (session.isAccount &&
+        uid != null &&
+        _resolvedAdminRoleUid != uid &&
+        _resolvingAdminRoleUid != uid) {
+      _resolvingAdminRoleUid = uid;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          unawaited(_resolveAdminRole(uid));
+        }
+      });
+    } else if (!session.isAccount) {
+      _resolvedAdminRoleUid = null;
+      _resolvingAdminRoleUid = null;
+      _isAdmin = false;
+    }
 
     if (session.isAccount &&
         uid != null &&
@@ -61,6 +82,26 @@ class _AccountPageState extends State<AccountPage> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _resolveAdminRole(String uid) async {
+    final reader = AdminRoleScope.of(context);
+    try {
+      final isAdmin = await reader.isCurrentUserAdmin();
+      if (!mounted || AuthScope.of(context).session.uid != uid) return;
+      setState(() {
+        _resolvedAdminRoleUid = uid;
+        _resolvingAdminRoleUid = null;
+        _isAdmin = isAdmin;
+      });
+    } catch (_) {
+      if (!mounted || AuthScope.of(context).session.uid != uid) return;
+      setState(() {
+        _resolvedAdminRoleUid = uid;
+        _resolvingAdminRoleUid = null;
+        _isAdmin = false;
+      });
+    }
   }
 
   Future<void> _ensureCurrentUser(String uid) async {
@@ -532,6 +573,8 @@ class _AccountPageState extends State<AccountPage> {
     final uid = session.uid;
     final userReady = uid != null && _ensuredUid == uid;
     final userLoading = uid != null && _ensuringUid == uid;
+    final isAdmin =
+        uid != null && _resolvedAdminRoleUid == uid && _isAdmin;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -618,6 +661,20 @@ class _AccountPageState extends State<AccountPage> {
             ),
           ),
         ),
+        if (isAdmin) ...[
+          const SizedBox(height: 16),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                AppLocalizations.of(context).adminRoleLabel,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ),
+          ),
+        ],
         if (userReady) ...[
           const SizedBox(height: 16),
           TennisBearProfileLinkCard(lanskeUserId: uid),
