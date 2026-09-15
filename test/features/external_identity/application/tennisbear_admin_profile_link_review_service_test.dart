@@ -33,7 +33,8 @@ void main() {
     expect(repository.findCalls, 0);
   });
 
-  test('admin can inspect only active pending request', () async {
+  test('admin can inspect an existing request regardless of decision state',
+      () async {
     final repository = _FakeExternalIdentityLinkRepository()
       ..requestByCodeHash = _pendingRequest(now);
     final service = _service(
@@ -42,27 +43,103 @@ void main() {
       isAdmin: true,
     );
 
-    final request =
+    final pending =
         await service.findReviewableRequest('LSK-ABCD-2345');
-
-    expect(request?.id, 'request-1');
+    expect(pending?.id, 'request-1');
 
     repository.requestByCodeHash = _pendingRequest(
       now,
       state: ExternalIdentityLinkRequestState.canceled,
     );
-    expect(
-      await service.findReviewableRequest('LSK-ABCD-2345'),
-      isNull,
-    );
+    final canceled =
+        await service.findReviewableRequest('LSK-ABCD-2345');
+    expect(canceled?.state, ExternalIdentityLinkRequestState.canceled);
 
     repository.requestByCodeHash = _pendingRequest(
       now,
       expiresAt: now.subtract(const Duration(seconds: 1)),
     );
+    final expired =
+        await service.findReviewableRequest('LSK-ABCD-2345');
+    expect(expired?.id, 'request-1');
+
+    repository.requestByCodeHash = null;
     expect(
       await service.findReviewableRequest('LSK-ABCD-2345'),
       isNull,
+    );
+  });
+
+  test('review status separates display state from decision availability', () {
+    final repository = _FakeExternalIdentityLinkRepository();
+    final service = _service(
+      repository: repository,
+      now: now,
+      isAdmin: true,
+    );
+
+    final pending = _pendingRequest(now);
+    expect(
+      service.statusOf(pending),
+      TennisBearAdminProfileLinkReviewStatus.pending,
+    );
+    expect(service.canDecide(pending), isTrue);
+
+    final expired = _pendingRequest(
+      now,
+      expiresAt: now.subtract(const Duration(seconds: 1)),
+    );
+    expect(
+      service.statusOf(expired),
+      TennisBearAdminProfileLinkReviewStatus.expired,
+    );
+    expect(service.canDecide(expired), isFalse);
+
+    expect(
+      service.statusOf(
+        _pendingRequest(
+          now,
+          state: ExternalIdentityLinkRequestState.approved,
+        ),
+      ),
+      TennisBearAdminProfileLinkReviewStatus.approved,
+    );
+    expect(
+      service.statusOf(
+        _pendingRequest(
+          now,
+          state: ExternalIdentityLinkRequestState.approved,
+          unlinkedAt: now,
+        ),
+      ),
+      TennisBearAdminProfileLinkReviewStatus.approvedUnlinked,
+    );
+    expect(
+      service.statusOf(
+        _pendingRequest(
+          now,
+          state: ExternalIdentityLinkRequestState.rejected,
+        ),
+      ),
+      TennisBearAdminProfileLinkReviewStatus.rejected,
+    );
+    expect(
+      service.statusOf(
+        _pendingRequest(
+          now,
+          state: ExternalIdentityLinkRequestState.canceled,
+        ),
+      ),
+      TennisBearAdminProfileLinkReviewStatus.canceled,
+    );
+    expect(
+      service.statusOf(
+        _pendingRequest(
+          now,
+          state: ExternalIdentityLinkRequestState.superseded,
+        ),
+      ),
+      TennisBearAdminProfileLinkReviewStatus.superseded,
     );
   });
 
@@ -119,6 +196,7 @@ ExternalIdentityLinkRequest _pendingRequest(
   ExternalIdentityLinkRequestState state =
       ExternalIdentityLinkRequestState.pending,
   DateTime? expiresAt,
+  DateTime? unlinkedAt,
 }) {
   return ExternalIdentityLinkRequest(
     id: 'request-1',
@@ -134,6 +212,7 @@ ExternalIdentityLinkRequest _pendingRequest(
         expiresAt ?? now.add(const Duration(days: 1)),
     createdAt: now.subtract(const Duration(hours: 1)),
     updatedAt: now.subtract(const Duration(hours: 1)),
+    unlinkedAt: unlinkedAt,
   );
 }
 
