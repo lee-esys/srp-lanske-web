@@ -372,9 +372,14 @@ service cloud.firestore {
       allow list: if false;
       allow create: if isRegisteredAccount()
         && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['schemaVersion', 'createdAt'])
+        && request.resource.data.keys().hasOnly([
+          'schemaVersion',
+          'createdAt',
+          'plan'
+        ])
         && request.resource.data.schemaVersion == 1
-        && request.resource.data.createdAt == request.time;
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.get('plan', 'free') == 'free';
       allow update: if (
           isRegisteredAccount()
           && request.auth.uid == uid

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../application/lanske_user_repository.dart';
+import '../domain/lanske_plan.dart';
 import '../domain/lanske_user.dart';
 
 class FirestoreLanskeUserRepository implements LanskeUserRepository {
@@ -22,6 +23,7 @@ class FirestoreLanskeUserRepository implements LanskeUserRepository {
       transaction.set(ref, <String, Object?>{
         'schemaVersion': LanskeUser.currentSchemaVersion,
         'createdAt': FieldValue.serverTimestamp(),
+        'plan': lanskePlanToStorage(LanskePlan.free),
       });
       return null;
     });
@@ -52,6 +54,7 @@ class FirestoreLanskeUserRepository implements LanskeUserRepository {
       uid: snapshot.id,
       schemaVersion: schemaVersion,
       createdAt: createdAt.toDate().toUtc(),
+      plan: lanskePlanFromStorage(data?['plan']),
       externalIdentityIds: _externalIdentityIds(data?['externalIdentityIds']),
     );
   }

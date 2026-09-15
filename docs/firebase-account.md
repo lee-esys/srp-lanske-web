@@ -16,8 +16,11 @@ A registered Lanske account uses the Firebase Auth UID as its internal identifie
 users/{firebaseAuthUid}
   schemaVersion: 1
   createdAt: Timestamp
+  plan: free | premium
   externalIdentityIds: Map<String, String> // optional
 ```
+
+`plan` was added by web #220. New registered-account documents are created with `plan: free`; existing documents without the field are interpreted as `free`, so the initial Plan rollout does not require a migration. Plan is protected from ordinary client updates. See [`firebase-plan.md`](./firebase-plan.md).
 
 `externalIdentityIds` was added by web #211 as an optional reverse-lookup pointer to currently approved external identity mappings. Existing user documents without this field remain valid.
 
@@ -40,8 +43,8 @@ Anonymous Firebase users do not create `users/{uid}` documents.
 
 After registered-account authentication succeeds, `FirestoreLanskeUserRepository.ensureUser()` ensures that the matching document exists.
 
-- Existing documents keep their original `createdAt` and optional `externalIdentityIds`.
-- Missing documents are created with `schemaVersion = 1` and a server timestamp.
+- Existing documents keep their original `createdAt`, Plan, and optional `externalIdentityIds`; a missing Plan is interpreted as `free`.
+- Missing documents are created with `schemaVersion = 1`, a server timestamp, and `plan: free`.
 - If Firestore setup fails after Firebase Authentication succeeds, the Firebase account session is not rolled back. The account page can retry user-document setup.
 
 This keeps authentication success separate from Firestore availability.
@@ -52,9 +55,9 @@ This keeps authentication success separate from Firestore availability.
 
 - A registered account can read only its own document.
 - Collection listing is denied.
-- A registered account can create only its own document with the initial allowed fields.
+- A registered account can create only its own document with the initial allowed fields; client-created Plan may only be `free` (or omitted for backward compatibility with an older deployed client).
 - Anonymous users cannot read or create Lanske user documents.
-- Arbitrary user-document update and delete remain denied.
+- Arbitrary user-document update and delete remain denied, including changing `plan`; the admin Role does not grant Plan mutation rights.
 - web #211 permits only the narrowly validated removal of an approved `externalIdentityIds` pointer as part of the same atomic unlink operation that removes the active mapping and records `unlinkedAt`.
 - Adding/changing approved mapping pointers remains denied to ordinary users; admin-side approval is enabled only after the #198 admin-role foundation is implemented.
 

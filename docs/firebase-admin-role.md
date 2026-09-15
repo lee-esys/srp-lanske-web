@@ -11,7 +11,8 @@ admin: true
 
 Role remains separate from Plan, Entitlement, and resource Permission. The
 admin claim does not grant Premium features and does not automatically grant
-access to ordinary event, participant, or match data.
+access to ordinary event, participant, or match data. Account Plan is stored
+separately as documented in [`firebase-plan.md`](./firebase-plan.md).
 
 ## Client-side role lookup
 
