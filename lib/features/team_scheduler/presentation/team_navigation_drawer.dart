@@ -3,6 +3,8 @@ import 'package:srp_lanske/shared/utils/external_link.dart';
 
 import 'package:srp_lanske/l10n/l10n.dart';
 import '../../auth/presentation/account_routes.dart';
+import '../../auth/presentation/admin_role_visibility.dart';
+import '../../external_identity/presentation/admin_profile_link_review_routes.dart';
 import '../data/local_team_schedule_history_item.dart';
 import 'team_schedule_page.dart';
 import 'widgets/team_schedule_history_list_view.dart';
@@ -152,6 +154,13 @@ class _TeamNavigationDrawerState extends State<TeamNavigationDrawer> {
           icon: Icons.person_outline,
           label: 'アカウント',
           onTap: () => _openPath(context, accountPagePath),
+        ),
+        AdminRoleVisibility(
+          child: _TeamNavigationTile(
+            icon: Icons.admin_panel_settings_outlined,
+            label: l10n.adminProfileLinkReviewMenuLabel,
+            onTap: () => _openPath(context, adminProfileLinkReviewPath),
+          ),
         ),
         _TeamNavigationTile(
           icon: Icons.help_outline,
