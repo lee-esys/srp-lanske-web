@@ -45,6 +45,38 @@ void main() {
     expect(find.text('却下'), findsOneWidget);
   });
 
+  testWidgets('admin rejection clears the reviewed request after confirmation',
+      (tester) async {
+    final service = _FakeAdminReviewService(
+      canReviewValue: true,
+      request: _request(now),
+    );
+
+    await tester.pumpWidget(_testApp(service));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byType(TextFormField),
+      'LSK-ABCD-2345',
+    );
+    await tester.tap(find.text('申請を確認'));
+    await tester.pumpAndSettle();
+
+    final rejectButton = find.text('却下');
+    await tester.ensureVisible(rejectButton);
+    await tester.tap(rejectButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('このプロフィール連携を却下しますか？'), findsOneWidget);
+
+    await tester.tap(find.text('却下する'));
+    await tester.pumpAndSettle();
+
+    expect(service.rejectCalls, 1);
+    expect(find.text('プロフィール連携を却下しました。'), findsOneWidget);
+    expect(find.text('899212'), findsNothing);
+  });
+
   testWidgets('admin approval clears the reviewed request after confirmation',
       (tester) async {
     final service = _FakeAdminReviewService(
