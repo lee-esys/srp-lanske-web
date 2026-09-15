@@ -45,6 +45,112 @@ void main() {
     expect(find.text('却下'), findsOneWidget);
   });
 
+  testWidgets('missing confirmation code result shows only not-found message',
+      (tester) async {
+    final service = _FakeAdminReviewService(
+      canReviewValue: true,
+      request: null,
+    );
+
+    await tester.pumpWidget(_testApp(service));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byType(TextFormField),
+      'LSK-NONE-0000',
+    );
+    await tester.tap(find.text('申請を確認'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('該当する申請が見つかりません。確認コードを確認してください。'),
+      findsOneWidget,
+    );
+    expect(find.text('899212'), findsNothing);
+  });
+
+  testWidgets('terminal request states are shown without decision buttons',
+      (tester) async {
+    final scenarios = <({
+      ExternalIdentityLinkRequest request,
+      String label,
+      String note,
+    })>[
+      (
+        request: _request(
+          now,
+          expiresAt: now.subtract(const Duration(seconds: 1)),
+        ),
+        label: '期限切れ',
+        note: 'この確認コードは有効期限が切れています。',
+      ),
+      (
+        request: _request(
+          now,
+          state: ExternalIdentityLinkRequestState.approved,
+        ),
+        label: '承認済み',
+        note: 'この申請は承認済みのため、追加の操作はできません。',
+      ),
+      (
+        request: _request(
+          now,
+          state: ExternalIdentityLinkRequestState.approved,
+          unlinkedAt: now,
+        ),
+        label: '承認済み（連携解除済み）',
+        note: 'この申請は承認後にプロフィール連携が解除されています。',
+      ),
+      (
+        request: _request(
+          now,
+          state: ExternalIdentityLinkRequestState.rejected,
+        ),
+        label: '却下済み',
+        note: 'この申請は却下済みのため、追加の操作はできません。',
+      ),
+      (
+        request: _request(
+          now,
+          state: ExternalIdentityLinkRequestState.canceled,
+        ),
+        label: 'キャンセル済み',
+        note: 'この申請はユーザーによりキャンセルされています。',
+      ),
+      (
+        request: _request(
+          now,
+          state: ExternalIdentityLinkRequestState.superseded,
+        ),
+        label: '再発行済み',
+        note: 'この確認コードは再発行により無効になっています。',
+      ),
+    ];
+
+    for (final scenario in scenarios) {
+      final service = _FakeAdminReviewService(
+        canReviewValue: true,
+        request: scenario.request,
+        now: now,
+      );
+
+      await tester.pumpWidget(_testApp(service));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byType(TextFormField),
+        'LSK-ABCD-2345',
+      );
+      await tester.tap(find.text('申請を確認'));
+      await tester.pumpAndSettle();
+
+      expect(find.text(scenario.label), findsOneWidget);
+      expect(find.text(scenario.note), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, '承認'), findsNothing);
+      expect(find.widgetWithText(OutlinedButton, '却下'), findsNothing);
+    }
+  });
+
   testWidgets('admin rejection clears the reviewed request after confirmation',
       (tester) async {
     final service = _FakeAdminReviewService(
@@ -124,7 +230,13 @@ Widget _testApp(TennisBearAdminProfileLinkReviewService service) {
   );
 }
 
-ExternalIdentityLinkRequest _request(DateTime now) {
+ExternalIdentityLinkRequest _request(
+  DateTime now, {
+  ExternalIdentityLinkRequestState state =
+      ExternalIdentityLinkRequestState.pending,
+  DateTime? expiresAt,
+  DateTime? unlinkedAt,
+}) {
   return ExternalIdentityLinkRequest(
     id: 'request-1',
     lanskeUserId: 'user-1',
@@ -133,11 +245,13 @@ ExternalIdentityLinkRequest _request(DateTime now) {
       sourceUserId: '899212',
       profileUrl: 'https://www.tennisbear.net/user/899212/info',
     ),
-    state: ExternalIdentityLinkRequestState.pending,
+    state: state,
     confirmationCodeHash: List<String>.filled(64, 'a').join(),
-    confirmationCodeExpiresAt: now.add(const Duration(days: 1)),
+    confirmationCodeExpiresAt:
+        expiresAt ?? now.add(const Duration(days: 1)),
     createdAt: now.subtract(const Duration(hours: 1)),
     updatedAt: now.subtract(const Duration(hours: 1)),
+    unlinkedAt: unlinkedAt,
   );
 }
 
@@ -146,10 +260,12 @@ class _FakeAdminReviewService
   _FakeAdminReviewService({
     required this.canReviewValue,
     this.request,
-  });
+    DateTime? now,
+  }) : now = now ?? DateTime.utc(2026, 9, 15, 1);
 
   final bool canReviewValue;
   final ExternalIdentityLinkRequest? request;
+  final DateTime now;
   int approveCalls = 0;
   int rejectCalls = 0;
 
@@ -161,6 +277,37 @@ class _FakeAdminReviewService
     String confirmationCode,
   ) async {
     return request;
+  }
+
+  @override
+  TennisBearAdminProfileLinkReviewStatus statusOf(
+    ExternalIdentityLinkRequest request,
+  ) {
+    if (request.state == ExternalIdentityLinkRequestState.pending &&
+        request.isConfirmationCodeExpired(now)) {
+      return TennisBearAdminProfileLinkReviewStatus.expired;
+    }
+    return switch (request.state) {
+      ExternalIdentityLinkRequestState.pending =>
+        TennisBearAdminProfileLinkReviewStatus.pending,
+      ExternalIdentityLinkRequestState.approved when request.unlinkedAt != null =>
+        TennisBearAdminProfileLinkReviewStatus.approvedUnlinked,
+      ExternalIdentityLinkRequestState.approved =>
+        TennisBearAdminProfileLinkReviewStatus.approved,
+      ExternalIdentityLinkRequestState.rejected =>
+        TennisBearAdminProfileLinkReviewStatus.rejected,
+      ExternalIdentityLinkRequestState.canceled =>
+        TennisBearAdminProfileLinkReviewStatus.canceled,
+      ExternalIdentityLinkRequestState.expired =>
+        TennisBearAdminProfileLinkReviewStatus.expired,
+      ExternalIdentityLinkRequestState.superseded =>
+        TennisBearAdminProfileLinkReviewStatus.superseded,
+    };
+  }
+
+  @override
+  bool canDecide(ExternalIdentityLinkRequest request) {
+    return statusOf(request) == TennisBearAdminProfileLinkReviewStatus.pending;
   }
 
   @override
