@@ -273,7 +273,7 @@ class _FakeAdminReviewService
   Future<bool> canReview() async => canReviewValue;
 
   @override
-  Future<ExternalIdentityLinkRequest?> findReviewableRequest(
+  Future<ExternalIdentityLinkRequest?> findRequestByConfirmationCode(
     String confirmationCode,
   ) async {
     return request;
