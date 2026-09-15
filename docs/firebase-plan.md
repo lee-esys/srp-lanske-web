@@ -92,4 +92,4 @@ Plan remains in Firestore.
 An administrator is not automatically Premium, and Premium does not imply
 administrator access.
 
-web #221 builds Entitlement resolution on top of this separation.
+web #221 builds Entitlement resolution on top of this separation. See [`firebase-entitlement.md`](./firebase-entitlement.md) for the resolver and Usage / Permission boundaries.
