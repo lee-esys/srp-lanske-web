@@ -135,7 +135,7 @@ test('user cannot query another users request history', async () => {
   );
 });
 
-test('admin claim alone does not broaden request access before #213', async () => {
+test('admin can get one request but cannot browse request history unbounded', async () => {
   await seedRequest({
     uid: 'bob',
     requestId: 'bob-1',
@@ -145,7 +145,7 @@ test('admin claim alone does not broaden request access before #213', async () =
 
   const admin = registeredDb('admin-user', { admin: true });
 
-  await assertFails(
+  await assertSucceeds(
     admin.doc('externalIdentityLinkRequests/bob-1').get(),
   );
   await assertFails(
