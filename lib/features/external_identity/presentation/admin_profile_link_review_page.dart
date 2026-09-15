@@ -77,7 +77,7 @@ class _AdminProfileLinkReviewPageState
 
     try {
       final request = await ExternalIdentityAdminReviewScope.of(context)
-          .findReviewableRequest(_confirmationCodeController.text);
+          .findRequestByConfirmationCode(_confirmationCodeController.text);
       if (!mounted) return;
       setState(() {
         _request = request;
