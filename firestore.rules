@@ -237,7 +237,8 @@ service cloud.firestore {
           .get(resource.data.sourceType, null) == resource.data.mappingId
         && auditAfter != null
         && auditAfter.data.action == 'approved'
-        && auditAfter.data.actorUserId == request.auth.uid;
+        && auditAfter.data.actorUserId == request.auth.uid
+        && auditAfter.data.createdAt == request.time;
     }
 
     function isAdminRequestRejection(requestId) {
@@ -260,7 +261,8 @@ service cloud.firestore {
         && !existsAfter(lockPath)
         && auditAfter != null
         && auditAfter.data.action == 'rejected'
-        && auditAfter.data.actorUserId == request.auth.uid;
+        && auditAfter.data.actorUserId == request.auth.uid
+        && auditAfter.data.createdAt == request.time;
     }
 
     function isAdminAuditCreate(requestId) {
@@ -334,6 +336,7 @@ service cloud.firestore {
         && auditAfter != null
         && auditAfter.data.action == 'approved'
         && auditAfter.data.actorUserId == request.auth.uid
+        && auditAfter.data.createdAt == request.time
         && !existsAfter(requestLockPath(data.lanskeUserId, data.sourceType));
     }
 
@@ -344,13 +347,16 @@ service cloud.firestore {
         && requestAfter != null
         && auditAfter != null
         && auditAfter.data.actorUserId == request.auth.uid
+        && auditAfter.data.createdAt == request.time
         && (
           (
             requestAfter.data.state == 'approved'
+            && requestAfter.data.approvedAt == request.time
             && auditAfter.data.action == 'approved'
           )
           || (
             requestAfter.data.state == 'rejected'
+            && requestAfter.data.rejectedAt == request.time
             && auditAfter.data.action == 'rejected'
           )
         );
