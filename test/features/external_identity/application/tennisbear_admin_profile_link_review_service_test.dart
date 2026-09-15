@@ -129,7 +129,7 @@ ExternalIdentityLinkRequest _pendingRequest(
       profileUrl: 'https://www.tennisbear.net/user/899212/info',
     ),
     state: state,
-    confirmationCodeHash: 'a' * 64,
+    confirmationCodeHash: List<String>.filled(64, 'a').join(),
     confirmationCodeExpiresAt:
         expiresAt ?? now.add(const Duration(days: 1)),
     createdAt: now.subtract(const Duration(hours: 1)),
