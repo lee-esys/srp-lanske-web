@@ -62,8 +62,9 @@ void main() {
     await tester.tap(find.text('申請を確認'));
     await tester.pumpAndSettle();
 
-    final rejectButton = find.text('却下');
+    final rejectButton = find.widgetWithText(OutlinedButton, '却下');
     await tester.ensureVisible(rejectButton);
+    await tester.pumpAndSettle();
     await tester.tap(rejectButton);
     await tester.pumpAndSettle();
 
@@ -94,8 +95,9 @@ void main() {
     await tester.tap(find.text('申請を確認'));
     await tester.pumpAndSettle();
 
-    final approveButton = find.text('承認');
+    final approveButton = find.widgetWithText(FilledButton, '承認');
     await tester.ensureVisible(approveButton);
+    await tester.pumpAndSettle();
     await tester.tap(approveButton);
     await tester.pumpAndSettle();
 
