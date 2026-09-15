@@ -465,6 +465,15 @@ test('admin can find a request only through a bounded query', async () => {
   const alice = registeredDb('alice');
   await assertSucceeds(createPendingRequest(alice, 'alice'));
 
+  const ordinaryUser = registeredDb('bob');
+  await assertFails(
+    ordinaryUser
+      .collection('externalIdentityLinkRequests')
+      .where('confirmationCodeHash', '==', confirmationCodeHash)
+      .limit(2)
+      .get(),
+  );
+
   const admin = registeredDb('admin-1', { admin: true });
   const snapshot = await assertSucceeds(
     admin
@@ -554,6 +563,41 @@ test('admin can reject a pending request only with matching audit and lock delet
     .doc('externalIdentityLinkRequests/request-1')
     .get();
   assert.equal(request.data().state, 'rejected');
+});
+
+test('admin approval fails when required atomic writes are missing', async () => {
+  await seedUser('alice');
+  const alice = registeredDb('alice');
+  await assertSucceeds(createPendingRequest(alice, 'alice'));
+
+  const admin = registeredDb('admin-1', { admin: true });
+  const batch = admin.batch();
+  batch.update(admin.doc('externalIdentityLinkRequests/request-1'), {
+    state: 'approved',
+    approvedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  batch.set(admin.doc(`externalIdentityMappings/${mappingId}`), {
+    schemaVersion: 1,
+    sourceType,
+    sourceUserId,
+    lanskeUserId: 'alice',
+    profileUrl,
+    approvedAt: serverTimestamp(),
+    requestId: 'request-1',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  batch.set(admin.doc('externalIdentityLinkRequestAudits/request-1'), {
+    schemaVersion: 1,
+    requestId: 'request-1',
+    action: 'approved',
+    actorUserId: 'admin-1',
+    createdAt: serverTimestamp(),
+  });
+  batch.delete(admin.doc('externalIdentityLinkRequestLocks/alice_tennisbear'));
+
+  await assertFails(batch.commit());
 });
 
 test('admin approval fails when audit actor or atomic writes do not match', async () => {
