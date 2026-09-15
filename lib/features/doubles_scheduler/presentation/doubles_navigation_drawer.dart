@@ -6,6 +6,8 @@ import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/utils/external_link.dart';
 
 import '../../auth/presentation/account_routes.dart';
+import '../../auth/presentation/admin_role_visibility.dart';
+import '../../external_identity/presentation/admin_profile_link_review_routes.dart';
 import '../data/local_schedule_history_item.dart';
 import 'doubles_schedule_list_drawer.dart';
 import 'widgets/doubles_navigation_menu_button.dart';
@@ -108,6 +110,12 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
 
   void _openAccount() {
     unawaited(_runAction(() => openUrlInCurrentTab(accountPagePath)));
+  }
+
+  void _openAdminProfileLinkReview() {
+    unawaited(
+      _runAction(() => openUrlInCurrentTab(adminProfileLinkReviewPath)),
+    );
   }
 
   void _openTeam() {
@@ -260,6 +268,13 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
                 icon: Icons.person_outline,
                 label: 'アカウント',
                 onTap: _openAccount,
+              ),
+              AdminRoleVisibility(
+                child: _DoublesNavigationTile(
+                  icon: Icons.admin_panel_settings_outlined,
+                  label: l10n.adminProfileLinkReviewMenuLabel,
+                  onTap: _openAdminProfileLinkReview,
+                ),
               ),
               ListTile(
                 leading: const Icon(Icons.help_outline),
