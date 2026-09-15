@@ -1,5 +1,3 @@
-const fs = require('node:fs');
-const path = require('node:path');
 const { after, before, beforeEach, test } = require('node:test');
 
 const firebase = require('firebase/compat/app');
@@ -16,12 +14,6 @@ let testEnv;
 before(async () => {
   testEnv = await initializeTestEnvironment({
     projectId,
-    firestore: {
-      rules: fs.readFileSync(
-        path.resolve(__dirname, '../../firestore.rules'),
-        'utf8',
-      ),
-    },
   });
 });
 
