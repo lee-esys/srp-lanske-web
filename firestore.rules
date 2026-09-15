@@ -445,8 +445,8 @@ service cloud.firestore {
         || isAdminRequestLockDelete();
     }
 
-    // Users can create and read only their own request history. Approval and
-    // rejection remain denied until #213 adds narrowly scoped admin operations.
+    // Users can create and read only their own request history. Admin review
+    // adds bounded confirmation-code lookup and atomic approval/rejection only.
     match /externalIdentityLinkRequests/{requestId} {
       allow get: if (
           isRegisteredAccount()
@@ -479,7 +479,7 @@ service cloud.firestore {
 
     // Active mapping documents are the source of truth. A user may get only
     // their own mapping as part of unlink processing; listing is never allowed.
-    // Mapping creation remains admin-only and is intentionally denied for now.
+    // Admin mapping creation is accepted only inside the approval transaction.
     match /externalIdentityMappings/{mappingDocumentId} {
       allow get: if (
           isRegisteredAccount()
