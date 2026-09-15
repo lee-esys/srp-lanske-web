@@ -22,10 +22,11 @@ class _AdminRoleVisibilityState extends State<AdminRoleVisibility> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final reader = AdminRoleScope.of(context);
+    final reader = AdminRoleScope.maybeOf(context);
     if (!identical(_reader, reader)) {
       _reader = reader;
-      _isAdminFuture = reader.isCurrentUserAdmin();
+      _isAdminFuture =
+          reader?.isCurrentUserAdmin() ?? Future<bool>.value(false);
     }
   }
 
