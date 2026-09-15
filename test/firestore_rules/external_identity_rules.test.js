@@ -37,7 +37,9 @@ beforeEach(async () => {
 });
 
 after(async () => {
-  await testEnv.cleanup();
+  if (testEnv != null) {
+    await testEnv.cleanup();
+  }
 });
 
 function registeredDb(uid, customClaims = {}) {
