@@ -49,6 +49,23 @@ void main() {
     );
   });
 
+  test('rule can derive premium availability from plan', () async {
+    final resolver = RolePlanEntitlementResolver(
+      adminRoleReader: FakeAdminRoleReader(),
+      planReader: FakePlanReader(plan: LanskePlan.premium),
+      rules: <EntitlementFeature, EntitlementRule>{
+        premiumFeature: (context) => context.plan == LanskePlan.premium
+            ? const Entitlement.available()
+            : const Entitlement.unavailable(),
+      },
+    );
+
+    expect(
+      await resolver.resolve(premiumFeature),
+      const Entitlement.available(),
+    );
+  });
+
   test('rule can grant an admin-specific unlimited entitlement', () async {
     final resolver = RolePlanEntitlementResolver(
       adminRoleReader: FakeAdminRoleReader(isAdmin: true),
