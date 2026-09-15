@@ -457,7 +457,7 @@ service cloud.firestore {
           isRegisteredAccount()
           && resource.data.lanskeUserId == request.auth.uid
         )
-        || (isAdmin() && request.query.limit <= 2);
+        || (isAdmin() && request.query.limit != null && request.query.limit <= 2);
       allow create: if isValidNewLinkRequest(requestId);
       allow update: if isUserCancelLinkRequest()
         || isUserSupersedeLinkRequest()
