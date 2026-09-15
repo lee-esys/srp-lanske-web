@@ -286,11 +286,13 @@ The review flow is intentionally code-driven rather than list-driven:
 
 1. enter the confirmation code received through TennisBear chat,
 2. hash and query the matching request,
-3. show only an active, unexpired TennisBear pending request,
-4. compare the displayed public profile with the TennisBear chat sender,
-5. approve or reject.
+3. show the matching TennisBear request when the code exists,
+4. compare the displayed public profile with the TennisBear chat sender when the request is still actionable,
+5. approve or reject only an active, unexpired pending request.
 
-Invalid, expired, canceled, superseded, approved, and otherwise non-reviewable codes do not reveal request details in the UI.
+A nonexistent confirmation code shows only a generic not-found message and does not reveal request information. When the code exists, the administrator can inspect the request and its effective state even after it becomes approved, rejected, canceled, superseded, or expired. An approved request with `unlinkedAt` is shown as approved and later unlinked.
+
+Approval and rejection controls are shown only for a pending request whose confirmation code is still within its validity period. Terminal or expired requests are read-only in the administrator UI.
 
 No separate `reviewing` / `processing` state is introduced for this MVP. A user may cancel or reissue while an administrator is visually checking the profile; the final approval/rejection transaction re-reads the current request, code, lock, mapping, and user state and fails closed if anything changed.
 
@@ -332,6 +334,8 @@ npm run test:firestore-rules
 ```
 
 The command starts only the Firestore Emulator through `firebase emulators:exec`, loads the repository `firestore.rules`, executes the Node test suite, and shuts the emulator down afterward.
+
+The Rules tests clear only their known top-level test collections through a security-rules-disabled test context. They intentionally do not use `RulesTestEnvironment.clearFirestore()`, because some Firestore Emulator versions return 404 from the emulator-wide document-clear endpoint even while normal Firestore SDK operations work correctly.
 
 Coverage includes:
 
