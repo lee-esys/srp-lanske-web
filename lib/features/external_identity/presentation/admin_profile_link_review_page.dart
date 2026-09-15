@@ -103,7 +103,12 @@ class _AdminProfileLinkReviewPageState
   }
 
   Future<void> _approve() async {
-    if (_request == null || _busy) return;
+    final request = _request;
+    if (request == null ||
+        _busy ||
+        !ExternalIdentityAdminReviewScope.of(context).canDecide(request)) {
+      return;
+    }
     final confirmed = await _confirm(
       title: _l10n.adminProfileLinkReviewApproveDialogTitle,
       body: _l10n.adminProfileLinkReviewApproveDialogBody,
@@ -121,7 +126,12 @@ class _AdminProfileLinkReviewPageState
   }
 
   Future<void> _reject() async {
-    if (_request == null || _busy) return;
+    final request = _request;
+    if (request == null ||
+        _busy ||
+        !ExternalIdentityAdminReviewScope.of(context).canDecide(request)) {
+      return;
+    }
     final confirmed = await _confirm(
       title: _l10n.adminProfileLinkReviewRejectDialogTitle,
       body: _l10n.adminProfileLinkReviewRejectDialogBody,
@@ -353,6 +363,10 @@ class _AdminProfileLinkReviewPageState
     BuildContext context,
     ExternalIdentityLinkRequest request,
   ) {
+    final reviewService = ExternalIdentityAdminReviewScope.of(context);
+    final status = reviewService.statusOf(request);
+    final canDecide = reviewService.canDecide(request);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -369,7 +383,7 @@ class _AdminProfileLinkReviewPageState
             ),
             _DetailRow(
               label: _l10n.adminProfileLinkReviewStateLabel,
-              value: _l10n.adminProfileLinkReviewPendingState,
+              value: _statusLabel(status),
             ),
             _DetailRow(
               label: _l10n.adminProfileLinkReviewCreatedAtLabel,
@@ -395,26 +409,66 @@ class _AdminProfileLinkReviewPageState
               ),
             ),
             const SizedBox(height: 12),
-            Text(_l10n.adminProfileLinkReviewVerifyInstruction),
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: _busy ? null : _approve,
-              icon: const Icon(Icons.check),
-              label: Text(_l10n.adminProfileLinkReviewApproveButton),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.error,
+            if (canDecide) ...[
+              Text(_l10n.adminProfileLinkReviewVerifyInstruction),
+              const SizedBox(height: 20),
+              FilledButton.icon(
+                onPressed: _busy ? null : _approve,
+                icon: const Icon(Icons.check),
+                label: Text(_l10n.adminProfileLinkReviewApproveButton),
               ),
-              onPressed: _busy ? null : _reject,
-              icon: const Icon(Icons.close),
-              label: Text(_l10n.adminProfileLinkReviewRejectButton),
-            ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                ),
+                onPressed: _busy ? null : _reject,
+                icon: const Icon(Icons.close),
+                label: Text(_l10n.adminProfileLinkReviewRejectButton),
+              ),
+            ] else
+              Text(_statusNote(status)),
           ],
         ),
       ),
     );
+  }
+
+  String _statusLabel(TennisBearAdminProfileLinkReviewStatus status) {
+    return switch (status) {
+      TennisBearAdminProfileLinkReviewStatus.pending =>
+        _l10n.adminProfileLinkReviewPendingState,
+      TennisBearAdminProfileLinkReviewStatus.expired =>
+        _l10n.adminProfileLinkReviewExpiredState,
+      TennisBearAdminProfileLinkReviewStatus.approved =>
+        _l10n.adminProfileLinkReviewApprovedState,
+      TennisBearAdminProfileLinkReviewStatus.approvedUnlinked =>
+        _l10n.adminProfileLinkReviewApprovedUnlinkedState,
+      TennisBearAdminProfileLinkReviewStatus.rejected =>
+        _l10n.adminProfileLinkReviewRejectedState,
+      TennisBearAdminProfileLinkReviewStatus.canceled =>
+        _l10n.adminProfileLinkReviewCanceledState,
+      TennisBearAdminProfileLinkReviewStatus.superseded =>
+        _l10n.adminProfileLinkReviewSupersededState,
+    };
+  }
+
+  String _statusNote(TennisBearAdminProfileLinkReviewStatus status) {
+    return switch (status) {
+      TennisBearAdminProfileLinkReviewStatus.pending => '',
+      TennisBearAdminProfileLinkReviewStatus.expired =>
+        _l10n.adminProfileLinkReviewExpiredNote,
+      TennisBearAdminProfileLinkReviewStatus.approved =>
+        _l10n.adminProfileLinkReviewApprovedNote,
+      TennisBearAdminProfileLinkReviewStatus.approvedUnlinked =>
+        _l10n.adminProfileLinkReviewApprovedUnlinkedNote,
+      TennisBearAdminProfileLinkReviewStatus.rejected =>
+        _l10n.adminProfileLinkReviewRejectedNote,
+      TennisBearAdminProfileLinkReviewStatus.canceled =>
+        _l10n.adminProfileLinkReviewCanceledNote,
+      TennisBearAdminProfileLinkReviewStatus.superseded =>
+        _l10n.adminProfileLinkReviewSupersededNote,
+    };
   }
 
   String _formatDateTime(DateTime value) {
