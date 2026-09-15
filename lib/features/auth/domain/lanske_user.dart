@@ -1,8 +1,11 @@
+import 'lanske_plan.dart';
+
 class LanskeUser {
   const LanskeUser({
     required this.uid,
     required this.schemaVersion,
     required this.createdAt,
+    this.plan = LanskePlan.free,
     this.externalIdentityIds = const <String, String>{},
   });
 
@@ -11,6 +14,7 @@ class LanskeUser {
   final String uid;
   final int schemaVersion;
   final DateTime createdAt;
+  final LanskePlan plan;
   final Map<String, String> externalIdentityIds;
 
   @override
@@ -20,6 +24,7 @@ class LanskeUser {
             other.uid == uid &&
             other.schemaVersion == schemaVersion &&
             other.createdAt == createdAt &&
+            other.plan == plan &&
             _mapsEqual(other.externalIdentityIds, externalIdentityIds);
   }
 
@@ -31,6 +36,7 @@ class LanskeUser {
       uid,
       schemaVersion,
       createdAt,
+      plan,
       Object.hashAll(
         entries.map((entry) => Object.hash(entry.key, entry.value)),
       ),
