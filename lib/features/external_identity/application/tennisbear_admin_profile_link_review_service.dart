@@ -8,6 +8,16 @@ enum TennisBearAdminProfileLinkReviewFailureCode {
   accessDenied,
 }
 
+enum TennisBearAdminProfileLinkReviewStatus {
+  pending,
+  expired,
+  approved,
+  approvedUnlinked,
+  rejected,
+  canceled,
+  superseded,
+}
+
 class TennisBearAdminProfileLinkReviewException implements Exception {
   const TennisBearAdminProfileLinkReviewException(this.code);
 
@@ -46,12 +56,40 @@ class TennisBearAdminProfileLinkReviewService {
     final request =
         await _linkService.findByConfirmationCode(confirmationCode.trim());
     if (request == null ||
-        request.identity.sourceType != ExternalIdentitySourceType.tennisbear ||
-        request.state != ExternalIdentityLinkRequestState.pending ||
-        request.isConfirmationCodeExpired(_now().toUtc())) {
+        request.identity.sourceType != ExternalIdentitySourceType.tennisbear) {
       return null;
     }
     return request;
+  }
+
+  TennisBearAdminProfileLinkReviewStatus statusOf(
+    ExternalIdentityLinkRequest request,
+  ) {
+    if (request.state == ExternalIdentityLinkRequestState.pending &&
+        request.isConfirmationCodeExpired(_now().toUtc())) {
+      return TennisBearAdminProfileLinkReviewStatus.expired;
+    }
+
+    return switch (request.state) {
+      ExternalIdentityLinkRequestState.pending =>
+        TennisBearAdminProfileLinkReviewStatus.pending,
+      ExternalIdentityLinkRequestState.approved when request.unlinkedAt != null =>
+        TennisBearAdminProfileLinkReviewStatus.approvedUnlinked,
+      ExternalIdentityLinkRequestState.approved =>
+        TennisBearAdminProfileLinkReviewStatus.approved,
+      ExternalIdentityLinkRequestState.rejected =>
+        TennisBearAdminProfileLinkReviewStatus.rejected,
+      ExternalIdentityLinkRequestState.canceled =>
+        TennisBearAdminProfileLinkReviewStatus.canceled,
+      ExternalIdentityLinkRequestState.expired =>
+        TennisBearAdminProfileLinkReviewStatus.expired,
+      ExternalIdentityLinkRequestState.superseded =>
+        TennisBearAdminProfileLinkReviewStatus.superseded,
+    };
+  }
+
+  bool canDecide(ExternalIdentityLinkRequest request) {
+    return statusOf(request) == TennisBearAdminProfileLinkReviewStatus.pending;
   }
 
   Future<ExternalIdentityMapping> approve(String confirmationCode) async {
