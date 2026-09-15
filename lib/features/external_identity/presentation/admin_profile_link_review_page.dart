@@ -112,8 +112,10 @@ class _AdminProfileLinkReviewPageState
     if (!confirmed || !mounted) return;
 
     await _runDecision(
-      action: () => ExternalIdentityAdminReviewScope.of(context)
-          .approve(_confirmationCodeController.text),
+      action: () async {
+        await ExternalIdentityAdminReviewScope.of(context)
+            .approve(_confirmationCodeController.text);
+      },
       successMessage: _l10n.adminProfileLinkReviewApproveSuccess,
     );
   }
