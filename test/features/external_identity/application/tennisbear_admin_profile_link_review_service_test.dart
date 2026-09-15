@@ -34,7 +34,7 @@ void main() {
   });
 
   test('admin can inspect only active pending request', () async {
-    final repository = _FakeExternalIdentityLinkRepository(now: now)
+    final repository = _FakeExternalIdentityLinkRepository()
       ..requestByCodeHash = _pendingRequest(now);
     final service = _service(
       repository: repository,
@@ -67,7 +67,7 @@ void main() {
   });
 
   test('approval records the current admin uid as actor', () async {
-    final repository = _FakeExternalIdentityLinkRepository(now: now)
+    final repository = _FakeExternalIdentityLinkRepository()
       ..requestByCodeHash = _pendingRequest(now);
     final service = _service(
       repository: repository,
@@ -82,7 +82,7 @@ void main() {
   });
 
   test('rejection records the current admin uid as actor', () async {
-    final repository = _FakeExternalIdentityLinkRepository(now: now)
+    final repository = _FakeExternalIdentityLinkRepository()
       ..requestByCodeHash = _pendingRequest(now);
     final service = _service(
       repository: repository,
