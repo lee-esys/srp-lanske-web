@@ -1644,6 +1644,10 @@
   "@adminProfileLinkReviewCodeLabel": {
     "description": "Admin TennisBear profile link review UI text."
   },
+  "adminProfileLinkReviewCodeHint": "LSK-XXXX-XXXX",
+  "@adminProfileLinkReviewCodeHint": {
+    "description": "Confirmation code input hint for the admin profile link review."
+  },
   "adminProfileLinkReviewCodeRequiredMessage": "Enter a confirmation code.",
   "@adminProfileLinkReviewCodeRequiredMessage": {
     "description": "Admin TennisBear profile link review UI text."
