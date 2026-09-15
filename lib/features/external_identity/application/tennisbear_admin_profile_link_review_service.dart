@@ -48,7 +48,7 @@ class TennisBearAdminProfileLinkReviewService {
     return _adminRoleReader.isCurrentUserAdmin();
   }
 
-  Future<ExternalIdentityLinkRequest?> findReviewableRequest(
+  Future<ExternalIdentityLinkRequest?> findRequestByConfirmationCode(
     String confirmationCode,
   ) async {
     await _requireAdminUserId();
