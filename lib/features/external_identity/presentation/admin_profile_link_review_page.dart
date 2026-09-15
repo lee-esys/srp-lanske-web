@@ -306,7 +306,7 @@ class _AdminProfileLinkReviewPageState
                     textCapitalization: TextCapitalization.characters,
                     decoration: InputDecoration(
                       labelText: _l10n.adminProfileLinkReviewCodeLabel,
-                      hintText: 'LSK-XXXX-XXXX',
+                      hintText: _l10n.adminProfileLinkReviewCodeHint,
                       border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
