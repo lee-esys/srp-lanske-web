@@ -8,6 +8,7 @@ const {
   assertSucceeds,
   initializeTestEnvironment,
 } = require('@firebase/rules-unit-testing');
+const { clearFirestoreCollections } = require('./test_environment');
 
 const projectId = 'demo-lanske-rules';
 const sourceType = 'tennisbear';
@@ -21,15 +22,11 @@ let testEnv;
 before(async () => {
   testEnv = await initializeTestEnvironment({
     projectId,
-    firestore: {
-      host: '127.0.0.1',
-      port: 8080,
-    },
   });
 });
 
 beforeEach(async () => {
-  await testEnv.clearFirestore();
+  await clearFirestoreCollections(testEnv);
 });
 
 after(async () => {
