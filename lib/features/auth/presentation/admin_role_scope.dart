@@ -12,11 +12,15 @@ class AdminRoleScope extends InheritedWidget {
   final AdminRoleReader reader;
 
   static AdminRoleReader of(BuildContext context) {
-    final scope = context.dependOnInheritedWidgetOfExactType<AdminRoleScope>();
-    if (scope == null) {
+    final reader = maybeOf(context);
+    if (reader == null) {
       throw FlutterError('AdminRoleScope was not found in the widget tree.');
     }
-    return scope.reader;
+    return reader;
+  }
+
+  static AdminRoleReader? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<AdminRoleScope>()?.reader;
   }
 
   @override

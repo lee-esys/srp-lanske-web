@@ -1623,5 +1623,173 @@
   "adminRoleLabel": "Administrator",
   "@adminRoleLabel": {
     "description": "Label shown on the account page when the signed-in user has the admin custom claim."
+  },
+  "adminProfileLinkReviewMenuLabel": "Admin: Profile link review",
+  "@adminProfileLinkReviewMenuLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewTitle": "Profile link review",
+  "@adminProfileLinkReviewTitle": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewSubtitle": "Review a TennisBear profile link request using the confirmation code you received.",
+  "@adminProfileLinkReviewSubtitle": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewAccessDeniedMessage": "Administrator access is required.",
+  "@adminProfileLinkReviewAccessDeniedMessage": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewCodeLabel": "Confirmation code",
+  "@adminProfileLinkReviewCodeLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewCodeHint": "LSK-XXXX-XXXX",
+  "@adminProfileLinkReviewCodeHint": {
+    "description": "Confirmation code input hint for the admin profile link review."
+  },
+  "adminProfileLinkReviewCodeRequiredMessage": "Enter a confirmation code.",
+  "@adminProfileLinkReviewCodeRequiredMessage": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewSearchButton": "Review request",
+  "@adminProfileLinkReviewSearchButton": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewNotFoundMessage": "No matching request was found. Check the confirmation code.",
+  "@adminProfileLinkReviewNotFoundMessage": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewSourceLabel": "Source",
+  "@adminProfileLinkReviewSourceLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewSourceUserIdLabel": "TennisBear user ID",
+  "@adminProfileLinkReviewSourceUserIdLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewStateLabel": "Request state",
+  "@adminProfileLinkReviewStateLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewPendingState": "Pending",
+  "@adminProfileLinkReviewPendingState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApprovedState": "Approved",
+  "@adminProfileLinkReviewApprovedState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApprovedUnlinkedState": "Approved (unlinked)",
+  "@adminProfileLinkReviewApprovedUnlinkedState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectedState": "Rejected",
+  "@adminProfileLinkReviewRejectedState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewCanceledState": "Canceled",
+  "@adminProfileLinkReviewCanceledState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewExpiredState": "Expired",
+  "@adminProfileLinkReviewExpiredState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewSupersededState": "Reissued",
+  "@adminProfileLinkReviewSupersededState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApprovedNote": "This request has already been approved and cannot be changed here.",
+  "@adminProfileLinkReviewApprovedNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApprovedUnlinkedNote": "This request was approved and the profile link was later removed.",
+  "@adminProfileLinkReviewApprovedUnlinkedNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectedNote": "This request has already been rejected and cannot be changed here.",
+  "@adminProfileLinkReviewRejectedNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewCanceledNote": "This request was canceled by the user.",
+  "@adminProfileLinkReviewCanceledNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewExpiredNote": "This confirmation code has expired.",
+  "@adminProfileLinkReviewExpiredNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewSupersededNote": "This confirmation code was invalidated by a reissue.",
+  "@adminProfileLinkReviewSupersededNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewCreatedAtLabel": "Requested at",
+  "@adminProfileLinkReviewCreatedAtLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewExpiresAtLabel": "Code expires at",
+  "@adminProfileLinkReviewExpiresAtLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewProfileUrlLabel": "Profile",
+  "@adminProfileLinkReviewProfileUrlLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewOpenProfileButton": "Open TennisBear profile",
+  "@adminProfileLinkReviewOpenProfileButton": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewVerifyInstruction": "Confirm that the sender profile in TennisBear chat matches the profile shown here.",
+  "@adminProfileLinkReviewVerifyInstruction": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApproveButton": "Approve",
+  "@adminProfileLinkReviewApproveButton": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectButton": "Reject",
+  "@adminProfileLinkReviewRejectButton": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApproveDialogTitle": "Approve this profile link?",
+  "@adminProfileLinkReviewApproveDialogTitle": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApproveDialogBody": "Confirm that the TennisBear sender matches the profile shown here.",
+  "@adminProfileLinkReviewApproveDialogBody": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApproveDialogAction": "Approve",
+  "@adminProfileLinkReviewApproveDialogAction": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectDialogTitle": "Reject this profile link?",
+  "@adminProfileLinkReviewRejectDialogTitle": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectDialogBody": "After rejection, the user can create a new profile link request.",
+  "@adminProfileLinkReviewRejectDialogBody": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectDialogAction": "Reject",
+  "@adminProfileLinkReviewRejectDialogAction": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApproveSuccess": "Profile link approved.",
+  "@adminProfileLinkReviewApproveSuccess": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectSuccess": "Profile link rejected.",
+  "@adminProfileLinkReviewRejectSuccess": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRequestChangedMessage": "The request state has changed. Review it again from the confirmation code.",
+  "@adminProfileLinkReviewRequestChangedMessage": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewGenericFailureMessage": "The operation failed. Check your connection and try again.",
+  "@adminProfileLinkReviewGenericFailureMessage": {
+    "description": "Admin TennisBear profile link review UI text."
   }
 }

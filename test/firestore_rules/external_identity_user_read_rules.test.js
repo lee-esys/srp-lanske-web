@@ -1,5 +1,3 @@
-const fs = require('node:fs');
-const path = require('node:path');
 const { after, before, beforeEach, test } = require('node:test');
 
 const firebase = require('firebase/compat/app');
@@ -9,28 +7,25 @@ const {
   assertSucceeds,
   initializeTestEnvironment,
 } = require('@firebase/rules-unit-testing');
+const { clearFirestoreCollections } = require('./test_environment');
 
-const projectId = 'demo-lanske-user-read-rules';
+const projectId = 'demo-lanske-rules';
 let testEnv;
 
 before(async () => {
   testEnv = await initializeTestEnvironment({
     projectId,
-    firestore: {
-      rules: fs.readFileSync(
-        path.resolve(__dirname, '../../firestore.rules'),
-        'utf8',
-      ),
-    },
   });
 });
 
 beforeEach(async () => {
-  await testEnv.clearFirestore();
+  await clearFirestoreCollections(testEnv);
 });
 
 after(async () => {
-  await testEnv.cleanup();
+  if (testEnv != null) {
+    await testEnv.cleanup();
+  }
 });
 
 function registeredDb(uid, customClaims = {}) {
@@ -135,7 +130,7 @@ test('user cannot query another users request history', async () => {
   );
 });
 
-test('admin claim alone does not broaden request access before #213', async () => {
+test('admin can get one request but cannot browse request history unbounded', async () => {
   await seedRequest({
     uid: 'bob',
     requestId: 'bob-1',
@@ -145,7 +140,7 @@ test('admin claim alone does not broaden request access before #213', async () =
 
   const admin = registeredDb('admin-user', { admin: true });
 
-  await assertFails(
+  await assertSucceeds(
     admin.doc('externalIdentityLinkRequests/bob-1').get(),
   );
   await assertFails(

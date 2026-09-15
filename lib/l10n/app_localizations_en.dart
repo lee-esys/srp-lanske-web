@@ -1103,4 +1103,149 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminRoleLabel => 'Administrator';
+
+  @override
+  String get adminProfileLinkReviewMenuLabel => 'Admin: Profile link review';
+
+  @override
+  String get adminProfileLinkReviewTitle => 'Profile link review';
+
+  @override
+  String get adminProfileLinkReviewSubtitle =>
+      'Review a TennisBear profile link request using the confirmation code you received.';
+
+  @override
+  String get adminProfileLinkReviewAccessDeniedMessage =>
+      'Administrator access is required.';
+
+  @override
+  String get adminProfileLinkReviewCodeLabel => 'Confirmation code';
+
+  @override
+  String get adminProfileLinkReviewCodeHint => 'LSK-XXXX-XXXX';
+
+  @override
+  String get adminProfileLinkReviewCodeRequiredMessage =>
+      'Enter a confirmation code.';
+
+  @override
+  String get adminProfileLinkReviewSearchButton => 'Review request';
+
+  @override
+  String get adminProfileLinkReviewNotFoundMessage =>
+      'No matching request was found. Check the confirmation code.';
+
+  @override
+  String get adminProfileLinkReviewSourceLabel => 'Source';
+
+  @override
+  String get adminProfileLinkReviewSourceUserIdLabel => 'TennisBear user ID';
+
+  @override
+  String get adminProfileLinkReviewStateLabel => 'Request state';
+
+  @override
+  String get adminProfileLinkReviewPendingState => 'Pending';
+
+  @override
+  String get adminProfileLinkReviewApprovedState => 'Approved';
+
+  @override
+  String get adminProfileLinkReviewApprovedUnlinkedState =>
+      'Approved (unlinked)';
+
+  @override
+  String get adminProfileLinkReviewRejectedState => 'Rejected';
+
+  @override
+  String get adminProfileLinkReviewCanceledState => 'Canceled';
+
+  @override
+  String get adminProfileLinkReviewExpiredState => 'Expired';
+
+  @override
+  String get adminProfileLinkReviewSupersededState => 'Reissued';
+
+  @override
+  String get adminProfileLinkReviewApprovedNote =>
+      'This request has already been approved and cannot be changed here.';
+
+  @override
+  String get adminProfileLinkReviewApprovedUnlinkedNote =>
+      'This request was approved and the profile link was later removed.';
+
+  @override
+  String get adminProfileLinkReviewRejectedNote =>
+      'This request has already been rejected and cannot be changed here.';
+
+  @override
+  String get adminProfileLinkReviewCanceledNote =>
+      'This request was canceled by the user.';
+
+  @override
+  String get adminProfileLinkReviewExpiredNote =>
+      'This confirmation code has expired.';
+
+  @override
+  String get adminProfileLinkReviewSupersededNote =>
+      'This confirmation code was invalidated by a reissue.';
+
+  @override
+  String get adminProfileLinkReviewCreatedAtLabel => 'Requested at';
+
+  @override
+  String get adminProfileLinkReviewExpiresAtLabel => 'Code expires at';
+
+  @override
+  String get adminProfileLinkReviewProfileUrlLabel => 'Profile';
+
+  @override
+  String get adminProfileLinkReviewOpenProfileButton =>
+      'Open TennisBear profile';
+
+  @override
+  String get adminProfileLinkReviewVerifyInstruction =>
+      'Confirm that the sender profile in TennisBear chat matches the profile shown here.';
+
+  @override
+  String get adminProfileLinkReviewApproveButton => 'Approve';
+
+  @override
+  String get adminProfileLinkReviewRejectButton => 'Reject';
+
+  @override
+  String get adminProfileLinkReviewApproveDialogTitle =>
+      'Approve this profile link?';
+
+  @override
+  String get adminProfileLinkReviewApproveDialogBody =>
+      'Confirm that the TennisBear sender matches the profile shown here.';
+
+  @override
+  String get adminProfileLinkReviewApproveDialogAction => 'Approve';
+
+  @override
+  String get adminProfileLinkReviewRejectDialogTitle =>
+      'Reject this profile link?';
+
+  @override
+  String get adminProfileLinkReviewRejectDialogBody =>
+      'After rejection, the user can create a new profile link request.';
+
+  @override
+  String get adminProfileLinkReviewRejectDialogAction => 'Reject';
+
+  @override
+  String get adminProfileLinkReviewApproveSuccess => 'Profile link approved.';
+
+  @override
+  String get adminProfileLinkReviewRejectSuccess => 'Profile link rejected.';
+
+  @override
+  String get adminProfileLinkReviewRequestChangedMessage =>
+      'The request state has changed. Review it again from the confirmation code.';
+
+  @override
+  String get adminProfileLinkReviewGenericFailureMessage =>
+      'The operation failed. Check your connection and try again.';
 }

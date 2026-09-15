@@ -13,9 +13,11 @@ import 'features/auth/presentation/account_scope.dart';
 import 'features/auth/presentation/admin_role_scope.dart';
 import 'features/auth/presentation/auth_scope.dart';
 import 'features/external_identity/application/external_identity_link_service.dart';
+import 'features/external_identity/application/tennisbear_admin_profile_link_review_service.dart';
 import 'features/external_identity/application/tennisbear_profile_link_service.dart';
 import 'features/external_identity/infrastructure/firestore_external_identity_link_repository.dart';
 import 'features/external_identity/infrastructure/firestore_external_identity_user_reader.dart';
+import 'features/external_identity/presentation/external_identity_admin_review_scope.dart';
 import 'features/external_identity/presentation/external_identity_link_scope.dart';
 import 'firebase_options.dart';
 
@@ -44,6 +46,12 @@ Future<void> main() async {
     linkService: externalIdentityLinkService,
     userReader: FirestoreExternalIdentityUserReader(firestore),
   );
+  final tennisBearAdminProfileLinkReviewService =
+      TennisBearAdminProfileLinkReviewService(
+    authRepository: authRepository,
+    adminRoleReader: adminRoleReader,
+    linkService: externalIdentityLinkService,
+  );
 
   runApp(
     AuthScope(
@@ -54,7 +62,10 @@ Future<void> main() async {
           service: accountService,
           child: ExternalIdentityLinkScope(
             service: tennisBearProfileLinkService,
-            child: const App(),
+            child: ExternalIdentityAdminReviewScope(
+              service: tennisBearAdminProfileLinkReviewService,
+              child: const App(),
+            ),
           ),
         ),
       ),

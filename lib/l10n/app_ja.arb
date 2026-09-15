@@ -1623,5 +1623,173 @@
   "adminRoleLabel": "管理者",
   "@adminRoleLabel": {
     "description": "Label shown on the account page when the signed-in user has the admin custom claim."
+  },
+  "adminProfileLinkReviewMenuLabel": "管理者：プロフィール連携確認",
+  "@adminProfileLinkReviewMenuLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewTitle": "プロフィール連携確認",
+  "@adminProfileLinkReviewTitle": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewSubtitle": "TennisBearから届いた確認コードで申請を確認します。",
+  "@adminProfileLinkReviewSubtitle": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewAccessDeniedMessage": "管理者権限が必要です。",
+  "@adminProfileLinkReviewAccessDeniedMessage": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewCodeLabel": "確認コード",
+  "@adminProfileLinkReviewCodeLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewCodeHint": "LSK-XXXX-XXXX",
+  "@adminProfileLinkReviewCodeHint": {
+    "description": "Confirmation code input hint for the admin profile link review."
+  },
+  "adminProfileLinkReviewCodeRequiredMessage": "確認コードを入力してください。",
+  "@adminProfileLinkReviewCodeRequiredMessage": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewSearchButton": "申請を確認",
+  "@adminProfileLinkReviewSearchButton": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewNotFoundMessage": "該当する申請が見つかりません。確認コードを確認してください。",
+  "@adminProfileLinkReviewNotFoundMessage": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewSourceLabel": "連携先",
+  "@adminProfileLinkReviewSourceLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewSourceUserIdLabel": "TennisBear ユーザーID",
+  "@adminProfileLinkReviewSourceUserIdLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewStateLabel": "申請状態",
+  "@adminProfileLinkReviewStateLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewPendingState": "申請中",
+  "@adminProfileLinkReviewPendingState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApprovedState": "承認済み",
+  "@adminProfileLinkReviewApprovedState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApprovedUnlinkedState": "承認済み（連携解除済み）",
+  "@adminProfileLinkReviewApprovedUnlinkedState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectedState": "却下済み",
+  "@adminProfileLinkReviewRejectedState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewCanceledState": "キャンセル済み",
+  "@adminProfileLinkReviewCanceledState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewExpiredState": "期限切れ",
+  "@adminProfileLinkReviewExpiredState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewSupersededState": "再発行済み",
+  "@adminProfileLinkReviewSupersededState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApprovedNote": "この申請は承認済みのため、追加の操作はできません。",
+  "@adminProfileLinkReviewApprovedNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApprovedUnlinkedNote": "この申請は承認後にプロフィール連携が解除されています。",
+  "@adminProfileLinkReviewApprovedUnlinkedNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectedNote": "この申請は却下済みのため、追加の操作はできません。",
+  "@adminProfileLinkReviewRejectedNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewCanceledNote": "この申請はユーザーによりキャンセルされています。",
+  "@adminProfileLinkReviewCanceledNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewExpiredNote": "この確認コードは有効期限が切れています。",
+  "@adminProfileLinkReviewExpiredNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewSupersededNote": "この確認コードは再発行により無効になっています。",
+  "@adminProfileLinkReviewSupersededNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewCreatedAtLabel": "申請日時",
+  "@adminProfileLinkReviewCreatedAtLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewExpiresAtLabel": "コード有効期限",
+  "@adminProfileLinkReviewExpiresAtLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewProfileUrlLabel": "プロフィール",
+  "@adminProfileLinkReviewProfileUrlLabel": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewOpenProfileButton": "TennisBearプロフィールを開く",
+  "@adminProfileLinkReviewOpenProfileButton": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewVerifyInstruction": "TennisBear個人チャットの送信元プロフィールと、表示中のプロフィールが一致することを確認してください。",
+  "@adminProfileLinkReviewVerifyInstruction": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApproveButton": "承認",
+  "@adminProfileLinkReviewApproveButton": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectButton": "却下",
+  "@adminProfileLinkReviewRejectButton": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApproveDialogTitle": "このプロフィール連携を承認しますか？",
+  "@adminProfileLinkReviewApproveDialogTitle": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApproveDialogBody": "TennisBear側の送信元と表示中のプロフィールが一致することを確認してください。",
+  "@adminProfileLinkReviewApproveDialogBody": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApproveDialogAction": "承認する",
+  "@adminProfileLinkReviewApproveDialogAction": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectDialogTitle": "このプロフィール連携を却下しますか？",
+  "@adminProfileLinkReviewRejectDialogTitle": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectDialogBody": "却下後、ユーザーは新しい連携申請を作成できます。",
+  "@adminProfileLinkReviewRejectDialogBody": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectDialogAction": "却下する",
+  "@adminProfileLinkReviewRejectDialogAction": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApproveSuccess": "プロフィール連携を承認しました。",
+  "@adminProfileLinkReviewApproveSuccess": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectSuccess": "プロフィール連携を却下しました。",
+  "@adminProfileLinkReviewRejectSuccess": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRequestChangedMessage": "申請状態が変更されています。確認コードから再確認してください。",
+  "@adminProfileLinkReviewRequestChangedMessage": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewGenericFailureMessage": "処理に失敗しました。通信状態を確認して、もう一度お試しください。",
+  "@adminProfileLinkReviewGenericFailureMessage": {
+    "description": "Admin TennisBear profile link review UI text."
   }
 }

@@ -1063,4 +1063,137 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get adminRoleLabel => '管理者';
+
+  @override
+  String get adminProfileLinkReviewMenuLabel => '管理者：プロフィール連携確認';
+
+  @override
+  String get adminProfileLinkReviewTitle => 'プロフィール連携確認';
+
+  @override
+  String get adminProfileLinkReviewSubtitle => 'TennisBearから届いた確認コードで申請を確認します。';
+
+  @override
+  String get adminProfileLinkReviewAccessDeniedMessage => '管理者権限が必要です。';
+
+  @override
+  String get adminProfileLinkReviewCodeLabel => '確認コード';
+
+  @override
+  String get adminProfileLinkReviewCodeHint => 'LSK-XXXX-XXXX';
+
+  @override
+  String get adminProfileLinkReviewCodeRequiredMessage => '確認コードを入力してください。';
+
+  @override
+  String get adminProfileLinkReviewSearchButton => '申請を確認';
+
+  @override
+  String get adminProfileLinkReviewNotFoundMessage =>
+      '該当する申請が見つかりません。確認コードを確認してください。';
+
+  @override
+  String get adminProfileLinkReviewSourceLabel => '連携先';
+
+  @override
+  String get adminProfileLinkReviewSourceUserIdLabel => 'TennisBear ユーザーID';
+
+  @override
+  String get adminProfileLinkReviewStateLabel => '申請状態';
+
+  @override
+  String get adminProfileLinkReviewPendingState => '申請中';
+
+  @override
+  String get adminProfileLinkReviewApprovedState => '承認済み';
+
+  @override
+  String get adminProfileLinkReviewApprovedUnlinkedState => '承認済み（連携解除済み）';
+
+  @override
+  String get adminProfileLinkReviewRejectedState => '却下済み';
+
+  @override
+  String get adminProfileLinkReviewCanceledState => 'キャンセル済み';
+
+  @override
+  String get adminProfileLinkReviewExpiredState => '期限切れ';
+
+  @override
+  String get adminProfileLinkReviewSupersededState => '再発行済み';
+
+  @override
+  String get adminProfileLinkReviewApprovedNote => 'この申請は承認済みのため、追加の操作はできません。';
+
+  @override
+  String get adminProfileLinkReviewApprovedUnlinkedNote =>
+      'この申請は承認後にプロフィール連携が解除されています。';
+
+  @override
+  String get adminProfileLinkReviewRejectedNote => 'この申請は却下済みのため、追加の操作はできません。';
+
+  @override
+  String get adminProfileLinkReviewCanceledNote => 'この申請はユーザーによりキャンセルされています。';
+
+  @override
+  String get adminProfileLinkReviewExpiredNote => 'この確認コードは有効期限が切れています。';
+
+  @override
+  String get adminProfileLinkReviewSupersededNote => 'この確認コードは再発行により無効になっています。';
+
+  @override
+  String get adminProfileLinkReviewCreatedAtLabel => '申請日時';
+
+  @override
+  String get adminProfileLinkReviewExpiresAtLabel => 'コード有効期限';
+
+  @override
+  String get adminProfileLinkReviewProfileUrlLabel => 'プロフィール';
+
+  @override
+  String get adminProfileLinkReviewOpenProfileButton => 'TennisBearプロフィールを開く';
+
+  @override
+  String get adminProfileLinkReviewVerifyInstruction =>
+      'TennisBear個人チャットの送信元プロフィールと、表示中のプロフィールが一致することを確認してください。';
+
+  @override
+  String get adminProfileLinkReviewApproveButton => '承認';
+
+  @override
+  String get adminProfileLinkReviewRejectButton => '却下';
+
+  @override
+  String get adminProfileLinkReviewApproveDialogTitle => 'このプロフィール連携を承認しますか？';
+
+  @override
+  String get adminProfileLinkReviewApproveDialogBody =>
+      'TennisBear側の送信元と表示中のプロフィールが一致することを確認してください。';
+
+  @override
+  String get adminProfileLinkReviewApproveDialogAction => '承認する';
+
+  @override
+  String get adminProfileLinkReviewRejectDialogTitle => 'このプロフィール連携を却下しますか？';
+
+  @override
+  String get adminProfileLinkReviewRejectDialogBody =>
+      '却下後、ユーザーは新しい連携申請を作成できます。';
+
+  @override
+  String get adminProfileLinkReviewRejectDialogAction => '却下する';
+
+  @override
+  String get adminProfileLinkReviewApproveSuccess => 'プロフィール連携を承認しました。';
+
+  @override
+  String get adminProfileLinkReviewRejectSuccess => 'プロフィール連携を却下しました。';
+
+  @override
+  String get adminProfileLinkReviewRequestChangedMessage =>
+      '申請状態が変更されています。確認コードから再確認してください。';
+
+  @override
+  String get adminProfileLinkReviewGenericFailureMessage =>
+      '処理に失敗しました。通信状態を確認して、もう一度お試しください。';
 }

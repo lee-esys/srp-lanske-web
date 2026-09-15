@@ -1,6 +1,6 @@
 # Firebase external identity link foundation
 
-This document describes the Firestore/domain foundation introduced by web #211 and the initial user-facing TennisBear link flow introduced by web #212.
+This document describes the Firestore/domain foundation introduced by web #211, the user-facing TennisBear link flow introduced by web #212, and the minimal administrator review flow introduced by web #213.
 
 ## Scope
 
@@ -137,7 +137,7 @@ externalIdentityLinkRequestAudits/{requestId}
   createdAt: Timestamp
 ```
 
-Ordinary Web users cannot read or write this collection. The minimum admin-role foundation under #198 will later open only the administrator access required by #213.
+Ordinary Web users cannot read or write this collection. web #216 introduced the Firebase Custom Claims admin-role foundation, and web #213 permits only the individual admin reads and atomic approval/rejection writes required by the review flow.
 
 ## Active request lock
 
@@ -270,15 +270,43 @@ Users cannot:
 - create an approved mapping directly,
 - write arbitrary `externalIdentityIds` values.
 
-Approval/rejection, audit creation, and mapping creation intentionally remain denied by the current rules. Those operations become available only after the admin-role foundation under #198 is implemented and #213 connects the minimal administrator confirmation flow.
+Ordinary users still cannot approve/reject requests, create mappings, or write administrator audit records. Those operations are available only to registered accounts whose Firebase ID token contains the `admin: true` Custom Claim.
+
+## Admin review flow
+
+web #213 adds a temporary administrator page at:
+
+```text
+/admin/tennisbear-profile-link
+```
+
+The doubles and team navigation menus show the review entry only when the current account has the admin role. Direct navigation is also fail-closed: the page checks the admin role before showing the confirmation-code form, and the application service rechecks the role before every lookup, approval, and rejection.
+
+The review flow is intentionally code-driven rather than list-driven:
+
+1. enter the confirmation code received through TennisBear chat,
+2. hash and query the matching request,
+3. show the matching TennisBear request when the code exists,
+4. compare the displayed public profile with the TennisBear chat sender when the request is still actionable,
+5. approve or reject only an active, unexpired pending request.
+
+A nonexistent confirmation code shows only a generic not-found message and does not reveal request information. When the code exists, the administrator can inspect the request and its effective state even after it becomes approved, rejected, canceled, superseded, or expired. An approved request with `unlinkedAt` is shown as approved and later unlinked.
+
+Approval and rejection controls are shown only for a pending request whose confirmation code is still within its validity period. Terminal or expired requests are read-only in the administrator UI.
+
+No separate `reviewing` / `processing` state is introduced for this MVP. A user may cancel or reissue while an administrator is visually checking the profile; the final approval/rejection transaction re-reads the current request, code, lock, mapping, and user state and fails closed if anything changed.
+
+The administrator page does not implement a pending list, filters, history dashboard, or permanent `/admin` shell. Those remain part of #199.
 
 ## Admin operation boundary
 
-`FirestoreExternalIdentityLinkRepository` already contains fail-closed transaction operations for approval/rejection so #213 can reuse the same domain logic.
+`TennisBearAdminProfileLinkReviewService` combines the #216 role check with the #211 domain operations. The administrator actor UID is taken from the current authenticated Lanske session rather than from UI input.
 
-Before those calls are usable from the Web client, #198 must introduce the minimum admin-role authorization and the Firestore Rules must explicitly permit the corresponding admin reads/writes.
+`FirestoreExternalIdentityLinkRepository` continues to provide the fail-closed approval/rejection transactions.
 
 Approval rechecks the request, code hash/expiry, user document, active request lock, source-side mapping uniqueness, per-user source uniqueness, and absence of an earlier audit record immediately before writing.
+
+Firestore Rules permit only the reads required for those transactions and the bounded confirmation-code request query. Mapping, user, lock, and audit collections remain non-listable to administrators. Approval succeeds only when the request update, mapping creation, user pointer update, audit creation, and lock deletion are committed together. Rejection similarly requires the request update, audit creation, and lock deletion in the same atomic operation.
 
 ## Firestore Rules tests
 
@@ -306,6 +334,8 @@ npm run test:firestore-rules
 ```
 
 The command starts only the Firestore Emulator through `firebase emulators:exec`, loads the repository `firestore.rules`, executes the Node test suite, and shuts the emulator down afterward.
+
+The Rules tests clear only their known top-level test collections through a security-rules-disabled test context. They intentionally do not use `RulesTestEnvironment.clearFirestore()`, because some Firestore Emulator versions return 404 from the emulator-wide document-clear endpoint even while normal Firestore SDK operations work correctly.
 
 Coverage includes:
 

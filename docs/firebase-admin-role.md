@@ -27,8 +27,10 @@ The Flutter client reads the current Firebase user's ID token through
 - Callers can request a forced ID-token refresh when an operational flow needs
   newly changed claims immediately.
 
-The account page uses this lookup only to show the temporary administrator
-card. A client-side role check is not a security boundary.
+The account page uses this lookup to show the temporary administrator card,
+and web #213 reuses the same role reader for administrator navigation and
+profile-link review. A client-side role check is not a security boundary;
+Firestore Security Rules enforce the corresponding data access.
 
 ## Firestore Security Rules
 
@@ -40,9 +42,9 @@ AND
 request.auth.token.admin == true
 ```
 
-web #216 does not open any additional Firestore resource to administrators.
-The narrowly scoped reads and writes required for TennisBear profile-link
-review are added by web #213.
+web #216 itself did not open additional Firestore resources to administrators.
+web #213 consumes the role foundation and adds only the narrowly scoped reads
+and atomic writes required for TennisBear profile-link review.
 
 The `users/{uid}` document does not duplicate the admin role.
 

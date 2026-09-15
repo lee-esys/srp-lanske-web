@@ -1,5 +1,3 @@
-const fs = require('node:fs');
-const path = require('node:path');
 const assert = require('node:assert/strict');
 const { after, before, beforeEach, test } = require('node:test');
 
@@ -10,6 +8,7 @@ const {
   assertSucceeds,
   initializeTestEnvironment,
 } = require('@firebase/rules-unit-testing');
+const { clearFirestoreCollections } = require('./test_environment');
 
 const projectId = 'demo-lanske-rules';
 const sourceType = 'tennisbear';
@@ -23,27 +22,24 @@ let testEnv;
 before(async () => {
   testEnv = await initializeTestEnvironment({
     projectId,
-    firestore: {
-      rules: fs.readFileSync(
-        path.resolve(__dirname, '../../firestore.rules'),
-        'utf8',
-      ),
-    },
   });
 });
 
 beforeEach(async () => {
-  await testEnv.clearFirestore();
+  await clearFirestoreCollections(testEnv);
 });
 
 after(async () => {
-  await testEnv.cleanup();
+  if (testEnv != null) {
+    await testEnv.cleanup();
+  }
 });
 
-function registeredDb(uid) {
+function registeredDb(uid, customClaims = {}) {
   const email = `${uid}@example.test`;
   return testEnv
     .authenticatedContext(uid, {
+      ...customClaims,
       email,
       email_verified: true,
       firebase: {
@@ -456,6 +452,197 @@ test('another registered user cannot read request, lock, or mapping data', async
     bob.doc('externalIdentityLinkRequestLocks/alice_tennisbear').get(),
   );
   await assertFails(bob.doc(`externalIdentityMappings/${mappingId}`).get());
+});
+
+
+test('admin can find a request only through a bounded query', async () => {
+  await seedUser('alice');
+  const alice = registeredDb('alice');
+  await assertSucceeds(createPendingRequest(alice, 'alice'));
+
+  const ordinaryUser = registeredDb('bob');
+  await assertFails(
+    ordinaryUser
+      .collection('externalIdentityLinkRequests')
+      .where('confirmationCodeHash', '==', confirmationCodeHash)
+      .limit(2)
+      .get(),
+  );
+
+  const admin = registeredDb('admin-1', { admin: true });
+  const snapshot = await assertSucceeds(
+    admin
+      .collection('externalIdentityLinkRequests')
+      .where('confirmationCodeHash', '==', confirmationCodeHash)
+      .limit(2)
+      .get(),
+  );
+
+  assert.equal(snapshot.docs.length, 1);
+  assert.equal(snapshot.docs[0].id, 'request-1');
+
+  await assertFails(admin.collection('externalIdentityLinkRequests').get());
+});
+
+test('admin can approve a pending request only as one atomic operation', async () => {
+  await seedUser('alice');
+  const alice = registeredDb('alice');
+  await assertSucceeds(createPendingRequest(alice, 'alice'));
+
+  const admin = registeredDb('admin-1', { admin: true });
+  const batch = admin.batch();
+  batch.update(admin.doc('externalIdentityLinkRequests/request-1'), {
+    state: 'approved',
+    approvedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  batch.set(admin.doc(`externalIdentityMappings/${mappingId}`), {
+    schemaVersion: 1,
+    sourceType,
+    sourceUserId,
+    lanskeUserId: 'alice',
+    profileUrl,
+    approvedAt: serverTimestamp(),
+    requestId: 'request-1',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  batch.set(admin.doc('externalIdentityLinkRequestAudits/request-1'), {
+    schemaVersion: 1,
+    requestId: 'request-1',
+    action: 'approved',
+    actorUserId: 'admin-1',
+    createdAt: serverTimestamp(),
+  });
+  batch.update(admin.doc('users/alice'), {
+    'externalIdentityIds.tennisbear': mappingId,
+  });
+  batch.delete(admin.doc('externalIdentityLinkRequestLocks/alice_tennisbear'));
+
+  await assertSucceeds(batch.commit());
+
+  const request = await admin
+    .doc('externalIdentityLinkRequests/request-1')
+    .get();
+  const mapping = await admin
+    .doc(`externalIdentityMappings/${mappingId}`)
+    .get();
+  assert.equal(request.data().state, 'approved');
+  assert.equal(mapping.data().lanskeUserId, 'alice');
+});
+
+test('admin can reject a pending request only with matching audit and lock deletion', async () => {
+  await seedUser('alice');
+  const alice = registeredDb('alice');
+  await assertSucceeds(createPendingRequest(alice, 'alice'));
+
+  const admin = registeredDb('admin-1', { admin: true });
+  const batch = admin.batch();
+  batch.update(admin.doc('externalIdentityLinkRequests/request-1'), {
+    state: 'rejected',
+    rejectedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  batch.set(admin.doc('externalIdentityLinkRequestAudits/request-1'), {
+    schemaVersion: 1,
+    requestId: 'request-1',
+    action: 'rejected',
+    actorUserId: 'admin-1',
+    createdAt: serverTimestamp(),
+  });
+  batch.delete(admin.doc('externalIdentityLinkRequestLocks/alice_tennisbear'));
+
+  await assertSucceeds(batch.commit());
+
+  const request = await admin
+    .doc('externalIdentityLinkRequests/request-1')
+    .get();
+  assert.equal(request.data().state, 'rejected');
+});
+
+test('admin approval fails when required atomic writes are missing', async () => {
+  await seedUser('alice');
+  const alice = registeredDb('alice');
+  await assertSucceeds(createPendingRequest(alice, 'alice'));
+
+  const admin = registeredDb('admin-1', { admin: true });
+  const batch = admin.batch();
+  batch.update(admin.doc('externalIdentityLinkRequests/request-1'), {
+    state: 'approved',
+    approvedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  batch.set(admin.doc(`externalIdentityMappings/${mappingId}`), {
+    schemaVersion: 1,
+    sourceType,
+    sourceUserId,
+    lanskeUserId: 'alice',
+    profileUrl,
+    approvedAt: serverTimestamp(),
+    requestId: 'request-1',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  batch.set(admin.doc('externalIdentityLinkRequestAudits/request-1'), {
+    schemaVersion: 1,
+    requestId: 'request-1',
+    action: 'approved',
+    actorUserId: 'admin-1',
+    createdAt: serverTimestamp(),
+  });
+  batch.delete(admin.doc('externalIdentityLinkRequestLocks/alice_tennisbear'));
+
+  await assertFails(batch.commit());
+});
+
+test('admin approval fails when audit actor or atomic writes do not match', async () => {
+  await seedUser('alice');
+  const alice = registeredDb('alice');
+  await assertSucceeds(createPendingRequest(alice, 'alice'));
+
+  const admin = registeredDb('admin-1', { admin: true });
+  const batch = admin.batch();
+  batch.update(admin.doc('externalIdentityLinkRequests/request-1'), {
+    state: 'approved',
+    approvedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  batch.set(admin.doc(`externalIdentityMappings/${mappingId}`), {
+    schemaVersion: 1,
+    sourceType,
+    sourceUserId,
+    lanskeUserId: 'alice',
+    profileUrl,
+    approvedAt: serverTimestamp(),
+    requestId: 'request-1',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  batch.set(admin.doc('externalIdentityLinkRequestAudits/request-1'), {
+    schemaVersion: 1,
+    requestId: 'request-1',
+    action: 'approved',
+    actorUserId: 'other-admin',
+    createdAt: serverTimestamp(),
+  });
+  batch.update(admin.doc('users/alice'), {
+    'externalIdentityIds.tennisbear': mappingId,
+  });
+  batch.delete(admin.doc('externalIdentityLinkRequestLocks/alice_tennisbear'));
+
+  await assertFails(batch.commit());
+});
+
+test('admin cannot browse mappings or arbitrarily update user data', async () => {
+  await seedUser('alice');
+  const admin = registeredDb('admin-1', { admin: true });
+
+  await assertFails(admin.collection('externalIdentityMappings').get());
+  await assertFails(
+    admin.doc('users/alice').update({
+      arbitraryAdminField: true,
+    }),
+  );
 });
 
 test('existing event, team schedule, and core read behavior remains unchanged', async () => {

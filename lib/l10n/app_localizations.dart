@@ -1949,6 +1949,258 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'管理者'**
   String get adminRoleLabel;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'管理者：プロフィール連携確認'**
+  String get adminProfileLinkReviewMenuLabel;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロフィール連携確認'**
+  String get adminProfileLinkReviewTitle;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'TennisBearから届いた確認コードで申請を確認します。'**
+  String get adminProfileLinkReviewSubtitle;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'管理者権限が必要です。'**
+  String get adminProfileLinkReviewAccessDeniedMessage;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'確認コード'**
+  String get adminProfileLinkReviewCodeLabel;
+
+  /// Confirmation code input hint for the admin profile link review.
+  ///
+  /// In ja, this message translates to:
+  /// **'LSK-XXXX-XXXX'**
+  String get adminProfileLinkReviewCodeHint;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'確認コードを入力してください。'**
+  String get adminProfileLinkReviewCodeRequiredMessage;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'申請を確認'**
+  String get adminProfileLinkReviewSearchButton;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'該当する申請が見つかりません。確認コードを確認してください。'**
+  String get adminProfileLinkReviewNotFoundMessage;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'連携先'**
+  String get adminProfileLinkReviewSourceLabel;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'TennisBear ユーザーID'**
+  String get adminProfileLinkReviewSourceUserIdLabel;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'申請状態'**
+  String get adminProfileLinkReviewStateLabel;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'申請中'**
+  String get adminProfileLinkReviewPendingState;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'承認済み'**
+  String get adminProfileLinkReviewApprovedState;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'承認済み（連携解除済み）'**
+  String get adminProfileLinkReviewApprovedUnlinkedState;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'却下済み'**
+  String get adminProfileLinkReviewRejectedState;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンセル済み'**
+  String get adminProfileLinkReviewCanceledState;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'期限切れ'**
+  String get adminProfileLinkReviewExpiredState;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'再発行済み'**
+  String get adminProfileLinkReviewSupersededState;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'この申請は承認済みのため、追加の操作はできません。'**
+  String get adminProfileLinkReviewApprovedNote;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'この申請は承認後にプロフィール連携が解除されています。'**
+  String get adminProfileLinkReviewApprovedUnlinkedNote;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'この申請は却下済みのため、追加の操作はできません。'**
+  String get adminProfileLinkReviewRejectedNote;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'この申請はユーザーによりキャンセルされています。'**
+  String get adminProfileLinkReviewCanceledNote;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'この確認コードは有効期限が切れています。'**
+  String get adminProfileLinkReviewExpiredNote;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'この確認コードは再発行により無効になっています。'**
+  String get adminProfileLinkReviewSupersededNote;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'申請日時'**
+  String get adminProfileLinkReviewCreatedAtLabel;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'コード有効期限'**
+  String get adminProfileLinkReviewExpiresAtLabel;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロフィール'**
+  String get adminProfileLinkReviewProfileUrlLabel;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'TennisBearプロフィールを開く'**
+  String get adminProfileLinkReviewOpenProfileButton;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'TennisBear個人チャットの送信元プロフィールと、表示中のプロフィールが一致することを確認してください。'**
+  String get adminProfileLinkReviewVerifyInstruction;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'承認'**
+  String get adminProfileLinkReviewApproveButton;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'却下'**
+  String get adminProfileLinkReviewRejectButton;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'このプロフィール連携を承認しますか？'**
+  String get adminProfileLinkReviewApproveDialogTitle;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'TennisBear側の送信元と表示中のプロフィールが一致することを確認してください。'**
+  String get adminProfileLinkReviewApproveDialogBody;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'承認する'**
+  String get adminProfileLinkReviewApproveDialogAction;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'このプロフィール連携を却下しますか？'**
+  String get adminProfileLinkReviewRejectDialogTitle;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'却下後、ユーザーは新しい連携申請を作成できます。'**
+  String get adminProfileLinkReviewRejectDialogBody;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'却下する'**
+  String get adminProfileLinkReviewRejectDialogAction;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロフィール連携を承認しました。'**
+  String get adminProfileLinkReviewApproveSuccess;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロフィール連携を却下しました。'**
+  String get adminProfileLinkReviewRejectSuccess;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'申請状態が変更されています。確認コードから再確認してください。'**
+  String get adminProfileLinkReviewRequestChangedMessage;
+
+  /// Admin TennisBear profile link review UI text.
+  ///
+  /// In ja, this message translates to:
+  /// **'処理に失敗しました。通信状態を確認して、もう一度お試しください。'**
+  String get adminProfileLinkReviewGenericFailureMessage;
 }
 
 class _AppLocalizationsDelegate
