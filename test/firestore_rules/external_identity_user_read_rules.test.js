@@ -10,7 +10,7 @@ const {
   initializeTestEnvironment,
 } = require('@firebase/rules-unit-testing');
 
-const projectId = 'demo-lanske-user-read-rules';
+const projectId = 'demo-lanske-rules';
 let testEnv;
 
 before(async () => {
@@ -30,7 +30,9 @@ beforeEach(async () => {
 });
 
 after(async () => {
-  await testEnv.cleanup();
+  if (testEnv != null) {
+    await testEnv.cleanup();
+  }
 });
 
 function registeredDb(uid, customClaims = {}) {
