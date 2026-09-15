@@ -1656,7 +1656,7 @@
   "@adminProfileLinkReviewSearchButton": {
     "description": "Admin TennisBear profile link review UI text."
   },
-  "adminProfileLinkReviewNotFoundMessage": "No active request could be reviewed. Check the code and the current request state.",
+  "adminProfileLinkReviewNotFoundMessage": "No matching request was found. Check the confirmation code.",
   "@adminProfileLinkReviewNotFoundMessage": {
     "description": "Admin TennisBear profile link review UI text."
   },
@@ -1674,6 +1674,54 @@
   },
   "adminProfileLinkReviewPendingState": "Pending",
   "@adminProfileLinkReviewPendingState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApprovedState": "Approved",
+  "@adminProfileLinkReviewApprovedState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApprovedUnlinkedState": "Approved (unlinked)",
+  "@adminProfileLinkReviewApprovedUnlinkedState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectedState": "Rejected",
+  "@adminProfileLinkReviewRejectedState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewCanceledState": "Canceled",
+  "@adminProfileLinkReviewCanceledState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewExpiredState": "Expired",
+  "@adminProfileLinkReviewExpiredState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewSupersededState": "Reissued",
+  "@adminProfileLinkReviewSupersededState": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApprovedNote": "This request has already been approved and cannot be changed here.",
+  "@adminProfileLinkReviewApprovedNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewApprovedUnlinkedNote": "This request was approved and the profile link was later removed.",
+  "@adminProfileLinkReviewApprovedUnlinkedNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewRejectedNote": "This request has already been rejected and cannot be changed here.",
+  "@adminProfileLinkReviewRejectedNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewCanceledNote": "This request was canceled by the user.",
+  "@adminProfileLinkReviewCanceledNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewExpiredNote": "This confirmation code has expired.",
+  "@adminProfileLinkReviewExpiredNote": {
+    "description": "Admin TennisBear profile link review UI text."
+  },
+  "adminProfileLinkReviewSupersededNote": "This confirmation code was invalidated by a reissue.",
+  "@adminProfileLinkReviewSupersededNote": {
     "description": "Admin TennisBear profile link review UI text."
   },
   "adminProfileLinkReviewCreatedAtLabel": "Requested at",
