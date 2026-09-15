@@ -21,7 +21,7 @@ void main() {
     );
 
     await expectLater(
-      () => service.findReviewableRequest('LSK-ABCD-2345'),
+      () => service.findRequestByConfirmationCode('LSK-ABCD-2345'),
       throwsA(
         isA<TennisBearAdminProfileLinkReviewException>().having(
           (error) => error.code,
@@ -44,7 +44,7 @@ void main() {
     );
 
     final pending =
-        await service.findReviewableRequest('LSK-ABCD-2345');
+        await service.findRequestByConfirmationCode('LSK-ABCD-2345');
     expect(pending?.id, 'request-1');
 
     repository.requestByCodeHash = _pendingRequest(
@@ -52,7 +52,7 @@ void main() {
       state: ExternalIdentityLinkRequestState.canceled,
     );
     final canceled =
-        await service.findReviewableRequest('LSK-ABCD-2345');
+        await service.findRequestByConfirmationCode('LSK-ABCD-2345');
     expect(canceled?.state, ExternalIdentityLinkRequestState.canceled);
 
     repository.requestByCodeHash = _pendingRequest(
@@ -60,12 +60,12 @@ void main() {
       expiresAt: now.subtract(const Duration(seconds: 1)),
     );
     final expired =
-        await service.findReviewableRequest('LSK-ABCD-2345');
+        await service.findRequestByConfirmationCode('LSK-ABCD-2345');
     expect(expired?.id, 'request-1');
 
     repository.requestByCodeHash = null;
     expect(
-      await service.findReviewableRequest('LSK-ABCD-2345'),
+      await service.findRequestByConfirmationCode('LSK-ABCD-2345'),
       isNull,
     );
   });
