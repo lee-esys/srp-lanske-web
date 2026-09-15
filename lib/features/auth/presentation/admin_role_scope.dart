@@ -20,9 +20,7 @@ class AdminRoleScope extends InheritedWidget {
   }
 
   static AdminRoleReader? maybeOf(BuildContext context) {
-    return context
-        .dependOnInheritedWidgetOfExactType<AdminRoleScope>()
-        ?.reader;
+    return context.dependOnInheritedWidgetOfExactType<AdminRoleScope>()?.reader;
   }
 
   @override

@@ -73,7 +73,8 @@ class TennisBearAdminProfileLinkReviewService {
     return switch (request.state) {
       ExternalIdentityLinkRequestState.pending =>
         TennisBearAdminProfileLinkReviewStatus.pending,
-      ExternalIdentityLinkRequestState.approved when request.unlinkedAt != null =>
+      ExternalIdentityLinkRequestState.approved
+          when request.unlinkedAt != null =>
         TennisBearAdminProfileLinkReviewStatus.approvedUnlinked,
       ExternalIdentityLinkRequestState.approved =>
         TennisBearAdminProfileLinkReviewStatus.approved,

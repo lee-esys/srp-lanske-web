@@ -1,2 +1,1 @@
-const String adminProfileLinkReviewPath =
-    '/admin/tennisbear-profile-link';
+const String adminProfileLinkReviewPath = '/admin/tennisbear-profile-link';

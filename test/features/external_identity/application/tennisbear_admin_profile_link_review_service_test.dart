@@ -208,8 +208,7 @@ ExternalIdentityLinkRequest _pendingRequest(
     ),
     state: state,
     confirmationCodeHash: List<String>.filled(64, 'a').join(),
-    confirmationCodeExpiresAt:
-        expiresAt ?? now.add(const Duration(days: 1)),
+    confirmationCodeExpiresAt: expiresAt ?? now.add(const Duration(days: 1)),
     createdAt: now.subtract(const Duration(hours: 1)),
     updatedAt: now.subtract(const Duration(hours: 1)),
     unlinkedAt: unlinkedAt,

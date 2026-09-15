@@ -247,8 +247,7 @@ ExternalIdentityLinkRequest _request(
     ),
     state: state,
     confirmationCodeHash: List<String>.filled(64, 'a').join(),
-    confirmationCodeExpiresAt:
-        expiresAt ?? now.add(const Duration(days: 1)),
+    confirmationCodeExpiresAt: expiresAt ?? now.add(const Duration(days: 1)),
     createdAt: now.subtract(const Duration(hours: 1)),
     updatedAt: now.subtract(const Duration(hours: 1)),
     unlinkedAt: unlinkedAt,
@@ -290,7 +289,8 @@ class _FakeAdminReviewService
     return switch (request.state) {
       ExternalIdentityLinkRequestState.pending =>
         TennisBearAdminProfileLinkReviewStatus.pending,
-      ExternalIdentityLinkRequestState.approved when request.unlinkedAt != null =>
+      ExternalIdentityLinkRequestState.approved
+          when request.unlinkedAt != null =>
         TennisBearAdminProfileLinkReviewStatus.approvedUnlinked,
       ExternalIdentityLinkRequestState.approved =>
         TennisBearAdminProfileLinkReviewStatus.approved,
