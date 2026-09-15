@@ -61,6 +61,14 @@ service cloud.firestore {
       return /databases/$(database)/documents/externalIdentityMappings/$(mappingDocumentId);
     }
 
+    function userPath(uid) {
+      return /databases/$(database)/documents/users/$(uid);
+    }
+
+    function auditPath(requestId) {
+      return /databases/$(database)/documents/externalIdentityLinkRequestAudits/$(requestId);
+    }
+
     function isValidNewLinkRequest(requestId) {
       let data = request.resource.data;
       let lock = getAfter(requestLockPath(data.lanskeUserId, data.sourceType));
@@ -177,21 +185,194 @@ service cloud.firestore {
         && !existsAfter(mappingPath(removedMappingId));
     }
 
+    function isAdminExternalIdentityPointerAddition(uid) {
+      let oldIds = resource.data.get('externalIdentityIds', {});
+      let newIds = request.resource.data.get('externalIdentityIds', {});
+      let nestedDiff = newIds.diff(oldIds);
+      let addedMappingId = newIds.get('tennisbear', null);
+      let mappingAfter = getAfter(mappingPath(addedMappingId));
+      return isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['externalIdentityIds'])
+        && nestedDiff.addedKeys().hasOnly(['tennisbear'])
+        && nestedDiff.addedKeys().hasAll(['tennisbear'])
+        && nestedDiff.changedKeys().size() == 0
+        && nestedDiff.removedKeys().size() == 0
+        && addedMappingId is string
+        && mappingAfter != null
+        && mappingAfter.data.lanskeUserId == uid
+        && mappingAfter.data.sourceType == 'tennisbear'
+        && mappingAfter.data.approvedAt == request.time
+        && mappingAfter.data.createdAt == request.time;
+    }
+
+    function isAdminRequestApproval(requestId) {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      let lockPath = requestLockPath(
+        resource.data.lanskeUserId,
+        resource.data.sourceType
+      );
+      let mappingAfter = getAfter(mappingPath(resource.data.mappingId));
+      let userAfter = getAfter(userPath(resource.data.lanskeUserId));
+      let auditAfter = getAfter(auditPath(requestId));
+      return isAdmin()
+        && resource.data.state == 'pending'
+        && resource.data.confirmationCodeExpiresAt > request.time
+        && exists(lockPath)
+        && get(lockPath).data.requestId == requestId
+        && request.resource.data.state == 'approved'
+        && changed.hasOnly(['state', 'approvedAt', 'updatedAt'])
+        && request.resource.data.approvedAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && !existsAfter(lockPath)
+        && mappingAfter != null
+        && mappingAfter.data.requestId == requestId
+        && mappingAfter.data.lanskeUserId == resource.data.lanskeUserId
+        && mappingAfter.data.sourceType == resource.data.sourceType
+        && mappingAfter.data.sourceUserId == resource.data.sourceUserId
+        && mappingAfter.data.profileUrl == resource.data.profileUrl
+        && userAfter != null
+        && userAfter.data.get('externalIdentityIds', {})
+          .get(resource.data.sourceType, null) == resource.data.mappingId
+        && auditAfter != null
+        && auditAfter.data.action == 'approved'
+        && auditAfter.data.actorUserId == request.auth.uid;
+    }
+
+    function isAdminRequestRejection(requestId) {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      let lockPath = requestLockPath(
+        resource.data.lanskeUserId,
+        resource.data.sourceType
+      );
+      let auditAfter = getAfter(auditPath(requestId));
+      return isAdmin()
+        && resource.data.state == 'pending'
+        && resource.data.confirmationCodeExpiresAt > request.time
+        && exists(lockPath)
+        && get(lockPath).data.requestId == requestId
+        && request.resource.data.state == 'rejected'
+        && changed.hasOnly(['state', 'rejectedAt', 'updatedAt'])
+        && request.resource.data.rejectedAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && !existsAfter(lockPath)
+        && auditAfter != null
+        && auditAfter.data.action == 'rejected'
+        && auditAfter.data.actorUserId == request.auth.uid;
+    }
+
+    function isAdminAuditCreate(requestId) {
+      let data = request.resource.data;
+      let requestAfter = getAfter(requestPath(requestId));
+      return isAdmin()
+        && data.keys().hasOnly([
+          'schemaVersion',
+          'requestId',
+          'action',
+          'actorUserId',
+          'createdAt'
+        ])
+        && data.schemaVersion == 1
+        && data.requestId == requestId
+        && data.actorUserId == request.auth.uid
+        && data.createdAt == request.time
+        && requestAfter != null
+        && (
+          (
+            data.action == 'approved'
+            && requestAfter.data.state == 'approved'
+            && requestAfter.data.approvedAt == request.time
+          )
+          || (
+            data.action == 'rejected'
+            && requestAfter.data.state == 'rejected'
+            && requestAfter.data.rejectedAt == request.time
+          )
+        );
+    }
+
+    function isAdminMappingCreate(mappingDocumentId) {
+      let data = request.resource.data;
+      let requestAfter = getAfter(requestPath(data.requestId));
+      let userAfter = getAfter(userPath(data.lanskeUserId));
+      let auditAfter = getAfter(auditPath(data.requestId));
+      return isAdmin()
+        && data.keys().hasOnly([
+          'schemaVersion',
+          'sourceType',
+          'sourceUserId',
+          'lanskeUserId',
+          'profileUrl',
+          'approvedAt',
+          'requestId',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.schemaVersion == 1
+        && mappingDocumentId == mappingId(data.sourceType, data.sourceUserId)
+        && isSupportedExternalIdentity(
+          data.sourceType,
+          data.sourceUserId,
+          data.profileUrl
+        )
+        && data.approvedAt == request.time
+        && data.createdAt == request.time
+        && data.updatedAt == request.time
+        && requestAfter != null
+        && requestAfter.data.state == 'approved'
+        && requestAfter.data.approvedAt == request.time
+        && requestAfter.data.mappingId == mappingDocumentId
+        && requestAfter.data.lanskeUserId == data.lanskeUserId
+        && requestAfter.data.sourceType == data.sourceType
+        && requestAfter.data.sourceUserId == data.sourceUserId
+        && requestAfter.data.profileUrl == data.profileUrl
+        && userAfter != null
+        && userAfter.data.get('externalIdentityIds', {})
+          .get(data.sourceType, null) == mappingDocumentId
+        && auditAfter != null
+        && auditAfter.data.action == 'approved'
+        && auditAfter.data.actorUserId == request.auth.uid
+        && !existsAfter(requestLockPath(data.lanskeUserId, data.sourceType));
+    }
+
+    function isAdminRequestLockDelete() {
+      let requestAfter = getAfter(requestPath(resource.data.requestId));
+      let auditAfter = getAfter(auditPath(resource.data.requestId));
+      return isAdmin()
+        && requestAfter != null
+        && auditAfter != null
+        && auditAfter.data.actorUserId == request.auth.uid
+        && (
+          (
+            requestAfter.data.state == 'approved'
+            && auditAfter.data.action == 'approved'
+          )
+          || (
+            requestAfter.data.state == 'rejected'
+            && auditAfter.data.action == 'rejected'
+          )
+        );
+    }
+
     // Registered Lanske account documents. Anonymous Firebase users do not
     // create or read users/{uid} documents. A newly linked anonymous account
     // may still carry anonymous as the token's sign-in provider, so linked
     // identities are also accepted as evidence of a registered account.
     match /users/{uid} {
-      allow get: if isRegisteredAccount() && request.auth.uid == uid;
+      allow get: if (isRegisteredAccount() && request.auth.uid == uid)
+        || isAdmin();
       allow list: if false;
       allow create: if isRegisteredAccount()
         && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['schemaVersion', 'createdAt'])
         && request.resource.data.schemaVersion == 1
         && request.resource.data.createdAt == request.time;
-      allow update: if isRegisteredAccount()
-        && request.auth.uid == uid
-        && isUserExternalIdentityPointerRemoval();
+      allow update: if (
+          isRegisteredAccount()
+          && request.auth.uid == uid
+          && isUserExternalIdentityPointerRemoval()
+        )
+        || isAdminExternalIdentityPointerAddition(uid);
       allow delete: if false;
     }
 
@@ -199,8 +380,11 @@ service cloud.firestore {
     // request. Users can get only their own supported-source lock, including
     // an absent lock during transaction preflight. Listing is never allowed.
     match /externalIdentityLinkRequestLocks/{lockId} {
-      allow get: if isRegisteredAccount()
-        && lockId == request.auth.uid + '_tennisbear';
+      allow get: if (
+          isRegisteredAccount()
+          && lockId == request.auth.uid + '_tennisbear'
+        )
+        || isAdmin();
       allow list: if false;
 
       allow create: if isRegisteredAccount()
@@ -245,36 +429,58 @@ service cloud.firestore {
         && getAfter(requestPath(resource.data.requestId))
           .data.supersededByRequestId == request.resource.data.requestId;
 
-      allow delete: if isRegisteredAccount()
-        && resource.data.lanskeUserId == request.auth.uid
-        && getAfter(requestPath(resource.data.requestId)).data.state == 'canceled';
+      allow delete: if (
+          isRegisteredAccount()
+          && resource.data.lanskeUserId == request.auth.uid
+          && getAfter(requestPath(resource.data.requestId)).data.state == 'canceled'
+        )
+        || isAdminRequestLockDelete();
     }
 
     // Users can create and read only their own request history. Approval and
     // rejection remain denied until #213 adds narrowly scoped admin operations.
     match /externalIdentityLinkRequests/{requestId} {
-      allow get, list: if isRegisteredAccount()
-        && resource.data.lanskeUserId == request.auth.uid;
+      allow get: if (
+          isRegisteredAccount()
+          && resource.data.lanskeUserId == request.auth.uid
+        )
+        || isAdmin();
+      allow list: if (
+          isRegisteredAccount()
+          && resource.data.lanskeUserId == request.auth.uid
+        )
+        || (isAdmin() && request.query.limit <= 2);
       allow create: if isValidNewLinkRequest(requestId);
       allow update: if isUserCancelLinkRequest()
         || isUserSupersedeLinkRequest()
-        || isUserUnlinkRequestHistoryUpdate();
+        || isUserUnlinkRequestHistoryUpdate()
+        || isAdminRequestApproval(requestId)
+        || isAdminRequestRejection(requestId);
       allow delete: if false;
     }
 
     // Administrator actor IDs stay outside user-readable request documents.
-    // #216 provides isAdmin(); #213 will open only the minimum admin operations.
+    // Admins may get one audit document for transaction conflict checks and
+    // create only the audit coupled to the same approval/rejection transaction.
     match /externalIdentityLinkRequestAudits/{requestId} {
-      allow read, write: if false;
+      allow get: if isAdmin();
+      allow list: if false;
+      allow create: if isAdminAuditCreate(requestId);
+      allow update, delete: if false;
     }
 
     // Active mapping documents are the source of truth. A user may get only
     // their own mapping as part of unlink processing; listing is never allowed.
     // Mapping creation remains admin-only and is intentionally denied for now.
     match /externalIdentityMappings/{mappingDocumentId} {
-      allow get: if isRegisteredAccount()
-        && resource.data.lanskeUserId == request.auth.uid;
-      allow list, create, update: if false;
+      allow get: if (
+          isRegisteredAccount()
+          && resource.data.lanskeUserId == request.auth.uid
+        )
+        || isAdmin();
+      allow list: if false;
+      allow create: if isAdminMappingCreate(mappingDocumentId);
+      allow update: if false;
       allow delete: if isRegisteredAccount()
         && resource.data.lanskeUserId == request.auth.uid
         && getAfter(
