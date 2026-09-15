@@ -21,6 +21,10 @@ let testEnv;
 before(async () => {
   testEnv = await initializeTestEnvironment({
     projectId,
+    firestore: {
+      host: '127.0.0.1',
+      port: 8080,
+    },
   });
 });
 
