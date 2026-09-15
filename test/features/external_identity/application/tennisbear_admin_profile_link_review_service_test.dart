@@ -12,7 +12,7 @@ void main() {
   final now = DateTime.utc(2026, 9, 15, 1);
 
   test('non-admin cannot inspect confirmation codes', () async {
-    final repository = _FakeExternalIdentityLinkRepository(now: now)
+    final repository = _FakeExternalIdentityLinkRepository()
       ..requestByCodeHash = _pendingRequest(now);
     final service = _service(
       repository: repository,
@@ -168,9 +168,6 @@ class _FakeAuthRepository implements AuthRepository {
 
 class _FakeExternalIdentityLinkRepository
     implements ExternalIdentityLinkRepository {
-  _FakeExternalIdentityLinkRepository({required this.now});
-
-  final DateTime now;
   ExternalIdentityLinkRequest? requestByCodeHash;
   int findCalls = 0;
   String? approvedBy;
