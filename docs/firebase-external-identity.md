@@ -292,6 +292,8 @@ The review flow is intentionally code-driven rather than list-driven:
 
 Invalid, expired, canceled, superseded, approved, and otherwise non-reviewable codes do not reveal request details in the UI.
 
+No separate `reviewing` / `processing` state is introduced for this MVP. A user may cancel or reissue while an administrator is visually checking the profile; the final approval/rejection transaction re-reads the current request, code, lock, mapping, and user state and fails closed if anything changed.
+
 The administrator page does not implement a pending list, filters, history dashboard, or permanent `/admin` shell. Those remain part of #199.
 
 ## Admin operation boundary
