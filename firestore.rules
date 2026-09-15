@@ -189,7 +189,7 @@ service cloud.firestore {
       let oldIds = resource.data.get('externalIdentityIds', {});
       let newIds = request.resource.data.get('externalIdentityIds', {});
       let nestedDiff = newIds.diff(oldIds);
-      let addedMappingId = newIds.get('tennisbear', null);
+      let addedMappingId = newIds.get('tennisbear', '__missing__');
       let mappingAfter = getAfter(mappingPath(addedMappingId));
       return isAdmin()
         && request.resource.data.diff(resource.data).affectedKeys()
@@ -212,14 +212,15 @@ service cloud.firestore {
         resource.data.lanskeUserId,
         resource.data.sourceType
       );
+      let lockBefore = get(lockPath);
       let mappingAfter = getAfter(mappingPath(resource.data.mappingId));
       let userAfter = getAfter(userPath(resource.data.lanskeUserId));
       let auditAfter = getAfter(auditPath(requestId));
       return isAdmin()
         && resource.data.state == 'pending'
         && resource.data.confirmationCodeExpiresAt > request.time
-        && exists(lockPath)
-        && get(lockPath).data.requestId == requestId
+        && lockBefore != null
+        && lockBefore.data.requestId == requestId
         && request.resource.data.state == 'approved'
         && changed.hasOnly(['state', 'approvedAt', 'updatedAt'])
         && request.resource.data.approvedAt == request.time
@@ -245,12 +246,13 @@ service cloud.firestore {
         resource.data.lanskeUserId,
         resource.data.sourceType
       );
+      let lockBefore = get(lockPath);
       let auditAfter = getAfter(auditPath(requestId));
       return isAdmin()
         && resource.data.state == 'pending'
         && resource.data.confirmationCodeExpiresAt > request.time
-        && exists(lockPath)
-        && get(lockPath).data.requestId == requestId
+        && lockBefore != null
+        && lockBefore.data.requestId == requestId
         && request.resource.data.state == 'rejected'
         && changed.hasOnly(['state', 'rejectedAt', 'updatedAt'])
         && request.resource.data.rejectedAt == request.time
