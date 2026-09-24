@@ -15,9 +15,11 @@ class TennisBearProfileLinkCard extends StatefulWidget {
   const TennisBearProfileLinkCard({
     super.key,
     required this.lanskeUserId,
+    this.now,
   });
 
   final String lanskeUserId;
+  final DateTime Function()? now;
 
   @override
   State<TennisBearProfileLinkCard> createState() =>
@@ -38,6 +40,8 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
   bool _messageIsError = false;
 
   AppLocalizations get _l10n => AppLocalizations.of(context);
+
+  DateTime get _now => (widget.now?.call() ?? DateTime.now()).toUtc();
 
   @override
   void initState() {
@@ -369,7 +373,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
     BuildContext context,
     ExternalIdentityLinkRequest request,
   ) {
-    final expired = request.isConfirmationCodeExpired(DateTime.now().toUtc());
+    final expired = request.isConfirmationCodeExpired(_now);
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = _l10n;
 
