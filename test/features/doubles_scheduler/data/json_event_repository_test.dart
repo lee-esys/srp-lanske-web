@@ -42,8 +42,8 @@ void main() {
         publicIdGenerator: () => candidates[index++],
       );
 
-      final first = await repository.createFromDraft(buildDraft());
-      final second = await repository.createFromDraft(buildDraft());
+      final first = await repository.createFromDraft(buildDraft(), ownerUid: 'owner-1');
+      final second = await repository.createFromDraft(buildDraft(), ownerUid: 'owner-1');
 
       expect(first.event.publicId, 'AAAAAAAA');
       expect(second.event.publicId, 'BBBBBBBB');
@@ -56,10 +56,10 @@ void main() {
         publicIdGenerator: () => 'AAAAAAAA',
       );
 
-      await repository.createFromDraft(buildDraft());
+      await repository.createFromDraft(buildDraft(), ownerUid: 'owner-1');
 
       expect(
-        () => repository.createFromDraft(buildDraft()),
+        () => repository.createFromDraft(buildDraft(), ownerUid: 'owner-1'),
         throwsA(isA<StateError>()),
       );
     });
@@ -96,6 +96,17 @@ class FakeSavedEventJsonStore extends SavedEventJsonStore {
     }
 
     return null;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> listByOwnerUid(String ownerUid) async {
+    return _dataByPublicId.values
+        .where((data) {
+          final event = data['event'];
+          return event is Map && event['ownerUid'] == ownerUid;
+        })
+        .map(_copy)
+        .toList(growable: false);
   }
 
   Map<String, dynamic> _copy(Map<String, dynamic> data) {
