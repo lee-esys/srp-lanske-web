@@ -1,4 +1,4 @@
-const savedEventAggregateSchemaVersion = 1;
+const savedEventAggregateSchemaVersion = 2;
 const savedEventDefaultVisibility = 'unlisted';
 const savedEventDefaultExpiresInDays = 10;
 
@@ -30,6 +30,7 @@ class SavedEvent {
     required this.status,
     required this.createdAt,
     required this.updatedAt,
+    this.ownerUid,
     this.memo = '',
     this.eventDate,
     this.startTime,
@@ -46,6 +47,7 @@ class SavedEvent {
 
   final String id;
   final String publicId;
+  final String? ownerUid;
   final String title;
   final String memo;
   final DateTime? eventDate;
@@ -98,6 +100,7 @@ class SavedEvent {
     return SavedEvent(
       id: id,
       publicId: publicId,
+      ownerUid: ownerUid,
       title: title ?? this.title,
       memo: memo ?? this.memo,
       eventDate: eventDate ?? this.eventDate,
@@ -126,6 +129,7 @@ class SavedEvent {
     return {
       'id': id,
       'publicId': publicId,
+      'ownerUid': ownerUid,
       'title': title,
       'memo': memo,
       'eventDate': _nullableDateTimeToJson(eventDate),
@@ -154,6 +158,7 @@ class SavedEvent {
     return SavedEvent(
       id: json['id'].toString(),
       publicId: json['publicId'].toString(),
+      ownerUid: json['ownerUid']?.toString(),
       title: json['title'].toString(),
       memo: json['memo']?.toString() ?? '',
       eventDate: _nullableDateTimeFromJson(json['eventDate']),
@@ -338,20 +343,69 @@ class SavedEventShare {
   }
 }
 
+class SavedEventRevisions {
+  const SavedEventRevisions({
+    required this.display,
+    required this.courtSettings,
+  });
+
+  const SavedEventRevisions.initial()
+      : display = 1,
+        courtSettings = 1;
+
+  final int display;
+  final int courtSettings;
+
+  SavedEventRevisions copyWith({
+    int? display,
+    int? courtSettings,
+  }) {
+    return SavedEventRevisions(
+      display: display ?? this.display,
+      courtSettings: courtSettings ?? this.courtSettings,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'display': display,
+      'courtSettings': courtSettings,
+    };
+  }
+
+  factory SavedEventRevisions.fromJson(
+    Map<String, dynamic>? json, {
+    required int fallbackRevision,
+  }) {
+    return SavedEventRevisions(
+      display: _nullableIntFromJson(json?['display']) ?? fallbackRevision,
+      courtSettings:
+          _nullableIntFromJson(json?['courtSettings']) ?? fallbackRevision,
+    );
+  }
+}
+
 class SavedEventAggregate {
   SavedEventAggregate({
     required this.event,
     required this.players,
     required this.share,
     this.importRecord,
+    SavedEventRevisions? revisions,
     List<SavedEventCourtSetting>? courtSettings,
-  }) : courtSettings =
+  })  : revisions = revisions ??
+            SavedEventRevisions.fromJson(
+              null,
+              fallbackRevision: event.revision,
+            ),
+        courtSettings =
             courtSettings ?? buildDefaultCourtSettings(event.courtCount);
 
   final SavedEvent event;
   final List<SavedEventPlayer> players;
   final SavedEventShare share;
   final SavedEventImport? importRecord;
+  final SavedEventRevisions revisions;
   final List<SavedEventCourtSetting> courtSettings;
 
   Map<String, dynamic> toJson() {
@@ -363,6 +417,7 @@ class SavedEventAggregate {
       }).toList(growable: false),
       'share': share.toJson(),
       'importRecord': importRecord?.toJson(),
+      'revisions': revisions.toJson(),
       'courtSettings': courtSettings.map((setting) {
         return setting.toJson();
       }).toList(growable: false),
@@ -402,6 +457,7 @@ class SavedEventAggregate {
     }
 
     final importRecordJson = _nullableMapFromJson(json['importRecord']);
+    final revisionsJson = _nullableMapFromJson(json['revisions']);
 
     return SavedEventAggregate(
       event: event,
@@ -418,6 +474,10 @@ class SavedEventAggregate {
       importRecord: importRecordJson == null
           ? null
           : SavedEventImport.fromJson(importRecordJson),
+      revisions: SavedEventRevisions.fromJson(
+        revisionsJson,
+        fallbackRevision: event.revision,
+      ),
       courtSettings: courtSettings,
     );
   }
