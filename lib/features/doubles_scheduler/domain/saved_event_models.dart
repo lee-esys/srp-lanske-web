@@ -100,7 +100,7 @@ class SavedEvent {
     return SavedEvent(
       id: id,
       publicId: publicId,
-      ownerUid: ownerUid,
+      ownerUid: this.ownerUid,
       title: title ?? this.title,
       memo: memo ?? this.memo,
       eventDate: eventDate ?? this.eventDate,
