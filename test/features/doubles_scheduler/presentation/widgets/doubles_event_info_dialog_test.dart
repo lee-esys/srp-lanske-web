@@ -229,13 +229,13 @@ class _FakeEventRepository extends EventRepository {
   @override
   Future<SavedEventAggregate> updateDisplayInfo({
     required String publicId,
-    required int expectedRevision,
+    required int expectedDisplayRevision,
     required String title,
     required String memo,
     required Map<String, String> playerDisplayNamesById,
   }) async {
     updateCallCount += 1;
-    expectedRevisions.add(expectedRevision);
+    expectedRevisions.add(expectedDisplayRevision);
     lastTitle = title;
     lastMemo = memo;
     lastNames = Map<String, String>.from(playerDisplayNamesById);
@@ -248,8 +248,8 @@ class _FakeEventRepository extends EventRepository {
       );
       throw EventRevisionConflictException(
         eventId: current.event.id,
-        expectedRevision: expectedRevision,
-        actualRevision: current.event.revision,
+        expectedRevision: expectedDisplayRevision,
+        actualRevision: current.revisions.display,
       );
     }
 
@@ -264,7 +264,10 @@ class _FakeEventRepository extends EventRepository {
   }
 
   @override
-  Future<SavedEventAggregate> createFromDraft(EventDraft draft) {
+  Future<SavedEventAggregate> createFromDraft(
+    EventDraft draft, {
+    required String ownerUid,
+  }) {
     throw UnimplementedError();
   }
 
@@ -324,6 +327,9 @@ SavedEventAggregate _copyAggregate(
     }).toList(growable: false),
     share: source.share,
     importRecord: source.importRecord,
+    revisions: source.revisions.copyWith(
+      display: source.revisions.display + 1,
+    ),
     courtSettings: source.courtSettings,
   );
 }
