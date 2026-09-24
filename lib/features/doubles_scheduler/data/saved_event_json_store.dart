@@ -31,7 +31,9 @@ abstract class SavedEventJsonStore {
 
   Future<Map<String, dynamic>?> findByEventId(String eventId);
 
-  Future<List<Map<String, dynamic>>> listByOwnerUid(String ownerUid);
+  Future<List<Map<String, dynamic>>> listByOwnerUid(String ownerUid) {
+    throw UnimplementedError('listByOwnerUid is not implemented');
+  }
 
   Future<Map<String, dynamic>?> updateByPublicId({
     required String publicId,
