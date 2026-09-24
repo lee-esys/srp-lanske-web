@@ -9,7 +9,9 @@ abstract class EventRepository {
 
   Future<SavedEventAggregate?> findByPublicId(String publicId);
 
-  Future<List<SavedEventAggregate>> listByOwnerUid(String ownerUid);
+  Future<List<SavedEventAggregate>> listByOwnerUid(String ownerUid) {
+    throw UnimplementedError('listByOwnerUid is not implemented');
+  }
 
   Future<List<SavedEventPlayer>> listPlayers(String eventId);
 
