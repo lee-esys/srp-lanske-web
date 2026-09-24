@@ -118,6 +118,8 @@ events
 
 このquery基盤はMy Page等の将来機能から利用する。端末内履歴をownership一覧の正本にはしない。
 
+現在のqueryは `event.ownerUid` に対する単一fieldのequality条件だけを使用するため、追加の複合Firestore indexは不要とする。将来、更新日時順など別fieldとの複合queryを追加する場合にindex要否を改めて確認する。
+
 ## 更新単位
 
 ### イベント情報と全プレイヤー表示名
