@@ -69,6 +69,30 @@ void main() {
     expect(find.textContaining('LSK-'), findsNothing);
   });
 
+  testWidgets('shows expired status using the injected clock',
+      (tester) async {
+    final fixture = _Fixture(now: now)
+      ..repository.activeRequest = _request(
+        now: now,
+        state: ExternalIdentityLinkRequestState.pending,
+      )
+      ..reader.latestRequest = _request(
+        now: now,
+        state: ExternalIdentityLinkRequestState.pending,
+      );
+
+    await tester.pumpWidget(
+      _testApp(
+        fixture.service,
+        now: now.add(const Duration(days: 8)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('確認コードの期限切れ'), findsOneWidget);
+    expect(find.text('期限切れの確認コードを再発行'), findsOneWidget);
+  });
+
   testWidgets('shows approved mapping and unlink action', (tester) async {
     final fixture = _Fixture(now: now)
       ..reader.activeMapping = ExternalIdentityMapping(
