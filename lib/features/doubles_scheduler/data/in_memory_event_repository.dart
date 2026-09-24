@@ -21,10 +21,18 @@ class InMemoryEventRepository implements EventRepository {
   final Map<String, List<SavedEventPlayer>> _playersByEventId = {};
   final Map<String, SavedEventShare> _sharesByPublicId = {};
   final Map<String, SavedEventImport> _importsByEventId = {};
+  final Map<String, SavedEventRevisions> _revisionsByEventId = {};
   final Map<String, List<SavedEventCourtSetting>> _courtSettingsByEventId = {};
 
   @override
-  Future<SavedEventAggregate> createFromDraft(EventDraft draft) async {
+  Future<SavedEventAggregate> createFromDraft(
+    EventDraft draft, {
+    required String ownerUid,
+  }) async {
+    final normalizedOwnerUid = _requireNonEmpty(
+      ownerUid,
+      fieldName: 'ownerUid',
+    );
     final now = _clock();
     final eventId = _uuid.v4();
     final publicId = _generateUniquePublicId();
@@ -33,6 +41,7 @@ class InMemoryEventRepository implements EventRepository {
     final event = SavedEvent(
       id: eventId,
       publicId: publicId,
+      ownerUid: normalizedOwnerUid,
       title: draft.eventName,
       courtCount: draft.courts,
       sourceType:
@@ -80,6 +89,7 @@ class InMemoryEventRepository implements EventRepository {
     if (importRecord != null) {
       _importsByEventId[eventId] = importRecord;
     }
+    _revisionsByEventId[eventId] = const SavedEventRevisions.initial();
     _courtSettingsByEventId[eventId] = courtSettings;
 
     return _buildAggregate(event);
@@ -90,6 +100,18 @@ class InMemoryEventRepository implements EventRepository {
     final eventId = _eventIdByPublicId[publicId];
     final event = eventId == null ? null : _eventsById[eventId];
     return event == null ? null : _buildAggregate(event);
+  }
+
+  @override
+  Future<List<SavedEventAggregate>> listByOwnerUid(String ownerUid) async {
+    final normalizedOwnerUid = _requireNonEmpty(
+      ownerUid,
+      fieldName: 'ownerUid',
+    );
+    return _eventsById.values
+        .where((event) => event.ownerUid == normalizedOwnerUid)
+        .map(_buildAggregate)
+        .toList(growable: false);
   }
 
   @override
@@ -139,12 +161,12 @@ class InMemoryEventRepository implements EventRepository {
   @override
   Future<SavedEventAggregate> updateDisplayInfo({
     required String publicId,
-    required int expectedRevision,
+    required int expectedDisplayRevision,
     required String title,
     required String memo,
     required Map<String, String> playerDisplayNamesById,
   }) async {
-    _validateExpectedRevision(expectedRevision);
+    _validateExpectedRevision(expectedDisplayRevision);
     final eventId = _eventIdByPublicId[publicId];
     if (eventId == null) {
       throw StateError('event not found: $publicId');
@@ -165,7 +187,16 @@ class InMemoryEventRepository implements EventRepository {
       return _buildAggregate(event);
     }
 
-    _ensureRevision(event, expectedRevision);
+    final revisions = _revisionsByEventId[eventId] ??
+        SavedEventRevisions.fromJson(
+          null,
+          fallbackRevision: event.revision,
+        );
+    _ensureRevision(
+      eventId: event.id,
+      expectedRevision: expectedDisplayRevision,
+      actualRevision: revisions.display,
+    );
     final now = _clock();
     final updatedEvent = event.copyWith(
       title: normalizedTitle,
@@ -185,6 +216,9 @@ class InMemoryEventRepository implements EventRepository {
 
     _eventsById[eventId] = updatedEvent;
     _playersByEventId[eventId] = updatedPlayers;
+    _revisionsByEventId[eventId] = revisions.copyWith(
+      display: revisions.display + 1,
+    );
     return _buildAggregate(updatedEvent);
   }
 
@@ -195,7 +229,7 @@ class InMemoryEventRepository implements EventRepository {
   }) {
     return _updateCourtSettings(
       eventId: eventId,
-      expectedRevision: null,
+      expectedCourtSettingsRevision: null,
       courtSettings: courtSettings,
     );
   }
@@ -203,20 +237,20 @@ class InMemoryEventRepository implements EventRepository {
   @override
   Future<SavedEventAggregate> updateCourtSettingsWithRevision({
     required String eventId,
-    required int expectedRevision,
+    required int expectedCourtSettingsRevision,
     required List<SavedEventCourtSetting> courtSettings,
   }) {
-    _validateExpectedRevision(expectedRevision);
+    _validateExpectedRevision(expectedCourtSettingsRevision);
     return _updateCourtSettings(
       eventId: eventId,
-      expectedRevision: expectedRevision,
+      expectedCourtSettingsRevision: expectedCourtSettingsRevision,
       courtSettings: courtSettings,
     );
   }
 
   Future<SavedEventAggregate> _updateCourtSettings({
     required String eventId,
-    required int? expectedRevision,
+    required int? expectedCourtSettingsRevision,
     required List<SavedEventCourtSetting> courtSettings,
   }) async {
     final event = _requireEvent(eventId);
@@ -226,8 +260,17 @@ class InMemoryEventRepository implements EventRepository {
     if (_courtSettingsEqual(currentSettings, courtSettings)) {
       return _buildAggregate(event);
     }
-    if (expectedRevision != null) {
-      _ensureRevision(event, expectedRevision);
+    final revisions = _revisionsByEventId[eventId] ??
+        SavedEventRevisions.fromJson(
+          null,
+          fallbackRevision: event.revision,
+        );
+    if (expectedCourtSettingsRevision != null) {
+      _ensureRevision(
+        eventId: event.id,
+        expectedRevision: expectedCourtSettingsRevision,
+        actualRevision: revisions.courtSettings,
+      );
     }
 
     final updatedEvent = event.copyWith(
@@ -235,6 +278,9 @@ class InMemoryEventRepository implements EventRepository {
       updatedAt: _clock(),
     );
     _eventsById[eventId] = updatedEvent;
+    _revisionsByEventId[eventId] = revisions.copyWith(
+      courtSettings: revisions.courtSettings + 1,
+    );
     _courtSettingsByEventId[eventId] = List.unmodifiable(courtSettings);
     return _buildAggregate(updatedEvent);
   }
@@ -258,6 +304,11 @@ class InMemoryEventRepository implements EventRepository {
       players: _playersByEventId[event.id] ?? const [],
       share: share,
       importRecord: _importsByEventId[event.id],
+      revisions: _revisionsByEventId[event.id] ??
+          SavedEventRevisions.fromJson(
+            null,
+            fallbackRevision: event.revision,
+          ),
       courtSettings: _courtSettingsByEventId[event.id] ??
           buildDefaultCourtSettings(event.courtCount),
     );
@@ -295,12 +346,16 @@ class InMemoryEventRepository implements EventRepository {
     return normalized;
   }
 
-  void _ensureRevision(SavedEvent event, int expectedRevision) {
-    if (event.revision != expectedRevision) {
+  void _ensureRevision({
+    required String eventId,
+    required int expectedRevision,
+    required int actualRevision,
+  }) {
+    if (actualRevision != expectedRevision) {
       throw EventRevisionConflictException(
-        eventId: event.id,
+        eventId: eventId,
         expectedRevision: expectedRevision,
-        actualRevision: event.revision,
+        actualRevision: actualRevision,
       );
     }
   }
