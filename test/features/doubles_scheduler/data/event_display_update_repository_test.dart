@@ -22,7 +22,7 @@ void main() {
       test('stores initial display names when an event is created', () async {
         final repository = entry.value();
 
-        final created = await repository.createFromDraft(_buildDraft());
+        final created = await repository.createFromDraft(_buildDraft(), ownerUid: 'owner-1');
 
         expect(created.event.memo, isEmpty);
         expect(created.players[0].initialDisplayName, '参加者1');
@@ -33,7 +33,7 @@ void main() {
 
       test('updates display fields without changing schedule data', () async {
         final repository = entry.value();
-        final created = await repository.createFromDraft(_buildDraft());
+        final created = await repository.createFromDraft(_buildDraft(), ownerUid: 'owner-1');
 
         await repository.updateCurrentGeneratedScheduleId(
           eventId: created.event.id,
@@ -54,7 +54,7 @@ void main() {
 
         final updated = await repository.updateDisplayInfo(
           publicId: created.event.publicId,
-          expectedRevision: beforeUpdate.event.revision,
+          expectedDisplayRevision: beforeUpdate.event.revision,
           title: ' 更新後イベント ',
           memo: ' 運営メモ ',
           playerDisplayNamesById: names,
@@ -81,14 +81,14 @@ void main() {
 
       test('rejects a changed save when the revision is stale', () async {
         final repository = entry.value();
-        final created = await repository.createFromDraft(_buildDraft());
+        final created = await repository.createFromDraft(_buildDraft(), ownerUid: 'owner-1');
         final initialNames = <String, String>{
           for (final player in created.players) player.id: player.displayName,
         };
 
         final first = await repository.updateDisplayInfo(
           publicId: created.event.publicId,
-          expectedRevision: created.event.revision,
+          expectedDisplayRevision: created.event.revision,
           title: '先に保存されたイベント',
           memo: '',
           playerDisplayNamesById: initialNames,
@@ -97,7 +97,7 @@ void main() {
         await expectLater(
           repository.updateDisplayInfo(
             publicId: created.event.publicId,
-            expectedRevision: created.event.revision,
+            expectedDisplayRevision: created.event.revision,
             title: '古い画面からの変更',
             memo: '',
             playerDisplayNamesById: initialNames,
@@ -126,7 +126,7 @@ void main() {
       test('accepts a stale revision when the saved values are identical',
           () async {
         final repository = entry.value();
-        final created = await repository.createFromDraft(_buildDraft());
+        final created = await repository.createFromDraft(_buildDraft(), ownerUid: 'owner-1');
         final names = <String, String>{
           for (final player in created.players)
             player.id: '${player.displayName}・更新',
@@ -134,7 +134,7 @@ void main() {
 
         final first = await repository.updateDisplayInfo(
           publicId: created.event.publicId,
-          expectedRevision: created.event.revision,
+          expectedDisplayRevision: created.event.revision,
           title: '更新後イベント',
           memo: 'メモ',
           playerDisplayNamesById: names,
@@ -142,7 +142,7 @@ void main() {
 
         final noOp = await repository.updateDisplayInfo(
           publicId: created.event.publicId,
-          expectedRevision: created.event.revision,
+          expectedDisplayRevision: created.event.revision,
           title: '更新後イベント',
           memo: 'メモ',
           playerDisplayNamesById: names,
@@ -154,12 +154,12 @@ void main() {
 
       test('requires exactly the current player ids', () async {
         final repository = entry.value();
-        final created = await repository.createFromDraft(_buildDraft());
+        final created = await repository.createFromDraft(_buildDraft(), ownerUid: 'owner-1');
 
         await expectLater(
           repository.updateDisplayInfo(
             publicId: created.event.publicId,
-            expectedRevision: created.event.revision,
+            expectedDisplayRevision: created.event.revision,
             title: created.event.title,
             memo: '',
             playerDisplayNamesById: {
