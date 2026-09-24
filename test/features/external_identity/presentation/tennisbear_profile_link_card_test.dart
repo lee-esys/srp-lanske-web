@@ -90,7 +90,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('確認コードの期限切れ'), findsOneWidget);
-    expect(find.text('期限切れの確認コードを再発行'), findsOneWidget);
+    expect(find.text('確認コードを再発行'), findsOneWidget);
   });
 
   testWidgets('shows approved mapping and unlink action', (tester) async {
