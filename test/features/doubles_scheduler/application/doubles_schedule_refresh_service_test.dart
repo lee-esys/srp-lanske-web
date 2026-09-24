@@ -245,7 +245,15 @@ class _FakeEventRepository implements EventRepository {
   }
 
   @override
-  Future<SavedEventAggregate> createFromDraft(EventDraft draft) {
+  Future<SavedEventAggregate> createFromDraft(
+    EventDraft draft, {
+    required String ownerUid,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<SavedEventAggregate>> listByOwnerUid(String ownerUid) {
     throw UnimplementedError();
   }
 
@@ -265,7 +273,7 @@ class _FakeEventRepository implements EventRepository {
   @override
   Future<SavedEventAggregate> updateDisplayInfo({
     required String publicId,
-    required int expectedRevision,
+    required int expectedDisplayRevision,
     required String title,
     required String memo,
     required Map<String, String> playerDisplayNamesById,
@@ -284,7 +292,7 @@ class _FakeEventRepository implements EventRepository {
   @override
   Future<SavedEventAggregate> updateCourtSettingsWithRevision({
     required String eventId,
-    required int expectedRevision,
+    required int expectedCourtSettingsRevision,
     required List<SavedEventCourtSetting> courtSettings,
   }) {
     throw UnimplementedError();
