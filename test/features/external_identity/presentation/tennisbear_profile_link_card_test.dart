@@ -20,7 +20,7 @@ void main() {
       (tester) async {
     final fixture = _Fixture(now: now);
 
-    await tester.pumpWidget(_testApp(fixture.service));
+    await tester.pumpWidget(_testApp(fixture.service, now: now));
     await tester.pumpAndSettle();
 
     expect(find.text('未連携'), findsOneWidget);
@@ -31,7 +31,7 @@ void main() {
       (tester) async {
     final fixture = _Fixture(now: now);
 
-    await tester.pumpWidget(_testApp(fixture.service));
+    await tester.pumpWidget(_testApp(fixture.service, now: now));
     await tester.pumpAndSettle();
 
     await tester.enterText(
@@ -61,12 +61,35 @@ void main() {
         state: ExternalIdentityLinkRequestState.pending,
       );
 
-    await tester.pumpWidget(_testApp(fixture.service));
+    await tester.pumpWidget(_testApp(fixture.service, now: now));
     await tester.pumpAndSettle();
 
     expect(find.text('申請中'), findsOneWidget);
     expect(find.textContaining('同じコードは再表示できません'), findsOneWidget);
     expect(find.textContaining('LSK-'), findsNothing);
+  });
+
+  testWidgets('shows expired status using the injected clock', (tester) async {
+    final fixture = _Fixture(now: now)
+      ..repository.activeRequest = _request(
+        now: now,
+        state: ExternalIdentityLinkRequestState.pending,
+      )
+      ..reader.latestRequest = _request(
+        now: now,
+        state: ExternalIdentityLinkRequestState.pending,
+      );
+
+    await tester.pumpWidget(
+      _testApp(
+        fixture.service,
+        now: now.add(const Duration(days: 8)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('確認コードの期限切れ'), findsOneWidget);
+    expect(find.text('確認コードを再発行'), findsOneWidget);
   });
 
   testWidgets('shows approved mapping and unlink action', (tester) async {
@@ -85,7 +108,7 @@ void main() {
         updatedAt: now,
       );
 
-    await tester.pumpWidget(_testApp(fixture.service));
+    await tester.pumpWidget(_testApp(fixture.service, now: now));
     await tester.pumpAndSettle();
 
     expect(find.text('承認済み'), findsOneWidget);
@@ -93,7 +116,10 @@ void main() {
   });
 }
 
-Widget _testApp(TennisBearProfileLinkService service) {
+Widget _testApp(
+  TennisBearProfileLinkService service, {
+  required DateTime now,
+}) {
   return MaterialApp(
     locale: const Locale('ja'),
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -101,8 +127,11 @@ Widget _testApp(TennisBearProfileLinkService service) {
     home: Scaffold(
       body: ExternalIdentityLinkScope(
         service: service,
-        child: const SingleChildScrollView(
-          child: TennisBearProfileLinkCard(lanskeUserId: 'user-1'),
+        child: SingleChildScrollView(
+          child: TennisBearProfileLinkCard(
+            lanskeUserId: 'user-1',
+            now: () => now,
+          ),
         ),
       ),
     ),
