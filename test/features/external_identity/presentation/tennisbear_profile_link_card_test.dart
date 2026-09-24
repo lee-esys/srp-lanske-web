@@ -69,8 +69,7 @@ void main() {
     expect(find.textContaining('LSK-'), findsNothing);
   });
 
-  testWidgets('shows expired status using the injected clock',
-      (tester) async {
+  testWidgets('shows expired status using the injected clock', (tester) async {
     final fixture = _Fixture(now: now)
       ..repository.activeRequest = _request(
         now: now,
