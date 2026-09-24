@@ -106,7 +106,7 @@ class JsonEventRepository implements EventRepository {
     );
     final data = await _store.listByOwnerUid(normalizedOwnerUid);
     return data
-        .map(SavedEventAggregate.fromJson)
+        .map((item) => SavedEventAggregate.fromJson(item))
         .toList(growable: false);
   }
 
