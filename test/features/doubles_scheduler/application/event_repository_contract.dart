@@ -6,6 +6,17 @@ import 'package:srp_lanske/features/doubles_scheduler/presentation/models/event_
 
 typedef EventRepositoryFactory = EventRepository Function();
 
+Future<SavedEventAggregate> _createOwnedEvent(
+  EventRepository repository,
+  EventDraft draft, {
+  String ownerUid = 'owner-1',
+}) {
+  return repository.createFromDraft(
+    draft,
+    ownerUid: ownerUid,
+  );
+}
+
 void runEventRepositoryContractTests({
   required String name,
   required EventRepositoryFactory createRepository,
@@ -34,7 +45,7 @@ void runEventRepositoryContractTests({
     test('creates event aggregate from draft', () async {
       final repository = createRepository();
 
-      final aggregate = await repository.createFromDraft(buildDraft());
+      final aggregate = await _createOwnedEvent(repository, buildDraft());
 
       expect(aggregate.event.id, isNotEmpty);
       expect(aggregate.event.publicId, isNotEmpty);
@@ -42,6 +53,7 @@ void runEventRepositoryContractTests({
       expect(aggregate.event.courtCount, 1);
       expect(aggregate.event.sourceUrl, 'https://example.com/events/1');
       expect(aggregate.event.status, SavedEventStatus.draft);
+      expect(aggregate.event.ownerUid, 'owner-1');
       expect(aggregate.event.currentGeneratedScheduleId, isNull);
       expect(aggregate.event.adoptedGeneratedScheduleId, isNull);
       expect(aggregate.event.adoptedAt, isNull);
@@ -69,7 +81,8 @@ void runEventRepositoryContractTests({
     test('creates manual event without import record', () async {
       final repository = createRepository();
 
-      final aggregate = await repository.createFromDraft(
+      final aggregate = await _createOwnedEvent(
+        repository,
         buildDraft(url: ''),
       );
 
@@ -78,10 +91,47 @@ void runEventRepositoryContractTests({
       expect(aggregate.importRecord, isNull);
     });
 
+    test('lists only events owned by the requested uid', () async {
+      final repository = createRepository();
+
+      final first = await _createOwnedEvent(
+        repository,
+        buildDraft(eventName: 'owner-1 first'),
+        ownerUid: 'owner-1',
+      );
+      final second = await _createOwnedEvent(
+        repository,
+        buildDraft(eventName: 'owner-2 event'),
+        ownerUid: 'owner-2',
+      );
+      final third = await _createOwnedEvent(
+        repository,
+        buildDraft(eventName: 'owner-1 second'),
+        ownerUid: 'owner-1',
+      );
+
+      final owned = await repository.listByOwnerUid('owner-1');
+
+      expect(
+          owned.map((aggregate) => aggregate.event.id),
+          containsAll([
+            first.event.id,
+            third.event.id,
+          ]));
+      expect(
+        owned.any((aggregate) => aggregate.event.id == second.event.id),
+        isFalse,
+      );
+      expect(
+        owned.every((aggregate) => aggregate.event.ownerUid == 'owner-1'),
+        isTrue,
+      );
+    });
+
     test('finds event aggregate by public id', () async {
       final repository = createRepository();
 
-      final created = await repository.createFromDraft(buildDraft());
+      final created = await _createOwnedEvent(repository, buildDraft());
       final found = await repository.findByPublicId(created.event.publicId);
 
       expect(found, isNotNull);
@@ -110,7 +160,7 @@ void runEventRepositoryContractTests({
     test('lists players by event id', () async {
       final repository = createRepository();
 
-      final created = await repository.createFromDraft(buildDraft());
+      final created = await _createOwnedEvent(repository, buildDraft());
       final players = await repository.listPlayers(created.event.id);
 
       expect(players, hasLength(6));
@@ -132,7 +182,7 @@ void runEventRepositoryContractTests({
     test('updates and persists current generated schedule id', () async {
       final repository = createRepository();
 
-      final created = await repository.createFromDraft(buildDraft());
+      final created = await _createOwnedEvent(repository, buildDraft());
 
       final updated = await repository.updateCurrentGeneratedScheduleId(
         eventId: created.event.id,
@@ -157,7 +207,7 @@ void runEventRepositoryContractTests({
     test('overwrites current generated schedule id when regenerated', () async {
       final repository = createRepository();
 
-      final created = await repository.createFromDraft(buildDraft());
+      final created = await _createOwnedEvent(repository, buildDraft());
 
       await repository.updateCurrentGeneratedScheduleId(
         eventId: created.event.id,
@@ -184,7 +234,7 @@ void runEventRepositoryContractTests({
     test('updates and persists adopted generated schedule id', () async {
       final repository = createRepository();
 
-      final created = await repository.createFromDraft(buildDraft());
+      final created = await _createOwnedEvent(repository, buildDraft());
 
       final updated = await repository.updateAdoptedGeneratedScheduleId(
         eventId: created.event.id,
@@ -235,7 +285,8 @@ void runEventRepositoryContractTests({
     test('creates default court settings from draft court count', () async {
       final repository = createRepository();
 
-      final aggregate = await repository.createFromDraft(
+      final aggregate = await _createOwnedEvent(
+        repository,
         buildDraft(courts: 2),
       );
 
@@ -255,7 +306,8 @@ void runEventRepositoryContractTests({
     test('updates and persists court settings', () async {
       final repository = createRepository();
 
-      final created = await repository.createFromDraft(
+      final created = await _createOwnedEvent(
+        repository,
         buildDraft(courts: 2),
       );
 
@@ -291,7 +343,8 @@ void runEventRepositoryContractTests({
     test('keeps court settings when schedule ids are updated', () async {
       final repository = createRepository();
 
-      final created = await repository.createFromDraft(
+      final created = await _createOwnedEvent(
+        repository,
         buildDraft(courts: 2),
       );
 
@@ -333,7 +386,8 @@ void runEventRepositoryContractTests({
     test('updates and persists court settings for adopted event', () async {
       final repository = createRepository();
 
-      final created = await repository.createFromDraft(
+      final created = await _createOwnedEvent(
+        repository,
         buildDraft(courts: 2),
       );
 

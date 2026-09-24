@@ -25,7 +25,7 @@ class _DoublesEventInfoDialogState extends State<DoublesEventInfoDialog> {
   final Map<String, TextEditingController> _playerControllers = {};
 
   late SavedEventAggregate _latestAggregate;
-  late int _expectedRevision;
+  late int _expectedDisplayRevision;
   bool _isSaving = false;
   bool _showsConflict = false;
   String? _message;
@@ -40,7 +40,7 @@ class _DoublesEventInfoDialogState extends State<DoublesEventInfoDialog> {
   void initState() {
     super.initState();
     _latestAggregate = widget.initialAggregate;
-    _expectedRevision = widget.initialAggregate.event.revision;
+    _expectedDisplayRevision = widget.initialAggregate.revisions.display;
     _titleController = TextEditingController(
       text: widget.initialAggregate.event.title,
     );
@@ -80,7 +80,7 @@ class _DoublesEventInfoDialogState extends State<DoublesEventInfoDialog> {
     try {
       final updated = await widget.repository.updateDisplayInfo(
         publicId: _latestAggregate.event.publicId,
-        expectedRevision: _expectedRevision,
+        expectedDisplayRevision: _expectedDisplayRevision,
         title: _titleController.text,
         memo: _memoController.text,
         playerDisplayNamesById: {
@@ -124,7 +124,7 @@ class _DoublesEventInfoDialogState extends State<DoublesEventInfoDialog> {
 
       setState(() {
         _latestAggregate = latest;
-        _expectedRevision = latest.event.revision;
+        _expectedDisplayRevision = latest.revisions.display;
         _isSaving = false;
         _showsConflict = true;
         _message = l10n.doublesEventInfoConflictMessage;

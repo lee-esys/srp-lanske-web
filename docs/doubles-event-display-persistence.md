@@ -2,58 +2,152 @@
 
 ## 目的
 
-ダブルス対戦表のイベントタイトル、イベントメモ、プレイヤー表示名、コート表示設定を更新する際に、古いイベントaggregateで他端末の変更を巻き戻さないための保存方針を整理する。
+ダブルス対戦表のevent所有者、イベントタイトル、イベントメモ、プレイヤー表示名、コート表示設定を、既存aggregate形式を維持しながら安全に保存・更新する方針を整理する。
+
+複数端末から異なる種類の情報が更新された場合でも、無関係な変更を理由に不要な競合を発生させず、古いaggregate全体で他端末の変更を巻き戻さないことを目的とする。
 
 ## 保存schema
 
-`events/{publicId}` は、現行のaggregate形式を `schemaVersion: 1` として扱う。
+`events/{publicId}` は `schemaVersion: 2` のaggregate形式として保存する。
 
-イベント表示情報として以下を保存する。
+主な構成は以下とする。
 
-- `event.title`: 現在のイベントタイトル
-- `event.memo`: イベント単位のメモ
-- `event.revision`: イベントaggregate上の共有表示情報を更新するためのrevision
-- `players[].initialDisplayName`: 対戦表生成時の表示名
-- `players[].displayName`: 現在の表示名
-- `courtSettings[]`: コート表示設定
+```text
+events/{publicId}
+  schemaVersion: 2
 
-既存Documentとの互換性のため、フィールドがない場合は以下として読み込む。
+  event
+    id
+    publicId
+    ownerUid
+    title
+    memo
+    currentGeneratedScheduleId
+    adoptedGeneratedScheduleId
+    revision
+    ...
 
-- `event.memo`: 空文字
-- `players[].initialDisplayName`: 同じplayerの `displayName`
+  revisions
+    display
+    courtSettings
 
-今回の追加は既存形式へ省略可能なフィールドを追加するため、schema versionは1のままとする。
+  players[]
+  share
+  importRecord
+  courtSettings[]
+```
+
+### ownership
+
+`event.ownerUid` はevent所有者のFirebase Auth UIDを保持する。
+
+- 新規event作成時は、既存のFirebase Auth sessionを利用する
+- signed-outの場合は、eventを実際に保存する操作時にAnonymous sessionを作成する
+- 画面を開いただけ、または共有URLを閲覧しただけではAnonymous sessionを作成しない
+- Anonymous userとregistered accountのどちらもFirebase Auth UIDを同じ基準で扱う
+- `ownerUid == null` はlegacy / owner不明eventとして扱う
+- publicId、共有URL、端末内履歴はownershipの証明に利用しない
+
+通常のevent更新APIではownerUidを変更しない。Anonymous userから既存accountへのownership移管は専用フローで扱う。
+
+### aggregate revision
+
+`event.revision` はaggregate全体で変更が発生したことを表すrevisionとして維持する。
+
+以下のような更新で増加する。
+
+- event title / memo / player display name
+- court display settings
+- current generated schedule
+- adopted generated schedule
+
+ただし、構造編集の競合判定にはaggregate revisionを直接利用しない。
+
+### fragment revision
+
+編集・競合の意味上の単位として、aggregate直下にfragment revisionを持つ。
+
+```text
+revisions.display
+  event.title
+  event.memo
+  players[].displayName
+
+revisions.courtSettings
+  courtSettings[]
+```
+
+display更新では `event.revision` と `revisions.display` を増加させ、`revisions.courtSettings` は変更しない。
+
+court settings更新では `event.revision` と `revisions.courtSettings` を増加させ、`revisions.display` は変更しない。
+
+generated scheduleの再生成・採用等では `event.revision` のみを増加させ、display / court settings revisionは変更しない。
+
+これにより、たとえば別端末で対戦表が再生成された後でも、表示情報自体が変更されていなければ、編集開始時に取得したdisplay revisionを使って表示情報を保存できる。
+
+## legacy互換
+
+schemaVersion 1など、`ownerUid` または `revisions` を持たない既存eventは引き続き読み取れる。
+
+- `ownerUid` がない場合: `null`
+- `revisions.display` がない場合: 読み込み時点の `event.revision`
+- `revisions.courtSettings` がない場合: 読み込み時点の `event.revision`
+
+legacy eventへ次の非no-op更新が行われた際に、schemaVersion 2とfragment revisionを保存する。
+
+たとえば、legacy eventの `event.revision == 4` の状態でgenerated scheduleのみを更新する場合、更新後は概念上次の状態になる。
+
+```text
+event.revision: 5
+revisions.display: 4
+revisions.courtSettings: 4
+```
+
+schedule stateの更新によってdisplay / court settingsの競合基準まで進めないことが重要となる。
+
+legacy eventのownerUidを共有URLや端末内履歴から推測して補完することはしない。
+
+## ownership query
+
+所有eventの取得は `event.ownerUid` を正本として行う。
+
+```text
+events
+  where event.ownerUid == current Firebase Auth UID
+```
+
+このquery基盤はMy Page等の将来機能から利用する。端末内履歴をownership一覧の正本にはしない。
+
+現在のqueryは `event.ownerUid` に対する単一fieldのequality条件だけを使用するため、追加の複合Firestore indexは不要とする。将来、更新日時順など別fieldとの複合queryを追加する場合にindex要否を改めて確認する。
 
 ## 更新単位
 
 ### イベント情報と全プレイヤー表示名
 
-イベントタイトル、メモ、全プレイヤー表示名は、まとめて編集・保存する単位として扱う。
+イベントタイトル、メモ、全プレイヤー表示名は、まとめて編集・保存するdisplay fragmentとして扱う。
 
-保存時には、画面で最新情報を取得した際の `event.revision` を `expectedRevision` として渡す。
+保存時には、編集開始時の `revisions.display` を `expectedDisplayRevision` として渡す。
 
 Firestoreではtransaction内で最新Documentを取得し、次を行う。
 
 1. 入力されたplayer IDが現在のplayer IDと一致することを確認する
 2. 保存済みの値と入力値がすべて同じ場合はno-op成功とする
-3. 値が異なり、revisionが一致しない場合は保存しない
-4. revisionが一致した場合だけ、タイトル、メモ、players配列、revision、更新日時を更新する
+3. 値が異なり、display revisionが一致しない場合は保存しない
+4. display revisionが一致した場合だけ、タイトル、メモ、players配列、aggregate revision、display revision、更新日時を更新する
 
-生成済み対戦表ID、採用状態、共有情報、取り込み情報、コート表示設定など、変更対象外の情報は更新しない。
+generated schedule、採用状態、共有情報、取り込み情報、コート表示設定など、変更対象外の情報は更新しない。
 
 ### コート表示設定
 
-revisionを指定する更新APIでは、同じくno-op判定後にrevisionを確認し、コート表示設定、revision、更新日時だけを更新する。
+revision指定の更新APIでは、編集開始時の `revisions.courtSettings` を `expectedCourtSettingsRevision` として渡す。
 
-コート表示は対戦組み合わせではなく、当日の案内に使う表示情報として扱う。そのため、対戦表の採用後も `1 / 2`、`A / B`、`左 / 右`、任意ラベルへ変更できる。
+no-op判定後にcourt settings revisionを確認し、一致した場合だけcourt表示設定、aggregate revision、court settings revision、更新日時を更新する。
 
-対戦表作成直後の画面と共有URLから復元した画面は、どちらもダイアログを開く前に最新情報を取得し、その時点のrevisionを指定して保存する。競合した場合は保存せず、最新情報へ更新する。
-
-既存UIとの互換用APIもFirestore transactionによる部分更新を利用し、古いaggregate全体の保存は行わない。
+コート表示は対戦組み合わせではなく、当日の案内に使う表示情報として扱う。対戦表の採用後も変更できる。
 
 ## 編集UIのライフサイクル
 
-対戦表作成直後の画面と共有URLから復元した画面は、同じ「イベント情報を編集」ダイアログを利用する。
+対戦表作成直後の画面と共有URLから復元した画面は、同じイベント情報編集UIを利用する。
 
 ダイアログでは次をまとめて編集する。
 
@@ -61,40 +155,36 @@ revisionを指定する更新APIでは、同じくno-op判定後にrevisionを�
 - イベントメモ
 - 全プレイヤーの現在の表示名
 
-プレイヤー入力欄のラベルには `initialDisplayName`、入力値には現在の `displayName` を表示する。個別編集導線、プレイヤー追加・削除、参加人数変更は設けない。
-
 操作時は次の順序とする。
 
-1. ダイアログを開く前に画面全体を最新情報へ更新する
-2. 最新aggregateのrevisionを `expectedRevision` としてダイアログを開く
+1. ダイアログを開く前に最新情報を取得する
+2. 最新aggregateの `revisions.display` を保存基準としてダイアログを開く
 3. 保存成功時だけダイアログを閉じる
-4. 保存・キャンセルのどちらでも、ダイアログを閉じた後に画面全体を再取得する
-5. 更新後のタイトル、メモ、プレイヤー表示名を対戦表表示と端末内履歴へ反映する
+4. 競合時は入力内容を保持したまま最新情報を取得する
+5. 最新のdisplay revisionへ保存基準を更新し、利用者が確認・再保存できるようにする
 
-イベント表示情報は対戦表の採用状態と独立しているため、採用後も編集できる。
+最新情報の取得範囲や保存中の画面挙動は、更新挙動を扱う別Issueで継続して整理する。
 
 ## 競合時の扱い
 
-異なる値を保存しようとしてrevisionが一致しない場合は、`EventRevisionConflictException` を返す。
+同じfragmentへ異なる値を保存しようとしてrevisionが一致しない場合は、`EventRevisionConflictException` を返す。
 
-UIでは競合した入力を自動マージせず、ダイアログを閉じないまま最新情報を取得する。入力中の値は保持し、保存基準となるrevisionだけを最新へ更新する。ユーザーが内容を確認・修正したうえで、もう一度保存する。
+異なるfragmentの変更では競合させない。
 
-最新aggregateでプレイヤー構成が変わっていた場合や、最新情報を取得できなかった場合は再保存せず、画面更新後の再操作を案内する。
+例:
 
-base、最新値、入力値を比較する高度な競合解消は別Issueで扱う。
+- display編集中にgenerated scheduleが変わる: display保存可能
+- display編集中にcourt labelが変わる: display保存可能
+- display編集中に別端末でtitleが変わる: display競合
+- court label編集中に別端末でtitleが変わる: court保存可能
+- court label編集中に別端末でcourt labelが変わる: court競合
 
-## 表示上の扱い
+base、最新値、入力値を比較する高度な3-way競合解消は別Issueで扱う。
 
-ダブルス機能のサービス名は「らんすけ：ダブルス乱数表」とし、編集対象のイベントタイトルとは分離して表示する。
+## Document分割との関係
 
-アプリ共通フッターには、現在公開しているrelease versionを表示する。表示値の正本は `AppConfig.releaseVersion` とし、Flutter package versionの `pubspec.yaml` も原則として同じrelease versionへ合わせる。
+本方針では、fragment revisionを導入するためだけにFirestore Documentを分割しない。
 
-ver0.1.6では途中版として `0.1.6+2` を公開した後、正式完了時に `0.1.6` へ統一する。
+`events/{publicId}` aggregateを維持しながら、保存API・revision・Permissionの論理境界を分ける。
 
-## 将来拡張
-
-外部サービス上のplayer ID、レベル、年代、性別などは、取得形式と正規化方法が確定してからイベント時点のsource snapshotとして追加する。
-
-ポット分けはplayer属性ではなく、対戦表生成条件側のポット情報として扱う。
-
-将来、プレイヤー詳細の個別編集を追加する場合は、プレイヤー単位revisionまたはDocument分割を検討する。
+将来、取得量、Rules、独立更新頻度など別の理由から物理Document分割が必要になった場合は、その時点の実装と利用状況を確認して改めて判断する。

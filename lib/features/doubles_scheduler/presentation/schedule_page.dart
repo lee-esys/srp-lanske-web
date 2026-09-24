@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
+import 'package:srp_lanske/features/auth/presentation/auth_scope.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/infrastructure/generated_schedule_api_client.dart';
@@ -405,7 +406,16 @@ class _SchedulePageState extends State<SchedulePage> {
     final existing = _savedEvent;
     if (existing != null) return existing;
 
-    final savedEvent = await appEventRepository.createFromDraft(widget.draft);
+    final session = await AuthScope.of(context).ensureAnonymousSession();
+    final ownerUid = session.uid;
+    if (ownerUid == null || ownerUid.isEmpty) {
+      throw StateError('authenticated session uid is required');
+    }
+
+    final savedEvent = await appEventRepository.createFromDraft(
+      widget.draft,
+      ownerUid: ownerUid,
+    );
     _savedEvent = savedEvent;
     return savedEvent;
   }
@@ -797,7 +807,7 @@ class _SchedulePageState extends State<SchedulePage> {
       final updatedAggregate =
           await appEventRepository.updateCourtSettingsWithRevision(
         eventId: savedEvent.event.id,
-        expectedRevision: savedEvent.event.revision,
+        expectedCourtSettingsRevision: savedEvent.revisions.courtSettings,
         courtSettings: nextSettings,
       );
 

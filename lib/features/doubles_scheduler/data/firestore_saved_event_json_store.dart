@@ -59,6 +59,16 @@ class FirestoreSavedEventJsonStore implements SavedEventJsonStore {
   }
 
   @override
+  Future<List<Map<String, dynamic>>> listByOwnerUid(String ownerUid) async {
+    final snapshot =
+        await _collection.where('event.ownerUid', isEqualTo: ownerUid).get();
+
+    return snapshot.docs
+        .map((document) => _copy(document.data()))
+        .toList(growable: false);
+  }
+
+  @override
   Future<Map<String, dynamic>?> updateByPublicId({
     required String publicId,
     required SavedEventJsonUpdater update,

@@ -31,7 +31,8 @@ void main() {
     test('creates public id with eight uppercase alphanumeric chars', () async {
       final repository = InMemoryEventRepository();
 
-      final aggregate = await repository.createFromDraft(buildDraft());
+      final aggregate =
+          await repository.createFromDraft(buildDraft(), ownerUid: 'owner-1');
 
       expect(aggregate.event.publicId, hasLength(8));
       expect(
@@ -49,8 +50,10 @@ void main() {
         publicIdGenerator: () => candidates[index++],
       );
 
-      final first = await repository.createFromDraft(buildDraft());
-      final second = await repository.createFromDraft(buildDraft());
+      final first =
+          await repository.createFromDraft(buildDraft(), ownerUid: 'owner-1');
+      final second =
+          await repository.createFromDraft(buildDraft(), ownerUid: 'owner-1');
 
       expect(first.event.publicId, 'AAAAAAAA');
       expect(second.event.publicId, 'BBBBBBBB');
@@ -62,10 +65,10 @@ void main() {
         publicIdGenerator: () => 'AAAAAAAA',
       );
 
-      await repository.createFromDraft(buildDraft());
+      await repository.createFromDraft(buildDraft(), ownerUid: 'owner-1');
 
       expect(
-        () => repository.createFromDraft(buildDraft()),
+        () => repository.createFromDraft(buildDraft(), ownerUid: 'owner-1'),
         throwsA(isA<StateError>()),
       );
     });

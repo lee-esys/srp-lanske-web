@@ -18,6 +18,7 @@ void main() {
       final event = SavedEvent(
         id: 'event-1',
         publicId: 'ABCD1234',
+        ownerUid: 'owner-1',
         title: 'テストイベント',
         eventDate: DateTime.utc(2026, 5, 20),
         startTime: '13:00',
@@ -71,6 +72,10 @@ void main() {
         event: event,
         players: players,
         share: share,
+        revisions: const SavedEventRevisions(
+          display: 2,
+          courtSettings: 3,
+        ),
         importRecord: importRecord ??
             SavedEventImport(
               id: 'import-1',
@@ -102,6 +107,7 @@ void main() {
 
       expect(restored.event.id, 'event-1');
       expect(restored.event.publicId, 'ABCD1234');
+      expect(restored.event.ownerUid, 'owner-1');
       expect(restored.event.title, 'テストイベント');
       expect(restored.event.eventDate, DateTime.utc(2026, 5, 20));
       expect(restored.event.startTime, '13:00');
@@ -118,6 +124,8 @@ void main() {
       expect(restored.event.revision, 3);
       expect(restored.event.createdAt, createdAt);
       expect(restored.event.updatedAt, updatedAt);
+      expect(restored.revisions.display, 2);
+      expect(restored.revisions.courtSettings, 3);
 
       expect(restored.players, hasLength(2));
       expect(restored.players[0].id, 'player-1');
@@ -152,6 +160,22 @@ void main() {
       );
       expect(restored.importRecord!.confirmedAt, updatedAt);
       expect(restored.importRecord!.createdAt, createdAt);
+    });
+
+    test('restores legacy ownership and fragment revision defaults', () {
+      final aggregate = buildAggregate();
+      final json = aggregate.toJson();
+      final eventJson = json['event'] as Map<String, dynamic>;
+
+      eventJson.remove('ownerUid');
+      json.remove('revisions');
+      json['schemaVersion'] = 1;
+
+      final restored = SavedEventAggregate.fromJson(json);
+
+      expect(restored.event.ownerUid, isNull);
+      expect(restored.revisions.display, restored.event.revision);
+      expect(restored.revisions.courtSettings, restored.event.revision);
     });
 
     test('restores legacy participant keys through JSON', () {

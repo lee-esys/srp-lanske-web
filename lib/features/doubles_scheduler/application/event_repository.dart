@@ -2,9 +2,16 @@ import '../domain/saved_event_models.dart';
 import '../presentation/models/event_draft.dart';
 
 abstract class EventRepository {
-  Future<SavedEventAggregate> createFromDraft(EventDraft draft);
+  Future<SavedEventAggregate> createFromDraft(
+    EventDraft draft, {
+    required String ownerUid,
+  });
 
   Future<SavedEventAggregate?> findByPublicId(String publicId);
+
+  Future<List<SavedEventAggregate>> listByOwnerUid(String ownerUid) {
+    throw UnimplementedError('listByOwnerUid is not implemented');
+  }
 
   Future<List<SavedEventPlayer>> listPlayers(String eventId);
 
@@ -20,7 +27,7 @@ abstract class EventRepository {
 
   Future<SavedEventAggregate> updateDisplayInfo({
     required String publicId,
-    required int expectedRevision,
+    required int expectedDisplayRevision,
     required String title,
     required String memo,
     required Map<String, String> playerDisplayNamesById,
@@ -35,7 +42,7 @@ abstract class EventRepository {
 
   Future<SavedEventAggregate> updateCourtSettingsWithRevision({
     required String eventId,
-    required int expectedRevision,
+    required int expectedCourtSettingsRevision,
     required List<SavedEventCourtSetting> courtSettings,
   }) {
     throw UnimplementedError(
