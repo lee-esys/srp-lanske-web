@@ -21,7 +21,14 @@ class JsonEventRepository implements EventRepository {
   final _uuid = const Uuid();
 
   @override
-  Future<SavedEventAggregate> createFromDraft(EventDraft draft) async {
+  Future<SavedEventAggregate> createFromDraft(
+    EventDraft draft, {
+    required String ownerUid,
+  }) async {
+    final normalizedOwnerUid = _requireNonEmpty(
+      ownerUid,
+      fieldName: 'ownerUid',
+    );
     final now = _clock();
     final eventId = _uuid.v4();
     final publicId = await _generateUniquePublicId();
@@ -29,6 +36,7 @@ class JsonEventRepository implements EventRepository {
     final event = SavedEvent(
       id: eventId,
       publicId: publicId,
+      ownerUid: normalizedOwnerUid,
       title: draft.eventName,
       courtCount: draft.courts,
       sourceType:
@@ -88,6 +96,18 @@ class JsonEventRepository implements EventRepository {
   Future<SavedEventAggregate?> findByPublicId(String publicId) async {
     final data = await _store.findByPublicId(publicId);
     return data == null ? null : SavedEventAggregate.fromJson(data);
+  }
+
+  @override
+  Future<List<SavedEventAggregate>> listByOwnerUid(String ownerUid) async {
+    final normalizedOwnerUid = _requireNonEmpty(
+      ownerUid,
+      fieldName: 'ownerUid',
+    );
+    final data = await _store.listByOwnerUid(normalizedOwnerUid);
+    return data
+        .map(SavedEventAggregate.fromJson)
+        .toList(growable: false);
   }
 
   @override
@@ -159,12 +179,12 @@ class JsonEventRepository implements EventRepository {
   @override
   Future<SavedEventAggregate> updateDisplayInfo({
     required String publicId,
-    required int expectedRevision,
+    required int expectedDisplayRevision,
     required String title,
     required String memo,
     required Map<String, String> playerDisplayNamesById,
   }) async {
-    _validateExpectedRevision(expectedRevision);
+    _validateExpectedRevision(expectedDisplayRevision);
     final normalizedTitle = _requireNonEmpty(title, fieldName: 'title');
     final normalizedMemo = memo.trim();
     final normalizedNames = _normalizePlayerNames(playerDisplayNamesById);
@@ -184,7 +204,11 @@ class JsonEventRepository implements EventRepository {
           return SavedEventJsonUpdate.noOp(currentData);
         }
 
-        _ensureRevision(current.event, expectedRevision);
+        _ensureRevision(
+          eventId: current.event.id,
+          expectedRevision: expectedDisplayRevision,
+          actualRevision: current.revisions.display,
+        );
         final nowJson = _dateTimeToJson(_clock());
         final rawPlayers = _asObjectList(
           currentData['players'] ?? currentData['participants'],
@@ -217,6 +241,9 @@ class JsonEventRepository implements EventRepository {
             'revision': current.event.revision + 1,
             'updatedAt': nowJson,
           },
+          revisions: current.revisions.copyWith(
+            display: current.revisions.display + 1,
+          ),
         );
 
         return SavedEventJsonUpdate(
@@ -242,7 +269,7 @@ class JsonEventRepository implements EventRepository {
   }) async {
     return _updateCourtSettings(
       eventId: eventId,
-      expectedRevision: null,
+      expectedCourtSettingsRevision: null,
       courtSettings: courtSettings,
     );
   }
@@ -250,20 +277,20 @@ class JsonEventRepository implements EventRepository {
   @override
   Future<SavedEventAggregate> updateCourtSettingsWithRevision({
     required String eventId,
-    required int expectedRevision,
+    required int expectedCourtSettingsRevision,
     required List<SavedEventCourtSetting> courtSettings,
   }) async {
-    _validateExpectedRevision(expectedRevision);
+    _validateExpectedRevision(expectedCourtSettingsRevision);
     return _updateCourtSettings(
       eventId: eventId,
-      expectedRevision: expectedRevision,
+      expectedCourtSettingsRevision: expectedCourtSettingsRevision,
       courtSettings: courtSettings,
     );
   }
 
   Future<SavedEventAggregate> _updateCourtSettings({
     required String eventId,
-    required int? expectedRevision,
+    required int? expectedCourtSettingsRevision,
     required List<SavedEventCourtSetting> courtSettings,
   }) async {
     final aggregate = await _requireEventById(eventId);
@@ -276,8 +303,12 @@ class JsonEventRepository implements EventRepository {
         if (_courtSettingsEqual(current.courtSettings, courtSettings)) {
           return SavedEventJsonUpdate.noOp(currentData);
         }
-        if (expectedRevision != null) {
-          _ensureRevision(current.event, expectedRevision);
+        if (expectedCourtSettingsRevision != null) {
+          _ensureRevision(
+            eventId: current.event.id,
+            expectedRevision: expectedCourtSettingsRevision,
+            actualRevision: current.revisions.courtSettings,
+          );
         }
 
         final eventUpdate = _buildEventFieldsUpdate(
@@ -286,6 +317,9 @@ class JsonEventRepository implements EventRepository {
             'revision': current.event.revision + 1,
             'updatedAt': _dateTimeToJson(_clock()),
           },
+          revisions: current.revisions.copyWith(
+            courtSettings: current.revisions.courtSettings + 1,
+          ),
         );
         final nextCourtSettings = courtSettings
             .map((setting) => setting.toJson())
@@ -339,24 +373,32 @@ class JsonEventRepository implements EventRepository {
 
   SavedEventJsonUpdate _buildEventFieldsUpdate(
     Map<String, dynamic> currentData,
-    Map<String, dynamic> eventFields,
-  ) {
+    Map<String, dynamic> eventFields, {
+    SavedEventRevisions? revisions,
+  }) {
+    final current = SavedEventAggregate.fromJson(currentData);
     final currentEvent = _asObjectMap(
       currentData['event'],
       fieldName: 'event',
     );
+    final nextRevisions = revisions ?? current.revisions;
+    final revisionsJson = nextRevisions.toJson();
 
     return SavedEventJsonUpdate(
       data: <String, dynamic>{
         ...currentData,
+        'schemaVersion': savedEventAggregateSchemaVersion,
         'event': <String, dynamic>{
           ...currentEvent,
           ...eventFields,
         },
+        'revisions': revisionsJson,
       },
       fields: <String, dynamic>{
+        'schemaVersion': savedEventAggregateSchemaVersion,
         for (final entry in eventFields.entries)
           'event.${entry.key}': entry.value,
+        'revisions': revisionsJson,
       },
     );
   }
@@ -399,12 +441,16 @@ class JsonEventRepository implements EventRepository {
     }
   }
 
-  void _ensureRevision(SavedEvent event, int expectedRevision) {
-    if (event.revision != expectedRevision) {
+  void _ensureRevision({
+    required String eventId,
+    required int expectedRevision,
+    required int actualRevision,
+  }) {
+    if (actualRevision != expectedRevision) {
       throw EventRevisionConflictException(
-        eventId: event.id,
+        eventId: eventId,
         expectedRevision: expectedRevision,
-        actualRevision: event.revision,
+        actualRevision: actualRevision,
       );
     }
   }
