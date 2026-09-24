@@ -341,7 +341,10 @@ class _FakeEventRepository extends EventRepository {
   }
 
   @override
-  Future<SavedEventAggregate> createFromDraft(EventDraft draft) {
+  Future<SavedEventAggregate> createFromDraft(
+    EventDraft draft, {
+    required String ownerUid,
+  }) {
     throw UnimplementedError();
   }
 
