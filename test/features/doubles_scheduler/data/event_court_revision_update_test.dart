@@ -19,9 +19,12 @@ void main() {
 
   for (final entry in factories.entries) {
     group('${entry.key} revision-aware court update', () {
-      test('rejects a changed save when the revision is stale', () async {
+      test('allows court update after display fragment changes', () async {
         final repository = entry.value();
-        final created = await repository.createFromDraft(_draft(), ownerUid: 'owner-1');
+        final created = await repository.createFromDraft(
+          _draft(),
+          ownerUid: 'owner-1',
+        );
 
         final displayNames = <String, String>{
           for (final player in created.players) player.id: player.displayName,
@@ -34,19 +37,62 @@ void main() {
           playerDisplayNamesById: displayNames,
         );
 
+        expect(
+          updatedDisplay.revisions.courtSettings,
+          created.revisions.courtSettings,
+        );
+
+        final updatedCourt = await repository.updateCourtSettingsWithRevision(
+          eventId: created.event.id,
+          expectedCourtSettingsRevision: created.revisions.courtSettings,
+          courtSettings: [
+            SavedEventCourtSetting(courtNumber: 1, displayLabel: 'A'),
+          ],
+        );
+
+        expect(
+          updatedCourt.event.revision,
+          updatedDisplay.event.revision + 1,
+        );
+        expect(
+          updatedCourt.revisions.display,
+          updatedDisplay.revisions.display,
+        );
+        expect(
+          updatedCourt.revisions.courtSettings,
+          created.revisions.courtSettings + 1,
+        );
+      });
+
+      test('rejects a changed save when the court revision is stale',
+          () async {
+        final repository = entry.value();
+        final created = await repository.createFromDraft(
+          _draft(),
+          ownerUid: 'owner-1',
+        );
+
+        final first = await repository.updateCourtSettingsWithRevision(
+          eventId: created.event.id,
+          expectedCourtSettingsRevision: created.revisions.courtSettings,
+          courtSettings: [
+            SavedEventCourtSetting(courtNumber: 1, displayLabel: 'A'),
+          ],
+        );
+
         await expectLater(
           repository.updateCourtSettingsWithRevision(
             eventId: created.event.id,
             expectedCourtSettingsRevision: created.revisions.courtSettings,
             courtSettings: [
-              SavedEventCourtSetting(courtNumber: 1, displayLabel: 'A'),
+              SavedEventCourtSetting(courtNumber: 1, displayLabel: 'B'),
             ],
           ),
           throwsA(
             isA<EventRevisionConflictException>().having(
               (error) => error.actualRevision,
               'actualRevision',
-              updatedDisplay.event.revision,
+              first.revisions.courtSettings,
             ),
           ),
         );
@@ -55,7 +101,10 @@ void main() {
       test('treats identical values as a no-op before conflict checking',
           () async {
         final repository = entry.value();
-        final created = await repository.createFromDraft(_draft(), ownerUid: 'owner-1');
+        final created = await repository.createFromDraft(
+          _draft(),
+          ownerUid: 'owner-1',
+        );
         final first = await repository.updateCourtSettingsWithRevision(
           eventId: created.event.id,
           expectedCourtSettingsRevision: created.revisions.courtSettings,
@@ -79,7 +128,10 @@ void main() {
       test('allows a revision-aware update after the schedule is adopted',
           () async {
         final repository = entry.value();
-        final created = await repository.createFromDraft(_draft(), ownerUid: 'owner-1');
+        final created = await repository.createFromDraft(
+          _draft(),
+          ownerUid: 'owner-1',
+        );
         final adoptedEvent = await repository.updateAdoptedGeneratedScheduleId(
           eventId: created.event.id,
           generatedScheduleId: 'generated-1',
