@@ -43,8 +43,10 @@ void main() {
         publicIdGenerator: () => candidates[index++],
       );
 
-      final first = await repository.createFromDraft(buildDraft(), ownerUid: 'owner-1');
-      final second = await repository.createFromDraft(buildDraft(), ownerUid: 'owner-1');
+      final first =
+          await repository.createFromDraft(buildDraft(), ownerUid: 'owner-1');
+      final second =
+          await repository.createFromDraft(buildDraft(), ownerUid: 'owner-1');
 
       expect(first.event.publicId, 'AAAAAAAA');
       expect(second.event.publicId, 'BBBBBBBB');
@@ -100,7 +102,6 @@ void main() {
       expect(revisions['display'], 1);
       expect(revisions['courtSettings'], 1);
     });
-
   });
 }
 

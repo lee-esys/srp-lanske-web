@@ -807,8 +807,7 @@ class _SchedulePageState extends State<SchedulePage> {
       final updatedAggregate =
           await appEventRepository.updateCourtSettingsWithRevision(
         eventId: savedEvent.event.id,
-        expectedCourtSettingsRevision:
-            savedEvent.revisions.courtSettings,
+        expectedCourtSettingsRevision: savedEvent.revisions.courtSettings,
         courtSettings: nextSettings,
       );
 

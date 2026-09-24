@@ -81,7 +81,8 @@ void runEventRepositoryContractTests({
     test('creates manual event without import record', () async {
       final repository = createRepository();
 
-      final aggregate = await _createOwnedEvent(repository, 
+      final aggregate = await _createOwnedEvent(
+        repository,
         buildDraft(url: ''),
       );
 
@@ -111,10 +112,12 @@ void runEventRepositoryContractTests({
 
       final owned = await repository.listByOwnerUid('owner-1');
 
-      expect(owned.map((aggregate) => aggregate.event.id), containsAll([
-        first.event.id,
-        third.event.id,
-      ]));
+      expect(
+          owned.map((aggregate) => aggregate.event.id),
+          containsAll([
+            first.event.id,
+            third.event.id,
+          ]));
       expect(
         owned.any((aggregate) => aggregate.event.id == second.event.id),
         isFalse,
@@ -282,7 +285,8 @@ void runEventRepositoryContractTests({
     test('creates default court settings from draft court count', () async {
       final repository = createRepository();
 
-      final aggregate = await _createOwnedEvent(repository, 
+      final aggregate = await _createOwnedEvent(
+        repository,
         buildDraft(courts: 2),
       );
 
@@ -302,7 +306,8 @@ void runEventRepositoryContractTests({
     test('updates and persists court settings', () async {
       final repository = createRepository();
 
-      final created = await _createOwnedEvent(repository, 
+      final created = await _createOwnedEvent(
+        repository,
         buildDraft(courts: 2),
       );
 
@@ -338,7 +343,8 @@ void runEventRepositoryContractTests({
     test('keeps court settings when schedule ids are updated', () async {
       final repository = createRepository();
 
-      final created = await _createOwnedEvent(repository, 
+      final created = await _createOwnedEvent(
+        repository,
         buildDraft(courts: 2),
       );
 
@@ -380,7 +386,8 @@ void runEventRepositoryContractTests({
     test('updates and persists court settings for adopted event', () async {
       final repository = createRepository();
 
-      final created = await _createOwnedEvent(repository, 
+      final created = await _createOwnedEvent(
+        repository,
         buildDraft(courts: 2),
       );
 

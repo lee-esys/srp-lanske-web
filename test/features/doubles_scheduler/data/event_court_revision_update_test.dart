@@ -64,8 +64,7 @@ void main() {
         );
       });
 
-      test('rejects a changed save when the court revision is stale',
-          () async {
+      test('rejects a changed save when the court revision is stale', () async {
         final repository = entry.value();
         final created = await repository.createFromDraft(
           _draft(),
