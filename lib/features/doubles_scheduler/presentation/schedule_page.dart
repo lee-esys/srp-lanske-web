@@ -11,6 +11,7 @@ import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 import 'package:srp_lanske/shared/utils/browser_url.dart';
 
 import '../application/doubles_schedule_refresh_service.dart';
+import '../application/event_capabilities.dart';
 import '../application/event_repository.dart';
 import '../application/generated_schedule_service.dart';
 import '../application/local_schedule_history_mapper.dart';
@@ -104,6 +105,13 @@ class _SchedulePageState extends State<SchedulePage> {
         _savedEvent?.event.displayGeneratedScheduleId ?? _generatedScheduleId;
 
     return generatedScheduleId != null && generatedScheduleId.isNotEmpty;
+  }
+
+  EventCapabilities _eventCapabilitiesFor(SavedEventAggregate? aggregate) {
+    return resolveEventCapabilities(
+      ownerUid: aggregate?.event.ownerUid,
+      currentUid: AuthScope.of(context).session.uid,
+    );
   }
 
   List<SavedEventPlayer> get _orderedSavedPlayers {
@@ -771,7 +779,9 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _changeCourtDisplay() async {
-    if (_isOpeningSharedDataDialog || _isRefreshing) {
+    if (_isOpeningSharedDataDialog ||
+        _isRefreshing ||
+        !_eventCapabilitiesFor(_savedEvent).canEditCourtSettings) {
       return;
     }
 
@@ -787,7 +797,8 @@ class _SchedulePageState extends State<SchedulePage> {
       }
 
       final savedEvent = _savedEvent;
-      if (savedEvent == null) {
+      if (savedEvent == null ||
+          !_eventCapabilitiesFor(savedEvent).canEditCourtSettings) {
         return;
       }
 
@@ -864,6 +875,8 @@ class _SchedulePageState extends State<SchedulePage> {
           isRefreshing: _isRefreshing,
           progressText: _progressText,
           showEditAction: !_hasAdoptedSchedule,
+          canEditEventInfo:
+              _eventCapabilitiesFor(_savedEvent).canEditDisplay,
         ),
         const SizedBox(height: 12),
         SchedulePlayersCard(
@@ -881,6 +894,7 @@ class _SchedulePageState extends State<SchedulePage> {
             child: ScheduleOperationPanel(
               courtDisplaySummary: _courtDisplaySummary,
               canChangeCourtDisplay: _savedEvent != null &&
+                  _eventCapabilitiesFor(_savedEvent).canEditCourtSettings &&
                   !_isRefreshing &&
                   !_isCheckingRegenerate &&
                   !_isOpeningSharedDataDialog,
@@ -937,7 +951,14 @@ class _SchedulePageState extends State<SchedulePage> {
     final canRefresh = _generatedScheduleId != null &&
         !_isLoading &&
         !_isOpeningSharedDataDialog;
-    final canEditSharedData = _savedEvent != null &&
+    final capabilities = _eventCapabilitiesFor(_savedEvent);
+    final canEditEventInfo = _savedEvent != null &&
+        capabilities.canEditDisplay &&
+        !_isRefreshing &&
+        !_isCheckingRegenerate &&
+        !_isOpeningSharedDataDialog;
+    final canEditCourtDisplay = _savedEvent != null &&
+        capabilities.canEditCourtSettings &&
         !_isRefreshing &&
         !_isCheckingRegenerate &&
         !_isOpeningSharedDataDialog;
@@ -978,8 +999,9 @@ class _SchedulePageState extends State<SchedulePage> {
               }
             : null,
         onEditEventInfo:
-            canEditSharedData ? _eventSummaryController.editEventInfo : null,
-        onChangeCourtDisplay: canEditSharedData ? _changeCourtDisplay : null,
+            canEditEventInfo ? _eventSummaryController.editEventInfo : null,
+        onChangeCourtDisplay:
+            canEditCourtDisplay ? _changeCourtDisplay : null,
         onRegenerate: !_hasAdoptedSchedule &&
                 !_isLoading &&
                 !_isAdopting &&
