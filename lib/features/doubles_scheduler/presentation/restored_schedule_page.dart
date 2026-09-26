@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
+import 'package:srp_lanske/features/auth/presentation/auth_scope.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/infrastructure/generated_schedule_api_client.dart';
@@ -10,6 +11,7 @@ import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 import 'package:srp_lanske/shared/utils/browser_url.dart';
 
 import '../application/doubles_schedule_refresh_service.dart';
+import '../application/event_capabilities.dart';
 import '../application/event_repository.dart';
 import '../application/generated_schedule_service.dart';
 import '../application/local_schedule_history_mapper.dart';
@@ -107,6 +109,13 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _savedEvent?.event.displayGeneratedScheduleId ?? _generatedScheduleId;
 
     return generatedScheduleId != null && generatedScheduleId.isNotEmpty;
+  }
+
+  EventCapabilities _eventCapabilitiesFor(SavedEventAggregate? aggregate) {
+    return resolveEventCapabilities(
+      ownerUid: aggregate?.event.ownerUid,
+      currentUid: AuthScope.of(context).session.uid,
+    );
   }
 
   List<SavedEventPlayer> get _orderedPlayers {
@@ -712,7 +721,9 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
   }
 
   Future<void> _changeCourtDisplay() async {
-    if (_isOpeningSharedDataDialog || _isRefreshing) {
+    if (_isOpeningSharedDataDialog ||
+        _isRefreshing ||
+        !_eventCapabilitiesFor(_savedEvent).canEditCourtSettings) {
       return;
     }
 
@@ -728,7 +739,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       }
 
       final savedEvent = _savedEvent;
-      if (savedEvent == null) {
+      if (savedEvent == null ||
+          !_eventCapabilitiesFor(savedEvent).canEditCourtSettings) {
         return;
       }
 
@@ -864,6 +876,8 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
             isRefreshing: _isRefreshing,
             progressText: _progressText,
             showEditAction: !_hasAdoptedSchedule,
+            canEditEventInfo:
+                _eventCapabilitiesFor(savedEvent).canEditDisplay,
           ),
           const SizedBox(height: 12),
           SchedulePlayersCard(
@@ -880,9 +894,11 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
             ScheduleSectionCard(
               child: ScheduleOperationPanel(
                 courtDisplaySummary: _courtDisplaySummary,
-                canChangeCourtDisplay: !_isRefreshing &&
-                    !_isCheckingRegenerate &&
-                    !_isOpeningSharedDataDialog,
+                canChangeCourtDisplay:
+                    _eventCapabilitiesFor(savedEvent).canEditCourtSettings &&
+                        !_isRefreshing &&
+                        !_isCheckingRegenerate &&
+                        !_isOpeningSharedDataDialog,
                 onChangeCourtDisplay: _changeCourtDisplay,
                 showActionButtons: true,
                 isLoading: _isLoading ||
@@ -937,7 +953,14 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     final canRefresh = _generatedScheduleId != null &&
         !_isLoading &&
         !_isOpeningSharedDataDialog;
-    final canEditSharedData = _savedEvent != null &&
+    final capabilities = _eventCapabilitiesFor(_savedEvent);
+    final canEditEventInfo = _savedEvent != null &&
+        capabilities.canEditDisplay &&
+        !_isRefreshing &&
+        !_isCheckingRegenerate &&
+        !_isOpeningSharedDataDialog;
+    final canEditCourtDisplay = _savedEvent != null &&
+        capabilities.canEditCourtSettings &&
         !_isRefreshing &&
         !_isCheckingRegenerate &&
         !_isOpeningSharedDataDialog;
@@ -978,8 +1001,9 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
               }
             : null,
         onEditEventInfo:
-            canEditSharedData ? _eventSummaryController.editEventInfo : null,
-        onChangeCourtDisplay: canEditSharedData ? _changeCourtDisplay : null,
+            canEditEventInfo ? _eventSummaryController.editEventInfo : null,
+        onChangeCourtDisplay:
+            canEditCourtDisplay ? _changeCourtDisplay : null,
         onRegenerate: !_hasAdoptedSchedule &&
                 !_isLoading &&
                 !_isAdopting &&
