@@ -604,99 +604,11 @@ service cloud.firestore {
           'updatedAt'
         ])
         && event.id is string
-        && event.id.matches('^.+    match /events/{publicId} {
-      allow read, create, update: if true;
-      allow delete: if false;
-
-      match /schedule_progress/{generatedScheduleId} {
-        allow read, create, update: if true;
-        allow delete: if false;
-
-        match /matches/{matchKey} {
-          allow read, create, update: if true;
-          allow delete: if false;
-        }
-      }
-    }
-
-    // Public share documents used by team schedules, including boccia data.
-    match /team_schedules/{shareId} {
-      allow read, create, update: if true;
-      allow delete: if false;
-
-      match /schedule_progress/{generatedScheduleId} {
-        allow read, create, update: if true;
-        allow delete: if false;
-
-        match /matches/{matchKey} {
-          allow read, create, update: if true;
-          allow delete: if false;
-        }
-      }
-    }
-
-    // Existing core-generated data is readable from the client,
-    // but client writes are not allowed.
-    match /{collectionId}/{documentId} {
-      allow read: if isReadOnlyCoreCollection(collectionId);
-      allow create, update, delete: if false;
-    }
-
-    // Deny any collection or document path that is not explicitly handled above.
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
-)
+        && event.id.size() > 0
         && event.publicId == publicId
         && event.ownerUid == request.auth.uid
         && event.title is string
-        && event.title.matches('^.+    match /events/{publicId} {
-      allow read, create, update: if true;
-      allow delete: if false;
-
-      match /schedule_progress/{generatedScheduleId} {
-        allow read, create, update: if true;
-        allow delete: if false;
-
-        match /matches/{matchKey} {
-          allow read, create, update: if true;
-          allow delete: if false;
-        }
-      }
-    }
-
-    // Public share documents used by team schedules, including boccia data.
-    match /team_schedules/{shareId} {
-      allow read, create, update: if true;
-      allow delete: if false;
-
-      match /schedule_progress/{generatedScheduleId} {
-        allow read, create, update: if true;
-        allow delete: if false;
-
-        match /matches/{matchKey} {
-          allow read, create, update: if true;
-          allow delete: if false;
-        }
-      }
-    }
-
-    // Existing core-generated data is readable from the client,
-    // but client writes are not allowed.
-    match /{collectionId}/{documentId} {
-      allow read: if isReadOnlyCoreCollection(collectionId);
-      allow create, update, delete: if false;
-    }
-
-    // Deny any collection or document path that is not explicitly handled above.
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
-)
+        && event.title.size() > 0
         && event.courtCount is int
         && event.courtCount > 0
         && event.status == 'draft'
@@ -735,51 +647,7 @@ service cloud.firestore {
         && rootChanged.hasOnly(['event', 'players', 'revisions', 'provenance'])
         && eventChanged.hasOnly(['title', 'memo', 'revision', 'updatedAt'])
         && request.resource.data.event.title is string
-        && request.resource.data.event.title.matches('^.+    match /events/{publicId} {
-      allow read, create, update: if true;
-      allow delete: if false;
-
-      match /schedule_progress/{generatedScheduleId} {
-        allow read, create, update: if true;
-        allow delete: if false;
-
-        match /matches/{matchKey} {
-          allow read, create, update: if true;
-          allow delete: if false;
-        }
-      }
-    }
-
-    // Public share documents used by team schedules, including boccia data.
-    match /team_schedules/{shareId} {
-      allow read, create, update: if true;
-      allow delete: if false;
-
-      match /schedule_progress/{generatedScheduleId} {
-        allow read, create, update: if true;
-        allow delete: if false;
-
-        match /matches/{matchKey} {
-          allow read, create, update: if true;
-          allow delete: if false;
-        }
-      }
-    }
-
-    // Existing core-generated data is readable from the client,
-    // but client writes are not allowed.
-    match /{collectionId}/{documentId} {
-      allow read: if isReadOnlyCoreCollection(collectionId);
-      allow create, update, delete: if false;
-    }
-
-    // Deny any collection or document path that is not explicitly handled above.
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
-)
+        && request.resource.data.event.title.size() > 0
         && request.resource.data.event.memo is string
         && request.resource.data.event.revision
           == resource.data.event.revision + 1
@@ -865,51 +733,7 @@ service cloud.firestore {
         && resource.data.event.get('adoptedGeneratedScheduleId', null) == null
         && request.resource.data.event.status == 'generated'
         && request.resource.data.event.currentGeneratedScheduleId is string
-        && request.resource.data.event.currentGeneratedScheduleId.matches('^.+    match /events/{publicId} {
-      allow read, create, update: if true;
-      allow delete: if false;
-
-      match /schedule_progress/{generatedScheduleId} {
-        allow read, create, update: if true;
-        allow delete: if false;
-
-        match /matches/{matchKey} {
-          allow read, create, update: if true;
-          allow delete: if false;
-        }
-      }
-    }
-
-    // Public share documents used by team schedules, including boccia data.
-    match /team_schedules/{shareId} {
-      allow read, create, update: if true;
-      allow delete: if false;
-
-      match /schedule_progress/{generatedScheduleId} {
-        allow read, create, update: if true;
-        allow delete: if false;
-
-        match /matches/{matchKey} {
-          allow read, create, update: if true;
-          allow delete: if false;
-        }
-      }
-    }
-
-    // Existing core-generated data is readable from the client,
-    // but client writes are not allowed.
-    match /{collectionId}/{documentId} {
-      allow read: if isReadOnlyCoreCollection(collectionId);
-      allow create, update, delete: if false;
-    }
-
-    // Deny any collection or document path that is not explicitly handled above.
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
-)
+        && request.resource.data.event.currentGeneratedScheduleId.size() > 0
         && request.resource.data.event.revision
           == resource.data.event.revision + 1
         && isValidEventSchemaUpdate()
@@ -939,51 +763,7 @@ service cloud.firestore {
           'updatedAt'
         ])
         && currentGeneratedScheduleId is string
-        && currentGeneratedScheduleId.matches('^.+    match /events/{publicId} {
-      allow read, create, update: if true;
-      allow delete: if false;
-
-      match /schedule_progress/{generatedScheduleId} {
-        allow read, create, update: if true;
-        allow delete: if false;
-
-        match /matches/{matchKey} {
-          allow read, create, update: if true;
-          allow delete: if false;
-        }
-      }
-    }
-
-    // Public share documents used by team schedules, including boccia data.
-    match /team_schedules/{shareId} {
-      allow read, create, update: if true;
-      allow delete: if false;
-
-      match /schedule_progress/{generatedScheduleId} {
-        allow read, create, update: if true;
-        allow delete: if false;
-
-        match /matches/{matchKey} {
-          allow read, create, update: if true;
-          allow delete: if false;
-        }
-      }
-    }
-
-    // Existing core-generated data is readable from the client,
-    // but client writes are not allowed.
-    match /{collectionId}/{documentId} {
-      allow read: if isReadOnlyCoreCollection(collectionId);
-      allow create, update, delete: if false;
-    }
-
-    // Deny any collection or document path that is not explicitly handled above.
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
-)
+        && currentGeneratedScheduleId.size() > 0
         && resource.data.event.get('adoptedGeneratedScheduleId', null) == null
         && request.resource.data.event.status == 'adopted'
         && request.resource.data.event.currentGeneratedScheduleId
