@@ -40,7 +40,7 @@ class ScheduleEventSummaryCard extends StatefulWidget {
     this.progressText,
     this.controller,
     this.showEditAction = true,
-    this.canEditEventInfo = true,
+    this.canEditEventInfo = false,
   });
 
   final SavedEventAggregate? aggregate;
