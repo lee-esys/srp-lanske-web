@@ -519,7 +519,7 @@ class _SchedulePageState extends State<SchedulePage> {
       if (generatedScheduleId != null && generatedScheduleId.isNotEmpty) {
         final updatedEvent =
             await appEventRepository.updateCurrentGeneratedScheduleId(
-          eventId: savedEvent.event.id,
+          publicId: savedEvent.event.publicId,
           generatedScheduleId: generatedScheduleId,
         );
 
@@ -734,7 +734,7 @@ class _SchedulePageState extends State<SchedulePage> {
 
       final updatedEvent =
           await appEventRepository.updateAdoptedGeneratedScheduleId(
-        eventId: latestEvent.event.id,
+        publicId: latestEvent.event.publicId,
         generatedScheduleId: displayedGeneratedScheduleId,
       );
 
@@ -817,7 +817,7 @@ class _SchedulePageState extends State<SchedulePage> {
 
       final updatedAggregate =
           await appEventRepository.updateCourtSettingsWithRevision(
-        eventId: savedEvent.event.id,
+        publicId: savedEvent.event.publicId,
         expectedCourtSettingsRevision: savedEvent.revisions.courtSettings,
         courtSettings: nextSettings,
       );

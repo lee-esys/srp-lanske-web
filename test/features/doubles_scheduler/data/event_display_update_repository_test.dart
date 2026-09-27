@@ -42,11 +42,11 @@ void main() {
         );
 
         await repository.updateCurrentGeneratedScheduleId(
-          eventId: created.event.id,
+          publicId: created.event.publicId,
           generatedScheduleId: 'generated-1',
         );
         await repository.updateCourtSettings(
-          eventId: created.event.id,
+          publicId: created.event.publicId,
           courtSettings: [
             SavedEventCourtSetting(courtNumber: 1, displayLabel: 'A'),
           ],
@@ -94,7 +94,7 @@ void main() {
         final originalDisplayRevision = created.revisions.display;
 
         final generated = await repository.updateCurrentGeneratedScheduleId(
-          eventId: created.event.id,
+          publicId: created.event.publicId,
           generatedScheduleId: 'generated-1',
         );
         expect(generated.revision, created.event.revision + 1);
@@ -252,18 +252,6 @@ class _FakeSavedEventJsonStore extends SavedEventJsonStore {
   Future<Map<String, dynamic>?> findByPublicId(String publicId) async {
     final data = _dataByPublicId[publicId];
     return data == null ? null : _copy(data);
-  }
-
-  @override
-  Future<Map<String, dynamic>?> findByEventId(String eventId) async {
-    for (final data in _dataByPublicId.values) {
-      final event = data['event'];
-      if (event is Map && event['id'] == eventId) {
-        return _copy(data);
-      }
-    }
-
-    return null;
   }
 
   Map<String, dynamic> _copy(Map<String, dynamic> data) {

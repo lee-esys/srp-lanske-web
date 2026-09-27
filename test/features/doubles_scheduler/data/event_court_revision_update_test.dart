@@ -43,7 +43,7 @@ void main() {
         );
 
         final updatedCourt = await repository.updateCourtSettingsWithRevision(
-          eventId: created.event.id,
+          publicId: created.event.publicId,
           expectedCourtSettingsRevision: created.revisions.courtSettings,
           courtSettings: [
             SavedEventCourtSetting(courtNumber: 1, displayLabel: 'A'),
@@ -72,7 +72,7 @@ void main() {
         );
 
         final first = await repository.updateCourtSettingsWithRevision(
-          eventId: created.event.id,
+          publicId: created.event.publicId,
           expectedCourtSettingsRevision: created.revisions.courtSettings,
           courtSettings: [
             SavedEventCourtSetting(courtNumber: 1, displayLabel: 'A'),
@@ -81,7 +81,7 @@ void main() {
 
         await expectLater(
           repository.updateCourtSettingsWithRevision(
-            eventId: created.event.id,
+            publicId: created.event.publicId,
             expectedCourtSettingsRevision: created.revisions.courtSettings,
             courtSettings: [
               SavedEventCourtSetting(courtNumber: 1, displayLabel: 'B'),
@@ -105,7 +105,7 @@ void main() {
           ownerUid: 'owner-1',
         );
         final first = await repository.updateCourtSettingsWithRevision(
-          eventId: created.event.id,
+          publicId: created.event.publicId,
           expectedCourtSettingsRevision: created.revisions.courtSettings,
           courtSettings: [
             SavedEventCourtSetting(courtNumber: 1, displayLabel: 'A'),
@@ -113,7 +113,7 @@ void main() {
         );
 
         final noOp = await repository.updateCourtSettingsWithRevision(
-          eventId: created.event.id,
+          publicId: created.event.publicId,
           expectedCourtSettingsRevision: created.revisions.courtSettings,
           courtSettings: [
             SavedEventCourtSetting(courtNumber: 1, displayLabel: 'A'),
@@ -132,12 +132,12 @@ void main() {
           ownerUid: 'owner-1',
         );
         final adoptedEvent = await repository.updateAdoptedGeneratedScheduleId(
-          eventId: created.event.id,
+          publicId: created.event.publicId,
           generatedScheduleId: 'generated-1',
         );
 
         final updated = await repository.updateCourtSettingsWithRevision(
-          eventId: created.event.id,
+          publicId: created.event.publicId,
           expectedCourtSettingsRevision: created.revisions.courtSettings,
           courtSettings: [
             SavedEventCourtSetting(courtNumber: 1, displayLabel: '左'),
@@ -179,17 +179,6 @@ class _FakeSavedEventJsonStore extends SavedEventJsonStore {
   Future<Map<String, dynamic>?> findByPublicId(String publicId) async {
     final data = _dataByPublicId[publicId];
     return data == null ? null : _copy(data);
-  }
-
-  @override
-  Future<Map<String, dynamic>?> findByEventId(String eventId) async {
-    for (final data in _dataByPublicId.values) {
-      final event = data['event'];
-      if (event is Map && event['id'] == eventId) {
-        return _copy(data);
-      }
-    }
-    return null;
   }
 
   Map<String, dynamic> _copy(Map<String, dynamic> data) {

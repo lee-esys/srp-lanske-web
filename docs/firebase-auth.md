@@ -53,7 +53,7 @@ For the current policy, matching UIDs allow editing event title / memo, player d
 
 Shared access continues to allow schedule viewing, progress and match-result input, regenerate, adopt, and existing share URL reuse. Admin role is not an ownership override.
 
-These capabilities are application-side UI/action controls. Firestore Rules remain the final write-authorization boundary and are handled separately.
+These capabilities are application-side UI/action controls. Firestore Rules are the final write-authorization boundary; the event-specific rules and shared-operation constraints are documented in [`firestore-event-permissions.md`](./firestore-event-permissions.md).
 
 ## Lanske user documents
 

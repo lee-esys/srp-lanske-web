@@ -13,15 +13,15 @@ abstract class EventRepository {
     throw UnimplementedError('listByOwnerUid is not implemented');
   }
 
-  Future<List<SavedEventPlayer>> listPlayers(String eventId);
+  Future<List<SavedEventPlayer>> listPlayers(String publicId);
 
   Future<SavedEvent> updateCurrentGeneratedScheduleId({
-    required String eventId,
+    required String publicId,
     required String generatedScheduleId,
   });
 
   Future<SavedEvent> updateAdoptedGeneratedScheduleId({
-    required String eventId,
+    required String publicId,
     required String generatedScheduleId,
   });
 
@@ -36,12 +36,12 @@ abstract class EventRepository {
   }
 
   Future<SavedEventAggregate> updateCourtSettings({
-    required String eventId,
+    required String publicId,
     required List<SavedEventCourtSetting> courtSettings,
   });
 
   Future<SavedEventAggregate> updateCourtSettingsWithRevision({
-    required String eventId,
+    required String publicId,
     required int expectedCourtSettingsRevision,
     required List<SavedEventCourtSetting> courtSettings,
   }) {

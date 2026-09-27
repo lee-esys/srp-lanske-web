@@ -383,13 +383,13 @@ class _FakeEventRepository extends EventRepository {
   }
 
   @override
-  Future<List<SavedEventPlayer>> listPlayers(String eventId) {
+  Future<List<SavedEventPlayer>> listPlayers(String publicId) {
     throw UnimplementedError();
   }
 
   @override
   Future<SavedEvent> updateCurrentGeneratedScheduleId({
-    required String eventId,
+    required String publicId,
     required String generatedScheduleId,
   }) {
     throw UnimplementedError();
@@ -397,7 +397,7 @@ class _FakeEventRepository extends EventRepository {
 
   @override
   Future<SavedEvent> updateAdoptedGeneratedScheduleId({
-    required String eventId,
+    required String publicId,
     required String generatedScheduleId,
   }) {
     throw UnimplementedError();
@@ -405,7 +405,7 @@ class _FakeEventRepository extends EventRepository {
 
   @override
   Future<SavedEventAggregate> updateCourtSettings({
-    required String eventId,
+    required String publicId,
     required List<SavedEventCourtSetting> courtSettings,
   }) {
     throw UnimplementedError();

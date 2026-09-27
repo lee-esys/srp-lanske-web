@@ -111,24 +111,23 @@ class JsonEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<SavedEventPlayer>> listPlayers(String eventId) async {
-    final aggregate = await _findByEventId(eventId);
+  Future<List<SavedEventPlayer>> listPlayers(String publicId) async {
+    final aggregate = await findByPublicId(publicId);
     return List.unmodifiable(aggregate?.players ?? const []);
   }
 
   @override
   Future<SavedEvent> updateCurrentGeneratedScheduleId({
-    required String eventId,
+    required String publicId,
     required String generatedScheduleId,
   }) async {
-    final aggregate = await _requireEventById(eventId);
     final updatedData = await _store.updateByPublicId(
-      publicId: aggregate.event.publicId,
+      publicId: publicId,
       update: (currentData) {
         final current = SavedEventAggregate.fromJson(currentData);
-        _ensureEventId(current, eventId);
+        _ensurePublicId(current, publicId);
         if (current.event.hasAdoptedSchedule) {
-          throw StateError('event already adopted: $eventId');
+          throw StateError('event already adopted: $publicId');
         }
 
         return _buildEventFieldsUpdate(
@@ -143,20 +142,19 @@ class JsonEventRepository implements EventRepository {
       },
     );
 
-    return _requireUpdatedAggregate(updatedData, eventId).event;
+    return _requireUpdatedAggregate(updatedData, publicId).event;
   }
 
   @override
   Future<SavedEvent> updateAdoptedGeneratedScheduleId({
-    required String eventId,
+    required String publicId,
     required String generatedScheduleId,
   }) async {
-    final aggregate = await _requireEventById(eventId);
     final updatedData = await _store.updateByPublicId(
-      publicId: aggregate.event.publicId,
+      publicId: publicId,
       update: (currentData) {
         final current = SavedEventAggregate.fromJson(currentData);
-        _ensureEventId(current, eventId);
+        _ensurePublicId(current, publicId);
         final nowJson = _dateTimeToJson(_clock());
 
         return _buildEventFieldsUpdate(
@@ -173,7 +171,7 @@ class JsonEventRepository implements EventRepository {
       },
     );
 
-    return _requireUpdatedAggregate(updatedData, eventId).event;
+    return _requireUpdatedAggregate(updatedData, publicId).event;
   }
 
   @override
@@ -264,11 +262,11 @@ class JsonEventRepository implements EventRepository {
 
   @override
   Future<SavedEventAggregate> updateCourtSettings({
-    required String eventId,
+    required String publicId,
     required List<SavedEventCourtSetting> courtSettings,
   }) async {
     return _updateCourtSettings(
-      eventId: eventId,
+      publicId: publicId,
       expectedCourtSettingsRevision: null,
       courtSettings: courtSettings,
     );
@@ -276,29 +274,28 @@ class JsonEventRepository implements EventRepository {
 
   @override
   Future<SavedEventAggregate> updateCourtSettingsWithRevision({
-    required String eventId,
+    required String publicId,
     required int expectedCourtSettingsRevision,
     required List<SavedEventCourtSetting> courtSettings,
   }) async {
     _validateExpectedRevision(expectedCourtSettingsRevision);
     return _updateCourtSettings(
-      eventId: eventId,
+      publicId: publicId,
       expectedCourtSettingsRevision: expectedCourtSettingsRevision,
       courtSettings: courtSettings,
     );
   }
 
   Future<SavedEventAggregate> _updateCourtSettings({
-    required String eventId,
+    required String publicId,
     required int? expectedCourtSettingsRevision,
     required List<SavedEventCourtSetting> courtSettings,
   }) async {
-    final aggregate = await _requireEventById(eventId);
     final updatedData = await _store.updateByPublicId(
-      publicId: aggregate.event.publicId,
+      publicId: publicId,
       update: (currentData) {
         final current = SavedEventAggregate.fromJson(currentData);
-        _ensureEventId(current, eventId);
+        _ensurePublicId(current, publicId);
 
         if (_courtSettingsEqual(current.courtSettings, courtSettings)) {
           return SavedEventJsonUpdate.noOp(currentData);
@@ -338,20 +335,7 @@ class JsonEventRepository implements EventRepository {
       },
     );
 
-    return _requireUpdatedAggregate(updatedData, eventId);
-  }
-
-  Future<SavedEventAggregate?> _findByEventId(String eventId) async {
-    final data = await _store.findByEventId(eventId);
-    return data == null ? null : SavedEventAggregate.fromJson(data);
-  }
-
-  Future<SavedEventAggregate> _requireEventById(String eventId) async {
-    final aggregate = await _findByEventId(eventId);
-    if (aggregate == null) {
-      throw StateError('event not found: $eventId');
-    }
-    return aggregate;
+    return _requireUpdatedAggregate(updatedData, publicId);
   }
 
   SavedEventAggregate _requireUpdatedAggregate(
@@ -435,9 +419,9 @@ class JsonEventRepository implements EventRepository {
     return normalized;
   }
 
-  void _ensureEventId(SavedEventAggregate aggregate, String eventId) {
-    if (aggregate.event.id != eventId) {
-      throw StateError('event id mismatch: $eventId');
+  void _ensurePublicId(SavedEventAggregate aggregate, String publicId) {
+    if (aggregate.event.publicId != publicId) {
+      throw StateError('event public id mismatch: $publicId');
     }
   }
 
