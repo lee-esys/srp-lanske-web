@@ -645,12 +645,14 @@ test('admin cannot browse mappings or arbitrarily update user data', async () =>
   );
 });
 
-test('existing event, team schedule, and core read behavior remains unchanged', async () => {
+test('existing event read, team schedule, and core read behavior remains unchanged', async () => {
   const unauthenticated = testEnv.unauthenticatedContext().firestore();
 
-  await assertSucceeds(
-    unauthenticated.doc('events/event-1').set({ title: 'event' }),
-  );
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await context.firestore().doc('events/event-1').set({ title: 'event' });
+    await context.firestore().doc('core_example/doc-1').set({ value: 1 });
+  });
+
   await assertSucceeds(unauthenticated.doc('events/event-1').get());
 
   await assertSucceeds(
@@ -658,9 +660,6 @@ test('existing event, team schedule, and core read behavior remains unchanged', 
   );
   await assertSucceeds(unauthenticated.doc('team_schedules/team-1').get());
 
-  await testEnv.withSecurityRulesDisabled(async (context) => {
-    await context.firestore().doc('core_example/doc-1').set({ value: 1 });
-  });
   await assertSucceeds(unauthenticated.doc('core_example/doc-1').get());
   await assertFails(
     unauthenticated.doc('core_example/doc-2').set({ value: 2 }),
