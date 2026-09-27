@@ -229,6 +229,7 @@ void main() {
             return true;
           },
           progressText: '0 / 10',
+          canEditEventInfo: true,
         ),
       ),
     );
@@ -263,6 +264,7 @@ void main() {
           repository: repository,
           onRefreshForEdit: () async => true,
           showEditAction: false,
+          canEditEventInfo: true,
         ),
       ),
     );
