@@ -942,7 +942,7 @@ service cloud.firestore {
     match /events/{publicId} {
       allow get: if true;
       allow list: if request.auth != null
-        && resource.data.event.get('ownerUid', null) == request.auth.uid;
+        && resource.data.event.ownerUid == request.auth.uid;
       allow create: if isValidEventCreate(publicId);
       allow update: if isOwnerDisplayUpdate()
         || isOwnerCourtSettingsUpdate()
