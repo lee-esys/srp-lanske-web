@@ -229,6 +229,7 @@ void main() {
             return true;
           },
           progressText: '0 / 10',
+          canEditEventInfo: true,
         ),
       ),
     );
@@ -263,6 +264,7 @@ void main() {
           repository: repository,
           onRefreshForEdit: () async => true,
           showEditAction: false,
+          canEditEventInfo: true,
         ),
       ),
     );
@@ -275,6 +277,38 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byType(AlertDialog), findsOneWidget);
+  });
+
+  testWidgets('blocks inline and delegated editing when capability is disabled',
+      (tester) async {
+    final aggregate = _aggregate();
+    final repository = _FakeEventRepository(aggregate);
+    final controller = ScheduleEventSummaryController();
+    var refreshCount = 0;
+
+    await tester.pumpWidget(
+      _testApp(
+        ScheduleEventSummaryCard(
+          controller: controller,
+          aggregate: aggregate,
+          repository: repository,
+          onRefreshForEdit: () async {
+            refreshCount += 1;
+            return true;
+          },
+          canEditEventInfo: false,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('イベント情報を編集'), findsNothing);
+
+    await controller.editEventInfo();
+    await tester.pumpAndSettle();
+
+    expect(refreshCount, 0);
+    expect(find.byType(AlertDialog), findsNothing);
   });
 }
 

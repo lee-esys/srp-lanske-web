@@ -140,6 +140,30 @@ void main() {
     expect(courtCount, 0);
     expect(regenerateCount, 0);
   });
+
+  testWidgets('keeps shared actions when owner edit callbacks are absent',
+      (tester) async {
+    var regenerateCount = 0;
+
+    await _pumpDrawer(
+      tester,
+      width: 400,
+      onRefreshLatestInfo: () {},
+      onRegenerate: () {
+        regenerateCount += 1;
+      },
+    );
+
+    expect(find.text('最新の情報に更新'), findsOneWidget);
+    expect(find.text('イベント情報を編集'), findsNothing);
+    expect(find.text('コート表示: 変更'), findsNothing);
+    expect(find.text('再生成'), findsOneWidget);
+
+    await tester.tap(find.text('再生成'));
+    await tester.pumpAndSettle();
+
+    expect(regenerateCount, 1);
+  });
 }
 
 LocalScheduleHistoryItem _historyItem({required String title}) {

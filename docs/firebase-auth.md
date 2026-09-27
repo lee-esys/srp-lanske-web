@@ -38,6 +38,23 @@ If a Firebase session already exists, it is reused. If the user is signed out, `
 
 Do not call `ensureAnonymousSession()` simply on page load.
 
+## Event ownership capabilities
+
+New doubles events persist the Firebase Auth UID that exists when the event is first saved as `ownerUid`. Opening or restoring a shared URL does not create an anonymous session only to evaluate ownership.
+
+Owner-only application capabilities are derived at runtime from the saved event owner UID and the current Auth UID:
+
+```text
+event.ownerUid + current Auth UID
+        -> EventCapabilities
+```
+
+For the current policy, matching UIDs allow editing event title / memo, player display names, and court display labels. A different UID, a signed-out session, or a legacy event with `ownerUid == null` is treated as shared access for those structural edits.
+
+Shared access continues to allow schedule viewing, progress and match-result input, regenerate, adopt, and existing share URL reuse. Admin role is not an ownership override.
+
+These capabilities are application-side UI/action controls. Firestore Rules remain the final write-authorization boundary and are handled separately.
+
 ## Lanske user documents
 
 Anonymous Firebase users do not create `users/{uid}` documents.
@@ -45,7 +62,7 @@ Anonymous Firebase users do not create `users/{uid}` documents.
 ```text
 anonymous Firebase user
   -> Firebase Auth only
-  -> may later be used as event owner UID
+  -> can be used as event owner UID when an event is saved
   -> no users/{uid} document
 
 registered Lanske account
@@ -82,14 +99,6 @@ A failed anonymous sign-in does not automatically block screens that do not requ
 
 ## Responsibility boundaries
 
-web #202 does not implement:
+The Auth foundation itself does not enforce event write authorization. Event ownership and application capabilities are layered on top of the Auth UID, while owner-based Firestore Rules remain a separate responsibility.
 
-- `users/{uid}` documents
-- account registration UI
-- provider login UI
-- event `ownerUid`
-- owner-based Firestore Rules
-- anonymous-to-account credential linking
-- migration to an existing Lanske account
-
-Those responsibilities remain in #203, #204, and #196.
+Account registration, provider login, user documents, and anonymous-to-account credential linking are implemented by their respective account features rather than by `AuthSessionController`.

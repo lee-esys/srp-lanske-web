@@ -40,6 +40,7 @@ class ScheduleEventSummaryCard extends StatefulWidget {
     this.progressText,
     this.controller,
     this.showEditAction = true,
+    this.canEditEventInfo = false,
   });
 
   final SavedEventAggregate? aggregate;
@@ -52,6 +53,7 @@ class ScheduleEventSummaryCard extends StatefulWidget {
   final String? progressText;
   final ScheduleEventSummaryController? controller;
   final bool showEditAction;
+  final bool canEditEventInfo;
 
   @override
   State<ScheduleEventSummaryCard> createState() =>
@@ -140,7 +142,7 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
   }
 
   Future<void> _editEventInfo() async {
-    if (_isEditingEventInfo) return;
+    if (_isEditingEventInfo || !widget.canEditEventInfo) return;
 
     final l10n = AppLocalizations.of(context);
     var dialogOpened = false;
@@ -151,10 +153,10 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
 
     try {
       final refreshed = await _refreshParentForEdit();
-      if (!mounted || !refreshed) return;
+      if (!mounted || !refreshed || !widget.canEditEventInfo) return;
 
       final latest = await _loadLatestAggregate();
-      if (!mounted) return;
+      if (!mounted || !widget.canEditEventInfo) return;
 
       if (latest == null) {
         AppSnackBar.show(
@@ -377,6 +379,7 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
     final event = _displayAggregate?.event;
     final hasAdoptedSchedule = event?.hasAdoptedSchedule ?? false;
     final canEdit = widget.showEditAction &&
+        widget.canEditEventInfo &&
         event != null &&
         !_isEditingEventInfo &&
         !widget.isRefreshing &&
@@ -450,7 +453,9 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
                         : const Icon(Icons.sync),
                     label: Text(l10n.refreshLatestButton),
                   ),
-                if (widget.showEditAction && event != null)
+                if (widget.showEditAction &&
+                    widget.canEditEventInfo &&
+                    event != null)
                   OutlinedButton.icon(
                     onPressed: canEdit ? _editEventInfo : null,
                     icon: _isEditingEventInfo
