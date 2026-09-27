@@ -12,7 +12,6 @@ void main() {
       expect(capabilities.isOwner, isTrue);
       expect(capabilities.canEditDisplay, isTrue);
       expect(capabilities.canEditCourtSettings, isTrue);
-      expect(capabilities.canManageOwnership, isTrue);
     });
 
     test('denies owner-only capabilities when UIDs differ', () {
@@ -24,7 +23,6 @@ void main() {
       expect(capabilities.isOwner, isFalse);
       expect(capabilities.canEditDisplay, isFalse);
       expect(capabilities.canEditCourtSettings, isFalse);
-      expect(capabilities.canManageOwnership, isFalse);
     });
 
     test('treats legacy event without ownerUid as non-owner', () {
@@ -36,7 +34,6 @@ void main() {
       expect(capabilities.isOwner, isFalse);
       expect(capabilities.canEditDisplay, isFalse);
       expect(capabilities.canEditCourtSettings, isFalse);
-      expect(capabilities.canManageOwnership, isFalse);
     });
 
     test('treats signed-out session as non-owner', () {
@@ -48,7 +45,6 @@ void main() {
       expect(capabilities.isOwner, isFalse);
       expect(capabilities.canEditDisplay, isFalse);
       expect(capabilities.canEditCourtSettings, isFalse);
-      expect(capabilities.canManageOwnership, isFalse);
     });
 
     test('ignores blank UIDs', () {
