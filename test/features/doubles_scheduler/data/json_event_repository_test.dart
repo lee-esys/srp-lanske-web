@@ -89,7 +89,7 @@ void main() {
       );
 
       await repository.updateCurrentGeneratedScheduleId(
-        eventId: created.event.id,
+        publicId: created.event.publicId,
         generatedScheduleId: 'generated-1',
       );
 
@@ -122,19 +122,6 @@ class FakeSavedEventJsonStore extends SavedEventJsonStore {
     if (data == null) return null;
 
     return _copy(data);
-  }
-
-  @override
-  Future<Map<String, dynamic>?> findByEventId(String eventId) async {
-    for (final data in _dataByPublicId.values) {
-      final event = data['event'];
-
-      if (event is Map && event['id'] == eventId) {
-        return _copy(data);
-      }
-    }
-
-    return null;
   }
 
   @override
