@@ -47,18 +47,6 @@ class FirestoreSavedEventJsonStore implements SavedEventJsonStore {
   }
 
   @override
-  Future<Map<String, dynamic>?> findByEventId(String eventId) async {
-    final snapshot =
-        await _collection.where('event.id', isEqualTo: eventId).limit(1).get();
-
-    if (snapshot.docs.isEmpty) {
-      return null;
-    }
-
-    return _copy(snapshot.docs.first.data());
-  }
-
-  @override
   Future<List<Map<String, dynamic>>> listByOwnerUid(String ownerUid) async {
     final snapshot =
         await _collection.where('event.ownerUid', isEqualTo: ownerUid).get();
