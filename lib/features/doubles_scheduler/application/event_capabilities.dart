@@ -7,7 +7,6 @@ class EventCapabilities {
 
   bool get canEditDisplay => isOwner;
   bool get canEditCourtSettings => isOwner;
-  bool get canManageOwnership => isOwner;
 }
 
 EventCapabilities resolveEventCapabilities({
