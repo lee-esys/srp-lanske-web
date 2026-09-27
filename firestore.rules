@@ -504,8 +504,107 @@ service cloud.firestore {
         && getAfter(requestPath(resource.data.requestId)).data.unlinkedAt == request.time;
     }
 
-    // Public share documents used by doubles schedules.
-    match /events/{publicId} {
+    function eventPath(publicId) {
+      return /databases/$(database)/documents/events/$(publicId);
+    }
+
+    function eventExists(publicId) {
+      return exists(eventPath(publicId));
+    }
+
+    function isValidWriteOrigin(origin) {
+      return origin is map
+        && origin.keys().hasAll([
+          'environment',
+          'host',
+          'firebaseProjectId',
+          'appVersion'
+        ])
+        && origin.keys().hasOnly([
+          'environment',
+          'host',
+          'firebaseProjectId',
+          'appVersion'
+        ])
+        && origin.environment is string
+        && origin.host is string
+        && origin.firebaseProjectId is string
+        && origin.appVersion is string;
+    }
+
+    function isValidCreatedProvenance(data) {
+      let provenance = data.get('provenance', null);
+      return provenance is map
+        && provenance.keys().hasAll(['createdFrom', 'lastWrittenFrom'])
+        && provenance.keys().hasOnly(['createdFrom', 'lastWrittenFrom'])
+        && isValidWriteOrigin(provenance.createdFrom)
+        && isValidWriteOrigin(provenance.lastWrittenFrom)
+        && provenance.createdFrom == provenance.lastWrittenFrom;
+    }
+
+    function isValidUpdatedProvenance() {
+      let before = resource.data.get('provenance', {});
+      let after = request.resource.data.get('provenance', {});
+      return before is map
+        && after is map
+        && after.keys().hasOnly(['createdFrom', 'lastWrittenFrom'])
+        && after.get('createdFrom', null) == before.get('createdFrom', null)
+        && isValidWriteOrigin(after.get('lastWrittenFrom', null));
+    }
+
+    function isValidEventCreate(publicId) {
+      let data = request.resource.data;
+      let event = data.event;
+      let share = data.share;
+      return request.auth != null
+        && data.keys().hasAll([
+          'schemaVersion',
+          'event',
+          'players',
+          'share',
+          'importRecord',
+          'revisions',
+          'courtSettings',
+          'provenance'
+        ])
+        && data.keys().hasOnly([
+          'schemaVersion',
+          'event',
+          'players',
+          'share',
+          'importRecord',
+          'revisions',
+          'courtSettings',
+          'provenance'
+        ])
+        && data.schemaVersion == 2
+        && event is map
+        && event.keys().hasOnly([
+          'id',
+          'publicId',
+          'ownerUid',
+          'title',
+          'memo',
+          'eventDate',
+          'startTime',
+          'endTime',
+          'location',
+          'courtCount',
+          'sourceType',
+          'sourceUrl',
+          'status',
+          'currentGeneratedScheduleId',
+          'adoptedGeneratedScheduleId',
+          'adoptedAt',
+          'visibility',
+          'visibleUntilRoundNo',
+          'expiresAt',
+          'revision',
+          'createdAt',
+          'updatedAt'
+        ])
+        && event.id is string
+        && event.id.matches('^.+    match /events/{publicId} {
       allow read, create, update: if true;
       allow delete: if false;
 
@@ -515,6 +614,576 @@ service cloud.firestore {
 
         match /matches/{matchKey} {
           allow read, create, update: if true;
+          allow delete: if false;
+        }
+      }
+    }
+
+    // Public share documents used by team schedules, including boccia data.
+    match /team_schedules/{shareId} {
+      allow read, create, update: if true;
+      allow delete: if false;
+
+      match /schedule_progress/{generatedScheduleId} {
+        allow read, create, update: if true;
+        allow delete: if false;
+
+        match /matches/{matchKey} {
+          allow read, create, update: if true;
+          allow delete: if false;
+        }
+      }
+    }
+
+    // Existing core-generated data is readable from the client,
+    // but client writes are not allowed.
+    match /{collectionId}/{documentId} {
+      allow read: if isReadOnlyCoreCollection(collectionId);
+      allow create, update, delete: if false;
+    }
+
+    // Deny any collection or document path that is not explicitly handled above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+)
+        && event.publicId == publicId
+        && event.ownerUid == request.auth.uid
+        && event.title is string
+        && event.title.matches('^.+    match /events/{publicId} {
+      allow read, create, update: if true;
+      allow delete: if false;
+
+      match /schedule_progress/{generatedScheduleId} {
+        allow read, create, update: if true;
+        allow delete: if false;
+
+        match /matches/{matchKey} {
+          allow read, create, update: if true;
+          allow delete: if false;
+        }
+      }
+    }
+
+    // Public share documents used by team schedules, including boccia data.
+    match /team_schedules/{shareId} {
+      allow read, create, update: if true;
+      allow delete: if false;
+
+      match /schedule_progress/{generatedScheduleId} {
+        allow read, create, update: if true;
+        allow delete: if false;
+
+        match /matches/{matchKey} {
+          allow read, create, update: if true;
+          allow delete: if false;
+        }
+      }
+    }
+
+    // Existing core-generated data is readable from the client,
+    // but client writes are not allowed.
+    match /{collectionId}/{documentId} {
+      allow read: if isReadOnlyCoreCollection(collectionId);
+      allow create, update, delete: if false;
+    }
+
+    // Deny any collection or document path that is not explicitly handled above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+)
+        && event.courtCount is int
+        && event.courtCount > 0
+        && event.status == 'draft'
+        && event.revision == 1
+        && event.createdAt is string
+        && event.updatedAt is string
+        && data.players is list
+        && data.revisions is map
+        && data.revisions.keys().hasAll(['display', 'courtSettings'])
+        && data.revisions.keys().hasOnly(['display', 'courtSettings'])
+        && data.revisions.display == 1
+        && data.revisions.courtSettings == 1
+        && data.courtSettings is list
+        && share is map
+        && share.keys().hasAll(['publicId', 'eventId', 'createdAt', 'updatedAt'])
+        && share.keys().hasOnly(['publicId', 'eventId', 'createdAt', 'updatedAt'])
+        && share.publicId == publicId
+        && share.eventId == event.id
+        && isValidCreatedProvenance(data);
+    }
+
+    function isEventOwner() {
+      return request.auth != null
+        && resource.data.event.get('ownerUid', null) == request.auth.uid;
+    }
+
+    function isOwnerDisplayUpdate() {
+      let rootChanged =
+        request.resource.data.diff(resource.data).affectedKeys();
+      let eventChanged =
+        request.resource.data.event.diff(resource.data.event).affectedKeys();
+      let revisionsChanged =
+        request.resource.data.revisions.diff(resource.data.revisions)
+          .affectedKeys();
+      return isEventOwner()
+        && rootChanged.hasOnly(['event', 'players', 'revisions', 'provenance'])
+        && eventChanged.hasOnly(['title', 'memo', 'revision', 'updatedAt'])
+        && request.resource.data.event.title is string
+        && request.resource.data.event.title.matches('^.+    match /events/{publicId} {
+      allow read, create, update: if true;
+      allow delete: if false;
+
+      match /schedule_progress/{generatedScheduleId} {
+        allow read, create, update: if true;
+        allow delete: if false;
+
+        match /matches/{matchKey} {
+          allow read, create, update: if true;
+          allow delete: if false;
+        }
+      }
+    }
+
+    // Public share documents used by team schedules, including boccia data.
+    match /team_schedules/{shareId} {
+      allow read, create, update: if true;
+      allow delete: if false;
+
+      match /schedule_progress/{generatedScheduleId} {
+        allow read, create, update: if true;
+        allow delete: if false;
+
+        match /matches/{matchKey} {
+          allow read, create, update: if true;
+          allow delete: if false;
+        }
+      }
+    }
+
+    // Existing core-generated data is readable from the client,
+    // but client writes are not allowed.
+    match /{collectionId}/{documentId} {
+      allow read: if isReadOnlyCoreCollection(collectionId);
+      allow create, update, delete: if false;
+    }
+
+    // Deny any collection or document path that is not explicitly handled above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+)
+        && request.resource.data.event.memo is string
+        && request.resource.data.event.revision
+          == resource.data.event.revision + 1
+        && revisionsChanged.hasOnly(['display'])
+        && request.resource.data.revisions.display
+          == resource.data.revisions.display + 1
+        && request.resource.data.revisions.courtSettings
+          == resource.data.revisions.courtSettings
+        && request.resource.data.players is list
+        && resource.data.players is list
+        && request.resource.data.players.size() == resource.data.players.size()
+        && isValidUpdatedProvenance();
+    }
+
+    function isOwnerCourtSettingsUpdate() {
+      let rootChanged =
+        request.resource.data.diff(resource.data).affectedKeys();
+      let eventChanged =
+        request.resource.data.event.diff(resource.data.event).affectedKeys();
+      let revisionsChanged =
+        request.resource.data.revisions.diff(resource.data.revisions)
+          .affectedKeys();
+      return isEventOwner()
+        && rootChanged.hasOnly([
+          'event',
+          'revisions',
+          'courtSettings',
+          'provenance'
+        ])
+        && eventChanged.hasOnly(['revision', 'updatedAt'])
+        && request.resource.data.event.revision
+          == resource.data.event.revision + 1
+        && revisionsChanged.hasOnly(['courtSettings'])
+        && request.resource.data.revisions.display
+          == resource.data.revisions.display
+        && request.resource.data.revisions.courtSettings
+          == resource.data.revisions.courtSettings + 1
+        && request.resource.data.courtSettings is list
+        && resource.data.courtSettings is list
+        && request.resource.data.courtSettings.size()
+          == resource.data.courtSettings.size()
+        && isValidUpdatedProvenance();
+    }
+
+    function isValidEventSchemaUpdate() {
+      let before = resource.data.get('schemaVersion', 1);
+      let after = request.resource.data.get('schemaVersion', 1);
+      return after == before || (before < 2 && after == 2);
+    }
+
+    function isValidOperationalRevisions() {
+      let before = resource.data.get('revisions', null);
+      let after = request.resource.data.get('revisions', null);
+      return after == before
+        || (
+          before == null
+          && after is map
+          && after.keys().hasAll(['display', 'courtSettings'])
+          && after.keys().hasOnly(['display', 'courtSettings'])
+          && after.display == resource.data.event.revision
+          && after.courtSettings == resource.data.event.revision
+        );
+    }
+
+    function isSharedGenerateUpdate() {
+      let rootChanged =
+        request.resource.data.diff(resource.data).affectedKeys();
+      let eventChanged =
+        request.resource.data.event.diff(resource.data.event).affectedKeys();
+      return rootChanged.hasOnly([
+          'schemaVersion',
+          'event',
+          'revisions',
+          'provenance'
+        ])
+        && eventChanged.hasOnly([
+          'status',
+          'currentGeneratedScheduleId',
+          'revision',
+          'updatedAt'
+        ])
+        && resource.data.event.status != 'adopted'
+        && resource.data.event.get('adoptedGeneratedScheduleId', null) == null
+        && request.resource.data.event.status == 'generated'
+        && request.resource.data.event.currentGeneratedScheduleId is string
+        && request.resource.data.event.currentGeneratedScheduleId.matches('^.+    match /events/{publicId} {
+      allow read, create, update: if true;
+      allow delete: if false;
+
+      match /schedule_progress/{generatedScheduleId} {
+        allow read, create, update: if true;
+        allow delete: if false;
+
+        match /matches/{matchKey} {
+          allow read, create, update: if true;
+          allow delete: if false;
+        }
+      }
+    }
+
+    // Public share documents used by team schedules, including boccia data.
+    match /team_schedules/{shareId} {
+      allow read, create, update: if true;
+      allow delete: if false;
+
+      match /schedule_progress/{generatedScheduleId} {
+        allow read, create, update: if true;
+        allow delete: if false;
+
+        match /matches/{matchKey} {
+          allow read, create, update: if true;
+          allow delete: if false;
+        }
+      }
+    }
+
+    // Existing core-generated data is readable from the client,
+    // but client writes are not allowed.
+    match /{collectionId}/{documentId} {
+      allow read: if isReadOnlyCoreCollection(collectionId);
+      allow create, update, delete: if false;
+    }
+
+    // Deny any collection or document path that is not explicitly handled above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+)
+        && request.resource.data.event.revision
+          == resource.data.event.revision + 1
+        && isValidEventSchemaUpdate()
+        && isValidOperationalRevisions()
+        && isValidUpdatedProvenance();
+    }
+
+    function isSharedAdoptUpdate() {
+      let rootChanged =
+        request.resource.data.diff(resource.data).affectedKeys();
+      let eventChanged =
+        request.resource.data.event.diff(resource.data.event).affectedKeys();
+      let currentGeneratedScheduleId =
+        resource.data.event.get('currentGeneratedScheduleId', null);
+      return rootChanged.hasOnly([
+          'schemaVersion',
+          'event',
+          'revisions',
+          'provenance'
+        ])
+        && eventChanged.hasOnly([
+          'status',
+          'currentGeneratedScheduleId',
+          'adoptedGeneratedScheduleId',
+          'adoptedAt',
+          'revision',
+          'updatedAt'
+        ])
+        && currentGeneratedScheduleId is string
+        && currentGeneratedScheduleId.matches('^.+    match /events/{publicId} {
+      allow read, create, update: if true;
+      allow delete: if false;
+
+      match /schedule_progress/{generatedScheduleId} {
+        allow read, create, update: if true;
+        allow delete: if false;
+
+        match /matches/{matchKey} {
+          allow read, create, update: if true;
+          allow delete: if false;
+        }
+      }
+    }
+
+    // Public share documents used by team schedules, including boccia data.
+    match /team_schedules/{shareId} {
+      allow read, create, update: if true;
+      allow delete: if false;
+
+      match /schedule_progress/{generatedScheduleId} {
+        allow read, create, update: if true;
+        allow delete: if false;
+
+        match /matches/{matchKey} {
+          allow read, create, update: if true;
+          allow delete: if false;
+        }
+      }
+    }
+
+    // Existing core-generated data is readable from the client,
+    // but client writes are not allowed.
+    match /{collectionId}/{documentId} {
+      allow read: if isReadOnlyCoreCollection(collectionId);
+      allow create, update, delete: if false;
+    }
+
+    // Deny any collection or document path that is not explicitly handled above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+)
+        && resource.data.event.get('adoptedGeneratedScheduleId', null) == null
+        && request.resource.data.event.status == 'adopted'
+        && request.resource.data.event.currentGeneratedScheduleId
+          == currentGeneratedScheduleId
+        && request.resource.data.event.adoptedGeneratedScheduleId
+          == currentGeneratedScheduleId
+        && request.resource.data.event.adoptedAt is string
+        && request.resource.data.event.revision
+          == resource.data.event.revision + 1
+        && isValidEventSchemaUpdate()
+        && isValidOperationalRevisions()
+        && isValidUpdatedProvenance();
+    }
+
+    function hasValidProgressCounts(data) {
+      return data.total_match_count is int
+        && data.total_match_count > 0
+        && data.completed_match_count is int
+        && data.completed_match_count >= 0
+        && data.in_progress_match_count is int
+        && data.in_progress_match_count >= 0
+        && data.completed_match_count + data.in_progress_match_count
+          <= data.total_match_count;
+    }
+
+    function isValidProgressCreate(generatedScheduleId) {
+      let data = request.resource.data;
+      return data.keys().hasAll([
+          'schema_version',
+          'schedule_type',
+          'generated_schedule_id',
+          'total_match_count',
+          'completed_match_count',
+          'in_progress_match_count',
+          'created_at',
+          'updated_at',
+          'revision',
+          'provenance'
+        ])
+        && data.keys().hasOnly([
+          'schema_version',
+          'schedule_type',
+          'generated_schedule_id',
+          'total_match_count',
+          'completed_match_count',
+          'in_progress_match_count',
+          'created_at',
+          'updated_at',
+          'revision',
+          'provenance'
+        ])
+        && data.schema_version == 1
+        && data.schedule_type == 'doubles'
+        && data.generated_schedule_id == generatedScheduleId
+        && hasValidProgressCounts(data)
+        && data.created_at is string
+        && data.updated_at is string
+        && data.revision == 1
+        && isValidCreatedProvenance(data);
+    }
+
+    function isValidProgressUpdate() {
+      let changed =
+        request.resource.data.diff(resource.data).affectedKeys();
+      return changed.hasOnly([
+          'completed_match_count',
+          'in_progress_match_count',
+          'updated_at',
+          'revision',
+          'provenance'
+        ])
+        && hasValidProgressCounts(request.resource.data)
+        && request.resource.data.revision == resource.data.revision + 1
+        && isValidUpdatedProvenance();
+    }
+
+    function hasValidMatchIdentity(data, generatedScheduleId) {
+      return data.schema_version == 1
+        && data.schedule_type == 'doubles'
+        && data.generated_schedule_id == generatedScheduleId
+        && data.round_no is int
+        && data.round_no > 0
+        && data.court_no is int
+        && data.court_no > 0
+        && (
+          data.get('match_no', null) == null
+          || (
+            data.match_no is int
+            && data.match_no > 0
+          )
+        );
+    }
+
+    function hasValidMatchState(data) {
+      return (
+          data.status == 'scheduled'
+          || data.status == 'in_progress'
+          || data.status == 'completed'
+        )
+        && data.note is string
+        && (
+          data.get('started_at', null) == null
+          || data.started_at is string
+        )
+        && (
+          data.get('finished_at', null) == null
+          || data.finished_at is string
+        );
+    }
+
+    function isValidMatchCreate(generatedScheduleId) {
+      let data = request.resource.data;
+      return data.keys().hasAll([
+          'schema_version',
+          'schedule_type',
+          'generated_schedule_id',
+          'round_no',
+          'court_no',
+          'match_no',
+          'status',
+          'result',
+          'note',
+          'started_at',
+          'finished_at',
+          'created_at',
+          'updated_at',
+          'revision',
+          'provenance'
+        ])
+        && data.keys().hasOnly([
+          'schema_version',
+          'schedule_type',
+          'generated_schedule_id',
+          'round_no',
+          'court_no',
+          'match_no',
+          'status',
+          'result',
+          'note',
+          'started_at',
+          'finished_at',
+          'created_at',
+          'updated_at',
+          'revision',
+          'provenance'
+        ])
+        && hasValidMatchIdentity(data, generatedScheduleId)
+        && hasValidMatchState(data)
+        && data.created_at is string
+        && data.updated_at is string
+        && data.revision == 1
+        && isValidCreatedProvenance(data);
+    }
+
+    function isValidMatchUpdate() {
+      let changed =
+        request.resource.data.diff(resource.data).affectedKeys();
+      return changed.hasOnly([
+          'status',
+          'result',
+          'note',
+          'started_at',
+          'finished_at',
+          'updated_at',
+          'revision',
+          'provenance'
+        ])
+        && hasValidMatchState(request.resource.data)
+        && request.resource.data.revision == resource.data.revision + 1
+        && isValidUpdatedProvenance();
+    }
+
+    // Doubles events remain shareable by known public ID. Collection queries
+    // are reserved for the authenticated owner and must carry the matching
+    // ownerUid constraint.
+    match /events/{publicId} {
+      allow get: if true;
+      allow list: if request.auth != null
+        && resource.data.event.get('ownerUid', null) == request.auth.uid;
+      allow create: if isValidEventCreate(publicId);
+      allow update: if isOwnerDisplayUpdate()
+        || isOwnerCourtSettingsUpdate()
+        || isSharedGenerateUpdate()
+        || isSharedAdoptUpdate();
+      allow delete: if false;
+
+      match /schedule_progress/{generatedScheduleId} {
+        allow read: if eventExists(publicId);
+        allow create: if eventExists(publicId)
+          && isValidProgressCreate(generatedScheduleId);
+        allow update: if eventExists(publicId)
+          && isValidProgressUpdate();
+        allow delete: if false;
+
+        match /matches/{matchKey} {
+          allow read: if eventExists(publicId);
+          allow create: if eventExists(publicId)
+            && isValidMatchCreate(generatedScheduleId);
+          allow update: if eventExists(publicId)
+            && isValidMatchUpdate();
           allow delete: if false;
         }
       }
