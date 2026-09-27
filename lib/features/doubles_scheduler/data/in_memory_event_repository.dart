@@ -115,19 +115,23 @@ class InMemoryEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<SavedEventPlayer>> listPlayers(String eventId) async {
-    return List.unmodifiable(_playersByEventId[eventId] ?? const []);
+  Future<List<SavedEventPlayer>> listPlayers(String publicId) async {
+    final eventId = _eventIdByPublicId[publicId];
+    return List.unmodifiable(
+      eventId == null ? const [] : _playersByEventId[eventId] ?? const [],
+    );
   }
 
   @override
   Future<SavedEvent> updateCurrentGeneratedScheduleId({
-    required String eventId,
+    required String publicId,
     required String generatedScheduleId,
   }) async {
-    final event = _requireEvent(eventId);
+    final event = _requireEventByPublicId(publicId);
     if (event.hasAdoptedSchedule) {
-      throw StateError('event already adopted: $eventId');
+      throw StateError('event already adopted: $publicId');
     }
+    final eventId = event.id;
 
     final updated = event.copyWith(
       status: SavedEventStatus.generated,
@@ -141,10 +145,11 @@ class InMemoryEventRepository implements EventRepository {
 
   @override
   Future<SavedEvent> updateAdoptedGeneratedScheduleId({
-    required String eventId,
+    required String publicId,
     required String generatedScheduleId,
   }) async {
-    final event = _requireEvent(eventId);
+    final event = _requireEventByPublicId(publicId);
+    final eventId = event.id;
     final now = _clock();
     final updated = event.copyWith(
       status: SavedEventStatus.adopted,
@@ -224,11 +229,11 @@ class InMemoryEventRepository implements EventRepository {
 
   @override
   Future<SavedEventAggregate> updateCourtSettings({
-    required String eventId,
+    required String publicId,
     required List<SavedEventCourtSetting> courtSettings,
   }) {
     return _updateCourtSettings(
-      eventId: eventId,
+      publicId: publicId,
       expectedCourtSettingsRevision: null,
       courtSettings: courtSettings,
     );
@@ -236,24 +241,25 @@ class InMemoryEventRepository implements EventRepository {
 
   @override
   Future<SavedEventAggregate> updateCourtSettingsWithRevision({
-    required String eventId,
+    required String publicId,
     required int expectedCourtSettingsRevision,
     required List<SavedEventCourtSetting> courtSettings,
   }) {
     _validateExpectedRevision(expectedCourtSettingsRevision);
     return _updateCourtSettings(
-      eventId: eventId,
+      publicId: publicId,
       expectedCourtSettingsRevision: expectedCourtSettingsRevision,
       courtSettings: courtSettings,
     );
   }
 
   Future<SavedEventAggregate> _updateCourtSettings({
-    required String eventId,
+    required String publicId,
     required int? expectedCourtSettingsRevision,
     required List<SavedEventCourtSetting> courtSettings,
   }) async {
-    final event = _requireEvent(eventId);
+    final event = _requireEventByPublicId(publicId);
+    final eventId = event.id;
 
     final currentSettings = _courtSettingsByEventId[eventId] ??
         buildDefaultCourtSettings(event.courtCount);
@@ -291,6 +297,14 @@ class InMemoryEventRepository implements EventRepository {
       throw StateError('event not found: $eventId');
     }
     return event;
+  }
+
+  SavedEvent _requireEventByPublicId(String publicId) {
+    final eventId = _eventIdByPublicId[publicId];
+    if (eventId == null) {
+      throw StateError('event not found: $publicId');
+    }
+    return _requireEvent(eventId);
   }
 
   SavedEventAggregate _buildAggregate(SavedEvent event) {
