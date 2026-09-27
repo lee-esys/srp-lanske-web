@@ -876,8 +876,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
             isRefreshing: _isRefreshing,
             progressText: _progressText,
             showEditAction: !_hasAdoptedSchedule,
-            canEditEventInfo:
-                _eventCapabilitiesFor(savedEvent).canEditDisplay,
+            canEditEventInfo: _eventCapabilitiesFor(savedEvent).canEditDisplay,
           ),
           const SizedBox(height: 12),
           SchedulePlayersCard(
@@ -1002,8 +1001,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
             : null,
         onEditEventInfo:
             canEditEventInfo ? _eventSummaryController.editEventInfo : null,
-        onChangeCourtDisplay:
-            canEditCourtDisplay ? _changeCourtDisplay : null,
+        onChangeCourtDisplay: canEditCourtDisplay ? _changeCourtDisplay : null,
         onRegenerate: !_hasAdoptedSchedule &&
                 !_isLoading &&
                 !_isAdopting &&
