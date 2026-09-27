@@ -157,11 +157,11 @@ void runEventRepositoryContractTests({
       expect(found, isNull);
     });
 
-    test('lists players by event id', () async {
+    test('lists players by public id', () async {
       final repository = createRepository();
 
       final created = await _createOwnedEvent(repository, buildDraft());
-      final players = await repository.listPlayers(created.event.id);
+      final players = await repository.listPlayers(created.event.publicId);
 
       expect(players, hasLength(6));
       expect(players[0].eventId, created.event.id);
@@ -171,7 +171,7 @@ void runEventRepositoryContractTests({
       expect(players[5].orderNo, 6);
     });
 
-    test('returns empty players when event id does not exist', () async {
+    test('returns empty players when public id does not exist', () async {
       final repository = createRepository();
 
       final players = await repository.listPlayers('missing-event');
@@ -185,7 +185,7 @@ void runEventRepositoryContractTests({
       final created = await _createOwnedEvent(repository, buildDraft());
 
       final updated = await repository.updateCurrentGeneratedScheduleId(
-        eventId: created.event.id,
+        publicId: created.event.publicId,
         generatedScheduleId: 'generated-1',
       );
 
@@ -210,12 +210,12 @@ void runEventRepositoryContractTests({
       final created = await _createOwnedEvent(repository, buildDraft());
 
       await repository.updateCurrentGeneratedScheduleId(
-        eventId: created.event.id,
+        publicId: created.event.publicId,
         generatedScheduleId: 'generated-1',
       );
 
       final updated = await repository.updateCurrentGeneratedScheduleId(
-        eventId: created.event.id,
+        publicId: created.event.publicId,
         generatedScheduleId: 'generated-2',
       );
 
@@ -237,7 +237,7 @@ void runEventRepositoryContractTests({
       final created = await _createOwnedEvent(repository, buildDraft());
 
       final updated = await repository.updateAdoptedGeneratedScheduleId(
-        eventId: created.event.id,
+        publicId: created.event.publicId,
         generatedScheduleId: 'generated-1',
       );
 
@@ -263,7 +263,7 @@ void runEventRepositoryContractTests({
 
       expect(
         () => repository.updateCurrentGeneratedScheduleId(
-          eventId: 'missing-event',
+          publicId: 'missing-event',
           generatedScheduleId: 'generated-1',
         ),
         throwsA(isA<StateError>()),
@@ -275,7 +275,7 @@ void runEventRepositoryContractTests({
 
       expect(
         () => repository.updateAdoptedGeneratedScheduleId(
-          eventId: 'missing-event',
+          publicId: 'missing-event',
           generatedScheduleId: 'generated-1',
         ),
         throwsA(isA<StateError>()),
@@ -312,7 +312,7 @@ void runEventRepositoryContractTests({
       );
 
       final updated = await repository.updateCourtSettings(
-        eventId: created.event.id,
+        publicId: created.event.publicId,
         courtSettings: [
           SavedEventCourtSetting(
             courtNumber: 1,
@@ -349,7 +349,7 @@ void runEventRepositoryContractTests({
       );
 
       await repository.updateCourtSettings(
-        eventId: created.event.id,
+        publicId: created.event.publicId,
         courtSettings: [
           SavedEventCourtSetting(
             courtNumber: 1,
@@ -363,7 +363,7 @@ void runEventRepositoryContractTests({
       );
 
       await repository.updateCurrentGeneratedScheduleId(
-        eventId: created.event.id,
+        publicId: created.event.publicId,
         generatedScheduleId: 'generated-1',
       );
 
@@ -373,7 +373,7 @@ void runEventRepositoryContractTests({
       expect(generated.courtSettings[1].displayLabel, '奥');
 
       await repository.updateAdoptedGeneratedScheduleId(
-        eventId: created.event.id,
+        publicId: created.event.publicId,
         generatedScheduleId: 'generated-1',
       );
 
@@ -392,12 +392,12 @@ void runEventRepositoryContractTests({
       );
 
       final adoptedEvent = await repository.updateAdoptedGeneratedScheduleId(
-        eventId: created.event.id,
+        publicId: created.event.publicId,
         generatedScheduleId: 'generated-1',
       );
 
       final updated = await repository.updateCourtSettings(
-        eventId: created.event.id,
+        publicId: created.event.publicId,
         courtSettings: [
           SavedEventCourtSetting(
             courtNumber: 1,
@@ -430,7 +430,7 @@ void runEventRepositoryContractTests({
 
       expect(
         () => repository.updateCourtSettings(
-          eventId: 'missing-event',
+          publicId: 'missing-event',
           courtSettings: [
             SavedEventCourtSetting(
               courtNumber: 1,
