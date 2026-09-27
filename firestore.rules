@@ -604,11 +604,11 @@ service cloud.firestore {
           'updatedAt'
         ])
         && event.id is string
-        && event.id.size() > 0
+        && event.id != ''
         && event.publicId == publicId
         && event.ownerUid == request.auth.uid
         && event.title is string
-        && event.title.size() > 0
+        && event.title != ''
         && event.courtCount is int
         && event.courtCount > 0
         && event.status == 'draft'
@@ -647,7 +647,7 @@ service cloud.firestore {
         && rootChanged.hasOnly(['event', 'players', 'revisions', 'provenance'])
         && eventChanged.hasOnly(['title', 'memo', 'revision', 'updatedAt'])
         && request.resource.data.event.title is string
-        && request.resource.data.event.title.size() > 0
+        && request.resource.data.event.title != ''
         && request.resource.data.event.memo is string
         && request.resource.data.event.revision
           == resource.data.event.revision + 1
@@ -733,7 +733,7 @@ service cloud.firestore {
         && resource.data.event.get('adoptedGeneratedScheduleId', null) == null
         && request.resource.data.event.status == 'generated'
         && request.resource.data.event.currentGeneratedScheduleId is string
-        && request.resource.data.event.currentGeneratedScheduleId.size() > 0
+        && request.resource.data.event.currentGeneratedScheduleId != ''
         && request.resource.data.event.revision
           == resource.data.event.revision + 1
         && isValidEventSchemaUpdate()
@@ -763,7 +763,7 @@ service cloud.firestore {
           'updatedAt'
         ])
         && currentGeneratedScheduleId is string
-        && currentGeneratedScheduleId.size() > 0
+        && currentGeneratedScheduleId != ''
         && resource.data.event.get('adoptedGeneratedScheduleId', null) == null
         && request.resource.data.event.status == 'adopted'
         && request.resource.data.event.currentGeneratedScheduleId
