@@ -396,10 +396,16 @@ test('legacy event keeps shared operations but cannot gain owner edits', async (
   const sharedRef = shared.doc(`events/${publicId}`);
   const legacy = (await sharedRef.get()).data();
 
+  const structuralEdit = clone(legacy);
+  structuralEdit.event.title = 'Legacy structural edit';
+  structuralEdit.event.revision += 1;
+  structuralEdit.event.updatedAt = '2026-09-27T00:01:00.000Z';
+  setUpdatedProvenance(structuralEdit, 'legacy-structural');
+
   await assertFails(
     anonymousDb('alice')
       .doc(`events/${publicId}`)
-      .set(displayUpdate(legacy)),
+      .set(structuralEdit),
   );
 
   await assertSucceeds(sharedRef.set(generateUpdate(legacy)));
