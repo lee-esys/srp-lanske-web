@@ -291,6 +291,47 @@ class InMemoryEventRepository implements EventRepository {
     return _buildAggregate(updatedEvent);
   }
 
+  @override
+  Future<SavedEventAggregate> transferOwner({
+    required String publicId,
+    required String expectedSourceUid,
+    required String targetUid,
+  }) async {
+    final sourceUid = _requireNonEmpty(
+      expectedSourceUid,
+      fieldName: 'expectedSourceUid',
+    );
+    final nextOwnerUid = _requireNonEmpty(targetUid, fieldName: 'targetUid');
+    if (sourceUid == nextOwnerUid) {
+      throw ArgumentError.value(
+        targetUid,
+        'targetUid',
+        'must differ from expectedSourceUid',
+      );
+    }
+
+    final event = _requireEventByPublicId(publicId);
+    if (event.ownerUid == nextOwnerUid) {
+      return _buildAggregate(event);
+    }
+    if (event.ownerUid != sourceUid) {
+      throw StateError(
+        'event owner mismatch: expected ' +
+            sourceUid +
+            ', actual ' +
+            (event.ownerUid ?? 'null'),
+      );
+    }
+
+    final updatedEvent = event.copyWith(
+      ownerUid: nextOwnerUid,
+      revision: event.revision + 1,
+      updatedAt: _clock(),
+    );
+    _eventsById[event.id] = updatedEvent;
+    return _buildAggregate(updatedEvent);
+  }
+
   SavedEvent _requireEvent(String eventId) {
     final event = _eventsById[eventId];
     if (event == null) {
