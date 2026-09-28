@@ -1791,5 +1791,67 @@
   "adminProfileLinkReviewGenericFailureMessage": "処理に失敗しました。通信状態を確認して、もう一度お試しください。",
   "@adminProfileLinkReviewGenericFailureMessage": {
     "description": "Admin TennisBear profile link review UI text."
+  },
+  "ownershipTransferPreparedTitle": "既存アカウントへの引継ぎ準備ができました",
+  "@ownershipTransferPreparedTitle": {
+    "description": "Title shown after an anonymous ownership transfer handoff is prepared."
+  },
+  "ownershipTransferPreparedBody": "現在のログインなし利用状態の所有権証跡を安全に保存しました。既存のLanskeアカウントへ切り替えたあと、この端末で作成したイベントの所有権を移管します。",
+  "@ownershipTransferPreparedBody": {
+    "description": "Explanation shown before switching from the anonymous source to an existing account."
+  },
+  "ownershipTransferSwitchButton": "既存アカウントへ切り替えて引き継ぐ",
+  "@ownershipTransferSwitchButton": {
+    "description": "Button label for signing out the anonymous source before target account login."
+  },
+  "ownershipTransferCancelButton": "今は引き継がない",
+  "@ownershipTransferCancelButton": {
+    "description": "Button label for abandoning the local ownership handoff while the anonymous source remains active."
+  },
+  "ownershipTransferLoginTitle": "既存のLanskeアカウントにログイン",
+  "@ownershipTransferLoginTitle": {
+    "description": "Title of the login card while an ownership handoff is pending."
+  },
+  "ownershipTransferLoginBody": "引継ぎ準備は保存されています。移管先にする既存のLanskeアカウントでログインしてください。新しいアカウントは作成しないでください。",
+  "@ownershipTransferLoginBody": {
+    "description": "Instruction shown while waiting for the target account login."
+  },
+  "ownershipTransferResumeTitle": "イベント所有権の引継ぎが未完了です",
+  "@ownershipTransferResumeTitle": {
+    "description": "Title shown when a signed-in target still has a pending ownership handoff."
+  },
+  "ownershipTransferResumeBody": "このアカウントへのイベント所有権移管を再開できます。途中まで完了している場合は、残っているイベントだけを移管します。",
+  "@ownershipTransferResumeBody": {
+    "description": "Retry explanation for an interrupted ownership transfer."
+  },
+  "ownershipTransferResumeButton": "引継ぎを再開",
+  "@ownershipTransferResumeButton": {
+    "description": "Button label for resuming an ownership transfer."
+  },
+  "ownershipTransferPreparedMessage": "既存アカウントへの安全な引継ぎ準備ができました。アカウントを切り替えるまでは、現在のログインなし利用状態をそのまま継続できます。",
+  "@ownershipTransferPreparedMessage": {
+    "description": "Status message shown after preparing the ownership handoff."
+  },
+  "ownershipTransferLoginMessage": "引継ぎ準備を保持したままログアウトしました。移管先にする既存のLanskeアカウントでログインしてください。",
+  "@ownershipTransferLoginMessage": {
+    "description": "Status shown after leaving the anonymous source session for target login."
+  },
+  "ownershipTransferCanceledMessage": "引継ぎ準備を終了しました。ログインなし利用をそのまま継続できます。",
+  "@ownershipTransferCanceledMessage": {
+    "description": "Status shown after locally abandoning a prepared handoff."
+  },
+  "ownershipTransferCompletedMessage": "{count}件のイベントを既存のLanskeアカウントへ引き継ぎました。",
+  "@ownershipTransferCompletedMessage": {
+    "description": "Status shown after event ownership transfer completes.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "ownershipTransferGenericFailureMessage": "イベント所有権の引継ぎを完了できませんでした。引継ぎ情報は保持されています。通信状態を確認して、もう一度お試しください。",
+  "@ownershipTransferGenericFailureMessage": {
+    "description": "Generic ownership transfer failure message."
   }
 }
