@@ -1141,14 +1141,8 @@ service cloud.firestore {
     }
 
     match /eventOwnershipTransfers/{sourceUid} {
-      allow get: if request.auth != null
-        && (
-          request.auth.uid == sourceUid
-          || (
-            isRegisteredAccount()
-            && resource.data.get('targetUid', null) == request.auth.uid
-          )
-        );
+      allow get: if isRegisteredAccount()
+        && resource.data.get('targetUid', null) == request.auth.uid;
       allow list: if false;
       allow create: if isValidOwnershipTransferPending(sourceUid);
       allow update: if isSourceOwnershipTransferRefresh(sourceUid)
