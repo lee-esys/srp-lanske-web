@@ -639,7 +639,10 @@ service cloud.firestore {
       let data = request.resource.data;
       let changed = data.diff(resource.data).affectedKeys();
       return isRegisteredAccount()
-        && resource.data.state == 'accepted'
+        && (
+          resource.data.state == 'accepted'
+          || resource.data.state == 'completed'
+        )
         && resource.data.sourceUid == sourceUid
         && resource.data.targetUid == request.auth.uid
         && resource.data.handoffSecretProof == resource.data.handoffSecret
@@ -654,6 +657,7 @@ service cloud.firestore {
         && data.acceptedExpiresAt > request.time
         && data.acceptedExpiresAt <= request.time + duration.value(2, 'h')
         && changed.hasOnly([
+          'state',
           'acceptedAt',
           'acceptedExpiresAt',
           'updatedAt'
