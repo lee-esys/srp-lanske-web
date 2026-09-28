@@ -6,9 +6,12 @@ import 'package:flutter/material.dart';
 
 import 'app/app.dart';
 import 'features/auth/application/account_service.dart';
+import 'features/auth/application/anonymous_event_ownership_transfer_service.dart';
 import 'features/auth/infrastructure/firebase_admin_role_reader.dart';
 import 'features/auth/infrastructure/firebase_auth_repository.dart';
+import 'features/auth/infrastructure/firestore_event_ownership_transfer_repository.dart';
 import 'features/auth/infrastructure/firestore_lanske_user_repository.dart';
+import 'features/auth/infrastructure/session_event_ownership_transfer_handoff_store.dart';
 import 'features/auth/presentation/account_scope.dart';
 import 'features/auth/presentation/admin_role_scope.dart';
 import 'features/auth/presentation/auth_scope.dart';
@@ -20,6 +23,7 @@ import 'features/external_identity/infrastructure/firestore_external_identity_us
 import 'features/external_identity/presentation/external_identity_admin_review_scope.dart';
 import 'features/external_identity/presentation/external_identity_link_scope.dart';
 import 'firebase_options.dart';
+import 'shared/repositories/app_repositories.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,9 +39,16 @@ Future<void> main() async {
   final firebaseAuth = FirebaseAuth.instance;
   final authRepository = FirebaseAuthRepository(firebaseAuth);
   final adminRoleReader = FirebaseAdminRoleReader(firebaseAuth);
+  final lanskeUserRepository = FirestoreLanskeUserRepository(firestore);
   final accountService = AccountService(
     authRepository: authRepository,
-    userRepository: FirestoreLanskeUserRepository(firestore),
+    userRepository: lanskeUserRepository,
+  );
+  final ownershipTransferService = AnonymousEventOwnershipTransferService(
+    authRepository: authRepository,
+    eventRepository: appEventRepository,
+    transferRepository: FirestoreEventOwnershipTransferRepository(firestore),
+    handoffStore: SessionEventOwnershipTransferHandoffStore(),
   );
   final externalIdentityLinkService = ExternalIdentityLinkService(
     repository: FirestoreExternalIdentityLinkRepository(firestore),
@@ -60,6 +71,7 @@ Future<void> main() async {
         reader: adminRoleReader,
         child: AccountScope(
           service: accountService,
+          ownershipTransferService: ownershipTransferService,
           child: ExternalIdentityLinkScope(
             service: tennisBearProfileLinkService,
             child: ExternalIdentityAdminReviewScope(
