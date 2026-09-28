@@ -24,7 +24,7 @@ class AnonymousEventOwnershipTransferService {
         _handoffSecretGenerator =
             handoffSecretGenerator ?? _generateSecureHandoffSecret;
 
-  static const Duration pendingAuthorizationLifetime = Duration(hours: 1);
+  static const Duration pendingAuthorizationLifetime = Duration(hours: 24);
   static const Duration acceptedAuthorizationLifetime = Duration(hours: 1);
 
   final AccountAuthRepository _authRepository;
