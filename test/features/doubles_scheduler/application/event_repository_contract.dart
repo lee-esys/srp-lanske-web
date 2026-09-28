@@ -425,6 +425,75 @@ void runEventRepositoryContractTests({
       expect(found.courtSettings[1].displayLabel, 'B');
     });
 
+    test('transfers event owner without changing event content', () async {
+      final repository = createRepository();
+
+      final created = await _createOwnedEvent(
+        repository,
+        buildDraft(eventName: 'owner transfer'),
+        ownerUid: 'source-owner',
+      );
+
+      final transferred = await repository.transferOwner(
+        publicId: created.event.publicId,
+        expectedSourceUid: 'source-owner',
+        targetUid: 'target-owner',
+      );
+
+      expect(transferred.event.ownerUid, 'target-owner');
+      expect(transferred.event.title, created.event.title);
+      expect(transferred.players, hasLength(created.players.length));
+      expect(transferred.courtSettings, hasLength(created.courtSettings.length));
+      expect(transferred.event.revision, created.event.revision + 1);
+
+      final found = await repository.findByPublicId(created.event.publicId);
+      expect(found, isNotNull);
+      expect(found!.event.ownerUid, 'target-owner');
+      expect(found.event.title, created.event.title);
+    });
+
+    test('owner transfer is idempotent for the target owner', () async {
+      final repository = createRepository();
+
+      final created = await _createOwnedEvent(
+        repository,
+        buildDraft(),
+        ownerUid: 'source-owner',
+      );
+      final first = await repository.transferOwner(
+        publicId: created.event.publicId,
+        expectedSourceUid: 'source-owner',
+        targetUid: 'target-owner',
+      );
+      final second = await repository.transferOwner(
+        publicId: created.event.publicId,
+        expectedSourceUid: 'source-owner',
+        targetUid: 'target-owner',
+      );
+
+      expect(second.event.ownerUid, 'target-owner');
+      expect(second.event.revision, first.event.revision);
+    });
+
+    test('owner transfer rejects a mismatched source owner', () async {
+      final repository = createRepository();
+
+      final created = await _createOwnedEvent(
+        repository,
+        buildDraft(),
+        ownerUid: 'actual-owner',
+      );
+
+      await expectLater(
+        repository.transferOwner(
+          publicId: created.event.publicId,
+          expectedSourceUid: 'other-owner',
+          targetUid: 'target-owner',
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
+
     test('throws when updating court settings for missing event', () async {
       final repository = createRepository();
 
