@@ -147,8 +147,7 @@ Widget _app({
   );
 }
 
-class _FakeAuthRepository
-    implements AuthRepository, AccountAuthRepository {
+class _FakeAuthRepository implements AuthRepository, AccountAuthRepository {
   _FakeAuthRepository(this.session);
 
   AuthSession session;

@@ -443,7 +443,8 @@ void runEventRepositoryContractTests({
       expect(transferred.event.ownerUid, 'target-owner');
       expect(transferred.event.title, created.event.title);
       expect(transferred.players, hasLength(created.players.length));
-      expect(transferred.courtSettings, hasLength(created.courtSettings.length));
+      expect(
+          transferred.courtSettings, hasLength(created.courtSettings.length));
       expect(transferred.event.revision, created.event.revision + 1);
 
       final found = await repository.findByPublicId(created.event.publicId);

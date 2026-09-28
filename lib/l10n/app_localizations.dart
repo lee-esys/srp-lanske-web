@@ -2201,6 +2201,90 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'処理に失敗しました。通信状態を確認して、もう一度お試しください。'**
   String get adminProfileLinkReviewGenericFailureMessage;
+
+  /// Title shown after an anonymous ownership transfer handoff is prepared.
+  ///
+  /// In ja, this message translates to:
+  /// **'既存アカウントへの引継ぎ準備ができました'**
+  String get ownershipTransferPreparedTitle;
+
+  /// Explanation shown before switching from the anonymous source to an existing account.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のログインなし利用状態の所有権証跡を安全に保存しました。既存のLanskeアカウントへ切り替えたあと、この端末で作成したイベントの所有権を移管します。'**
+  String get ownershipTransferPreparedBody;
+
+  /// Button label for signing out the anonymous source before target account login.
+  ///
+  /// In ja, this message translates to:
+  /// **'既存アカウントへ切り替えて引き継ぐ'**
+  String get ownershipTransferSwitchButton;
+
+  /// Button label for abandoning the local ownership handoff while the anonymous source remains active.
+  ///
+  /// In ja, this message translates to:
+  /// **'今は引き継がない'**
+  String get ownershipTransferCancelButton;
+
+  /// Title of the login card while an ownership handoff is pending.
+  ///
+  /// In ja, this message translates to:
+  /// **'既存のLanskeアカウントにログイン'**
+  String get ownershipTransferLoginTitle;
+
+  /// Instruction shown while waiting for the target account login.
+  ///
+  /// In ja, this message translates to:
+  /// **'引継ぎ準備は保存されています。移管先にする既存のLanskeアカウントでログインしてください。新しいアカウントは作成しないでください。'**
+  String get ownershipTransferLoginBody;
+
+  /// Title shown when a signed-in target still has a pending ownership handoff.
+  ///
+  /// In ja, this message translates to:
+  /// **'イベント所有権の引継ぎが未完了です'**
+  String get ownershipTransferResumeTitle;
+
+  /// Retry explanation for an interrupted ownership transfer.
+  ///
+  /// In ja, this message translates to:
+  /// **'このアカウントへのイベント所有権移管を再開できます。途中まで完了している場合は、残っているイベントだけを移管します。'**
+  String get ownershipTransferResumeBody;
+
+  /// Button label for resuming an ownership transfer.
+  ///
+  /// In ja, this message translates to:
+  /// **'引継ぎを再開'**
+  String get ownershipTransferResumeButton;
+
+  /// Status message shown after preparing the ownership handoff.
+  ///
+  /// In ja, this message translates to:
+  /// **'既存アカウントへの安全な引継ぎ準備ができました。アカウントを切り替えるまでは、現在のログインなし利用状態をそのまま継続できます。'**
+  String get ownershipTransferPreparedMessage;
+
+  /// Status shown after leaving the anonymous source session for target login.
+  ///
+  /// In ja, this message translates to:
+  /// **'引継ぎ準備を保持したままログアウトしました。移管先にする既存のLanskeアカウントでログインしてください。'**
+  String get ownershipTransferLoginMessage;
+
+  /// Status shown after locally abandoning a prepared handoff.
+  ///
+  /// In ja, this message translates to:
+  /// **'引継ぎ準備を終了しました。ログインなし利用をそのまま継続できます。'**
+  String get ownershipTransferCanceledMessage;
+
+  /// Status shown after event ownership transfer completes.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件のイベントを既存のLanskeアカウントへ引き継ぎました。'**
+  String ownershipTransferCompletedMessage(int count);
+
+  /// Generic ownership transfer failure message.
+  ///
+  /// In ja, this message translates to:
+  /// **'イベント所有権の引継ぎを完了できませんでした。引継ぎ情報は保持されています。通信状態を確認して、もう一度お試しください。'**
+  String get ownershipTransferGenericFailureMessage;
 }
 
 class _AppLocalizationsDelegate

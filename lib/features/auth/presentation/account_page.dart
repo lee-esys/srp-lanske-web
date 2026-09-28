@@ -41,8 +41,7 @@ class _AccountPageState extends State<AccountPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final ownershipTransferService =
-        AccountScope.ownershipTransferOf(context);
+    final ownershipTransferService = AccountScope.ownershipTransferOf(context);
     _ownershipHandoff = ownershipTransferService.loadPendingHandoff();
 
     final session = AuthScope.of(context).session;
@@ -223,8 +222,7 @@ class _AccountPageState extends State<AccountPage> {
   ) async {
     AccountTransitionResult? result;
     EventOwnershipTransferHandoff? preparedHandoff;
-    final ownershipTransferService =
-        AccountScope.ownershipTransferOf(context);
+    final ownershipTransferService = AccountScope.ownershipTransferOf(context);
     final succeeded = await _runAction(() async {
       result = await action();
       final resolved = result;
@@ -523,9 +521,7 @@ class _AccountPageState extends State<AccountPage> {
                   TextButton(
                     onPressed: _busy ? null : _toggleRegisterMode,
                     child: Text(
-                      _registerMode
-                          ? 'すでにアカウントをお持ちの方はこちら'
-                          : '新しくアカウントを作成する',
+                      _registerMode ? 'すでにアカウントをお持ちの方はこちら' : '新しくアカウントを作成する',
                     ),
                   ),
                 ],
@@ -545,8 +541,7 @@ class _AccountPageState extends State<AccountPage> {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final session = AuthScope.of(context).session;
-    final canCancel =
-        _ownershipHandoff != null &&
+    final canCancel = _ownershipHandoff != null &&
         session.isAnonymous &&
         session.uid == _ownershipHandoff!.sourceUid;
 
@@ -869,7 +864,8 @@ class _AccountPageState extends State<AccountPage> {
 
   String _messageForError(Object error) {
     if (error is EventOwnershipTransferRequiredException) {
-      return AppLocalizations.of(context).ownershipTransferGenericFailureMessage;
+      return AppLocalizations.of(context)
+          .ownershipTransferGenericFailureMessage;
     }
     if (error is AccountTransitionRequiredException) {
       return 'ログインなし利用の引継ぎを開始できる状態ではありません。現在の認証状態を確認して、もう一度お試しください。';

@@ -129,7 +129,8 @@ void main() {
     expect(handoffs.value, isNull);
   });
 
-  test('partial failure retries only events still owned by the source', () async {
+  test('partial failure retries only events still owned by the source',
+      () async {
     final auth = _FakeAccountAuthRepository(
       const AuthSession.anonymous(sourceUid),
     );

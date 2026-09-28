@@ -1196,4 +1196,55 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get adminProfileLinkReviewGenericFailureMessage =>
       '処理に失敗しました。通信状態を確認して、もう一度お試しください。';
+
+  @override
+  String get ownershipTransferPreparedTitle => '既存アカウントへの引継ぎ準備ができました';
+
+  @override
+  String get ownershipTransferPreparedBody =>
+      '現在のログインなし利用状態の所有権証跡を安全に保存しました。既存のLanskeアカウントへ切り替えたあと、この端末で作成したイベントの所有権を移管します。';
+
+  @override
+  String get ownershipTransferSwitchButton => '既存アカウントへ切り替えて引き継ぐ';
+
+  @override
+  String get ownershipTransferCancelButton => '今は引き継がない';
+
+  @override
+  String get ownershipTransferLoginTitle => '既存のLanskeアカウントにログイン';
+
+  @override
+  String get ownershipTransferLoginBody =>
+      '引継ぎ準備は保存されています。移管先にする既存のLanskeアカウントでログインしてください。新しいアカウントは作成しないでください。';
+
+  @override
+  String get ownershipTransferResumeTitle => 'イベント所有権の引継ぎが未完了です';
+
+  @override
+  String get ownershipTransferResumeBody =>
+      'このアカウントへのイベント所有権移管を再開できます。途中まで完了している場合は、残っているイベントだけを移管します。';
+
+  @override
+  String get ownershipTransferResumeButton => '引継ぎを再開';
+
+  @override
+  String get ownershipTransferPreparedMessage =>
+      '既存アカウントへの安全な引継ぎ準備ができました。アカウントを切り替えるまでは、現在のログインなし利用状態をそのまま継続できます。';
+
+  @override
+  String get ownershipTransferLoginMessage =>
+      '引継ぎ準備を保持したままログアウトしました。移管先にする既存のLanskeアカウントでログインしてください。';
+
+  @override
+  String get ownershipTransferCanceledMessage =>
+      '引継ぎ準備を終了しました。ログインなし利用をそのまま継続できます。';
+
+  @override
+  String ownershipTransferCompletedMessage(int count) {
+    return '$count件のイベントを既存のLanskeアカウントへ引き継ぎました。';
+  }
+
+  @override
+  String get ownershipTransferGenericFailureMessage =>
+      'イベント所有権の引継ぎを完了できませんでした。引継ぎ情報は保持されています。通信状態を確認して、もう一度お試しください。';
 }
