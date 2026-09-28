@@ -316,10 +316,8 @@ class InMemoryEventRepository implements EventRepository {
     }
     if (event.ownerUid != sourceUid) {
       throw StateError(
-        'event owner mismatch: expected ' +
-            sourceUid +
-            ', actual ' +
-            (event.ownerUid ?? 'null'),
+        'event owner mismatch: expected $sourceUid, '
+        'actual ${event.ownerUid ?? 'null'}',
       );
     }
 
