@@ -65,6 +65,10 @@ The source UID stored in a client-side transition result is context, not authori
 
 No event owner fields are changed by #204.
 
+The existing-account handoff and event owner migration are implemented by web
+#227 and documented in
+[`firebase-event-ownership-transfer.md`](./firebase-event-ownership-transfer.md).
+
 ## Session synchronization
 
 The existing `AuthRepository.sessionChanges()` uses Firebase `authStateChanges()`.
