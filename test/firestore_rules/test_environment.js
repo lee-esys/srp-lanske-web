@@ -9,6 +9,7 @@ const collectionsToClear = [
   'externalIdentityLinkRequestLocks',
   'externalIdentityLinkRequestAudits',
   'externalIdentityMappings',
+  'eventOwnershipTransfers',
   'events',
   'team_schedules',
   'core_example',

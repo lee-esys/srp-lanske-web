@@ -338,6 +338,59 @@ class JsonEventRepository implements EventRepository {
     return _requireUpdatedAggregate(updatedData, publicId);
   }
 
+  @override
+  Future<SavedEventAggregate> transferOwner({
+    required String publicId,
+    required String expectedSourceUid,
+    required String targetUid,
+  }) async {
+    final normalizedSourceUid = _requireNonEmpty(
+      expectedSourceUid,
+      fieldName: 'expectedSourceUid',
+    );
+    final normalizedTargetUid = _requireNonEmpty(
+      targetUid,
+      fieldName: 'targetUid',
+    );
+    if (normalizedSourceUid == normalizedTargetUid) {
+      throw ArgumentError.value(
+        targetUid,
+        'targetUid',
+        'must differ from expectedSourceUid',
+      );
+    }
+
+    final updatedData = await _store.updateByPublicId(
+      publicId: publicId,
+      update: (currentData) {
+        final current = SavedEventAggregate.fromJson(currentData);
+        _ensurePublicId(current, publicId);
+
+        final currentOwnerUid = current.event.ownerUid;
+        if (currentOwnerUid == normalizedTargetUid) {
+          return SavedEventJsonUpdate.noOp(currentData);
+        }
+        if (currentOwnerUid != normalizedSourceUid) {
+          throw StateError(
+            'event owner mismatch: expected $normalizedSourceUid, '
+            'actual $currentOwnerUid',
+          );
+        }
+
+        return _buildEventFieldsUpdate(
+          currentData,
+          <String, dynamic>{
+            'ownerUid': normalizedTargetUid,
+            'revision': current.event.revision + 1,
+            'updatedAt': _dateTimeToJson(_clock()),
+          },
+        );
+      },
+    );
+
+    return _requireUpdatedAggregate(updatedData, publicId);
+  }
+
   SavedEventAggregate _requireUpdatedAggregate(
     Map<String, dynamic>? data,
     String identifier,

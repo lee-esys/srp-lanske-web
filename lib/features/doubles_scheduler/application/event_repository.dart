@@ -49,6 +49,14 @@ abstract class EventRepository {
       'updateCourtSettingsWithRevision is not implemented',
     );
   }
+
+  Future<SavedEventAggregate> transferOwner({
+    required String publicId,
+    required String expectedSourceUid,
+    required String targetUid,
+  }) {
+    throw UnimplementedError('transferOwner is not implemented');
+  }
 }
 
 class EventRevisionConflictException implements Exception {

@@ -78,6 +78,7 @@ class SavedEvent {
   }
 
   SavedEvent copyWith({
+    String? ownerUid,
     String? title,
     String? memo,
     DateTime? eventDate,
@@ -100,7 +101,7 @@ class SavedEvent {
     return SavedEvent(
       id: id,
       publicId: publicId,
-      ownerUid: ownerUid,
+      ownerUid: ownerUid ?? this.ownerUid,
       title: title ?? this.title,
       memo: memo ?? this.memo,
       eventDate: eventDate ?? this.eventDate,

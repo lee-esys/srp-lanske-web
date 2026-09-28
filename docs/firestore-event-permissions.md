@@ -98,7 +98,10 @@ Legacy events without `ownerUid` therefore remain shared-only: they can continue
 approved operational transitions, but they cannot acquire structural-edit
 permission or assign themselves an owner through a normal update.
 
-A future ownership-transfer flow must have its own explicitly bounded Rules path.
+The dedicated Anonymous-to-existing-account ownership transfer is the only
+exception. Its two-party authorization and bounded `ownerUid` transition are
+documented in
+[`firebase-event-ownership-transfer.md`](./firebase-event-ownership-transfer.md).
 
 ## Progress and match writes
 

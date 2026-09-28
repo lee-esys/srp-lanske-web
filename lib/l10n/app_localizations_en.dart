@@ -1248,4 +1248,59 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get adminProfileLinkReviewGenericFailureMessage =>
       'The operation failed. Check your connection and try again.';
+
+  @override
+  String get ownershipTransferPreparedTitle =>
+      'Ready to transfer to an existing account';
+
+  @override
+  String get ownershipTransferPreparedBody =>
+      'Proof of ownership for the current no-login session has been saved securely. After switching to your existing Lanske account, event ownership created on this device will be transferred.';
+
+  @override
+  String get ownershipTransferSwitchButton =>
+      'Switch to existing account and transfer';
+
+  @override
+  String get ownershipTransferCancelButton => 'Not now';
+
+  @override
+  String get ownershipTransferLoginTitle =>
+      'Sign in to your existing Lanske account';
+
+  @override
+  String get ownershipTransferLoginBody =>
+      'Your transfer handoff is saved. Sign in to the existing Lanske account that should receive the events. Do not create a new account.';
+
+  @override
+  String get ownershipTransferResumeTitle =>
+      'Event ownership transfer is incomplete';
+
+  @override
+  String get ownershipTransferResumeBody =>
+      'You can resume transferring event ownership to this account. If part of the transfer already completed, only the remaining events will be moved.';
+
+  @override
+  String get ownershipTransferResumeButton => 'Resume transfer';
+
+  @override
+  String get ownershipTransferPreparedMessage =>
+      'The secure handoff to an existing account is ready. Your current no-login session remains active until you switch accounts.';
+
+  @override
+  String get ownershipTransferLoginMessage =>
+      'The handoff was kept while signing out. Sign in to the existing Lanske account that should receive the events.';
+
+  @override
+  String get ownershipTransferCanceledMessage =>
+      'The transfer handoff was ended. You can continue using the current no-login session.';
+
+  @override
+  String ownershipTransferCompletedMessage(int count) {
+    return 'Transferred $count event(s) to the existing Lanske account.';
+  }
+
+  @override
+  String get ownershipTransferGenericFailureMessage =>
+      'Event ownership transfer could not be completed. The handoff is still saved. Check your connection and try again.';
 }
