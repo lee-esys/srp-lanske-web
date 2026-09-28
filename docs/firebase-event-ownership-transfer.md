@@ -49,7 +49,7 @@ secret, server timestamps, and a bounded pending lifetime.
 Only the currently authenticated pure Anonymous user whose UID equals
 `sourceUid` may create or refresh this pending record.
 
-The browser keeps the handoff context in `sessionStorage`. This local value is a
+The browser keeps the handoff context in `localStorage`. This local value is a
 bearer handoff secret, but it is not sufficient on its own: Firestore also
 requires the server-side pending transfer record and an authenticated registered
 target account.
@@ -68,10 +68,10 @@ The flow is:
 6. use the ordinary existing-account login flow;
 7. resume ownership transfer after the registered target account is authenticated.
 
-If target login fails, the handoff remains in browser session storage and the
+If target login fails, the handoff remains in browser local storage and the
 user can retry login without creating a new transfer.
 
-If the page reloads after target login, the account page exposes a resume action
+If the page reloads or the browser is restarted before expiry, the account page exposes a resume action
 for the saved handoff.
 
 ## Target acceptance
