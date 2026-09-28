@@ -11,7 +11,7 @@ import 'features/auth/infrastructure/firebase_admin_role_reader.dart';
 import 'features/auth/infrastructure/firebase_auth_repository.dart';
 import 'features/auth/infrastructure/firestore_event_ownership_transfer_repository.dart';
 import 'features/auth/infrastructure/firestore_lanske_user_repository.dart';
-import 'features/auth/infrastructure/session_event_ownership_transfer_handoff_store.dart';
+import 'features/auth/infrastructure/browser_event_ownership_transfer_handoff_store.dart';
 import 'features/auth/presentation/account_scope.dart';
 import 'features/auth/presentation/admin_role_scope.dart';
 import 'features/auth/presentation/auth_scope.dart';
@@ -48,7 +48,7 @@ Future<void> main() async {
     authRepository: authRepository,
     eventRepository: appEventRepository,
     transferRepository: FirestoreEventOwnershipTransferRepository(firestore),
-    handoffStore: SessionEventOwnershipTransferHandoffStore(),
+    handoffStore: BrowserEventOwnershipTransferHandoffStore(),
   );
   final externalIdentityLinkService = ExternalIdentityLinkService(
     repository: FirestoreExternalIdentityLinkRepository(firestore),
