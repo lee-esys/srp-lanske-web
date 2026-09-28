@@ -646,6 +646,7 @@ service cloud.firestore {
         && resource.data.sourceUid == sourceUid
         && resource.data.targetUid == request.auth.uid
         && resource.data.handoffSecretProof == resource.data.handoffSecret
+        && resource.data.expiresAt > request.time
         && data.state == 'accepted'
         && data.sourceUid == sourceUid
         && data.targetUid == request.auth.uid
@@ -671,6 +672,7 @@ service cloud.firestore {
         && resource.data.state == 'accepted'
         && resource.data.sourceUid == sourceUid
         && resource.data.targetUid == request.auth.uid
+        && resource.data.expiresAt > request.time
         && resource.data.acceptedExpiresAt > request.time
         && request.resource.data.state == 'completed'
         && request.resource.data.sourceUid == sourceUid
@@ -690,6 +692,7 @@ service cloud.firestore {
         && transfer.data.sourceUid == sourceUid
         && transfer.data.targetUid == request.auth.uid
         && transfer.data.handoffSecretProof == transfer.data.handoffSecret
+        && transfer.data.expiresAt > request.time
         && transfer.data.acceptedExpiresAt > request.time
         && transfer.data.state == 'accepted';
     }
