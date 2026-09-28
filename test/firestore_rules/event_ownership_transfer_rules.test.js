@@ -421,6 +421,26 @@ test('target can refresh accepted authorization and complete it', async () => {
     .doc(`eventOwnershipTransfers/${prepared.sourceUid}`)
     .get();
   assert.equal(completed.data().state, 'completed');
+
+  await assertSucceeds(
+    target.doc(`eventOwnershipTransfers/${prepared.sourceUid}`).update({
+      state: 'accepted',
+      targetUid: 'target-account',
+      handoffSecretProof: prepared.handoffSecret,
+      acceptedAt: serverTimestamp(),
+      acceptedExpiresAt: timestampFromNow({ hours: 1 }),
+      updatedAt: serverTimestamp(),
+    }),
+  );
+
+  await assertSucceeds(
+    target.doc(`eventOwnershipTransfers/${prepared.sourceUid}`).update({
+      state: 'completed',
+      targetUid: 'target-account',
+      completedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
 });
 
 async function seedEventWithoutRules(publicId, ownerUid) {
