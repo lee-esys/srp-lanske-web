@@ -691,10 +691,7 @@ service cloud.firestore {
         && transfer.data.targetUid == request.auth.uid
         && transfer.data.handoffSecretProof == transfer.data.handoffSecret
         && transfer.data.acceptedExpiresAt > request.time
-        && (
-          transfer.data.state == 'accepted'
-          || transfer.data.state == 'completed'
-        );
+        && transfer.data.state == 'accepted';
     }
 
     function isOwnershipTransferEventUpdate() {
