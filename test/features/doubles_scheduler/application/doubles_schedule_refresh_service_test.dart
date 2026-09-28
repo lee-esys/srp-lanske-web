@@ -305,6 +305,15 @@ class _FakeEventRepository implements EventRepository {
   }) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<SavedEventAggregate> transferOwner({
+    required String publicId,
+    required String expectedSourceUid,
+    required String targetUid,
+  }) {
+    throw UnimplementedError();
+  }
 }
 
 class _FakeProgressRepository implements ScheduleProgressRepository {
