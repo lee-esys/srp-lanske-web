@@ -285,6 +285,45 @@ test('target account must know the source handoff secret to accept', async () =>
   );
 });
 
+test('expired source authorization cannot be accepted or used', async () => {
+  const sourceUid = 'source-anon';
+  const targetUid = 'target-account';
+  const handoffSecret = 'A'.repeat(43);
+
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    await db.doc(`eventOwnershipTransfers/${sourceUid}`).set({
+      schemaVersion: 1,
+      sourceUid,
+      handoffSecret,
+      state: 'pending',
+      createdAt: timestampFromNow({ hours: -2 }),
+      expiresAt: timestampFromNow({ minutes: -1 }),
+      updatedAt: timestampFromNow({ hours: -2 }),
+    });
+    await db.doc('events/SOURCE01').set(eventData('SOURCE01', sourceUid));
+  });
+
+  const target = registeredDb(targetUid);
+  await assertFails(
+    target.doc(`eventOwnershipTransfers/${sourceUid}`).update({
+      state: 'accepted',
+      targetUid,
+      handoffSecretProof: handoffSecret,
+      acceptedAt: serverTimestamp(),
+      acceptedExpiresAt: timestampFromNow({ hours: 1 }),
+      updatedAt: serverTimestamp(),
+    }),
+  );
+
+  await assertFails(
+    target
+      .collection('events')
+      .where('event.ownerUid', '==', sourceUid)
+      .get(),
+  );
+});
+
 test('admin role alone cannot inspect or use another source transfer', async () => {
   const { sourceUid } = await createPendingTransfer();
   const admin = registeredDb('admin-account', { admin: true });
