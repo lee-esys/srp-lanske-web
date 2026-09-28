@@ -290,9 +290,7 @@ class _AccountPageState extends State<AccountPage> {
   Future<void> _switchToExistingAccountForOwnershipTransfer() async {
     final handoff = _ownershipHandoff;
     final session = AuthScope.of(context).session;
-    if (handoff == null ||
-        !session.isAnonymous ||
-        session.uid != handoff.sourceUid) {
+    if (handoff == null || !session.isAnonymous) {
       return;
     }
 
@@ -546,6 +544,11 @@ class _AccountPageState extends State<AccountPage> {
   Widget _buildOwnershipTransferPrepared(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
+    final session = AuthScope.of(context).session;
+    final canCancel =
+        _ownershipHandoff != null &&
+        session.isAnonymous &&
+        session.uid == _ownershipHandoff!.sourceUid;
 
     return Card(
       child: Padding(
@@ -574,10 +577,11 @@ class _AccountPageState extends State<AccountPage> {
               icon: const Icon(Icons.login),
               label: Text(l10n.ownershipTransferSwitchButton),
             ),
-            TextButton(
-              onPressed: _busy ? null : _cancelPreparedOwnershipTransfer,
-              child: Text(l10n.ownershipTransferCancelButton),
-            ),
+            if (canCancel)
+              TextButton(
+                onPressed: _busy ? null : _cancelPreparedOwnershipTransfer,
+                child: Text(l10n.ownershipTransferCancelButton),
+              ),
             if (_busy) ...[
               const SizedBox(height: 12),
               const LinearProgressIndicator(),
