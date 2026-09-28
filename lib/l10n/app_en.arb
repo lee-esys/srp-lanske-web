@@ -1791,5 +1791,67 @@
   "adminProfileLinkReviewGenericFailureMessage": "The operation failed. Check your connection and try again.",
   "@adminProfileLinkReviewGenericFailureMessage": {
     "description": "Admin TennisBear profile link review UI text."
+  },
+  "ownershipTransferPreparedTitle": "Ready to transfer to an existing account",
+  "@ownershipTransferPreparedTitle": {
+    "description": "Title shown after an anonymous ownership transfer handoff is prepared."
+  },
+  "ownershipTransferPreparedBody": "Proof of ownership for the current no-login session has been saved securely. After switching to your existing Lanske account, event ownership created on this device will be transferred.",
+  "@ownershipTransferPreparedBody": {
+    "description": "Explanation shown before switching from the anonymous source to an existing account."
+  },
+  "ownershipTransferSwitchButton": "Switch to existing account and transfer",
+  "@ownershipTransferSwitchButton": {
+    "description": "Button label for signing out the anonymous source before target account login."
+  },
+  "ownershipTransferCancelButton": "Not now",
+  "@ownershipTransferCancelButton": {
+    "description": "Button label for abandoning the local ownership handoff while the anonymous source remains active."
+  },
+  "ownershipTransferLoginTitle": "Sign in to your existing Lanske account",
+  "@ownershipTransferLoginTitle": {
+    "description": "Title of the login card while an ownership handoff is pending."
+  },
+  "ownershipTransferLoginBody": "Your transfer handoff is saved. Sign in to the existing Lanske account that should receive the events. Do not create a new account.",
+  "@ownershipTransferLoginBody": {
+    "description": "Instruction shown while waiting for the target account login."
+  },
+  "ownershipTransferResumeTitle": "Event ownership transfer is incomplete",
+  "@ownershipTransferResumeTitle": {
+    "description": "Title shown when a signed-in target still has a pending ownership handoff."
+  },
+  "ownershipTransferResumeBody": "You can resume transferring event ownership to this account. If part of the transfer already completed, only the remaining events will be moved.",
+  "@ownershipTransferResumeBody": {
+    "description": "Retry explanation for an interrupted ownership transfer."
+  },
+  "ownershipTransferResumeButton": "Resume transfer",
+  "@ownershipTransferResumeButton": {
+    "description": "Button label for resuming an ownership transfer."
+  },
+  "ownershipTransferPreparedMessage": "The secure handoff to an existing account is ready. Your current no-login session remains active until you switch accounts.",
+  "@ownershipTransferPreparedMessage": {
+    "description": "Status message shown after preparing the ownership handoff."
+  },
+  "ownershipTransferLoginMessage": "The handoff was kept while signing out. Sign in to the existing Lanske account that should receive the events.",
+  "@ownershipTransferLoginMessage": {
+    "description": "Status shown after leaving the anonymous source session for target login."
+  },
+  "ownershipTransferCanceledMessage": "The transfer handoff was ended. You can continue using the current no-login session.",
+  "@ownershipTransferCanceledMessage": {
+    "description": "Status shown after locally abandoning a prepared handoff."
+  },
+  "ownershipTransferCompletedMessage": "Transferred {count} event(s) to the existing Lanske account.",
+  "@ownershipTransferCompletedMessage": {
+    "description": "Status shown after event ownership transfer completes.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "ownershipTransferGenericFailureMessage": "Event ownership transfer could not be completed. The handoff is still saved. Check your connection and try again.",
+  "@ownershipTransferGenericFailureMessage": {
+    "description": "Generic ownership transfer failure message."
   }
 }
