@@ -9,6 +9,7 @@ import '../application/account_auth_repository.dart';
 import '../application/account_service.dart';
 import '../domain/account_transition.dart';
 import '../domain/auth_session.dart';
+import '../domain/event_ownership_transfer.dart';
 import 'account_scope.dart';
 import 'admin_role_scope.dart';
 import 'auth_scope.dart';
@@ -35,10 +36,15 @@ class _AccountPageState extends State<AccountPage> {
   String? _resolvedAdminRoleUid;
   String? _resolvingAdminRoleUid;
   bool _isAdmin = false;
+  EventOwnershipTransferHandoff? _ownershipHandoff;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final ownershipTransferService =
+        AccountScope.ownershipTransferOf(context);
+    _ownershipHandoff = ownershipTransferService.loadPendingHandoff();
+
     final session = AuthScope.of(context).session;
     final uid = session.uid;
 
@@ -160,9 +166,10 @@ class _AccountPageState extends State<AccountPage> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final service = AccountScope.of(context);
+    final isOwnershipTransferLogin = _ownershipHandoff != null;
 
-    await _runAction(() async {
-      if (_registerMode) {
+    final succeeded = await _runAction(() async {
+      if (_registerMode && !isOwnershipTransferLogin) {
         await service.createAccountWithEmailPassword(
           email: email,
           password: password,
@@ -174,13 +181,24 @@ class _AccountPageState extends State<AccountPage> {
         );
       }
     });
+
+    if (succeeded && isOwnershipTransferLogin && mounted) {
+      AuthScope.of(context).syncCurrentSession();
+      await _resumeOwnershipTransfer();
+    }
   }
 
   Future<void> _signInWithGoogle() async {
     final service = AccountScope.of(context);
-    await _runAction(() async {
+    final isOwnershipTransferLogin = _ownershipHandoff != null;
+    final succeeded = await _runAction(() async {
       await service.signInWithGoogle();
     });
+
+    if (succeeded && isOwnershipTransferLogin && mounted) {
+      AuthScope.of(context).syncCurrentSession();
+      await _resumeOwnershipTransfer();
+    }
   }
 
   Future<void> _linkAnonymousWithEmailPassword() async {
@@ -204,8 +222,15 @@ class _AccountPageState extends State<AccountPage> {
     Future<AccountTransitionResult> Function() action,
   ) async {
     AccountTransitionResult? result;
+    EventOwnershipTransferHandoff? preparedHandoff;
+    final ownershipTransferService =
+        AccountScope.ownershipTransferOf(context);
     final succeeded = await _runAction(() async {
       result = await action();
+      final resolved = result;
+      if (resolved != null && resolved.requiresOwnershipMigration) {
+        preparedHandoff = await ownershipTransferService.prepare(resolved);
+      }
     });
 
     if (!mounted) return;
@@ -221,14 +246,15 @@ class _AccountPageState extends State<AccountPage> {
 
     if (!mounted || !succeeded || resolved == null) return;
 
+    final l10n = AppLocalizations.of(context);
     setState(() {
       if (resolved.isLinked) {
         _statusMessage = 'ログインなしの利用状態を引き継いでLanskeアカウントへ移行しました。';
         _statusIsError = false;
       } else {
-        _statusMessage = '既存のLanskeアカウントに紐付いた認証情報が見つかりました。'
-            '現在のログインなし利用状態は保持されており、アカウントも切り替えていません。'
-            'データを安全に引き継げるようになるまでは、通常の対戦表利用をそのまま継続できます。';
+        _ownershipHandoff = preparedHandoff;
+        _registerMode = false;
+        _statusMessage = l10n.ownershipTransferPreparedMessage;
         _statusIsError = false;
       }
     });
@@ -259,6 +285,68 @@ class _AccountPageState extends State<AccountPage> {
   Future<void> _signOut() async {
     final auth = AuthScope.of(context);
     await _runAction(auth.signOut);
+  }
+
+  Future<void> _switchToExistingAccountForOwnershipTransfer() async {
+    final handoff = _ownershipHandoff;
+    final session = AuthScope.of(context).session;
+    if (handoff == null ||
+        !session.isAnonymous ||
+        session.uid != handoff.sourceUid) {
+      return;
+    }
+
+    final succeeded = await _runAction(AuthScope.of(context).signOut);
+    if (!mounted || !succeeded) return;
+
+    AuthScope.of(context).syncCurrentSession();
+    final l10n = AppLocalizations.of(context);
+    setState(() {
+      _registerMode = false;
+      _statusMessage = l10n.ownershipTransferLoginMessage;
+      _statusIsError = false;
+    });
+  }
+
+  void _cancelPreparedOwnershipTransfer() {
+    final service = AccountScope.ownershipTransferOf(context);
+    service.abandonPreparedHandoff();
+    final l10n = AppLocalizations.of(context);
+    setState(() {
+      _ownershipHandoff = null;
+      _statusMessage = l10n.ownershipTransferCanceledMessage;
+      _statusIsError = false;
+    });
+  }
+
+  Future<void> _resumeOwnershipTransfer() async {
+    if (_ownershipHandoff == null) return;
+
+    EventOwnershipTransferResult? result;
+    final service = AccountScope.ownershipTransferOf(context);
+    final succeeded = await _runAction(() async {
+      result = await service.resumeForCurrentAccount();
+    });
+
+    if (!mounted) return;
+
+    if (!succeeded) {
+      setState(() {
+        _ownershipHandoff = service.loadPendingHandoff();
+      });
+      return;
+    }
+
+    AuthScope.of(context).syncCurrentSession();
+    final resolved = result;
+    final l10n = AppLocalizations.of(context);
+    setState(() {
+      _ownershipHandoff = null;
+      _statusMessage = l10n.ownershipTransferCompletedMessage(
+        resolved?.transferredEventCount ?? 0,
+      );
+      _statusIsError = false;
+    });
   }
 
   void _retryEnsureUser() {
@@ -313,7 +401,9 @@ class _AccountPageState extends State<AccountPage> {
                 if (session.kind == AuthSessionKind.signedOut)
                   _buildSignedOut(context)
                 else if (session.kind == AuthSessionKind.anonymous)
-                  _buildAnonymous(context)
+                  _ownershipHandoff == null
+                      ? _buildAnonymous(context)
+                      : _buildOwnershipTransferPrepared(context)
                 else
                   _buildAccount(context, session),
               ],
@@ -326,6 +416,8 @@ class _AccountPageState extends State<AccountPage> {
 
   Widget _buildSignedOut(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final ownershipTransferPending = _ownershipHandoff != null;
 
     return Card(
       child: Padding(
@@ -337,14 +429,20 @@ class _AccountPageState extends State<AccountPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  _registerMode ? 'Lanske アカウントを作成' : 'Lanske にログイン',
+                  ownershipTransferPending
+                      ? l10n.ownershipTransferLoginTitle
+                      : _registerMode
+                          ? 'Lanske アカウントを作成'
+                          : 'Lanske にログイン',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'ログインしなくても対戦表は利用できます。アカウントを使うと、今後マイページや本人履歴などを利用できるようになります。',
+                  ownershipTransferPending
+                      ? l10n.ownershipTransferLoginBody
+                      : 'ログインしなくても対戦表は利用できます。アカウントを使うと、今後マイページや本人履歴などを利用できるようになります。',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -422,13 +520,17 @@ class _AccountPageState extends State<AccountPage> {
                     onPressed: _busy ? null : _sendPasswordResetEmail,
                     child: const Text('パスワードを忘れた場合'),
                   ),
-                const Divider(height: 32),
-                TextButton(
-                  onPressed: _busy ? null : _toggleRegisterMode,
-                  child: Text(
-                    _registerMode ? 'すでにアカウントをお持ちの方はこちら' : '新しくアカウントを作成する',
+                if (!ownershipTransferPending) ...[
+                  const Divider(height: 32),
+                  TextButton(
+                    onPressed: _busy ? null : _toggleRegisterMode,
+                    child: Text(
+                      _registerMode
+                          ? 'すでにアカウントをお持ちの方はこちら'
+                          : '新しくアカウントを作成する',
+                    ),
                   ),
-                ),
+                ],
                 if (_busy) ...[
                   const SizedBox(height: 12),
                   const LinearProgressIndicator(),
@@ -436,6 +538,51 @@ class _AccountPageState extends State<AccountPage> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOwnershipTransferPrepared(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Icon(
+              Icons.swap_horiz,
+              size: 40,
+              color: colorScheme.primary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.ownershipTransferPreparedTitle,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            Text(l10n.ownershipTransferPreparedBody),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed:
+                  _busy ? null : _switchToExistingAccountForOwnershipTransfer,
+              icon: const Icon(Icons.login),
+              label: Text(l10n.ownershipTransferSwitchButton),
+            ),
+            TextButton(
+              onPressed: _busy ? null : _cancelPreparedOwnershipTransfer,
+              child: Text(l10n.ownershipTransferCancelButton),
+            ),
+            if (_busy) ...[
+              const SizedBox(height: 12),
+              const LinearProgressIndicator(),
+            ],
+          ],
         ),
       ),
     );
@@ -575,9 +722,38 @@ class _AccountPageState extends State<AccountPage> {
     final userLoading = uid != null && _ensuringUid == uid;
     final isAdmin = uid != null && _resolvedAdminRoleUid == uid && _isAdmin;
 
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (_ownershipHandoff != null) ...[
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l10n.ownershipTransferResumeTitle,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(l10n.ownershipTransferResumeBody),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: _busy ? null : _resumeOwnershipTransfer,
+                    icon: const Icon(Icons.sync),
+                    label: Text(l10n.ownershipTransferResumeButton),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         Card(
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -688,6 +864,9 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   String _messageForError(Object error) {
+    if (error is EventOwnershipTransferRequiredException) {
+      return AppLocalizations.of(context).ownershipTransferGenericFailureMessage;
+    }
     if (error is AccountTransitionRequiredException) {
       return 'ログインなし利用の引継ぎを開始できる状態ではありません。現在の認証状態を確認して、もう一度お試しください。';
     }
