@@ -205,6 +205,10 @@ test('only the authenticated anonymous source can prepare a transfer', async () 
   );
 
   await assertFails(
+    source.doc('eventOwnershipTransfers/source-anon').get(),
+  );
+
+  await assertFails(
     anonymousDb('other-anon')
       .doc('eventOwnershipTransfers/source-anon')
       .set(pendingTransferData('source-anon')),
