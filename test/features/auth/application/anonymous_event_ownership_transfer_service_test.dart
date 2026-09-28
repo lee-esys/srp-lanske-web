@@ -245,7 +245,7 @@ EventDraft _draft(String name) {
     players: List<PlayerDraft>.generate(
       4,
       (index) => PlayerDraft.create(
-        displayName: 'Player ' + (index + 1).toString(),
+        displayName: 'Player ${index + 1}',
       ),
     ),
   );
