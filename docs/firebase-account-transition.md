@@ -52,16 +52,16 @@ On collision:
 
 The target account UID is therefore intentionally unknown at the #204 boundary.
 
-## #196 handoff boundary
+## #227 handoff boundary
 
-#196 is responsible for the actual event ownership transfer.
+#227 is responsible for the actual event ownership transfer.
 
 The transfer must establish both sides safely:
 
 - source: the currently authenticated anonymous UID whose data may be migrated
 - target: the registered account authenticated as part of the migration flow
 
-The source UID stored in a client-side transition result is context, not authorization evidence. #196 must not permit a caller to claim arbitrary source UIDs.
+The source UID stored in a client-side transition result is context, not authorization evidence. #227 must not permit a caller to claim arbitrary source UIDs.
 
 No event owner fields are changed by #204.
 
