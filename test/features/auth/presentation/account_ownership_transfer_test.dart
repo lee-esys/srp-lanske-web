@@ -53,6 +53,39 @@ void main() {
     expect(find.text('ログインなしで利用中'), findsOneWidget);
   });
 
+  testWidgets(
+      'replacement anonymous session can be signed out but cannot cancel source handoff',
+      (tester) async {
+    final auth = _FakeAuthRepository(
+      const AuthSession.anonymous('replacement-anon'),
+    );
+    final handoffs = _FakeHandoffStore()
+      ..value = EventOwnershipTransferHandoff(
+        sourceUid: 'source-anon',
+        handoffSecret: 'handoff-secret',
+        expiresAt: now.add(const Duration(hours: 1)),
+      );
+
+    await tester.pumpWidget(
+      _app(
+        auth: auth,
+        handoffs: handoffs,
+        now: now,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('既存アカウントへ切り替えて引き継ぐ'), findsOneWidget);
+    expect(find.text('今は引き継がない'), findsNothing);
+
+    await tester.tap(find.text('既存アカウントへ切り替えて引き継ぐ'));
+    await tester.pumpAndSettle();
+
+    expect(auth.currentSession, const AuthSession.signedOut());
+    expect(handoffs.value, isNotNull);
+    expect(find.text('既存のLanskeアカウントにログイン'), findsOneWidget);
+  });
+
   testWidgets('signed-out handoff requires existing account login',
       (tester) async {
     final auth = _FakeAuthRepository(const AuthSession.signedOut());
