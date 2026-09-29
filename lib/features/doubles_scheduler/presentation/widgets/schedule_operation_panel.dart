@@ -10,7 +10,7 @@ class ScheduleOperationPanel extends StatelessWidget {
     required this.canChangeCourtDisplay,
     required this.onChangeCourtDisplay,
     required this.showActionButtons,
-    required this.isLoading,
+    required this.isGenerating,
     required this.isAdopting,
     required this.generateButtonLabel,
     required this.canAdopt,
@@ -23,7 +23,7 @@ class ScheduleOperationPanel extends StatelessWidget {
   final VoidCallback? onChangeCourtDisplay;
 
   final bool showActionButtons;
-  final bool isLoading;
+  final bool isGenerating;
   final bool isAdopting;
   final String generateButtonLabel;
   final bool canAdopt;
@@ -60,7 +60,7 @@ class ScheduleOperationPanel extends StatelessWidget {
         if (showActionButtons) ...[
           const SizedBox(height: 8),
           ScheduleActionButtons(
-            isLoading: isLoading,
+            isGenerating: isGenerating,
             isAdopting: isAdopting,
             generateButtonLabel: generateButtonLabel,
             canAdopt: canAdopt,
