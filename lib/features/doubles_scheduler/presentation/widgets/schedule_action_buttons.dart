@@ -4,7 +4,7 @@ import 'package:srp_lanske/l10n/l10n.dart';
 class ScheduleActionButtons extends StatelessWidget {
   const ScheduleActionButtons({
     super.key,
-    required this.isLoading,
+    required this.isGenerating,
     required this.isAdopting,
     required this.generateButtonLabel,
     required this.canAdopt,
@@ -12,7 +12,7 @@ class ScheduleActionButtons extends StatelessWidget {
     required this.onAdopt,
   });
 
-  final bool isLoading;
+  final bool isGenerating;
   final bool isAdopting;
   final String generateButtonLabel;
   final bool canAdopt;
@@ -27,13 +27,21 @@ class ScheduleActionButtons extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         FilledButton.tonalIcon(
-          onPressed: isLoading ? null : onGenerate,
-          icon: const Icon(Icons.refresh),
-          label: Text(generateButtonLabel),
+          onPressed: isGenerating ? null : onGenerate,
+          icon: isGenerating
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.refresh),
+          label: Text(
+            isGenerating ? l10n.processingButton : generateButtonLabel,
+          ),
         ),
         const SizedBox(width: 12),
         FilledButton.icon(
-          onPressed: (isLoading || isAdopting || !canAdopt) ? null : onAdopt,
+          onPressed: (isGenerating || isAdopting || !canAdopt) ? null : onAdopt,
           icon: isAdopting
               ? const SizedBox(
                   width: 18,

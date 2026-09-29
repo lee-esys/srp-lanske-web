@@ -231,6 +231,157 @@ void runEventRepositoryContractTests({
       expect(found.event.revision, 3);
     });
 
+    test('compare-and-set generates from the expected current schedule',
+        () async {
+      final repository = createRepository();
+      final created = await _createOwnedEvent(repository, buildDraft());
+
+      final first = await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: null,
+        generatedScheduleId: 'generated-1',
+      );
+      final second = await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: 'generated-1',
+        generatedScheduleId: 'generated-2',
+      );
+
+      expect(first.currentGeneratedScheduleId, 'generated-1');
+      expect(second.currentGeneratedScheduleId, 'generated-2');
+      expect(second.hasAdoptedSchedule, isFalse);
+    });
+
+    test('compare-and-set keeps the same generated schedule as a no-op',
+        () async {
+      final repository = createRepository();
+      final created = await _createOwnedEvent(repository, buildDraft());
+
+      final first = await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: null,
+        generatedScheduleId: 'generated-1',
+      );
+      final second = await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: 'generated-1',
+        generatedScheduleId: 'generated-1',
+      );
+
+      expect(second.currentGeneratedScheduleId, 'generated-1');
+      expect(second.revision, first.revision);
+    });
+
+    test('compare-and-set rejects stale regenerated schedule state', () async {
+      final repository = createRepository();
+      final created = await _createOwnedEvent(repository, buildDraft());
+
+      await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: null,
+        generatedScheduleId: 'generated-1',
+      );
+      await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: 'generated-1',
+        generatedScheduleId: 'generated-2',
+      );
+
+      await expectLater(
+        repository.updateCurrentGeneratedScheduleIdIfCurrent(
+          publicId: created.event.publicId,
+          expectedCurrentGeneratedScheduleId: 'generated-1',
+          generatedScheduleId: 'generated-stale',
+        ),
+        throwsA(
+          isA<ScheduleStateConflictException>()
+              .having(
+                (error) => error.expectedCurrentGeneratedScheduleId,
+                'expected current schedule',
+                'generated-1',
+              )
+              .having(
+                (error) => error.actualCurrentGeneratedScheduleId,
+                'actual current schedule',
+                'generated-2',
+              ),
+        ),
+      );
+    });
+
+    test('compare-and-set rejects regeneration after adoption', () async {
+      final repository = createRepository();
+      final created = await _createOwnedEvent(repository, buildDraft());
+
+      await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: null,
+        generatedScheduleId: 'generated-1',
+      );
+      await repository.updateAdoptedGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: 'generated-1',
+      );
+
+      await expectLater(
+        repository.updateCurrentGeneratedScheduleIdIfCurrent(
+          publicId: created.event.publicId,
+          expectedCurrentGeneratedScheduleId: 'generated-1',
+          generatedScheduleId: 'generated-2',
+        ),
+        throwsA(
+          isA<ScheduleStateConflictException>().having(
+            (error) => error.isAlreadyAdopted,
+            'already adopted',
+            isTrue,
+          ),
+        ),
+      );
+    });
+
+    test('compare-and-set adopts only the expected current schedule', () async {
+      final repository = createRepository();
+      final created = await _createOwnedEvent(repository, buildDraft());
+
+      await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: null,
+        generatedScheduleId: 'generated-1',
+      );
+
+      await expectLater(
+        repository.updateAdoptedGeneratedScheduleIdIfCurrent(
+          publicId: created.event.publicId,
+          expectedCurrentGeneratedScheduleId: 'generated-stale',
+        ),
+        throwsA(isA<ScheduleStateConflictException>()),
+      );
+
+      final adopted =
+          await repository.updateAdoptedGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: 'generated-1',
+      );
+
+      expect(adopted.currentGeneratedScheduleId, 'generated-1');
+      expect(adopted.adoptedGeneratedScheduleId, 'generated-1');
+      expect(adopted.hasAdoptedSchedule, isTrue);
+
+      await expectLater(
+        repository.updateAdoptedGeneratedScheduleIdIfCurrent(
+          publicId: created.event.publicId,
+          expectedCurrentGeneratedScheduleId: 'generated-1',
+        ),
+        throwsA(
+          isA<ScheduleStateConflictException>().having(
+            (error) => error.isAlreadyAdopted,
+            'already adopted',
+            isTrue,
+          ),
+        ),
+      );
+    });
+
     test('updates and persists adopted generated schedule id', () async {
       final repository = createRepository();
 

@@ -234,7 +234,7 @@ ScheduleMatchProgress _match({
   );
 }
 
-class _FakeEventRepository implements EventRepository {
+class _FakeEventRepository extends EventRepository {
   _FakeEventRepository({required this.aggregate});
 
   final SavedEventAggregate? aggregate;

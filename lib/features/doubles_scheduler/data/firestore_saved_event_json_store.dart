@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:srp_lanske/shared/infrastructure/firestore_provenance.dart';
 
 import '../application/event_repository.dart';
+import '../domain/saved_event_models.dart';
 import 'saved_event_json_store.dart';
 
 class FirestoreSavedEventJsonStore implements SavedEventJsonStore {
@@ -108,6 +109,18 @@ class FirestoreSavedEventJsonStore implements SavedEventJsonStore {
             'expectedRevision': error.expectedRevision,
             'actualRevision': error.actualRevision,
           };
+        } on ScheduleStateConflictException catch (error) {
+          return <String, dynamic>{
+            'kind': 'scheduleStateConflict',
+            'eventId': error.eventId,
+            'expectedCurrentGeneratedScheduleId':
+                error.expectedCurrentGeneratedScheduleId,
+            'actualCurrentGeneratedScheduleId':
+                error.actualCurrentGeneratedScheduleId,
+            'actualAdoptedGeneratedScheduleId':
+                error.actualAdoptedGeneratedScheduleId,
+            'actualStatus': error.actualStatus.name,
+          };
         }
       },
     );
@@ -123,6 +136,20 @@ class FirestoreSavedEventJsonStore implements SavedEventJsonStore {
             _requireTransactionInt(transactionResult['expectedRevision']),
         actualRevision:
             _requireTransactionInt(transactionResult['actualRevision']),
+      );
+    }
+
+    if (transactionResult['kind'] == 'scheduleStateConflict') {
+      throw ScheduleStateConflictException(
+        eventId: transactionResult['eventId']?.toString() ?? '',
+        expectedCurrentGeneratedScheduleId:
+            transactionResult['expectedCurrentGeneratedScheduleId']?.toString(),
+        actualCurrentGeneratedScheduleId:
+            transactionResult['actualCurrentGeneratedScheduleId']?.toString(),
+        actualAdoptedGeneratedScheduleId:
+            transactionResult['actualAdoptedGeneratedScheduleId']?.toString(),
+        actualStatus:
+            _requireSavedEventStatus(transactionResult['actualStatus']),
       );
     }
 
@@ -151,6 +178,17 @@ class FirestoreSavedEventJsonStore implements SavedEventJsonStore {
       throw StateError('invalid Firestore transaction revision: $value');
     }
     return parsed;
+  }
+
+  SavedEventStatus _requireSavedEventStatus(Object? value) {
+    final name = value?.toString();
+    for (final status in SavedEventStatus.values) {
+      if (status.name == name) {
+        return status;
+      }
+    }
+
+    throw StateError('invalid Firestore transaction status: $value');
   }
 
   FirestoreWriteOrigin _currentWriteOrigin() {
