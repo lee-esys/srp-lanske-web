@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/features/doubles_scheduler/application/doubles_match_progress_service.dart';
-import 'package:srp_lanske/features/doubles_scheduler/application/local_schedule_history_mapper.dart';
-import 'package:srp_lanske/features/doubles_scheduler/data/local_schedule_history_store.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_match_save_registry.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_progress_ui_store.dart';
 import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
@@ -29,6 +27,11 @@ class DoublesFloatingNavigationRouteObserver extends NavigatorObserver {
   }
 }
 
+typedef DoublesProgressChanged = void Function(
+  ScheduleProgressSummary? summary,
+  List<ScheduleMatchProgress> matches,
+);
+
 class ScheduleRoundsView extends StatefulWidget {
   const ScheduleRoundsView({
     super.key,
@@ -38,6 +41,10 @@ class ScheduleRoundsView extends StatefulWidget {
     this.selectedPlayerId,
     this.onPlayerSelected,
     required this.courtLabelByNumber,
+    this.progressSummary,
+    this.matchProgresses = const <ScheduleMatchProgress>[],
+    this.canEditMatches = false,
+    this.onProgressChanged,
   });
 
   final Map<String, dynamic>? scheduleResponse;
@@ -46,6 +53,10 @@ class ScheduleRoundsView extends StatefulWidget {
   final String? selectedPlayerId;
   final ValueChanged<String>? onPlayerSelected;
   final Map<int, String> courtLabelByNumber;
+  final ScheduleProgressSummary? progressSummary;
+  final List<ScheduleMatchProgress> matchProgresses;
+  final bool canEditMatches;
+  final DoublesProgressChanged? onProgressChanged;
 
   @override
   State<ScheduleRoundsView> createState() => _ScheduleRoundsViewState();
@@ -388,29 +399,12 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       throw StateError('displayed doubles schedule changed while editing');
     }
 
-    final saved = await _progressService.save(
+    return _progressService.save(
       scope: scope,
       current: current,
       input: input,
       totalMatchCount: totalMatchCount,
     );
-
-    try {
-      final aggregate = await appEventRepository.findByPublicId(scope.shareId);
-      if (aggregate != null) {
-        await LocalScheduleHistoryStore().upsert(
-          buildLocalScheduleHistoryItem(
-            aggregate,
-            now: DateTime.now(),
-          ),
-        );
-      }
-    } catch (error, stackTrace) {
-      debugPrint('Failed to update local schedule history: $error');
-      debugPrintStack(stackTrace: stackTrace);
-    }
-
-    return saved;
   }
 
   @override
@@ -424,6 +418,10 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
         selectedPlayerId: widget.selectedPlayerId,
         onPlayerSelected: widget.onPlayerSelected,
         courtLabelByNumber: widget.courtLabelByNumber,
+        progressSummary: widget.progressSummary,
+        matchProgresses: widget.matchProgresses,
+        canEditMatches: widget.canEditMatches,
+        onProgressChanged: widget.onProgressChanged,
       ),
     );
   }
