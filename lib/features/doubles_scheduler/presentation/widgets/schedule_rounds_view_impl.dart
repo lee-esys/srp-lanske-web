@@ -23,6 +23,10 @@ class ScheduleRoundsView extends StatefulWidget {
     this.selectedPlayerId,
     this.onPlayerSelected,
     required this.courtLabelByNumber,
+    this.progressSummary,
+    this.matchProgresses = const <ScheduleMatchProgress>[],
+    this.canEditMatches = false,
+    this.onProgressChanged,
   });
 
   final Map<String, dynamic>? scheduleResponse;
@@ -31,6 +35,13 @@ class ScheduleRoundsView extends StatefulWidget {
   final String? selectedPlayerId;
   final ValueChanged<String>? onPlayerSelected;
   final Map<int, String> courtLabelByNumber;
+  final ScheduleProgressSummary? progressSummary;
+  final List<ScheduleMatchProgress> matchProgresses;
+  final bool canEditMatches;
+  final void Function(
+    ScheduleProgressSummary? summary,
+    List<ScheduleMatchProgress> matches,
+  )? onProgressChanged;
 
   @override
   State<ScheduleRoundsView> createState() => _ScheduleRoundsViewState();
@@ -45,7 +56,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
 
   Map<String, ScheduleMatchProgress> _progressByKey = const {};
   ScheduleProgressNavigation? _progressNavigation;
-  bool _canEditMatches = false;
   bool _isLoadingProgress = false;
   bool _isOpeningMatch = false;
   int _progressRequestSequence = 0;
@@ -54,9 +64,10 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   void initState() {
     super.initState();
     DoublesProgressUiStore.clearOverride();
+    _syncProgressFromWidget();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _loadProgress();
+        _publishProgressState();
       }
     });
   }
@@ -64,11 +75,17 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   @override
   void didUpdateWidget(covariant ScheduleRoundsView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _matchCardKeys.clear();
-    DoublesProgressUiStore.clearOverride();
+
+    if (_generatedScheduleIdFor(oldWidget.scheduleResponse) !=
+        _generatedScheduleId) {
+      _progressRequestSequence += 1;
+      _matchCardKeys.clear();
+    }
+
+    _syncProgressFromWidget();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _loadProgress();
+        _publishProgressState();
       }
     });
   }
@@ -85,12 +102,16 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   }
 
   String? get _generatedScheduleId {
-    final value = widget.scheduleResponse?['generated_schedule_id']?.toString();
+    return _generatedScheduleIdFor(widget.scheduleResponse);
+  }
+
+  String? _generatedScheduleIdFor(Map<String, dynamic>? scheduleResponse) {
+    final value = scheduleResponse?['generated_schedule_id']?.toString();
     return value == null || value.isEmpty ? null : value;
   }
 
   bool get _hasAdoptedSchedule {
-    return widget.scheduleResponse?['adopted'] == true || _canEditMatches;
+    return widget.scheduleResponse?['adopted'] == true || widget.canEditMatches;
   }
 
   int get _totalMatchCount {
@@ -121,6 +142,37 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     );
   }
 
+  void _syncProgressFromWidget() {
+    _progressByKey = Map<String, ScheduleMatchProgress>.unmodifiable({
+      for (final match in widget.matchProgresses) match.key.value: match,
+    });
+    _progressNavigation = widget.canEditMatches
+        ? _resolveProgressNavigation(_progressByKey.values)
+        : null;
+  }
+
+  void _publishProgressState() {
+    DoublesProgressUiStore.setSummary(
+      widget.progressSummary,
+      totalMatchCount: widget.canEditMatches ? _totalMatchCount : null,
+    );
+    _publishProgressNavigation(_progressNavigation);
+  }
+
+  bool _hasSameProgressRevision(
+    ScheduleProgressSummary? current,
+    ScheduleProgressSummary? latest,
+    String generatedScheduleId,
+  ) {
+    if (current == null || latest == null) {
+      return current == null && latest == null;
+    }
+
+    return current.generatedScheduleId == generatedScheduleId &&
+        latest.generatedScheduleId == generatedScheduleId &&
+        current.revision == latest.revision;
+  }
+
   Future<void> _loadProgress({bool showMessage = false}) async {
     final requestSequence = ++_progressRequestSequence;
     final scope = _progressScope;
@@ -129,12 +181,15 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
         setState(() {
           _progressByKey = const {};
           _progressNavigation = null;
-          _canEditMatches = false;
           _isLoadingProgress = false;
         });
       }
       DoublesProgressUiStore.setSummary(null);
       DoublesProgressUiStore.setNavigation(null);
+      widget.onProgressChanged?.call(
+        null,
+        const <ScheduleMatchProgress>[],
+      );
       return;
     }
 
@@ -144,11 +199,17 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
     });
 
     try {
-      final aggregate = await appEventRepository.findByPublicId(scope.shareId);
       final summary = await appScheduleProgressRepository.findSummary(scope);
+      final sameProgressRevision = _hasSameProgressRevision(
+        widget.progressSummary,
+        summary,
+        scope.generatedScheduleId,
+      );
       final matches = summary == null
           ? const <ScheduleMatchProgress>[]
-          : await appScheduleProgressRepository.listMatches(scope);
+          : sameProgressRevision
+              ? widget.matchProgresses
+              : await appScheduleProgressRepository.listMatches(scope);
       if (!mounted ||
           requestSequence != _progressRequestSequence ||
           _progressScope?.storageKey != identity) {
@@ -158,22 +219,27 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       final progressByKey = Map<String, ScheduleMatchProgress>.unmodifiable({
         for (final match in matches) match.key.value: match,
       });
-      final canEditMatches = aggregate?.event.hasAdoptedSchedule ?? false;
-      final navigation = canEditMatches
+      final navigation = widget.canEditMatches
           ? _resolveProgressNavigation(progressByKey.values)
           : null;
 
       setState(() {
         _progressByKey = progressByKey;
         _progressNavigation = navigation;
-        _canEditMatches = canEditMatches;
         _isLoadingProgress = false;
       });
       DoublesProgressUiStore.setSummary(
         summary,
-        totalMatchCount: canEditMatches ? _totalMatchCount : null,
+        totalMatchCount: widget.canEditMatches ? _totalMatchCount : null,
       );
       _publishProgressNavigation(navigation);
+
+      if (!sameProgressRevision) {
+        widget.onProgressChanged?.call(
+          summary,
+          List<ScheduleMatchProgress>.unmodifiable(matches),
+        );
+      }
 
       if (showMessage) {
         AppSnackBar.show(
@@ -188,7 +254,6 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       }
 
       setState(() {
-        _canEditMatches = false;
         _isLoadingProgress = false;
       });
       if (showMessage) {
@@ -329,7 +394,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
   }
 
   Future<void> _openMatch(DoublesMatchSelection selection) async {
-    if (!_canEditMatches || _isOpeningMatch || _isLoadingProgress) {
+    if (!widget.canEditMatches || _isOpeningMatch || _isLoadingProgress) {
       return;
     }
 
@@ -686,7 +751,7 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: !_canEditMatches || selection == null
+          onTap: !widget.canEditMatches || selection == null
               ? null
               : () => _openMatch(selection),
           child: Container(
