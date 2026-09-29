@@ -78,6 +78,7 @@ void main() {
     expect(savedInputs.single.note, 'first');
     expect(_closeButton(tester).onPressed, isNull);
     expect(_refreshButton(tester).onPressed, isNull);
+    expect(_nextButton(tester).onPressed, isNull);
     expect(find.text('保存中…'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'latest');
@@ -115,6 +116,7 @@ void main() {
     expect(find.textContaining('同期済み '), findsOneWidget);
     expect(_closeButton(tester).onPressed, isNotNull);
     expect(_refreshButton(tester).onPressed, isNotNull);
+    expect(_nextButton(tester).onPressed, isNotNull);
   });
 
   testWidgets('save failure does not retry until another user edit',
@@ -182,6 +184,12 @@ void main() {
     expect(find.text('保存して閉じる'), findsNothing);
     expect(find.text('試合状態・最終スコア'), findsNothing);
   });
+}
+
+IconButton _nextButton(WidgetTester tester) {
+  return tester.widget<IconButton>(
+    find.byKey(const Key('doubles-match-next-button')),
+  );
 }
 
 TextButton _closeButton(WidgetTester tester) {
@@ -298,6 +306,58 @@ class _TestApp extends StatelessWidget {
                           ),
                         ],
                       ),
+                      matches: const <DoublesMatchSelection>[
+                        DoublesMatchSelection(
+                          roundNo: 1,
+                          courtNo: 1,
+                          matchNo: 1,
+                          side1Players: <DoublesMatchParticipantViewModel>[
+                            DoublesMatchParticipantViewModel(
+                              slotNumber: 1,
+                              displayName: '参加者1',
+                            ),
+                            DoublesMatchParticipantViewModel(
+                              slotNumber: 2,
+                              displayName: '参加者2',
+                            ),
+                          ],
+                          side2Players: <DoublesMatchParticipantViewModel>[
+                            DoublesMatchParticipantViewModel(
+                              slotNumber: 3,
+                              displayName: '参加者3',
+                            ),
+                            DoublesMatchParticipantViewModel(
+                              slotNumber: 4,
+                              displayName: '参加者4',
+                            ),
+                          ],
+                        ),
+                        DoublesMatchSelection(
+                          roundNo: 1,
+                          courtNo: 2,
+                          matchNo: 2,
+                          side1Players: <DoublesMatchParticipantViewModel>[
+                            DoublesMatchParticipantViewModel(
+                              slotNumber: 1,
+                              displayName: '参加者1',
+                            ),
+                            DoublesMatchParticipantViewModel(
+                              slotNumber: 3,
+                              displayName: '参加者3',
+                            ),
+                          ],
+                          side2Players: <DoublesMatchParticipantViewModel>[
+                            DoublesMatchParticipantViewModel(
+                              slotNumber: 2,
+                              displayName: '参加者2',
+                            ),
+                            DoublesMatchParticipantViewModel(
+                              slotNumber: 4,
+                              displayName: '参加者4',
+                            ),
+                          ],
+                        ),
+                      ],
                       initialProgress: _placeholder(),
                       onLoadMatch: onLoadMatch,
                       onSave: onSave,
