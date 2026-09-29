@@ -156,6 +156,11 @@ class InMemoryEventRepository implements EventRepository {
           expectedCurrentGeneratedScheduleId,
     );
 
+    if (event.status == SavedEventStatus.generated &&
+        event.currentGeneratedScheduleId == generatedScheduleId) {
+      return event;
+    }
+
     final updated = event.copyWith(
       status: SavedEventStatus.generated,
       currentGeneratedScheduleId: generatedScheduleId,
