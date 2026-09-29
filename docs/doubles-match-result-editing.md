@@ -43,9 +43,10 @@ ScheduleProgressRepository.saveMatch
 ダイアログでは保存済みScheduleMatchProgressを
 新しいbaselineとdraftへ反映
   ↓
-未保存状態を解除し、ダイアログを維持
+親画面のprogress snapshotにも
+保存済みmatchとsummaryを反映
   ↓
-summaryを含む親画面表示はダイアログ終了後に再取得
+未保存状態を解除し、ダイアログを維持
 ```
 
 保存結果を新しいbaselineとして使う。
@@ -147,12 +148,16 @@ revision競合後もこの操作によって最新revisionから編集をやり�
 ダイアログ内で保存するたびに、背景の対戦表全体を再読込しない。
 保存成功後はダイアログ内の`baseline`と`draft`を更新し、同じ入力セッションを継続する。
 
-ダイアログを閉じた後は、その入力セッション中に保存したかどうかにかかわらず、`ScheduleRoundsView`の`_loadProgress()`を1回実行する。
-これにより、次をまとめて最新状態へ反映する。
+保存成功時は、serviceから返された保存済みmatchとsummaryを親画面のprogress snapshotにも反映する。
+そのため、同じ入力セッション中に保存した内容を背景側のstateでも保持する。
 
-- 対象を含む試合カードの状態・スコア
-- ラウンド完了表示
-- 進行summary
+ダイアログを閉じた後は`ScheduleRoundsView`の`_loadProgress()`を1回実行し、summary revisionを最新確認する。
+
+- revisionが親画面と同じ場合は既存matchesを再利用する
+- revisionが変わっている場合だけmatches一覧を再取得する
+- event aggregateはprogress同期のためには再取得しない
+
+これにより、対象を含む試合カード、ラウンド完了表示、進行summaryを最新状態へ揃えつつ、不要な全試合再取得を避ける。
 
 ブラウザローカルの対戦表履歴は、試合保存成功後に更新する。
 履歴更新は補助処理として扱い、履歴更新だけ失敗した場合に試合結果保存を取り消したり失敗扱いにはしない。

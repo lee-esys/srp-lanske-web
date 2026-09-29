@@ -191,6 +191,20 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     });
   }
 
+  void _handleProgressChanged(
+    ScheduleProgressSummary? summary,
+    List<ScheduleMatchProgress> matches,
+  ) {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _progressSummary = summary;
+      _matchProgresses = List<ScheduleMatchProgress>.unmodifiable(matches);
+    });
+  }
+
   void _openScheduleFromHistory(LocalScheduleHistoryItem item) {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
@@ -295,7 +309,6 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         }
       });
 
-      await _saveScheduleHistory(snapshot.aggregate);
       if (!mounted || requestSequence != _refreshRequestSequence) {
         return false;
       }
@@ -487,7 +500,6 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         _isLoading = false;
       });
 
-      await _saveScheduleHistory(snapshot.aggregate);
       if (!mounted || requestSequence != _refreshRequestSequence) {
         return true;
       }
@@ -930,6 +942,10 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
                     selectedPlayerId: _selectedPlayerId,
                     onPlayerSelected: _toggleSelectedPlayer,
                     courtLabelByNumber: _courtLabelByNumber,
+                    progressSummary: _progressSummary,
+                    matchProgresses: _matchProgresses,
+                    canEditMatches: _hasAdoptedSchedule,
+                    onProgressChanged: _handleProgressChanged,
                   ),
           ),
         ],
