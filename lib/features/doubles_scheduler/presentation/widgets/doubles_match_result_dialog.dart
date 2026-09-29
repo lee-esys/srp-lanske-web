@@ -994,42 +994,39 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
       onPressed: _isActionBlocked ? null : _close,
       child: Text(l10n.closeButton),
     );
+    final useStackedActions = MediaQuery.sizeOf(context).width < 420;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < 360) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
+    if (useStackedActions) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: _buildSaveStatus(l10n),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: _buildSaveStatus(l10n),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  refreshButton,
-                  closeButton,
-                ],
-              ),
+              refreshButton,
+              closeButton,
             ],
-          );
-        }
+          ),
+        ],
+      );
+    }
 
-        return Row(
-          children: [
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: _buildSaveStatus(l10n),
-              ),
-            ),
-            refreshButton,
-            closeButton,
-          ],
-        );
-      },
+    return Row(
+      children: [
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: _buildSaveStatus(l10n),
+          ),
+        ),
+        refreshButton,
+        closeButton,
+      ],
     );
   }
 
