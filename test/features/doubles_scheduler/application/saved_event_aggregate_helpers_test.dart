@@ -47,6 +47,51 @@ void main() {
     expect(merged.courtSettings.single.displayLabel, '1');
   });
 
+  test('mergeScheduleStateFragment only applies schedule-owned fields', () {
+    final current = _aggregate(
+      eventId: 'event-1',
+      publicId: 'ABCD1234',
+      title: 'Current',
+      memo: 'current memo',
+      eventRevision: 5,
+      displayRevision: 2,
+      courtRevision: 3,
+      status: SavedEventStatus.generated,
+      currentGeneratedScheduleId: 'generated-current',
+      playerName: 'Current player',
+      courtLabel: '1',
+    );
+    final updated = _aggregate(
+      eventId: 'event-1',
+      publicId: 'ABCD1234',
+      title: 'Remote title',
+      memo: 'remote memo',
+      eventRevision: 9,
+      displayRevision: 7,
+      courtRevision: 8,
+      status: SavedEventStatus.adopted,
+      currentGeneratedScheduleId: 'generated-latest',
+      adoptedGeneratedScheduleId: 'generated-latest',
+      playerName: 'Remote player',
+      courtLabel: 'A',
+    );
+
+    final merged = mergeScheduleStateFragment(current, updated.event);
+
+    expect(merged.event.status, SavedEventStatus.adopted);
+    expect(merged.event.currentGeneratedScheduleId, 'generated-latest');
+    expect(merged.event.adoptedGeneratedScheduleId, 'generated-latest');
+    expect(merged.event.adoptedAt, updated.event.adoptedAt);
+
+    expect(merged.event.title, 'Current');
+    expect(merged.event.memo, 'current memo');
+    expect(merged.event.revision, 5);
+    expect(merged.players.single.displayName, 'Current player');
+    expect(merged.revisions.display, 2);
+    expect(merged.revisions.courtSettings, 3);
+    expect(merged.courtSettings.single.displayLabel, '1');
+  });
+
   test('mergeCourtSettingsFragment only applies court-owned fields', () {
     final current = _aggregate(
       eventId: 'event-1',
@@ -115,6 +160,10 @@ void main() {
       courtLabel: '1',
     );
 
+    expect(
+      () => mergeScheduleStateFragment(current, other.event),
+      throwsStateError,
+    );
     expect(
       () => mergeDisplayFragment(current, other),
       throwsStateError,
