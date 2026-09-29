@@ -651,6 +651,24 @@ abstract class AppLocalizations {
   /// **'コート表示が重複しています'**
   String get courtDisplayDuplicateError;
 
+  /// Message shown when saving court display settings conflicts with a newer revision.
+  ///
+  /// In ja, this message translates to:
+  /// **'別の端末でコート表示が更新されていました。入力内容は保持しています。最新情報を確認して、もう一度保存してください。'**
+  String get courtDisplayConflictMessage;
+
+  /// Message shown when the latest court display settings cannot be loaded.
+  ///
+  /// In ja, this message translates to:
+  /// **'最新のコート表示設定を取得できませんでした。画面を更新してから、もう一度お試しください。'**
+  String get courtDisplayLatestLoadFailedMessage;
+
+  /// Message shown when saving court display settings fails.
+  ///
+  /// In ja, this message translates to:
+  /// **'コート表示設定を保存できませんでした: {error}'**
+  String courtDisplaySaveFailedMessage(String error);
+
   /// Generic confirmation button label.
   ///
   /// In ja, this message translates to:

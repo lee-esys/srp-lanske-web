@@ -213,20 +213,19 @@ void main() {
     );
   });
 
-  testWidgets('refreshes before opening and after closing the edit dialog',
+  testWidgets('loads latest once and directly returns saved display fragment',
       (tester) async {
     final aggregate = _aggregate();
     final repository = _FakeEventRepository(aggregate);
-    var refreshCount = 0;
+    SavedEventAggregate? updatedResult;
 
     await tester.pumpWidget(
       _testApp(
         ScheduleEventSummaryCard(
           aggregate: aggregate,
           repository: repository,
-          onRefreshForEdit: () async {
-            refreshCount += 1;
-            return true;
+          onDisplayUpdated: (updated) async {
+            updatedResult = updated;
           },
           progressText: '0 / 10',
           canEditEventInfo: true,
@@ -235,19 +234,26 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(repository.findCallCount, 0);
     expect(find.text('イベント'), findsOneWidget);
+
     await tester.tap(find.text('イベント情報を編集'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(refreshCount, 1);
+    expect(repository.findCallCount, 1);
     expect(find.byType(AlertDialog), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(TextButton, 'キャンセル'));
-    await tester.pumpAndSettle();
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), '更新後イベント');
+    await tester.tap(find.widgetWithText(FilledButton, '保存'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
-    expect(refreshCount, 2);
-    expect(repository.findCallCount, greaterThanOrEqualTo(2));
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(repository.findCallCount, 1);
+    expect(updatedResult, isNotNull);
+    expect(updatedResult!.event.title, '更新後イベント');
   });
 
   testWidgets('can delegate event editing without showing the inline action',
@@ -262,7 +268,6 @@ void main() {
           controller: controller,
           aggregate: aggregate,
           repository: repository,
-          onRefreshForEdit: () async => true,
           showEditAction: false,
           canEditEventInfo: true,
         ),
@@ -284,7 +289,6 @@ void main() {
     final aggregate = _aggregate();
     final repository = _FakeEventRepository(aggregate);
     final controller = ScheduleEventSummaryController();
-    var refreshCount = 0;
 
     await tester.pumpWidget(
       _testApp(
@@ -292,10 +296,6 @@ void main() {
           controller: controller,
           aggregate: aggregate,
           repository: repository,
-          onRefreshForEdit: () async {
-            refreshCount += 1;
-            return true;
-          },
           canEditEventInfo: false,
         ),
       ),
@@ -307,7 +307,7 @@ void main() {
     await controller.editEventInfo();
     await tester.pumpAndSettle();
 
-    expect(refreshCount, 0);
+    expect(repository.findCallCount, 0);
     expect(find.byType(AlertDialog), findsNothing);
   });
 }
@@ -365,12 +365,47 @@ SavedEventAggregate _aggregate({bool adopted = false}) {
 class _FakeEventRepository extends EventRepository {
   _FakeEventRepository(this.aggregate);
 
-  final SavedEventAggregate aggregate;
+  SavedEventAggregate aggregate;
   int findCallCount = 0;
 
   @override
   Future<SavedEventAggregate?> findByPublicId(String publicId) async {
     findCallCount += 1;
+    return aggregate;
+  }
+
+  @override
+  Future<SavedEventAggregate> updateDisplayInfo({
+    required String publicId,
+    required int expectedDisplayRevision,
+    required String title,
+    required String memo,
+    required Map<String, String> playerDisplayNamesById,
+  }) async {
+    final updatedAt = aggregate.event.updatedAt.add(const Duration(minutes: 1));
+    aggregate = SavedEventAggregate(
+      event: aggregate.event.copyWith(
+        title: title.trim(),
+        memo: memo.trim(),
+        revision: aggregate.event.revision + 1,
+        updatedAt: updatedAt,
+      ),
+      players: aggregate.players.map((player) {
+        final displayName = playerDisplayNamesById[player.id];
+        return displayName == null
+            ? player
+            : player.copyWith(
+                displayName: displayName.trim(),
+                updatedAt: updatedAt,
+              );
+      }).toList(growable: false),
+      share: aggregate.share,
+      importRecord: aggregate.importRecord,
+      revisions: aggregate.revisions.copyWith(
+        display: aggregate.revisions.display + 1,
+      ),
+      courtSettings: aggregate.courtSettings,
+    );
     return aggregate;
   }
 

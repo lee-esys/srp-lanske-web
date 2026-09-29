@@ -326,6 +326,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Court display labels must be unique.';
 
   @override
+  String get courtDisplayConflictMessage =>
+      'Court display settings were updated on another device. Your input has been kept. Review the latest information and save again.';
+
+  @override
+  String get courtDisplayLatestLoadFailedMessage =>
+      'Could not load the latest court display settings. Refresh the page and try again.';
+
+  @override
+  String courtDisplaySaveFailedMessage(String error) {
+    return 'Could not save court display settings: $error';
+  }
+
+  @override
   String get confirmButton => 'OK';
 
   @override
