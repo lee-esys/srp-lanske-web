@@ -20,10 +20,31 @@ abstract class EventRepository {
     required String generatedScheduleId,
   });
 
+  Future<SavedEvent> updateCurrentGeneratedScheduleIdIfCurrent({
+    required String publicId,
+    required String? expectedCurrentGeneratedScheduleId,
+    required String generatedScheduleId,
+  }) {
+    return updateCurrentGeneratedScheduleId(
+      publicId: publicId,
+      generatedScheduleId: generatedScheduleId,
+    );
+  }
+
   Future<SavedEvent> updateAdoptedGeneratedScheduleId({
     required String publicId,
     required String generatedScheduleId,
   });
+
+  Future<SavedEvent> updateAdoptedGeneratedScheduleIdIfCurrent({
+    required String publicId,
+    required String expectedCurrentGeneratedScheduleId,
+  }) {
+    return updateAdoptedGeneratedScheduleId(
+      publicId: publicId,
+      generatedScheduleId: expectedCurrentGeneratedScheduleId,
+    );
+  }
 
   Future<SavedEventAggregate> updateDisplayInfo({
     required String publicId,
@@ -76,6 +97,40 @@ class EventRevisionConflictException implements Exception {
         'eventId: $eventId, '
         'expectedRevision: $expectedRevision, '
         'actualRevision: $actualRevision'
+        ')';
+  }
+}
+
+
+class ScheduleStateConflictException implements Exception {
+  const ScheduleStateConflictException({
+    required this.eventId,
+    required this.expectedCurrentGeneratedScheduleId,
+    required this.actualCurrentGeneratedScheduleId,
+    required this.actualAdoptedGeneratedScheduleId,
+    required this.actualStatus,
+  });
+
+  final String eventId;
+  final String? expectedCurrentGeneratedScheduleId;
+  final String? actualCurrentGeneratedScheduleId;
+  final String? actualAdoptedGeneratedScheduleId;
+  final SavedEventStatus actualStatus;
+
+  bool get isAlreadyAdopted {
+    return actualStatus == SavedEventStatus.adopted ||
+        actualAdoptedGeneratedScheduleId != null;
+  }
+
+  @override
+  String toString() {
+    return 'ScheduleStateConflictException('
+        'eventId: $eventId, '
+        'expectedCurrentGeneratedScheduleId: '
+        '$expectedCurrentGeneratedScheduleId, '
+        'actualCurrentGeneratedScheduleId: $actualCurrentGeneratedScheduleId, '
+        'actualAdoptedGeneratedScheduleId: $actualAdoptedGeneratedScheduleId, '
+        'actualStatus: ${actualStatus.name}'
         ')';
   }
 }
