@@ -254,6 +254,28 @@ void runEventRepositoryContractTests({
       expect(second.hasAdoptedSchedule, isFalse);
     });
 
+    test('compare-and-set keeps the same generated schedule as a no-op',
+        () async {
+      final repository = createRepository();
+      final created = await _createOwnedEvent(repository, buildDraft());
+
+      final first =
+          await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: null,
+        generatedScheduleId: 'generated-1',
+      );
+      final second =
+          await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: 'generated-1',
+        generatedScheduleId: 'generated-1',
+      );
+
+      expect(second.currentGeneratedScheduleId, 'generated-1');
+      expect(second.revision, first.revision);
+    });
+
     test('compare-and-set rejects stale regenerated schedule state', () async {
       final repository = createRepository();
       final created = await _createOwnedEvent(repository, buildDraft());
