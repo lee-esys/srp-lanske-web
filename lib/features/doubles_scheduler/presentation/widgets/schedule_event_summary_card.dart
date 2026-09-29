@@ -6,6 +6,7 @@ import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
 
 import '../../application/event_repository.dart';
+import '../../application/saved_event_aggregate_helpers.dart';
 import '../../domain/saved_event_models.dart';
 import 'doubles_event_info_dialog.dart';
 
@@ -167,8 +168,10 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
 
       if (!mounted || updated == null) return;
 
+      final current = _displayAggregate;
       setState(() {
-        _loadedAggregate = updated;
+        _loadedAggregate =
+            current == null ? updated : mergeDisplayFragment(current, updated);
       });
       await widget.onDisplayUpdated?.call(updated);
       if (!mounted) return;
