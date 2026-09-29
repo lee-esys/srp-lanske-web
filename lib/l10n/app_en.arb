@@ -456,6 +456,23 @@
   "@courtDisplayDuplicateError": {
     "description": "Validation error shown when court display labels are duplicated."
   },
+  "courtDisplayConflictMessage": "Court display settings were updated on another device. Your input has been kept. Review the latest information and save again.",
+  "@courtDisplayConflictMessage": {
+    "description": "Message shown when saving court display settings conflicts with a newer revision."
+  },
+  "courtDisplayLatestLoadFailedMessage": "Could not load the latest court display settings. Refresh the page and try again.",
+  "@courtDisplayLatestLoadFailedMessage": {
+    "description": "Message shown when the latest court display settings cannot be loaded."
+  },
+  "courtDisplaySaveFailedMessage": "Could not save court display settings: {error}",
+  "@courtDisplaySaveFailedMessage": {
+    "description": "Message shown when saving court display settings fails.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "confirmButton": "OK",
   "@confirmButton": {
     "description": "Generic confirmation button label."
