@@ -27,13 +27,4 @@ class GeneratedScheduleService {
   Future<Map<String, dynamic>> getById(String generatedScheduleId) {
     return _apiClient.getById(generatedScheduleId);
   }
-
-  Future<Map<String, dynamic>> adopt(String generatedScheduleId) {
-    // Adoption is represented by the web event/view state.
-    // The backend generated schedule snapshot is not mutated here.
-    return Future.value(<String, dynamic>{
-      'generated_schedule_id': generatedScheduleId,
-      'adopted': true,
-    });
-  }
 }
