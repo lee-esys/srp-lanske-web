@@ -988,15 +988,18 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
                 generateButtonLabel: l10n.regenerateButton,
                 canAdopt:
                     _generatedScheduleId != null && _scheduleResponse != null,
-                onGenerate: _requestGenerateSchedule,
-                onAdopt: _adoptSchedule,
+                onGenerate: _isRefreshing || _isAdopting
+                    ? null
+                    : _requestGenerateSchedule,
+                onAdopt: _isRefreshing ? null : _adoptSchedule,
               ),
             ),
           ],
           const SizedBox(height: 12),
           ScheduleSectionCard(
             title: l10n.matchTableTitle,
-            child: _isLoading && _scheduleResponse == null
+            child: (_isLoading || _isGeneratingSchedule) &&
+                _scheduleResponse == null
                 ? const Center(
                     child: Padding(
                       padding: EdgeInsets.all(4),
