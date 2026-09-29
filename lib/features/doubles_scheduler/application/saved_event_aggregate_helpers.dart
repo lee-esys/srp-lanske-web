@@ -14,6 +14,51 @@ SavedEventAggregate replaceSavedEventInAggregate(
   );
 }
 
+SavedEventAggregate mergeScheduleStateFragment(
+  SavedEventAggregate current,
+  SavedEvent updatedEvent,
+) {
+  if (current.event.id != updatedEvent.id ||
+      current.event.publicId != updatedEvent.publicId) {
+    throw StateError('cannot merge schedule state from a different event');
+  }
+
+  final currentEvent = current.event;
+  final mergedEvent = SavedEvent(
+    id: currentEvent.id,
+    publicId: currentEvent.publicId,
+    ownerUid: currentEvent.ownerUid,
+    title: currentEvent.title,
+    memo: currentEvent.memo,
+    eventDate: currentEvent.eventDate,
+    startTime: currentEvent.startTime,
+    endTime: currentEvent.endTime,
+    location: currentEvent.location,
+    courtCount: currentEvent.courtCount,
+    sourceType: currentEvent.sourceType,
+    sourceUrl: currentEvent.sourceUrl,
+    status: updatedEvent.status,
+    currentGeneratedScheduleId: updatedEvent.currentGeneratedScheduleId,
+    adoptedGeneratedScheduleId: updatedEvent.adoptedGeneratedScheduleId,
+    adoptedAt: updatedEvent.adoptedAt,
+    visibility: currentEvent.visibility,
+    visibleUntilRoundNo: currentEvent.visibleUntilRoundNo,
+    expiresAt: currentEvent.expiresAt,
+    revision: currentEvent.revision,
+    createdAt: currentEvent.createdAt,
+    updatedAt: currentEvent.updatedAt,
+  );
+
+  return SavedEventAggregate(
+    event: mergedEvent,
+    players: current.players,
+    share: current.share,
+    importRecord: current.importRecord,
+    revisions: current.revisions,
+    courtSettings: current.courtSettings,
+  );
+}
+
 SavedEventAggregate mergeDisplayFragment(
   SavedEventAggregate current,
   SavedEventAggregate updated,
