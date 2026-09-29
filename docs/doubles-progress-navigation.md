@@ -112,9 +112,17 @@ Issue #147のフローティングナビにより、次の往復が少ない操�
 
 ### 試合結果入力後
 
-Issue #166の方針どおり、結果入力ダイアログを閉じた後に `ScheduleRoundsView._loadProgress()` を1回実行する。
+試合保存成功時は、`DoublesMatchProgressService` が返した保存済みmatchと最新summaryを親画面のprogress snapshotへ反映する。
+ダイアログ内の`baseline` / `draft`更新と並行して、背景側でも保存済みprogressを保持する。
 
-この再取得で次をまとめて更新する。
+結果入力ダイアログを閉じた後は `ScheduleRoundsView._loadProgress()` を1回実行し、progress summaryだけ最新確認する。
+
+- summary revisionが親画面のsnapshotと同じ場合
+  - 保存済みmatchesを再利用し、一覧再取得しない
+- summary revisionが変わっている場合
+  - matches一覧を再取得して最新状態へ揃える
+
+この同期で次をまとめて更新する。
 
 - 試合カードの状態・結果
 - ラウンド完了表示
@@ -123,13 +131,14 @@ Issue #166の方針どおり、結果入力ダイアログを閉じた後に `Sc
 - 対象カードの強調
 - 画面上部／フローティングナビの移動対象
 
-ダイアログ内で前後移動するたびには、親画面の進行表示を更新しない。
+前後の試合へ移動するだけでは全体progressを再取得しない。
 
 ### 手動更新後
 
 通常生成画面と共有URL復元画面は共通の `DoublesScheduleRefreshService` と `ScheduleRoundsView` を使用する。
 
-手動更新で最新schedule / progressが親画面へ反映された後、`ScheduleRoundsView` がprogressを再取得して進行対象を再判定する。
+手動更新では `DoublesScheduleRefreshService` が最新schedule / progressを取得し、親画面がそのsnapshotを `ScheduleRoundsView` へ渡す。
+`ScheduleRoundsView` は渡されたprogressから試合カードと進行対象を再計算し、同じprogressを通信で再取得しない。
 
 ## 今回扱わないもの
 
