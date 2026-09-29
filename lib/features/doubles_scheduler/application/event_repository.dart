@@ -25,9 +25,8 @@ abstract class EventRepository {
     required String? expectedCurrentGeneratedScheduleId,
     required String generatedScheduleId,
   }) {
-    return updateCurrentGeneratedScheduleId(
-      publicId: publicId,
-      generatedScheduleId: generatedScheduleId,
+    throw UnimplementedError(
+      'updateCurrentGeneratedScheduleIdIfCurrent is not implemented',
     );
   }
 
@@ -40,9 +39,8 @@ abstract class EventRepository {
     required String publicId,
     required String expectedCurrentGeneratedScheduleId,
   }) {
-    return updateAdoptedGeneratedScheduleId(
-      publicId: publicId,
-      generatedScheduleId: expectedCurrentGeneratedScheduleId,
+    throw UnimplementedError(
+      'updateAdoptedGeneratedScheduleIdIfCurrent is not implemented',
     );
   }
 
