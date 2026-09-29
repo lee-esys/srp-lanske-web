@@ -9,9 +9,8 @@ import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_m
 import 'package:srp_lanske/l10n/l10n.dart';
 
 void main() {
-  testWidgets('save keeps the dialog open and advances the baseline revision', (
-    tester,
-  ) async {
+  testWidgets('autosave keeps the dialog open and advances baseline revision',
+      (tester) async {
     final usedRevisions = <int>[];
     final savedInputs = <DoublesMatchProgressInput>[];
 
@@ -35,17 +34,16 @@ void main() {
 
     expect(find.text('第1ラウンド / 1コート'), findsOneWidget);
     expect(find.textContaining('/ M '), findsNothing);
-    expect(_saveButton(tester).onPressed, isNull);
+    expect(find.widgetWithText(FilledButton, '保存'), findsNothing);
 
     await tester.tap(find.text('終了'));
     await tester.pump();
     await tester.tap(find.byIcon(Icons.add).first);
     await tester.pump();
 
-    expect(find.text('未保存の変更があります'), findsOneWidget);
-    expect(_saveButton(tester).onPressed, isNotNull);
+    expect(usedRevisions, isEmpty);
 
-    await tester.tap(find.widgetWithText(FilledButton, '保存'));
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
 
     expect(usedRevisions, <int>[0]);
@@ -55,12 +53,10 @@ void main() {
     expect(savedInputs.single.startedAt, isNotNull);
     expect(savedInputs.single.finishedAt, savedInputs.single.startedAt);
     expect(find.text('試合状態・最終スコア'), findsOneWidget);
-    expect(find.text('試合情報を保存しました'), findsOneWidget);
-    expect(_saveButton(tester).onPressed, isNull);
+    expect(find.textContaining('同期済み '), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'after first save');
-    await tester.pump();
-    await tester.tap(find.widgetWithText(FilledButton, '保存'));
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
 
     expect(usedRevisions, <int>[0, 1]);
@@ -68,10 +64,8 @@ void main() {
     expect(find.text('試合状態・最終スコア'), findsOneWidget);
   });
 
-  testWidgets('revision conflict keeps the draft and can restore latest state',
-      (
-    tester,
-  ) async {
+  testWidgets('revision conflict keeps the draft and can refresh latest state',
+      (tester) async {
     final latest = _progressFor(
       _matchSelection(roundNo: 1, courtNo: 1, matchNo: 1),
       note: 'latest from another device',
@@ -97,8 +91,7 @@ void main() {
     await tester.tap(find.text('試合中'));
     await tester.pump();
     await tester.enterText(find.byType(TextField), 'keep this draft');
-    await tester.pump();
-    await tester.tap(find.widgetWithText(FilledButton, '保存'));
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
 
     expect(
@@ -107,17 +100,19 @@ void main() {
     );
     expect(find.text('keep this draft'), findsOneWidget);
 
-    await tester.tap(find.text('最新の状態に戻す'));
+    await tester.tap(find.text('最新の情報に更新'));
     await tester.pumpAndSettle();
-    expect(find.text('未保存の変更を破棄して最新の状態に戻しますか？'), findsOneWidget);
+    expect(
+      find.text('未保存の変更を破棄して最新の情報に更新しますか？'),
+      findsOneWidget,
+    );
 
-    await tester.tap(find.widgetWithText(FilledButton, '最新の状態に戻す'));
+    await tester.tap(find.widgetWithText(FilledButton, '最新の情報に更新'));
     await tester.pumpAndSettle();
 
     expect(find.text('latest from another device'), findsOneWidget);
     expect(find.text('keep this draft'), findsNothing);
-    expect(find.text('試合情報を更新しました'), findsOneWidget);
-    expect(_saveButton(tester).onPressed, isNull);
+    expect(find.textContaining('同期済み '), findsOneWidget);
   });
 
   testWidgets('navigation follows all displayed matches including completed', (
@@ -162,68 +157,21 @@ void main() {
     expect(_navigationButton(tester, previous: false).onPressed, isNotNull);
 
     await _tapNextMatch(tester);
-    await tester.pumpAndSettle();
 
     expect(find.text('第1ラウンド / 2コート'), findsOneWidget);
     expect(find.text('終了'), findsOneWidget);
     expect(loaded, <String>['1-2']);
+    expect(find.textContaining('同期済み '), findsOneWidget);
 
     await _tapNextMatch(tester);
-    await tester.pumpAndSettle();
 
     expect(find.text('第2ラウンド / 1コート'), findsOneWidget);
     expect(loaded, <String>['1-2', '2-1']);
     expect(_navigationButton(tester, previous: false).onPressed, isNull);
   });
 
-  testWidgets('dirty navigation can cancel or discard before moving', (
-    tester,
-  ) async {
-    final match1 = _matchSelection(roundNo: 1, courtNo: 1, matchNo: 1);
-    final match2 = _matchSelection(roundNo: 1, courtNo: 2, matchNo: 2);
-
-    await tester.pumpWidget(
-      _TestApp(
-        match: match1,
-        matches: <DoublesMatchSelection>[match1, match2],
-        progress: _progressFor(match1),
-        onSave: ({required current, required input}) async {
-          final saved = _savedProgress(current: current, input: input);
-          return DoublesMatchProgressSaveResult(
-            match: saved,
-            summary: _summary(saved),
-          );
-        },
-        onLoadMatch: (match) async => _progressFor(match, note: 'target note'),
-      ),
-    );
-
-    await tester.tap(find.text('開く'));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), 'discard me');
-    await tester.pump();
-
-    await _tapNextMatch(tester);
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(TextButton, 'キャンセル'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('第1ラウンド / 1コート'), findsOneWidget);
-    expect(find.text('discard me'), findsOneWidget);
-
-    await _tapNextMatch(tester);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('保存せず移動'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('第1ラウンド / 2コート'), findsOneWidget);
-    expect(find.text('target note'), findsOneWidget);
-    expect(find.text('discard me'), findsNothing);
-  });
-
-  testWidgets('dirty navigation saves successfully before moving', (
-    tester,
-  ) async {
+  testWidgets('dirty navigation saves immediately before moving',
+      (tester) async {
     final match1 = _matchSelection(roundNo: 1, courtNo: 1, matchNo: 1);
     final match2 = _matchSelection(roundNo: 1, courtNo: 2, matchNo: 2);
     final savedNotes = <String>[];
@@ -251,11 +199,10 @@ void main() {
     await tester.pump();
 
     await _tapNextMatch(tester);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('保存して移動'));
-    await tester.pumpAndSettle();
 
     expect(savedNotes, <String>['save before move']);
+    expect(find.text('保存して移動'), findsNothing);
+    expect(find.text('保存せず移動'), findsNothing);
     expect(find.text('第1ラウンド / 2コート'), findsOneWidget);
     expect(find.text('next match'), findsOneWidget);
   });
@@ -298,7 +245,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('スコアを未入力に戻す'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, '保存'));
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
 
     expect(savedInput, isNotNull);
@@ -364,12 +311,6 @@ Future<void> _tapNextMatch(WidgetTester tester) async {
   expect(button.onPressed, isNotNull);
   button.onPressed!.call();
   await tester.pumpAndSettle();
-}
-
-FilledButton _saveButton(WidgetTester tester) {
-  return tester.widget<FilledButton>(
-    find.widgetWithText(FilledButton, '保存'),
-  );
 }
 
 IconButton _navigationButton(WidgetTester tester, {required bool previous}) {

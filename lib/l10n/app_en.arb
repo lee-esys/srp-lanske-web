@@ -1513,6 +1513,32 @@
   "@doublesMatchRestoreLatestConfirmBody": {
     "description": "Dialog body for restoring the latest doubles match state while changes are unsaved."
   },
+  "doublesMatchRefreshLatestButton": "Refresh latest information",
+  "@doublesMatchRefreshLatestButton": {
+    "description": "Button label for refreshing the latest doubles match information."
+  },
+  "doublesMatchRefreshLatestConfirmTitle": "Discard unsaved changes and refresh the latest information?",
+  "@doublesMatchRefreshLatestConfirmTitle": {
+    "description": "Dialog title for refreshing the latest doubles match information while changes are unsaved."
+  },
+  "doublesMatchRefreshLatestConfirmBody": "Refreshing the latest information will discard unsaved input.",
+  "@doublesMatchRefreshLatestConfirmBody": {
+    "description": "Dialog body for refreshing the latest doubles match information while changes are unsaved."
+  },
+  "doublesMatchSavingLabel": "Saving…",
+  "@doublesMatchSavingLabel": {
+    "description": "Compact status label shown while doubles match information is being saved."
+  },
+  "doublesMatchSyncedAtLabel": "Synced {time}",
+  "@doublesMatchSyncedAtLabel": {
+    "description": "Compact status label showing the latest successful doubles match synchronization time.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "14:30:05"
+      }
+    }
+  },
   "doublesMatchDiscardAndMoveButton": "Move without saving",
   "@doublesMatchDiscardAndMoveButton": {
     "description": "Button label for discarding doubles match changes and moving to another match."

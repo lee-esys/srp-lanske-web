@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/features/doubles_scheduler/application/doubles_match_progress_service.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/doubles_match_save_registry.dart';
@@ -34,6 +36,8 @@ class DoublesMatchResultDialog extends StatefulWidget {
 }
 
 class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
+  static const _autoSaveDelay = Duration(milliseconds: 500);
+
   late DoublesMatchSelection _match;
   late ScheduleMatchProgress _baselineProgress;
   late ScheduleMatchStatus _status;
@@ -43,13 +47,16 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   late DateTime? _finishedAt;
   late final TextEditingController _noteController;
 
+  Timer? _autoSaveTimer;
+  bool _autoSaveRequested = false;
   bool _isSaving = false;
   bool _isLoadingMatch = false;
   bool _suppressNoteListener = false;
-  String? _statusMessage;
+  DateTime? _lastSyncedAt;
   String? _errorMessage;
 
-  bool get _isBusy => _isSaving || _isLoadingMatch;
+  bool get _isInputBlocked => _isLoadingMatch;
+  bool get _isActionBlocked => _isSaving || _isLoadingMatch;
 
   DoublesMatchProgressInput get _draftInput {
     return DoublesMatchProgressInput(
@@ -89,10 +96,12 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     _finishedAt = input.finishedAt;
     _noteController = TextEditingController(text: input.note)
       ..addListener(_handleNoteChanged);
+    _lastSyncedAt = DateTime.now();
   }
 
   @override
   void dispose() {
+    _autoSaveTimer?.cancel();
     _noteController
       ..removeListener(_handleNoteChanged)
       ..dispose();
@@ -103,12 +112,52 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     if (_suppressNoteListener || !mounted) {
       return;
     }
+
     setState(_clearFeedback);
+    _scheduleAutoSave();
   }
 
   void _clearFeedback() {
-    _statusMessage = null;
     _errorMessage = null;
+  }
+
+  void _scheduleAutoSave() {
+    _autoSaveTimer?.cancel();
+    _autoSaveTimer = null;
+    _autoSaveRequested = false;
+
+    if (!_isDirty || _isLoadingMatch) {
+      return;
+    }
+
+    _autoSaveTimer = Timer(_autoSaveDelay, _handleAutoSaveTimer);
+  }
+
+  void _cancelAutoSave() {
+    _autoSaveTimer?.cancel();
+    _autoSaveTimer = null;
+    _autoSaveRequested = false;
+  }
+
+  void _handleAutoSaveTimer() {
+    _autoSaveTimer = null;
+    if (!mounted || !_isDirty || _isLoadingMatch) {
+      return;
+    }
+
+    if (_isSaving) {
+      _autoSaveRequested = true;
+      return;
+    }
+
+    unawaited(_saveDraft());
+  }
+
+  void _scheduleAfterDraftChange() {
+    if (!mounted) {
+      return;
+    }
+    _scheduleAutoSave();
   }
 
   void _applyProgress(ScheduleMatchProgress progress) {
@@ -129,7 +178,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   void _selectStatus(ScheduleMatchStatus status) {
-    if (_isBusy) {
+    if (_isInputBlocked) {
       return;
     }
 
@@ -159,10 +208,11 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
           break;
       }
     });
+    _scheduleAfterDraftChange();
   }
 
   void _adjustScore({required bool side1, required int delta}) {
-    if (_isBusy) {
+    if (_isInputBlocked) {
       return;
     }
 
@@ -174,20 +224,20 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
         final next = delta > 0 ? 1 : 0;
         _side1Score = side1 ? next : 0;
         _side2Score = side1 ? 0 : next;
-        return;
-      }
-
-      final next = ((current ?? 0) + delta).clamp(0, 9).toInt();
-      if (side1) {
-        _side1Score = next;
       } else {
-        _side2Score = next;
+        final next = ((current ?? 0) + delta).clamp(0, 9).toInt();
+        if (side1) {
+          _side1Score = next;
+        } else {
+          _side2Score = next;
+        }
       }
     });
+    _scheduleAfterDraftChange();
   }
 
   Future<void> _pickScore({required bool side1}) async {
-    if (_isBusy) {
+    if (_isInputBlocked) {
       return;
     }
 
@@ -244,10 +294,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
       if (selected < 0) {
         _side1Score = null;
         _side2Score = null;
-        return;
-      }
-
-      if (side1) {
+      } else if (side1) {
         _side1Score = selected;
         _side2Score ??= 0;
       } else {
@@ -255,6 +302,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
         _side1Score ??= 0;
       }
     });
+    _scheduleAfterDraftChange();
   }
 
   DateTime _replaceTime(DateTime? current, {int? hour, int? minute}) {
@@ -269,7 +317,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   void _setCurrentTime({required bool start}) {
-    if (_isBusy) {
+    if (_isInputBlocked) {
       return;
     }
 
@@ -281,10 +329,11 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
         _finishedAt = DateTime.now();
       }
     });
+    _scheduleAfterDraftChange();
   }
 
   void _setHour({required bool start, required int? hour}) {
-    if (_isBusy || hour == null) {
+    if (_isInputBlocked || hour == null) {
       return;
     }
 
@@ -296,10 +345,11 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
         _finishedAt = _replaceTime(_finishedAt, hour: hour);
       }
     });
+    _scheduleAfterDraftChange();
   }
 
   void _setMinute({required bool start, required int? minute}) {
-    if (_isBusy || minute == null) {
+    if (_isInputBlocked || minute == null) {
       return;
     }
 
@@ -311,35 +361,42 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
         _finishedAt = _replaceTime(_finishedAt, minute: minute);
       }
     });
+    _scheduleAfterDraftChange();
   }
 
-  Future<bool> _save() async {
-    if (_isBusy) {
+  Future<bool> _saveDraft({
+    bool allowAutoFollowUp = true,
+  }) async {
+    if (_isLoadingMatch || _isSaving) {
       return false;
     }
     if (!_isDirty) {
+      _cancelAutoSave();
       return true;
     }
 
     final l10n = AppLocalizations.of(context);
-    final draft = _draftInput;
-    final startedAt = draft.startedAt;
-    final finishedAt = draft.finishedAt;
+    final submittedBaseline = _baselineProgress;
+    final submittedDraft = _draftInput;
+    final startedAt = submittedDraft.startedAt;
+    final finishedAt = submittedDraft.finishedAt;
     if (startedAt != null &&
         finishedAt != null &&
         finishedAt.isBefore(startedAt)) {
+      _cancelAutoSave();
       setState(() {
-        _statusMessage = null;
         _errorMessage = l10n.doublesMatchTimeOrderErrorMessage;
       });
       return false;
     }
 
     final onSave = widget.onSave ??
-        DoublesMatchSaveRegistry.find(_baselineProgress.generatedScheduleId);
+        DoublesMatchSaveRegistry.find(
+          submittedBaseline.generatedScheduleId,
+        );
     if (onSave == null) {
+      _cancelAutoSave();
       setState(() {
-        _statusMessage = null;
         _errorMessage = l10n.doublesMatchSaveFailedMessage(
           'save callback is unavailable',
         );
@@ -349,29 +406,47 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
 
     setState(() {
       _isSaving = true;
-      _statusMessage = null;
       _errorMessage = null;
     });
 
     try {
       final saved = await onSave(
-        current: _baselineProgress,
-        input: draft,
+        current: submittedBaseline,
+        input: submittedDraft,
       );
       if (!mounted) {
         return false;
       }
 
+      final hasNewerDraft = !doublesMatchProgressInputsEqual(
+        _draftInput,
+        submittedDraft,
+      );
+
       setState(() {
-        _applyProgress(saved.match);
+        if (hasNewerDraft) {
+          _baselineProgress = saved.match;
+        } else {
+          _applyProgress(saved.match);
+        }
         _isSaving = false;
-        _statusMessage = l10n.doublesMatchSavedMessage;
+        _lastSyncedAt = DateTime.now();
+        _errorMessage = null;
       });
+
+      if (!_isDirty) {
+        _cancelAutoSave();
+      } else if (allowAutoFollowUp && _autoSaveRequested) {
+        _cancelAutoSave();
+        unawaited(_saveDraft());
+      }
+
       return true;
     } on ScheduleProgressConflictException {
       if (!mounted) {
         return false;
       }
+      _cancelAutoSave();
       setState(() {
         _isSaving = false;
         _errorMessage = l10n.doublesMatchConflictMessage;
@@ -381,6 +456,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
       if (!mounted) {
         return false;
       }
+      _cancelAutoSave();
       setState(() {
         _isSaving = false;
         _errorMessage = l10n.doublesMatchIncompleteScoreMessage;
@@ -390,6 +466,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
       if (!mounted) {
         return false;
       }
+      _cancelAutoSave();
       setState(() {
         _isSaving = false;
         _errorMessage = l10n.doublesMatchTimeOrderErrorMessage;
@@ -399,6 +476,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
       if (!mounted) {
         return false;
       }
+      _cancelAutoSave();
       setState(() {
         _isSaving = false;
         _errorMessage = l10n.doublesMatchSaveFailedMessage(error.toString());
@@ -407,11 +485,27 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     }
   }
 
+  Future<bool> _flushPendingSave() async {
+    _cancelAutoSave();
+
+    while (mounted && _isDirty) {
+      final saved = await _saveDraft(allowAutoFollowUp: false);
+      if (!mounted || !saved) {
+        return false;
+      }
+
+      // Input can continue while a save is in flight. Flush any newer draft
+      // before allowing an action that depends on the save result.
+      _cancelAutoSave();
+    }
+
+    return mounted;
+  }
+
   Future<bool> _loadMatch(
-    DoublesMatchSelection match, {
-    bool showRefreshedMessage = false,
-  }) async {
-    if (_isBusy) {
+    DoublesMatchSelection match,
+  ) async {
+    if (_isActionBlocked) {
       return false;
     }
 
@@ -419,7 +513,6 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     final onLoadMatch = widget.onLoadMatch;
     if (onLoadMatch == null) {
       setState(() {
-        _statusMessage = null;
         _errorMessage = l10n.doublesMatchLoadFailedMessage(
           'load callback is unavailable',
         );
@@ -427,9 +520,9 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
       return false;
     }
 
+    _cancelAutoSave();
     setState(() {
       _isLoadingMatch = true;
-      _statusMessage = null;
       _errorMessage = null;
     });
 
@@ -443,9 +536,8 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
         _match = match;
         _applyProgress(latest);
         _isLoadingMatch = false;
-        if (showRefreshedMessage) {
-          _statusMessage = l10n.doublesMatchRefreshedMessage;
-        }
+        _lastSyncedAt = DateTime.now();
+        _errorMessage = null;
       });
       return true;
     } catch (error) {
@@ -460,20 +552,21 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     }
   }
 
-  Future<void> _restoreLatest() async {
-    if (_isBusy || widget.onLoadMatch == null) {
+  Future<void> _refreshLatest() async {
+    if (_isActionBlocked || widget.onLoadMatch == null) {
       return;
     }
 
     if (_isDirty) {
+      _cancelAutoSave();
       final confirmed = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
         builder: (context) {
           final l10n = AppLocalizations.of(context);
           return AlertDialog(
-            title: Text(l10n.doublesMatchRestoreLatestConfirmTitle),
-            content: Text(l10n.doublesMatchRestoreLatestConfirmBody),
+            title: Text(l10n.doublesMatchRefreshLatestConfirmTitle),
+            content: Text(l10n.doublesMatchRefreshLatestConfirmBody),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
@@ -481,22 +574,26 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
               ),
               FilledButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: Text(l10n.doublesMatchRestoreLatestButton),
+                child: Text(l10n.doublesMatchRefreshLatestButton),
               ),
             ],
           );
         },
       );
-      if (!mounted || confirmed != true) {
+      if (!mounted) {
+        return;
+      }
+      if (confirmed != true) {
+        _scheduleAutoSave();
         return;
       }
     }
 
-    await _loadMatch(_match, showRefreshedMessage: true);
+    await _loadMatch(_match);
   }
 
   Future<void> _move(int offset) async {
-    if (_isBusy) {
+    if (_isActionBlocked) {
       return;
     }
 
@@ -509,49 +606,8 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     }
 
     final target = widget.matches[targetIndex];
-    if (!_isDirty) {
-      await _loadMatch(target);
-      return;
-    }
-
-    final action = await showDialog<_UnsavedMoveAction>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        final l10n = AppLocalizations.of(context);
-        return AlertDialog(
-          title: Text(l10n.bocciaScoreDiscardChangesTitle),
-          content: Text(l10n.bocciaScoreUnsavedChangesMessage),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(_UnsavedMoveAction.cancel);
-              },
-              child: Text(l10n.cancelButton),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(_UnsavedMoveAction.discardAndMove);
-              },
-              child: Text(l10n.doublesMatchDiscardAndMoveButton),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.of(context).pop(_UnsavedMoveAction.saveAndMove);
-              },
-              child: Text(l10n.doublesMatchSaveAndMoveButton),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (!mounted || action == null || action == _UnsavedMoveAction.cancel) {
-      return;
-    }
-
-    if (action == _UnsavedMoveAction.saveAndMove) {
-      final saved = await _save();
+    if (_isDirty) {
+      final saved = await _flushPendingSave();
       if (!mounted || !saved) {
         return;
       }
@@ -561,56 +617,18 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   }
 
   Future<void> _close() async {
-    if (_isBusy) {
-      return;
-    }
-    if (!_isDirty) {
-      Navigator.of(context).pop();
+    if (_isActionBlocked) {
       return;
     }
 
-    final action = await showDialog<_UnsavedAction>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        final l10n = AppLocalizations.of(context);
-        return AlertDialog(
-          title: Text(l10n.bocciaScoreDiscardChangesTitle),
-          content: Text(l10n.bocciaScoreUnsavedChangesMessage),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(_UnsavedAction.cancel);
-              },
-              child: Text(l10n.cancelButton),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(_UnsavedAction.discardAndClose);
-              },
-              child: Text(l10n.discardBocciaScoreChangesButton),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.of(context).pop(_UnsavedAction.saveAndClose);
-              },
-              child: Text(l10n.saveAndCloseBocciaScoreButton),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (!mounted || action == null || action == _UnsavedAction.cancel) {
-      return;
-    }
-    if (action == _UnsavedAction.discardAndClose) {
-      Navigator.of(context).pop();
-      return;
+    if (_isDirty) {
+      final saved = await _flushPendingSave();
+      if (!mounted || !saved) {
+        return;
+      }
     }
 
-    final saved = await _save();
-    if (mounted && saved) {
+    if (mounted) {
       Navigator.of(context).pop();
     }
   }
@@ -634,7 +652,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
           ),
       ],
       selected: <ScheduleMatchStatus>{_status},
-      onSelectionChanged: _isBusy
+      onSelectionChanged: _isInputBlocked
           ? null
           : (selected) {
               _selectStatus(selected.single);
@@ -663,7 +681,8 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
             children: [
               IconButton.outlined(
                 key: const Key('doubles-match-previous-button'),
-                onPressed: !_isBusy && hasPrevious ? () => _move(-1) : null,
+                onPressed:
+                    !_isActionBlocked && hasPrevious ? () => _move(-1) : null,
                 icon: const Icon(Icons.arrow_back),
               ),
               const SizedBox(width: 12),
@@ -686,7 +705,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
               const SizedBox(width: 12),
               IconButton.outlined(
                 key: const Key('doubles-match-next-button'),
-                onPressed: !_isBusy && hasNext ? () => _move(1) : null,
+                onPressed: !_isActionBlocked && hasNext ? () => _move(1) : null,
                 icon: const Icon(Icons.arrow_forward),
               ),
             ],
@@ -720,9 +739,9 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
   Widget _buildScoreControl({required bool side1}) {
     final score = side1 ? _side1Score : _side2Score;
     final onDecrease =
-        _isBusy ? null : () => _adjustScore(side1: side1, delta: -1);
+        _isInputBlocked ? null : () => _adjustScore(side1: side1, delta: -1);
     final onIncrease =
-        _isBusy ? null : () => _adjustScore(side1: side1, delta: 1);
+        _isInputBlocked ? null : () => _adjustScore(side1: side1, delta: 1);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -739,7 +758,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
           width: 48,
           height: 48,
           child: OutlinedButton(
-            onPressed: _isBusy ? null : () => _pickScore(side1: side1),
+            onPressed: _isInputBlocked ? null : () => _pickScore(side1: side1),
             style: OutlinedButton.styleFrom(padding: EdgeInsets.zero),
             child: Text(score?.toString() ?? '－'),
           ),
@@ -824,7 +843,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     required bool start,
   }) {
     final l10n = AppLocalizations.of(context);
-    final canEdit = enabled && !_isBusy;
+    final canEdit = enabled && !_isInputBlocked;
 
     return InputDecorator(
       decoration: InputDecoration(
@@ -904,8 +923,30 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     );
   }
 
+  String _formatSyncTime(DateTime value) {
+    final hour = value.hour.toString().padLeft(2, '0');
+    final minute = value.minute.toString().padLeft(2, '0');
+    final second = value.second.toString().padLeft(2, '0');
+    return '$hour:$minute:$second';
+  }
+
   Widget _buildSaveStatus(AppLocalizations l10n) {
-    if (_isBusy) {
+    if (_isSaving) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 8),
+          Text(l10n.doublesMatchSavingLabel),
+        ],
+      );
+    }
+
+    if (_isLoadingMatch) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -928,10 +969,10 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
       );
     }
 
-    final statusMessage = _statusMessage;
-    if (statusMessage != null) {
+    final lastSyncedAt = _lastSyncedAt;
+    if (lastSyncedAt != null) {
       return Text(
-        statusMessage,
+        l10n.doublesMatchSyncedAtLabel(_formatSyncTime(lastSyncedAt)),
         style: TextStyle(
           color: Theme.of(context).colorScheme.primary,
           fontWeight: FontWeight.bold,
@@ -939,11 +980,54 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
       );
     }
 
-    if (_isDirty) {
-      return Text(l10n.bocciaScoreUnsavedChangesMessage);
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildDialogActions(AppLocalizations l10n) {
+    final refreshButton = TextButton(
+      onPressed: _isActionBlocked || widget.onLoadMatch == null
+          ? null
+          : _refreshLatest,
+      child: Text(l10n.doublesMatchRefreshLatestButton),
+    );
+    final closeButton = TextButton(
+      onPressed: _isActionBlocked ? null : _close,
+      child: Text(l10n.closeButton),
+    );
+    final useStackedActions = MediaQuery.sizeOf(context).width < 420;
+
+    if (useStackedActions) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: _buildSaveStatus(l10n),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              refreshButton,
+              closeButton,
+            ],
+          ),
+        ],
+      );
     }
 
-    return const SizedBox.shrink();
+    return Row(
+      children: [
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: _buildSaveStatus(l10n),
+          ),
+        ),
+        refreshButton,
+        closeButton,
+      ],
+    );
   }
 
   @override
@@ -971,7 +1055,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     return PopScope<Object?>(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop && !_isBusy) {
+        if (!didPop && !_isActionBlocked) {
           _close();
         }
       },
@@ -999,7 +1083,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
                 const SizedBox(height: 20),
                 TextField(
                   controller: _noteController,
-                  enabled: !_isBusy,
+                  enabled: !_isInputBlocked,
                   minLines: 2,
                   maxLines: 4,
                   decoration: InputDecoration(
@@ -1008,43 +1092,17 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
                     border: const OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: _buildSaveStatus(l10n),
-                ),
               ],
             ),
           ),
         ),
         actions: [
-          TextButton(
-            onPressed:
-                _isBusy || widget.onLoadMatch == null ? null : _restoreLatest,
-            child: Text(l10n.doublesMatchRestoreLatestButton),
-          ),
-          TextButton(
-            onPressed: _isBusy ? null : _close,
-            child: Text(l10n.closeButton),
-          ),
-          FilledButton(
-            onPressed: _isBusy || !_isDirty ? null : _save,
-            child: Text(l10n.doublesMatchSaveButton),
+          SizedBox(
+            width: double.infinity,
+            child: _buildDialogActions(l10n),
           ),
         ],
       ),
     );
   }
-}
-
-enum _UnsavedAction {
-  cancel,
-  discardAndClose,
-  saveAndClose,
-}
-
-enum _UnsavedMoveAction {
-  cancel,
-  discardAndMove,
-  saveAndMove,
 }
