@@ -406,11 +406,15 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       totalMatchCount: totalMatchCount,
     );
 
-    final nextMatches = <ScheduleMatchProgress>[
-      for (final match in widget.matchProgresses)
-        if (match.key.value != saved.match.key.value) match,
-      saved.match,
-    ];
+    final nextMatches = widget.matchProgresses.toList(growable: true);
+    final savedMatchIndex = nextMatches.indexWhere(
+      (match) => match.key.value == saved.match.key.value,
+    );
+    if (savedMatchIndex >= 0) {
+      nextMatches[savedMatchIndex] = saved.match;
+    } else {
+      nextMatches.add(saved.match);
+    }
     widget.onProgressChanged?.call(
       saved.summary,
       List<ScheduleMatchProgress>.unmodifiable(nextMatches),
