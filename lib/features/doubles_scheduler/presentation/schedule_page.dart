@@ -484,7 +484,7 @@ class _SchedulePageState extends State<SchedulePage> {
     }
   }
 
-  Future<SavedEventAggregate> _ensureSavedEvent() async {  Future<SavedEventAggregate> _ensureSavedEvent() async {
+  Future<SavedEventAggregate> _ensureSavedEvent() async {
     final existing = _savedEvent;
     if (existing != null) return existing;
 
@@ -637,7 +637,7 @@ class _SchedulePageState extends State<SchedulePage> {
     }
   }
 
-  Future<bool> _refreshLatestAll({  Future<bool> _refreshLatestAll({
+  Future<bool> _refreshLatestAll({
     bool showSuccess = false,
     bool initialLoad = false,
   }) async {
@@ -839,7 +839,7 @@ class _SchedulePageState extends State<SchedulePage> {
     }
   }
 
-  Future<void> _saveScheduleHistory(SavedEventAggregate aggregate) async {  Future<void> _saveScheduleHistory(SavedEventAggregate aggregate) async {
+  Future<void> _saveScheduleHistory(SavedEventAggregate aggregate) async {
     await LocalScheduleHistoryStore().upsert(
       buildLocalScheduleHistoryItem(
         aggregate,
