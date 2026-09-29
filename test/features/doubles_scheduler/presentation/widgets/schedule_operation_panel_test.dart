@@ -49,7 +49,6 @@ void main() {
     expect(adoptCount, 0);
   });
 
-
   testWidgets('keeps the panel visible while generation is in progress',
       (tester) async {
     var regenerateCount = 0;

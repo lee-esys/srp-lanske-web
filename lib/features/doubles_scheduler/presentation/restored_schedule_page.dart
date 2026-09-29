@@ -309,8 +309,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
         return false;
       }
 
-      final latestGeneratedScheduleId =
-          latest.event.currentGeneratedScheduleId;
+      final latestGeneratedScheduleId = latest.event.currentGeneratedScheduleId;
       if (latest.event.hasAdoptedSchedule ||
           latestGeneratedScheduleId != expectedGeneratedScheduleId) {
         await _applyLatestScheduleState(latest);
@@ -379,16 +378,13 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
     SavedEventAggregate latest,
   ) async {
     final current = _savedEvent;
-    final latestGeneratedScheduleId =
-        latest.event.displayGeneratedScheduleId;
-    final scheduleChanged =
-        latestGeneratedScheduleId != _generatedScheduleId;
+    final latestGeneratedScheduleId = latest.event.displayGeneratedScheduleId;
+    final scheduleChanged = latestGeneratedScheduleId != _generatedScheduleId;
 
     Map<String, dynamic>? nextScheduleResponse = _scheduleResponse;
     if (scheduleChanged) {
       nextScheduleResponse =
-          latestGeneratedScheduleId == null ||
-                  latestGeneratedScheduleId.isEmpty
+          latestGeneratedScheduleId == null || latestGeneratedScheduleId.isEmpty
               ? null
               : await _service.getById(latestGeneratedScheduleId);
     } else if (latest.event.hasAdoptedSchedule &&
@@ -652,8 +648,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       final response = await _service.generateFromDraft(draft);
       if (!mounted) return;
 
-      final generatedScheduleId =
-          response['generated_schedule_id']?.toString();
+      final generatedScheduleId = response['generated_schedule_id']?.toString();
       if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
         throw StateError('generated schedule id is missing');
       }
@@ -661,8 +656,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       final updatedEvent =
           await appEventRepository.updateCurrentGeneratedScheduleIdIfCurrent(
         publicId: savedEvent.event.publicId,
-        expectedCurrentGeneratedScheduleId:
-            expectedCurrentGeneratedScheduleId,
+        expectedCurrentGeneratedScheduleId: expectedCurrentGeneratedScheduleId,
         generatedScheduleId: generatedScheduleId,
       );
       if (!mounted) return;
@@ -722,9 +716,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       return;
     }
 
-    if (_isAdopting ||
-        _isGeneratingSchedule ||
-        _hasAdoptedSchedule) {
+    if (_isAdopting || _isGeneratingSchedule || _hasAdoptedSchedule) {
       return;
     }
 
@@ -737,8 +729,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
       final updatedEvent =
           await appEventRepository.updateAdoptedGeneratedScheduleIdIfCurrent(
         publicId: savedEvent.event.publicId,
-        expectedCurrentGeneratedScheduleId:
-            displayedGeneratedScheduleId,
+        expectedCurrentGeneratedScheduleId: displayedGeneratedScheduleId,
       );
       if (!mounted) return;
 
@@ -983,8 +974,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
                         !_isOpeningSharedDataDialog,
                 onChangeCourtDisplay: _changeCourtDisplay,
                 showActionButtons: true,
-                isGenerating:
-                    _isGeneratingSchedule || _isCheckingRegenerate,
+                isGenerating: _isGeneratingSchedule || _isCheckingRegenerate,
                 isAdopting: _isAdopting,
                 generateButtonLabel: l10n.regenerateButton,
                 canAdopt:
@@ -1000,7 +990,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           ScheduleSectionCard(
             title: l10n.matchTableTitle,
             child: (_isLoading || _isGeneratingSchedule) &&
-                _scheduleResponse == null
+                    _scheduleResponse == null
                 ? const Center(
                     child: Padding(
                       padding: EdgeInsets.all(4),

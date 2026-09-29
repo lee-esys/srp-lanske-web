@@ -236,14 +236,12 @@ void runEventRepositoryContractTests({
       final repository = createRepository();
       final created = await _createOwnedEvent(repository, buildDraft());
 
-      final first =
-          await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+      final first = await repository.updateCurrentGeneratedScheduleIdIfCurrent(
         publicId: created.event.publicId,
         expectedCurrentGeneratedScheduleId: null,
         generatedScheduleId: 'generated-1',
       );
-      final second =
-          await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+      final second = await repository.updateCurrentGeneratedScheduleIdIfCurrent(
         publicId: created.event.publicId,
         expectedCurrentGeneratedScheduleId: 'generated-1',
         generatedScheduleId: 'generated-2',
@@ -259,14 +257,12 @@ void runEventRepositoryContractTests({
       final repository = createRepository();
       final created = await _createOwnedEvent(repository, buildDraft());
 
-      final first =
-          await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+      final first = await repository.updateCurrentGeneratedScheduleIdIfCurrent(
         publicId: created.event.publicId,
         expectedCurrentGeneratedScheduleId: null,
         generatedScheduleId: 'generated-1',
       );
-      final second =
-          await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+      final second = await repository.updateCurrentGeneratedScheduleIdIfCurrent(
         publicId: created.event.publicId,
         expectedCurrentGeneratedScheduleId: 'generated-1',
         generatedScheduleId: 'generated-1',

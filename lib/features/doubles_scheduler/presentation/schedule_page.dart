@@ -334,8 +334,7 @@ class _SchedulePageState extends State<SchedulePage> {
         return false;
       }
 
-      final latestGeneratedScheduleId =
-          latest.event.currentGeneratedScheduleId;
+      final latestGeneratedScheduleId = latest.event.currentGeneratedScheduleId;
       if (latest.event.hasAdoptedSchedule ||
           latestGeneratedScheduleId != expectedGeneratedScheduleId) {
         await _applyLatestScheduleState(latest);
@@ -404,16 +403,13 @@ class _SchedulePageState extends State<SchedulePage> {
     SavedEventAggregate latest,
   ) async {
     final current = _savedEvent;
-    final latestGeneratedScheduleId =
-        latest.event.displayGeneratedScheduleId;
-    final scheduleChanged =
-        latestGeneratedScheduleId != _generatedScheduleId;
+    final latestGeneratedScheduleId = latest.event.displayGeneratedScheduleId;
+    final scheduleChanged = latestGeneratedScheduleId != _generatedScheduleId;
 
     Map<String, dynamic>? nextScheduleResponse = _scheduleResponse;
     if (scheduleChanged) {
       nextScheduleResponse =
-          latestGeneratedScheduleId == null ||
-                  latestGeneratedScheduleId.isEmpty
+          latestGeneratedScheduleId == null || latestGeneratedScheduleId.isEmpty
               ? null
               : await _service.getById(latestGeneratedScheduleId);
     } else if (latest.event.hasAdoptedSchedule &&
@@ -589,8 +585,7 @@ class _SchedulePageState extends State<SchedulePage> {
       final response = await _service.generateFromDraft(widget.draft);
       if (!mounted) return;
 
-      final generatedScheduleId =
-          response['generated_schedule_id']?.toString();
+      final generatedScheduleId = response['generated_schedule_id']?.toString();
       if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
         throw StateError('generated schedule id is missing');
       }
@@ -598,8 +593,7 @@ class _SchedulePageState extends State<SchedulePage> {
       final updatedEvent =
           await appEventRepository.updateCurrentGeneratedScheduleIdIfCurrent(
         publicId: savedEvent.event.publicId,
-        expectedCurrentGeneratedScheduleId:
-            expectedCurrentGeneratedScheduleId,
+        expectedCurrentGeneratedScheduleId: expectedCurrentGeneratedScheduleId,
         generatedScheduleId: generatedScheduleId,
       );
       if (!mounted) return;
@@ -783,9 +777,7 @@ class _SchedulePageState extends State<SchedulePage> {
       return;
     }
 
-    if (_isAdopting ||
-        _isGeneratingSchedule ||
-        _hasAdoptedSchedule) {
+    if (_isAdopting || _isGeneratingSchedule || _hasAdoptedSchedule) {
       return;
     }
 
@@ -798,8 +790,7 @@ class _SchedulePageState extends State<SchedulePage> {
       final updatedEvent =
           await appEventRepository.updateAdoptedGeneratedScheduleIdIfCurrent(
         publicId: savedEvent.event.publicId,
-        expectedCurrentGeneratedScheduleId:
-            displayedGeneratedScheduleId,
+        expectedCurrentGeneratedScheduleId: displayedGeneratedScheduleId,
       );
       if (!mounted) return;
 
@@ -985,8 +976,7 @@ class _SchedulePageState extends State<SchedulePage> {
                   !_isOpeningSharedDataDialog,
               onChangeCourtDisplay: _changeCourtDisplay,
               showActionButtons: true,
-              isGenerating:
-                  _isGeneratingSchedule || _isCheckingRegenerate,
+              isGenerating: _isGeneratingSchedule || _isCheckingRegenerate,
               isAdopting: _isAdopting,
               generateButtonLabel: l10n.regenerateButton,
               canAdopt:
@@ -1001,26 +991,26 @@ class _SchedulePageState extends State<SchedulePage> {
         const SizedBox(height: 12),
         ScheduleSectionCard(
           title: l10n.matchTableTitle,
-          child: (_isLoading || _isGeneratingSchedule) &&
-                _scheduleResponse == null
-              ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(4),
-                    child: CircularProgressIndicator(),
-                  ),
-                )
-              : ScheduleRoundsView(
-                  scheduleResponse: _scheduleResponse,
-                  playerNameById: _playerNameById,
-                  courtCount: _displayCourtCount,
-                  selectedPlayerId: _selectedPlayerId,
-                  onPlayerSelected: _toggleSelectedPlayer,
-                  courtLabelByNumber: _courtLabelByNumber,
-                  progressSummary: _progressSummary,
-                  matchProgresses: _matchProgresses,
-                  canEditMatches: _hasAdoptedSchedule,
-                  onProgressChanged: _handleProgressChanged,
-                ),
+          child:
+              (_isLoading || _isGeneratingSchedule) && _scheduleResponse == null
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(4),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : ScheduleRoundsView(
+                      scheduleResponse: _scheduleResponse,
+                      playerNameById: _playerNameById,
+                      courtCount: _displayCourtCount,
+                      selectedPlayerId: _selectedPlayerId,
+                      onPlayerSelected: _toggleSelectedPlayer,
+                      courtLabelByNumber: _courtLabelByNumber,
+                      progressSummary: _progressSummary,
+                      matchProgresses: _matchProgresses,
+                      canEditMatches: _hasAdoptedSchedule,
+                      onProgressChanged: _handleProgressChanged,
+                    ),
         ),
         if (_errorMessage != null) ...[
           const SizedBox(height: 12),

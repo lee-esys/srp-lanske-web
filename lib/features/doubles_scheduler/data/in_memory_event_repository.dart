@@ -152,8 +152,7 @@ class InMemoryEventRepository implements EventRepository {
     final event = _requireEventByPublicId(publicId);
     _ensureScheduleStateForGenerate(
       event,
-      expectedCurrentGeneratedScheduleId:
-          expectedCurrentGeneratedScheduleId,
+      expectedCurrentGeneratedScheduleId: expectedCurrentGeneratedScheduleId,
     );
 
     if (event.status == SavedEventStatus.generated &&
@@ -199,8 +198,7 @@ class InMemoryEventRepository implements EventRepository {
     final event = _requireEventByPublicId(publicId);
     _ensureScheduleStateForAdopt(
       event,
-      expectedCurrentGeneratedScheduleId:
-          expectedCurrentGeneratedScheduleId,
+      expectedCurrentGeneratedScheduleId: expectedCurrentGeneratedScheduleId,
     );
 
     final now = _clock();
@@ -475,8 +473,7 @@ class InMemoryEventRepository implements EventRepository {
             expectedCurrentGeneratedScheduleId) {
       _throwScheduleStateConflict(
         event,
-        expectedCurrentGeneratedScheduleId:
-            expectedCurrentGeneratedScheduleId,
+        expectedCurrentGeneratedScheduleId: expectedCurrentGeneratedScheduleId,
       );
     }
   }
@@ -490,8 +487,7 @@ class InMemoryEventRepository implements EventRepository {
             expectedCurrentGeneratedScheduleId) {
       _throwScheduleStateConflict(
         event,
-        expectedCurrentGeneratedScheduleId:
-            expectedCurrentGeneratedScheduleId,
+        expectedCurrentGeneratedScheduleId: expectedCurrentGeneratedScheduleId,
       );
     }
   }
@@ -502,8 +498,7 @@ class InMemoryEventRepository implements EventRepository {
   }) {
     throw ScheduleStateConflictException(
       eventId: event.id,
-      expectedCurrentGeneratedScheduleId:
-          expectedCurrentGeneratedScheduleId,
+      expectedCurrentGeneratedScheduleId: expectedCurrentGeneratedScheduleId,
       actualCurrentGeneratedScheduleId: event.currentGeneratedScheduleId,
       actualAdoptedGeneratedScheduleId: event.adoptedGeneratedScheduleId,
       actualStatus: event.status,

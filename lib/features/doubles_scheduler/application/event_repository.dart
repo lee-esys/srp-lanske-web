@@ -99,7 +99,6 @@ class EventRevisionConflictException implements Exception {
   }
 }
 
-
 class ScheduleStateConflictException implements Exception {
   const ScheduleStateConflictException({
     required this.eventId,

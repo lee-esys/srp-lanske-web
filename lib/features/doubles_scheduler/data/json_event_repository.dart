@@ -232,10 +232,8 @@ class JsonEventRepository implements EventRepository {
           currentData,
           <String, dynamic>{
             'status': SavedEventStatus.adopted.name,
-            'currentGeneratedScheduleId':
-                expectedCurrentGeneratedScheduleId,
-            'adoptedGeneratedScheduleId':
-                expectedCurrentGeneratedScheduleId,
+            'currentGeneratedScheduleId': expectedCurrentGeneratedScheduleId,
+            'adoptedGeneratedScheduleId': expectedCurrentGeneratedScheduleId,
             'adoptedAt': nowJson,
             'revision': current.event.revision + 1,
             'updatedAt': nowJson,
@@ -574,8 +572,7 @@ class JsonEventRepository implements EventRepository {
             expectedCurrentGeneratedScheduleId) {
       _throwScheduleStateConflict(
         event,
-        expectedCurrentGeneratedScheduleId:
-            expectedCurrentGeneratedScheduleId,
+        expectedCurrentGeneratedScheduleId: expectedCurrentGeneratedScheduleId,
       );
     }
   }
@@ -589,8 +586,7 @@ class JsonEventRepository implements EventRepository {
             expectedCurrentGeneratedScheduleId) {
       _throwScheduleStateConflict(
         event,
-        expectedCurrentGeneratedScheduleId:
-            expectedCurrentGeneratedScheduleId,
+        expectedCurrentGeneratedScheduleId: expectedCurrentGeneratedScheduleId,
       );
     }
   }
@@ -601,8 +597,7 @@ class JsonEventRepository implements EventRepository {
   }) {
     throw ScheduleStateConflictException(
       eventId: event.id,
-      expectedCurrentGeneratedScheduleId:
-          expectedCurrentGeneratedScheduleId,
+      expectedCurrentGeneratedScheduleId: expectedCurrentGeneratedScheduleId,
       actualCurrentGeneratedScheduleId: event.currentGeneratedScheduleId,
       actualAdoptedGeneratedScheduleId: event.adoptedGeneratedScheduleId,
       actualStatus: event.status,

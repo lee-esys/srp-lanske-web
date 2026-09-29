@@ -148,7 +148,8 @@ class FirestoreSavedEventJsonStore implements SavedEventJsonStore {
             transactionResult['actualCurrentGeneratedScheduleId']?.toString(),
         actualAdoptedGeneratedScheduleId:
             transactionResult['actualAdoptedGeneratedScheduleId']?.toString(),
-        actualStatus: _requireSavedEventStatus(transactionResult['actualStatus']),
+        actualStatus:
+            _requireSavedEventStatus(transactionResult['actualStatus']),
       );
     }
 
