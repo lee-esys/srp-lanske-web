@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
+import '../../application/event_repository.dart';
 import '../../domain/saved_event_models.dart';
 
 class CourtDisplaySettingsDialog extends StatefulWidget {
   const CourtDisplaySettingsDialog({
     super.key,
-    required this.courtCount,
-    required this.initialSettings,
+    required this.initialAggregate,
+    required this.repository,
   });
 
-  final int courtCount;
-  final List<SavedEventCourtSetting> initialSettings;
+  final SavedEventAggregate initialAggregate;
+  final EventRepository repository;
 
   @override
   State<CourtDisplaySettingsDialog> createState() =>
@@ -22,21 +23,31 @@ class CourtDisplaySettingsDialog extends StatefulWidget {
 class _CourtDisplaySettingsDialogState
     extends State<CourtDisplaySettingsDialog> {
   late final List<TextEditingController> _controllers;
+  late SavedEventAggregate _latestAggregate;
+  late int _expectedCourtSettingsRevision;
 
   bool _isCustomMode = false;
   bool _didResolveInitialMode = false;
-  String? _errorMessage;
+  bool _isSaving = false;
+  bool _messageIsError = false;
+  String? _message;
+
+  int get _courtCount => widget.initialAggregate.event.courtCount;
 
   @override
   void initState() {
     super.initState();
 
+    _latestAggregate = widget.initialAggregate;
+    _expectedCourtSettingsRevision =
+        widget.initialAggregate.revisions.courtSettings;
+
     final initialLabelByCourtNumber = {
-      for (final setting in widget.initialSettings)
+      for (final setting in widget.initialAggregate.courtSettings)
         setting.courtNumber: setting.displayLabel,
     };
 
-    _controllers = List.generate(widget.courtCount, (index) {
+    _controllers = List.generate(_courtCount, (index) {
       final courtNumber = index + 1;
       final label = initialLabelByCourtNumber[courtNumber]?.trim();
 
@@ -75,8 +86,10 @@ class _CourtDisplaySettingsDialogState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return AlertDialog(
-      title: Text(l10n.displaySettingsDialogTitle),
+    return PopScope(
+      canPop: !_isSaving,
+      child: AlertDialog(
+        title: Text(l10n.displaySettingsDialogTitle),
       content: SingleChildScrollView(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
@@ -115,7 +128,8 @@ class _CourtDisplaySettingsDialogState
                     onSelected: (_) {
                       setState(() {
                         _isCustomMode = true;
-                        _errorMessage = null;
+                        _message = null;
+                        _messageIsError = false;
                       });
                     },
                   ),
@@ -125,7 +139,7 @@ class _CourtDisplaySettingsDialogState
               Wrap(
                 spacing: 12,
                 runSpacing: 12,
-                children: List.generate(widget.courtCount, (index) {
+                children: List.generate(_courtCount, (index) {
                   final courtNumber = index + 1;
 
                   return SizedBox(
@@ -144,22 +158,25 @@ class _CourtDisplaySettingsDialogState
                         border: const OutlineInputBorder(),
                       ),
                       onChanged: (_) {
-                        if (_errorMessage == null) return;
+                        if (_message == null) return;
 
                         setState(() {
-                          _errorMessage = null;
+                          _message = null;
+                          _messageIsError = false;
                         });
                       },
                     ),
                   );
                 }),
               ),
-              if (_errorMessage != null) ...[
+              if (_message != null) ...[
                 const SizedBox(height: 12),
                 Text(
-                  _errorMessage!,
+                  _message!,
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
+                    color: _messageIsError
+                        ? Theme.of(context).colorScheme.error
+                        : Theme.of(context).colorScheme.primary,
                     fontSize: 13,
                   ),
                 ),
@@ -168,16 +185,23 @@ class _CourtDisplaySettingsDialogState
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l10n.cancelButton),
-        ),
-        FilledButton(
-          onPressed: _submit,
-          child: Text(l10n.confirmButton),
-        ),
-      ],
+        actions: [
+          TextButton(
+            onPressed: _isSaving ? null : () => Navigator.pop(context),
+            child: Text(l10n.cancelButton),
+          ),
+          FilledButton(
+            onPressed: _isSaving ? null : _submit,
+            child: _isSaving
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(l10n.confirmButton),
+          ),
+        ],
+      ),
     );
   }
 
@@ -201,36 +225,100 @@ class _CourtDisplaySettingsDialogState
       }
 
       _isCustomMode = false;
-      _errorMessage = null;
+      _message = null;
+      _messageIsError = false;
     });
   }
 
-  void _submit() {
+  Future<void> _submit() async {
+    if (_isSaving) {
+      return;
+    }
+
     final l10n = AppLocalizations.of(context);
     final labels = _currentLabels();
 
     if (labels.any((label) => label.isEmpty)) {
       setState(() {
-        _errorMessage = l10n.courtDisplayEmptyError;
+        _message = l10n.courtDisplayEmptyError;
+        _messageIsError = true;
       });
       return;
     }
 
     if (labels.toSet().length != labels.length) {
       setState(() {
-        _errorMessage = l10n.courtDisplayDuplicateError;
+        _message = l10n.courtDisplayDuplicateError;
+        _messageIsError = true;
       });
       return;
     }
 
-    final settings = List.generate(widget.courtCount, (index) {
+    final settings = List.generate(_courtCount, (index) {
       return SavedEventCourtSetting(
         courtNumber: index + 1,
         displayLabel: labels[index],
       );
     });
 
-    Navigator.pop(context, settings);
+    setState(() {
+      _isSaving = true;
+      _message = null;
+      _messageIsError = false;
+    });
+
+    try {
+      final updated = await widget.repository.updateCourtSettingsWithRevision(
+        publicId: _latestAggregate.event.publicId,
+        expectedCourtSettingsRevision: _expectedCourtSettingsRevision,
+        courtSettings: settings,
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context, updated);
+    } on EventRevisionConflictException {
+      await _handleConflict(l10n);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+        _message = l10n.courtDisplaySaveFailedMessage(error.toString());
+        _messageIsError = true;
+      });
+    }
+  }
+
+  Future<void> _handleConflict(AppLocalizations l10n) async {
+    try {
+      final latest = await widget.repository.findByPublicId(
+        _latestAggregate.event.publicId,
+      );
+      if (!mounted) return;
+
+      if (latest == null || latest.event.courtCount != _courtCount) {
+        setState(() {
+          _isSaving = false;
+          _message = l10n.courtDisplayLatestLoadFailedMessage;
+          _messageIsError = true;
+        });
+        return;
+      }
+
+      setState(() {
+        _latestAggregate = latest;
+        _expectedCourtSettingsRevision = latest.revisions.courtSettings;
+        _isSaving = false;
+        _message = l10n.courtDisplayConflictMessage;
+        _messageIsError = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+        _message = l10n.courtDisplaySaveFailedMessage(error.toString());
+        _messageIsError = true;
+      });
+    }
   }
 
   List<String> _currentLabels() {
@@ -240,13 +328,13 @@ class _CourtDisplaySettingsDialogState
   }
 
   List<String> _numberPresetLabels() {
-    return List.generate(widget.courtCount, (index) {
+    return List.generate(_courtCount, (index) {
       return (index + 1).toString();
     });
   }
 
   List<String> _letterPresetLabels() {
-    return List.generate(widget.courtCount, (index) {
+    return List.generate(_courtCount, (index) {
       if (index < 26) {
         return String.fromCharCode('A'.codeUnitAt(0) + index);
       }
@@ -274,17 +362,17 @@ class _CourtDisplaySettingsDialogState
   }
 
   List<String> _edgePresetLabels(String start, String end) {
-    if (widget.courtCount <= 1) {
+    if (_courtCount <= 1) {
       return [start];
     }
 
-    if (widget.courtCount == 2) {
+    if (_courtCount == 2) {
       return [start, end];
     }
 
-    return List.generate(widget.courtCount, (index) {
+    return List.generate(_courtCount, (index) {
       if (index == 0) return start;
-      if (index == widget.courtCount - 1) return end;
+      if (index == _courtCount - 1) return end;
 
       return (index + 1).toString();
     });
