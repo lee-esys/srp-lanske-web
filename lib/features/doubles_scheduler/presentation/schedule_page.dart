@@ -790,6 +790,27 @@ class _SchedulePageState extends State<SchedulePage> {
     );
   }
 
+  Future<void> _handleDisplayUpdated(
+    SavedEventAggregate updated,
+  ) async {
+    final current = _savedEvent;
+    if (current == null) {
+      return;
+    }
+
+    final merged = mergeDisplayFragment(current, updated);
+    setState(() {
+      _savedEvent = merged;
+    });
+
+    try {
+      await _saveScheduleHistory(merged);
+    } catch (error, stackTrace) {
+      debugPrint('Failed to update local schedule history: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
+  }
+
   Future<void> _changeCourtDisplay() async {
     if (_isOpeningSharedDataDialog ||
         _isRefreshing ||
@@ -797,73 +818,65 @@ class _SchedulePageState extends State<SchedulePage> {
       return;
     }
 
-    var dialogOpened = false;
+    final current = _savedEvent;
+    if (current == null) {
+      return;
+    }
+
     setState(() {
       _isOpeningSharedDataDialog = true;
     });
 
     try {
-      final refreshed = await _refreshLatestAll(showSuccess: false);
-      if (!mounted || !refreshed) {
+      final latest =
+          await appEventRepository.findByPublicId(current.event.publicId);
+      if (!mounted) return;
+
+      if (latest == null) {
+        _showMessage(
+          AppLocalizations.of(context).courtDisplayLatestLoadFailedMessage,
+          type: AppMessageType.error,
+        );
         return;
       }
 
-      final savedEvent = _savedEvent;
-      if (savedEvent == null ||
-          !_eventCapabilitiesFor(savedEvent).canEditCourtSettings) {
+      if (!_eventCapabilitiesFor(latest).canEditCourtSettings) {
         return;
       }
 
-      dialogOpened = true;
-      final nextSettings = await showDialog<List<SavedEventCourtSetting>>(
+      final updated = await showDialog<SavedEventAggregate>(
         context: context,
+        barrierDismissible: false,
         builder: (context) {
           return CourtDisplaySettingsDialog(
-            courtCount: savedEvent.event.courtCount,
-            initialSettings: _courtSettings,
+            initialAggregate: latest,
+            repository: appEventRepository,
           );
         },
       );
 
-      if (!mounted || nextSettings == null) return;
+      if (!mounted || updated == null) return;
 
-      final updatedAggregate =
-          await appEventRepository.updateCourtSettingsWithRevision(
-        publicId: savedEvent.event.publicId,
-        expectedCourtSettingsRevision: savedEvent.revisions.courtSettings,
-        courtSettings: nextSettings,
-      );
-
-      if (!mounted) return;
+      final currentAtApply = _savedEvent;
+      if (currentAtApply == null) return;
 
       setState(() {
-        _savedEvent = updatedAggregate;
+        _savedEvent = mergeCourtSettingsFragment(currentAtApply, updated);
       });
-
-      await _saveScheduleHistory(updatedAggregate);
-    } on EventRevisionConflictException {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to load latest court settings: $error');
+      debugPrintStack(stackTrace: stackTrace);
       if (!mounted) return;
+
       _showMessage(
-        AppLocalizations.of(context).scheduleUpdatedReloadMessage,
-        type: AppMessageType.info,
+        AppLocalizations.of(context).courtDisplayLatestLoadFailedMessage,
+        type: AppMessageType.error,
       );
-    } catch (e) {
-      if (!mounted) return;
-
-      final message = AppLocalizations.of(context)
-          .reloadScheduleFailedMessage(e.toString());
-      setState(() {
-        _errorMessage = message;
-      });
-      _showMessage(message, type: AppMessageType.error);
     } finally {
       if (mounted) {
         setState(() {
           _isOpeningSharedDataDialog = false;
         });
-      }
-      if (mounted && dialogOpened) {
-        await _refreshLatestAll(showSuccess: false);
       }
     }
   }
@@ -880,7 +893,7 @@ class _SchedulePageState extends State<SchedulePage> {
           aggregate: _savedEvent,
           onShareUrl: _savedEvent == null ? null : _showShareDialog,
           onRefresh: () => _reloadSchedule(),
-          onRefreshForEdit: () => _refreshLatestAll(showSuccess: false),
+          onDisplayUpdated: _handleDisplayUpdated,
           canRefresh: _generatedScheduleId != null &&
               !_isLoading &&
               !_isOpeningSharedDataDialog,
