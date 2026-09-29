@@ -83,10 +83,10 @@ void main() {
     await tester.pump();
 
     expect(find.text('コート表示: 1 / 2'), findsOneWidget);
-    expect(find.text('処理中...'), findsOneWidget);
+    expect(find.text('処理中…'), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-    await tester.tap(find.text('処理中...'));
+    await tester.tap(find.text('処理中…'));
     await tester.tap(find.text('この対戦表で確定'));
     await tester.pump();
 
