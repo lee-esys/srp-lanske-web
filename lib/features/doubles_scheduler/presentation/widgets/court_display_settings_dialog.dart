@@ -125,13 +125,15 @@ class _CourtDisplaySettingsDialogState
                   ChoiceChip(
                     label: Text(l10n.courtDisplayPresetCustom),
                     selected: _isCustomMode,
-                    onSelected: (_) {
-                      setState(() {
-                        _isCustomMode = true;
-                        _message = null;
-                        _messageIsError = false;
-                      });
-                    },
+                    onSelected: _isSaving
+                        ? null
+                        : (_) {
+                            setState(() {
+                              _isCustomMode = true;
+                              _message = null;
+                              _messageIsError = false;
+                            });
+                          },
                   ),
                 ],
               ),
@@ -146,7 +148,7 @@ class _CourtDisplaySettingsDialogState
                     width: 96,
                     child: TextField(
                       controller: _controllers[index],
-                      enabled: _isCustomMode,
+                      enabled: _isCustomMode && !_isSaving,
                       textAlign: TextAlign.center,
                       textInputAction: TextInputAction.next,
                       inputFormatters: [
@@ -214,7 +216,7 @@ class _CourtDisplaySettingsDialogState
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
-      onSelected: (_) => _applyPreset(labels),
+      onSelected: _isSaving ? null : (_) => _applyPreset(labels),
     );
   }
 
@@ -315,7 +317,7 @@ class _CourtDisplaySettingsDialogState
       if (!mounted) return;
       setState(() {
         _isSaving = false;
-        _message = l10n.courtDisplaySaveFailedMessage(error.toString());
+        _message = l10n.courtDisplayLatestLoadFailedMessage;
         _messageIsError = true;
       });
     }
