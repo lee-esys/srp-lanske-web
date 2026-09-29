@@ -32,6 +32,10 @@ schedule stateの更新では、progress全体の再取得を前提にせず、�
 
 事前確認から保存までの間に別端末でschedule stateが変わった場合は、transaction側のcompare-and-setで競合として扱う。
 
+core生成後にcompare-and-setが競合した場合、生成済みsnapshotがeventから参照されず残ることがある。
+そのsnapshotを古いstateで採用することはせず、eventの最新schedule stateを優先する。
+未参照snapshotのcleanupが必要になった場合は別の運用・保守責務として扱う。
+
 再生成前の確認ではprogress summary / match一覧を取得しない。
 
 ## adopt
