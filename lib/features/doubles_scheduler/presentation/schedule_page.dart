@@ -51,6 +51,7 @@ class _SchedulePageState extends State<SchedulePage> {
   late final DoublesScheduleRefreshService _refreshService;
 
   bool _isLoading = true;
+  bool _isGeneratingSchedule = false;
   bool _isAdopting = false;
   bool _isRefreshing = false;
   bool _isCheckingRegenerate = false;
@@ -244,10 +245,16 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _requestGenerateSchedule() async {
-    if (_isCheckingRegenerate || _isLoading || _isAdopting) return;
+    if (_isCheckingRegenerate ||
+        _isLoading ||
+        _isGeneratingSchedule ||
+        _isAdopting ||
+        _isRefreshing) {
+      return;
+    }
 
     if (!_hasGeneratedSchedule) {
-      await _generateSchedule();
+      await _generateSchedule(expectedCurrentGeneratedScheduleId: null);
       return;
     }
 
@@ -255,7 +262,7 @@ class _SchedulePageState extends State<SchedulePage> {
     final expectedGeneratedScheduleId = _generatedScheduleId;
     if (expectedGeneratedScheduleId == null ||
         expectedGeneratedScheduleId.isEmpty) {
-      await _generateSchedule();
+      await _generateSchedule(expectedCurrentGeneratedScheduleId: null);
       return;
     }
 
@@ -286,7 +293,9 @@ class _SchedulePageState extends State<SchedulePage> {
     );
     if (!mounted || !canGenerate) return;
 
-    await _generateSchedule();
+    await _generateSchedule(
+      expectedCurrentGeneratedScheduleId: expectedGeneratedScheduleId,
+    );
   }
 
   Future<bool> _refreshBeforeRegenerate({
@@ -296,87 +305,55 @@ class _SchedulePageState extends State<SchedulePage> {
     if (aggregate == null) return false;
 
     final l10n = AppLocalizations.of(context);
-    final requestSequence = ++_refreshRequestSequence;
-    final currentSnapshot = _currentRefreshSnapshot;
-
     setState(() {
       _isCheckingRegenerate = true;
       _errorMessage = null;
     });
 
     try {
-      final snapshot = await _refreshService.loadLatestByPublicId(
-        publicId: aggregate.event.publicId,
-        current: currentSnapshot,
+      final latest = await appEventRepository.findByPublicId(
+        aggregate.event.publicId,
       );
-      if (!mounted || requestSequence != _refreshRequestSequence) {
-        return false;
-      }
+      if (!mounted) return false;
 
-      final shouldApplySnapshot =
-          currentSnapshot == null || snapshot.hasChanges;
-      final latestPlayerIds =
-          snapshot.aggregate.players.map((player) => player.id).toSet();
-      final selectedPlayerId = _selectedPlayerId;
-
-      setState(() {
-        if (shouldApplySnapshot) {
-          _savedEvent = snapshot.aggregate;
-          _scheduleResponse = snapshot.scheduleResponse;
-          _generatedScheduleId = snapshot.generatedScheduleId;
-          _progressSummary = snapshot.progressSummary;
-          _matchProgresses = snapshot.matches;
-          if (selectedPlayerId != null &&
-              !latestPlayerIds.contains(selectedPlayerId)) {
-            _selectedPlayerId = null;
-          }
-        }
-      });
-
-      if (!mounted || requestSequence != _refreshRequestSequence) {
-        return false;
-      }
-
-      if (snapshot.aggregate.event.hasAdoptedSchedule) {
+      if (latest == null) {
+        setState(() {
+          _savedEvent = null;
+          _scheduleResponse = null;
+          _generatedScheduleId = null;
+          _selectedPlayerId = null;
+          _progressSummary = null;
+          _matchProgresses = const [];
+          _errorMessage = l10n.scheduleNotFoundMessage;
+        });
         _showMessage(
-          l10n.cannotRegenerateAdoptedScheduleMessage,
-          type: AppMessageType.warning,
+          l10n.scheduleNotFoundMessage,
+          type: AppMessageType.error,
         );
         return false;
       }
 
-      if (snapshot.generatedScheduleId != expectedGeneratedScheduleId) {
+      final latestGeneratedScheduleId =
+          latest.event.currentGeneratedScheduleId;
+      if (latest.event.hasAdoptedSchedule ||
+          latestGeneratedScheduleId != expectedGeneratedScheduleId) {
+        await _applyLatestScheduleState(latest);
+        if (!mounted) return false;
+
         _showMessage(
-          l10n.scheduleUpdatedReloadMessage,
-          type: AppMessageType.info,
+          latest.event.hasAdoptedSchedule
+              ? l10n.cannotRegenerateAdoptedScheduleMessage
+              : l10n.scheduleUpdatedReloadMessage,
+          type: latest.event.hasAdoptedSchedule
+              ? AppMessageType.warning
+              : AppMessageType.info,
         );
         return false;
       }
 
       return true;
-    } on DoublesScheduleNotFoundException {
-      if (!mounted || requestSequence != _refreshRequestSequence) {
-        return false;
-      }
-
-      setState(() {
-        _savedEvent = null;
-        _scheduleResponse = null;
-        _generatedScheduleId = null;
-        _selectedPlayerId = null;
-        _progressSummary = null;
-        _matchProgresses = const [];
-        _errorMessage = l10n.scheduleNotFoundMessage;
-      });
-      _showMessage(
-        l10n.scheduleNotFoundMessage,
-        type: AppMessageType.error,
-      );
-      return false;
     } catch (e) {
-      if (!mounted || requestSequence != _refreshRequestSequence) {
-        return false;
-      }
+      if (!mounted) return false;
 
       final message = l10n.reloadScheduleFailedMessage(e.toString());
       setState(() {
@@ -393,20 +370,24 @@ class _SchedulePageState extends State<SchedulePage> {
     }
   }
 
-  Future<SavedEventAggregate?> _refreshSavedEventForAction() async {
-    final l10n = AppLocalizations.of(context);
-    final savedEvent = _savedEvent;
-    if (savedEvent == null) return null;
+  Future<SavedEventAggregate?> _loadAndApplyLatestScheduleState() async {
+    final current = _savedEvent;
+    if (current == null) {
+      return null;
+    }
 
-    final aggregate =
-        await appEventRepository.findByPublicId(savedEvent.event.publicId);
+    final latest = await appEventRepository.findByPublicId(
+      current.event.publicId,
+    );
     if (!mounted) return null;
 
-    if (aggregate == null) {
+    if (latest == null) {
+      final l10n = AppLocalizations.of(context);
       setState(() {
         _savedEvent = null;
         _scheduleResponse = null;
         _generatedScheduleId = null;
+        _selectedPlayerId = null;
         _progressSummary = null;
         _matchProgresses = const [];
         _errorMessage = l10n.scheduleNotFoundMessage;
@@ -414,15 +395,96 @@ class _SchedulePageState extends State<SchedulePage> {
       return null;
     }
 
-    setState(() {
-      _savedEvent = aggregate;
-      _generatedScheduleId = aggregate.event.displayGeneratedScheduleId;
-    });
-
-    return aggregate;
+    await _applyLatestScheduleState(latest);
+    return latest;
   }
 
-  Future<SavedEventAggregate> _ensureSavedEvent() async {
+  Future<void> _applyLatestScheduleState(
+    SavedEventAggregate latest,
+  ) async {
+    final current = _savedEvent;
+    final latestGeneratedScheduleId =
+        latest.event.displayGeneratedScheduleId;
+    final scheduleChanged =
+        latestGeneratedScheduleId != _generatedScheduleId;
+
+    Map<String, dynamic>? nextScheduleResponse = _scheduleResponse;
+    if (scheduleChanged) {
+      nextScheduleResponse =
+          latestGeneratedScheduleId == null ||
+                  latestGeneratedScheduleId.isEmpty
+              ? null
+              : await _service.getById(latestGeneratedScheduleId);
+    } else if (latest.event.hasAdoptedSchedule &&
+        nextScheduleResponse != null) {
+      nextScheduleResponse = <String, dynamic>{
+        ...nextScheduleResponse,
+        'adopted': true,
+      };
+    }
+
+    if (!mounted) return;
+
+    final nextSavedEvent = current == null
+        ? latest
+        : mergeScheduleStateFragment(current, latest.event);
+    setState(() {
+      _savedEvent = nextSavedEvent;
+      _generatedScheduleId = latestGeneratedScheduleId;
+      _scheduleResponse = nextScheduleResponse;
+      if (scheduleChanged) {
+        _progressSummary = null;
+        _matchProgresses = const [];
+      }
+    });
+
+    try {
+      await _saveScheduleHistory(nextSavedEvent);
+    } catch (error, stackTrace) {
+      debugPrint('Failed to update local schedule history: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> _handleScheduleStateConflict({
+    required bool regenerating,
+  }) async {
+    final l10n = AppLocalizations.of(context);
+    try {
+      final latest = await _loadAndApplyLatestScheduleState();
+      if (!mounted) return;
+
+      if (latest == null) {
+        _showMessage(
+          l10n.scheduleNotFoundMessage,
+          type: AppMessageType.error,
+        );
+        return;
+      }
+
+      final isAdopted = latest.event.hasAdoptedSchedule;
+      _showMessage(
+        isAdopted
+            ? (regenerating
+                ? l10n.cannotRegenerateAdoptedScheduleMessage
+                : l10n.alreadyAdoptedScheduleMessage)
+            : l10n.scheduleUpdatedReloadMessage,
+        type: isAdopted && regenerating
+            ? AppMessageType.warning
+            : AppMessageType.info,
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      final message = l10n.reloadScheduleFailedMessage(e.toString());
+      setState(() {
+        _errorMessage = message;
+      });
+      _showMessage(message, type: AppMessageType.error);
+    }
+  }
+
+  Future<SavedEventAggregate> _ensureSavedEvent() async {  Future<SavedEventAggregate> _ensureSavedEvent() async {
     final existing = _savedEvent;
     if (existing != null) return existing;
 
@@ -503,7 +565,9 @@ class _SchedulePageState extends State<SchedulePage> {
     );
   }
 
-  Future<void> _generateSchedule() async {
+  Future<void> _generateSchedule({
+    String? expectedCurrentGeneratedScheduleId,
+  }) async {
     final l10n = AppLocalizations.of(context);
     if (_hasAdoptedSchedule) {
       _showMessage(
@@ -515,8 +579,7 @@ class _SchedulePageState extends State<SchedulePage> {
 
     _refreshRequestSequence += 1;
     setState(() {
-      _isLoading = true;
-      _isRefreshing = false;
+      _isGeneratingSchedule = true;
       _errorMessage = null;
     });
 
@@ -525,20 +588,26 @@ class _SchedulePageState extends State<SchedulePage> {
       final response = await _service.generateFromDraft(widget.draft);
       if (!mounted) return;
 
-      final generatedScheduleId = response['generated_schedule_id']?.toString();
-
-      var nextSavedEvent = savedEvent;
-      if (generatedScheduleId != null && generatedScheduleId.isNotEmpty) {
-        final updatedEvent =
-            await appEventRepository.updateCurrentGeneratedScheduleId(
-          publicId: savedEvent.event.publicId,
-          generatedScheduleId: generatedScheduleId,
-        );
-
-        nextSavedEvent = replaceSavedEventInAggregate(savedEvent, updatedEvent);
+      final generatedScheduleId =
+          response['generated_schedule_id']?.toString();
+      if (generatedScheduleId == null || generatedScheduleId.isEmpty) {
+        throw StateError('generated schedule id is missing');
       }
 
+      final updatedEvent =
+          await appEventRepository.updateCurrentGeneratedScheduleIdIfCurrent(
+        publicId: savedEvent.event.publicId,
+        expectedCurrentGeneratedScheduleId:
+            expectedCurrentGeneratedScheduleId,
+        generatedScheduleId: generatedScheduleId,
+      );
       if (!mounted) return;
+
+      final currentAtApply = _savedEvent ?? savedEvent;
+      final nextSavedEvent = mergeScheduleStateFragment(
+        currentAtApply,
+        updatedEvent,
+      );
 
       setState(() {
         _savedEvent = nextSavedEvent;
@@ -550,6 +619,8 @@ class _SchedulePageState extends State<SchedulePage> {
 
       _replaceBrowserUrlWithPublicId(nextSavedEvent.event.publicId);
       await _saveScheduleHistory(nextSavedEvent);
+    } on ScheduleStateConflictException {
+      await _handleScheduleStateConflict(regenerating: true);
     } catch (e) {
       if (!mounted) return;
 
@@ -559,13 +630,14 @@ class _SchedulePageState extends State<SchedulePage> {
     } finally {
       if (mounted) {
         setState(() {
+          _isGeneratingSchedule = false;
           _isLoading = false;
         });
       }
     }
   }
 
-  Future<bool> _refreshLatestAll({
+  Future<bool> _refreshLatestAll({  Future<bool> _refreshLatestAll({
     bool showSuccess = false,
     bool initialLoad = false,
   }) async {
@@ -691,6 +763,7 @@ class _SchedulePageState extends State<SchedulePage> {
   Future<void> _adoptSchedule() async {
     final l10n = AppLocalizations.of(context);
     final displayedGeneratedScheduleId = _generatedScheduleId;
+    final savedEvent = _savedEvent;
 
     if (displayedGeneratedScheduleId == null ||
         displayedGeneratedScheduleId.isEmpty) {
@@ -701,7 +774,19 @@ class _SchedulePageState extends State<SchedulePage> {
       return;
     }
 
-    if (_isAdopting || _hasAdoptedSchedule) return;
+    if (savedEvent == null) {
+      _showMessage(
+        l10n.adoptEventMissingMessage,
+        type: AppMessageType.error,
+      );
+      return;
+    }
+
+    if (_isAdopting ||
+        _isGeneratingSchedule ||
+        _hasAdoptedSchedule) {
+      return;
+    }
 
     setState(() {
       _isAdopting = true;
@@ -709,54 +794,27 @@ class _SchedulePageState extends State<SchedulePage> {
     });
 
     try {
-      final latestEvent = await _refreshSavedEventForAction();
-      if (!mounted) return;
-
-      if (latestEvent == null) {
-        _showMessage(
-          l10n.adoptEventMissingMessage,
-          type: AppMessageType.error,
-        );
-        return;
-      }
-
-      if (latestEvent.event.hasAdoptedSchedule) {
-        _showMessage(
-          l10n.alreadyAdoptedScheduleMessage,
-          type: AppMessageType.info,
-        );
-        await _reloadSchedule(showSuccess: false);
-        return;
-      }
-
-      final latestCurrentGeneratedScheduleId =
-          latestEvent.event.currentGeneratedScheduleId;
-
-      if (latestCurrentGeneratedScheduleId != displayedGeneratedScheduleId) {
-        _showMessage(
-          l10n.scheduleUpdatedReloadMessage,
-          type: AppMessageType.info,
-        );
-        await _reloadSchedule(showSuccess: false);
-        return;
-      }
-
-      await _service.adopt(displayedGeneratedScheduleId);
-
       final updatedEvent =
-          await appEventRepository.updateAdoptedGeneratedScheduleId(
-        publicId: latestEvent.event.publicId,
-        generatedScheduleId: displayedGeneratedScheduleId,
+          await appEventRepository.updateAdoptedGeneratedScheduleIdIfCurrent(
+        publicId: savedEvent.event.publicId,
+        expectedCurrentGeneratedScheduleId:
+            displayedGeneratedScheduleId,
       );
-
       if (!mounted) return;
 
-      final nextSavedEvent = replaceSavedEventInAggregate(
-        latestEvent,
+      final currentAtApply = _savedEvent ?? savedEvent;
+      final nextSavedEvent = mergeScheduleStateFragment(
+        currentAtApply,
         updatedEvent,
       );
       setState(() {
         _savedEvent = nextSavedEvent;
+        if (_scheduleResponse != null) {
+          _scheduleResponse = <String, dynamic>{
+            ..._scheduleResponse!,
+            'adopted': true,
+          };
+        }
       });
       await _saveScheduleHistory(nextSavedEvent);
 
@@ -764,7 +822,8 @@ class _SchedulePageState extends State<SchedulePage> {
         l10n.adoptScheduleCompletedMessage,
         type: AppMessageType.success,
       );
-      await _reloadSchedule(showSuccess: false);
+    } on ScheduleStateConflictException {
+      await _handleScheduleStateConflict(regenerating: false);
     } catch (e) {
       if (!mounted) return;
 
@@ -780,7 +839,7 @@ class _SchedulePageState extends State<SchedulePage> {
     }
   }
 
-  Future<void> _saveScheduleHistory(SavedEventAggregate aggregate) async {
+  Future<void> _saveScheduleHistory(SavedEventAggregate aggregate) async {  Future<void> _saveScheduleHistory(SavedEventAggregate aggregate) async {
     await LocalScheduleHistoryStore().upsert(
       buildLocalScheduleHistoryItem(
         aggregate,
@@ -895,6 +954,9 @@ class _SchedulePageState extends State<SchedulePage> {
           onDisplayUpdated: _handleDisplayUpdated,
           canRefresh: _generatedScheduleId != null &&
               !_isLoading &&
+              !_isGeneratingSchedule &&
+              !_isAdopting &&
+              !_isCheckingRegenerate &&
               !_isOpeningSharedDataDialog,
           isRefreshing: _isRefreshing,
           progressText: _progressText,
@@ -919,14 +981,11 @@ class _SchedulePageState extends State<SchedulePage> {
               canChangeCourtDisplay: _savedEvent != null &&
                   _eventCapabilitiesFor(_savedEvent).canEditCourtSettings &&
                   !_isRefreshing &&
-                  !_isCheckingRegenerate &&
                   !_isOpeningSharedDataDialog,
               onChangeCourtDisplay: _changeCourtDisplay,
               showActionButtons: true,
-              isLoading: _isLoading ||
-                  _isRefreshing ||
-                  _isCheckingRegenerate ||
-                  _isOpeningSharedDataDialog,
+              isGenerating:
+                  _isGeneratingSchedule || _isCheckingRegenerate,
               isAdopting: _isAdopting,
               generateButtonLabel: l10n.regenerateButton,
               canAdopt:
@@ -939,7 +998,7 @@ class _SchedulePageState extends State<SchedulePage> {
         const SizedBox(height: 12),
         ScheduleSectionCard(
           title: l10n.matchTableTitle,
-          child: _isLoading
+          child: _isLoading && _scheduleResponse == null
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.all(4),
@@ -977,17 +1036,18 @@ class _SchedulePageState extends State<SchedulePage> {
     final showInitialLoading = _isLoading && _scheduleResponse == null;
     final canRefresh = _generatedScheduleId != null &&
         !_isLoading &&
+        !_isGeneratingSchedule &&
+        !_isAdopting &&
+        !_isCheckingRegenerate &&
         !_isOpeningSharedDataDialog;
     final capabilities = _eventCapabilitiesFor(_savedEvent);
     final canEditEventInfo = _savedEvent != null &&
         capabilities.canEditDisplay &&
         !_isRefreshing &&
-        !_isCheckingRegenerate &&
         !_isOpeningSharedDataDialog;
     final canEditCourtDisplay = _savedEvent != null &&
         capabilities.canEditCourtSettings &&
         !_isRefreshing &&
-        !_isCheckingRegenerate &&
         !_isOpeningSharedDataDialog;
 
     return Scaffold(
@@ -1030,6 +1090,8 @@ class _SchedulePageState extends State<SchedulePage> {
         onChangeCourtDisplay: canEditCourtDisplay ? _changeCourtDisplay : null,
         onRegenerate: !_hasAdoptedSchedule &&
                 !_isLoading &&
+                !_isGeneratingSchedule &&
+                !_isRefreshing &&
                 !_isAdopting &&
                 !_isCheckingRegenerate
             ? _requestGenerateSchedule
