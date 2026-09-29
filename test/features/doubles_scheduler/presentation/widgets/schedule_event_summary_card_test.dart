@@ -251,7 +251,9 @@ void main() {
     expect(repository.findCallCount, 1);
     expect(updatedResult, isNotNull);
     expect(updatedResult!.event.title, '更新後イベント');
-    expect(find.text('更新後イベント'), findsOneWidget);
+
+    final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
+    expect(tooltip.message, '更新後イベント');
   });
 
   testWidgets('can delegate event editing without showing the inline action',
