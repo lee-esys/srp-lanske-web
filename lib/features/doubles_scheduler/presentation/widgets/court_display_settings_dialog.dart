@@ -90,103 +90,103 @@ class _CourtDisplaySettingsDialogState
       canPop: !_isSaving,
       child: AlertDialog(
         title: Text(l10n.displaySettingsDialogTitle),
-      content: SingleChildScrollView(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.courtDisplaySectionTitle,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _buildPresetChip(
-                    label: l10n.courtDisplayPresetNumbers,
-                    labels: _numberPresetLabels(),
-                  ),
-                  _buildPresetChip(
-                    label: l10n.courtDisplayPresetLetters,
-                    labels: _letterPresetLabels(),
-                  ),
-                  _buildPresetChip(
-                    label: l10n.courtDisplayPresetLeftRight,
-                    labels: _leftRightPresetLabels(context),
-                  ),
-                  _buildPresetChip(
-                    label: l10n.courtDisplayPresetFrontBack,
-                    labels: _frontBackPresetLabels(context),
-                  ),
-                  ChoiceChip(
-                    label: Text(l10n.courtDisplayPresetCustom),
-                    selected: _isCustomMode,
-                    onSelected: _isSaving
-                        ? null
-                        : (_) {
-                            setState(() {
-                              _isCustomMode = true;
-                              _message = null;
-                              _messageIsError = false;
-                            });
-                          },
+        content: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.courtDisplaySectionTitle,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildPresetChip(
+                      label: l10n.courtDisplayPresetNumbers,
+                      labels: _numberPresetLabels(),
+                    ),
+                    _buildPresetChip(
+                      label: l10n.courtDisplayPresetLetters,
+                      labels: _letterPresetLabels(),
+                    ),
+                    _buildPresetChip(
+                      label: l10n.courtDisplayPresetLeftRight,
+                      labels: _leftRightPresetLabels(context),
+                    ),
+                    _buildPresetChip(
+                      label: l10n.courtDisplayPresetFrontBack,
+                      labels: _frontBackPresetLabels(context),
+                    ),
+                    ChoiceChip(
+                      label: Text(l10n.courtDisplayPresetCustom),
+                      selected: _isCustomMode,
+                      onSelected: _isSaving
+                          ? null
+                          : (_) {
+                              setState(() {
+                                _isCustomMode = true;
+                                _message = null;
+                                _messageIsError = false;
+                              });
+                            },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: List.generate(_courtCount, (index) {
+                    final courtNumber = index + 1;
+
+                    return SizedBox(
+                      width: 96,
+                      child: TextField(
+                        controller: _controllers[index],
+                        enabled: _isCustomMode && !_isSaving,
+                        textAlign: TextAlign.center,
+                        textInputAction: TextInputAction.next,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(1),
+                        ],
+                        decoration: InputDecoration(
+                          isDense: true,
+                          labelText: l10n.courtDisplayInputLabel(courtNumber),
+                          border: const OutlineInputBorder(),
+                        ),
+                        onChanged: (_) {
+                          if (_message == null) return;
+
+                          setState(() {
+                            _message = null;
+                            _messageIsError = false;
+                          });
+                        },
+                      ),
+                    );
+                  }),
+                ),
+                if (_message != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    _message!,
+                    style: TextStyle(
+                      color: _messageIsError
+                          ? Theme.of(context).colorScheme.error
+                          : Theme.of(context).colorScheme.primary,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: List.generate(_courtCount, (index) {
-                  final courtNumber = index + 1;
-
-                  return SizedBox(
-                    width: 96,
-                    child: TextField(
-                      controller: _controllers[index],
-                      enabled: _isCustomMode && !_isSaving,
-                      textAlign: TextAlign.center,
-                      textInputAction: TextInputAction.next,
-                      inputFormatters: [
-                        LengthLimitingTextInputFormatter(1),
-                      ],
-                      decoration: InputDecoration(
-                        isDense: true,
-                        labelText: l10n.courtDisplayInputLabel(courtNumber),
-                        border: const OutlineInputBorder(),
-                      ),
-                      onChanged: (_) {
-                        if (_message == null) return;
-
-                        setState(() {
-                          _message = null;
-                          _messageIsError = false;
-                        });
-                      },
-                    ),
-                  );
-                }),
-              ),
-              if (_message != null) ...[
-                const SizedBox(height: 12),
-                Text(
-                  _message!,
-                  style: TextStyle(
-                    color: _messageIsError
-                        ? Theme.of(context).colorScheme.error
-                        : Theme.of(context).colorScheme.primary,
-                    fontSize: 13,
-                  ),
-                ),
               ],
-            ],
+            ),
           ),
         ),
-      ),
         actions: [
           TextButton(
             onPressed: _isSaving ? null : () => Navigator.pop(context),

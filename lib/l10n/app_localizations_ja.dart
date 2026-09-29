@@ -315,6 +315,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get courtDisplayDuplicateError => 'コート表示が重複しています';
 
   @override
+  String get courtDisplayConflictMessage =>
+      '別の端末でコート表示が更新されていました。入力内容は保持しています。最新情報を確認して、もう一度保存してください。';
+
+  @override
+  String get courtDisplayLatestLoadFailedMessage =>
+      '最新のコート表示設定を取得できませんでした。画面を更新してから、もう一度お試しください。';
+
+  @override
+  String courtDisplaySaveFailedMessage(String error) {
+    return 'コート表示設定を保存できませんでした: $error';
+  }
+
+  @override
   String get confirmButton => '決定';
 
   @override

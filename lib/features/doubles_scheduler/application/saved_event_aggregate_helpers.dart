@@ -14,7 +14,6 @@ SavedEventAggregate replaceSavedEventInAggregate(
   );
 }
 
-
 SavedEventAggregate mergeDisplayFragment(
   SavedEventAggregate current,
   SavedEventAggregate updated,
