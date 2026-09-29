@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/widgets/schedule_rounds_view_impl.dart'
     as impl;
+import 'package:srp_lanske/features/schedule_progress/domain/schedule_progress_models.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
 void main() {
@@ -44,6 +45,31 @@ void main() {
     expect(find.text('休憩:'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('keeps supplied progress across unrelated widget updates', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const _ProgressTestApp(selectedPlayerId: null),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('match-status-completed')),
+      findsOneWidget,
+    );
+
+    await tester.pumpWidget(
+      const _ProgressTestApp(selectedPlayerId: 'player-1'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('match-status-completed')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
 
 class _TestApp extends StatelessWidget {
@@ -68,6 +94,51 @@ class _TestApp extends StatelessWidget {
     );
   }
 }
+
+class _ProgressTestApp extends StatelessWidget {
+  const _ProgressTestApp({required this.selectedPlayerId});
+
+  final String? selectedPlayerId;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      locale: const Locale('ja'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: impl.ScheduleRoundsView(
+            scheduleResponse: _scheduleResponse,
+            playerNameById: _playerNameById,
+            courtCount: 2,
+            selectedPlayerId: selectedPlayerId,
+            courtLabelByNumber: const <int, String>{1: 'A', 2: 'B'},
+            matchProgresses: <ScheduleMatchProgress>[_completedMatch],
+            canEditMatches: true,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+final _completedMatch = ScheduleMatchProgress(
+  schemaVersion: ScheduleMatchProgress.currentSchemaVersion,
+  scheduleType: ScheduleProgressScheduleType.doubles,
+  generatedScheduleId: 'generated-1',
+  roundNo: 1,
+  courtNo: 1,
+  matchNo: 1,
+  status: ScheduleMatchStatus.completed,
+  result: null,
+  note: '',
+  startedAt: DateTime.utc(2026, 9, 29, 1),
+  finishedAt: DateTime.utc(2026, 9, 29, 1, 10),
+  createdAt: DateTime.utc(2026, 9, 29, 1),
+  updatedAt: DateTime.utc(2026, 9, 29, 1, 10),
+  revision: 1,
+);
 
 const _playerNameById = <String, String>{
   'player-1': '参加者1',
