@@ -1812,6 +1812,36 @@ abstract class AppLocalizations {
   /// **'最新の状態に戻すと、保存していない入力内容は破棄されます。'**
   String get doublesMatchRestoreLatestConfirmBody;
 
+  /// Button label for refreshing the latest doubles match information.
+  ///
+  /// In ja, this message translates to:
+  /// **'最新の情報に更新'**
+  String get doublesMatchRefreshLatestButton;
+
+  /// Dialog title for refreshing the latest doubles match information while changes are unsaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'未保存の変更を破棄して最新の情報に更新しますか？'**
+  String get doublesMatchRefreshLatestConfirmTitle;
+
+  /// Dialog body for refreshing the latest doubles match information while changes are unsaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'最新の情報に更新すると、保存していない入力内容は破棄されます。'**
+  String get doublesMatchRefreshLatestConfirmBody;
+
+  /// Compact status label shown while doubles match information is being saved.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存中…'**
+  String get doublesMatchSavingLabel;
+
+  /// Compact status label showing the latest successful doubles match synchronization time.
+  ///
+  /// In ja, this message translates to:
+  /// **'同期済み {time}'**
+  String doublesMatchSyncedAtLabel(String time);
+
   /// Button label for discarding doubles match changes and moving to another match.
   ///
   /// In ja, this message translates to:

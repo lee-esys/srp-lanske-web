@@ -1024,6 +1024,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'Restoring the latest state will discard unsaved input.';
 
   @override
+  String get doublesMatchRefreshLatestButton => 'Refresh latest information';
+
+  @override
+  String get doublesMatchRefreshLatestConfirmTitle =>
+      'Discard unsaved changes and refresh the latest information?';
+
+  @override
+  String get doublesMatchRefreshLatestConfirmBody =>
+      'Refreshing the latest information will discard unsaved input.';
+
+  @override
+  String get doublesMatchSavingLabel => 'Saving…';
+
+  @override
+  String doublesMatchSyncedAtLabel(String time) {
+    return 'Synced $time';
+  }
+
+  @override
   String get doublesMatchDiscardAndMoveButton => 'Move without saving';
 
   @override

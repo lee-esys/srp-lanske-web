@@ -988,6 +988,25 @@ class AppLocalizationsJa extends AppLocalizations {
       '最新の状態に戻すと、保存していない入力内容は破棄されます。';
 
   @override
+  String get doublesMatchRefreshLatestButton => '最新の情報に更新';
+
+  @override
+  String get doublesMatchRefreshLatestConfirmTitle =>
+      '未保存の変更を破棄して最新の情報に更新しますか？';
+
+  @override
+  String get doublesMatchRefreshLatestConfirmBody =>
+      '最新の情報に更新すると、保存していない入力内容は破棄されます。';
+
+  @override
+  String get doublesMatchSavingLabel => '保存中…';
+
+  @override
+  String doublesMatchSyncedAtLabel(String time) {
+    return '同期済み $time';
+  }
+
+  @override
   String get doublesMatchDiscardAndMoveButton => '保存せず移動';
 
   @override

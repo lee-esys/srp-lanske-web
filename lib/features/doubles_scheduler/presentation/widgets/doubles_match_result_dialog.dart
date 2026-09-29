@@ -681,7 +681,8 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
             children: [
               IconButton.outlined(
                 key: const Key('doubles-match-previous-button'),
-                onPressed: !_isActionBlocked && hasPrevious ? () => _move(-1) : null,
+                onPressed:
+                    !_isActionBlocked && hasPrevious ? () => _move(-1) : null,
                 icon: const Icon(Icons.arrow_back),
               ),
               const SizedBox(width: 12),
@@ -1069,4 +1070,3 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     );
   }
 }
-
