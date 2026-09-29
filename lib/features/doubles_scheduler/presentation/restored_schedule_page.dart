@@ -12,7 +12,6 @@ import 'package:srp_lanske/shared/utils/browser_url.dart';
 
 import '../application/doubles_schedule_refresh_service.dart';
 import '../application/event_capabilities.dart';
-import '../application/event_repository.dart';
 import '../application/generated_schedule_service.dart';
 import '../application/local_schedule_history_mapper.dart';
 import '../application/saved_event_aggregate_helpers.dart';
