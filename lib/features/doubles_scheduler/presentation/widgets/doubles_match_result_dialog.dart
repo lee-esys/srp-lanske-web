@@ -983,6 +983,56 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     return const SizedBox.shrink();
   }
 
+  Widget _buildDialogActions(AppLocalizations l10n) {
+    final refreshButton = TextButton(
+      onPressed: _isActionBlocked || widget.onLoadMatch == null
+          ? null
+          : _refreshLatest,
+      child: Text(l10n.doublesMatchRefreshLatestButton),
+    );
+    final closeButton = TextButton(
+      onPressed: _isActionBlocked ? null : _close,
+      child: Text(l10n.closeButton),
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 360) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: _buildSaveStatus(l10n),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  refreshButton,
+                  closeButton,
+                ],
+              ),
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: _buildSaveStatus(l10n),
+              ),
+            ),
+            refreshButton,
+            closeButton,
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -1052,26 +1102,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
         actions: [
           SizedBox(
             width: double.infinity,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: _buildSaveStatus(l10n),
-                  ),
-                ),
-                TextButton(
-                  onPressed: _isActionBlocked || widget.onLoadMatch == null
-                      ? null
-                      : _refreshLatest,
-                  child: Text(l10n.doublesMatchRefreshLatestButton),
-                ),
-                TextButton(
-                  onPressed: _isActionBlocked ? null : _close,
-                  child: Text(l10n.closeButton),
-                ),
-              ],
-            ),
+            child: _buildDialogActions(l10n),
           ),
         ],
       ),
