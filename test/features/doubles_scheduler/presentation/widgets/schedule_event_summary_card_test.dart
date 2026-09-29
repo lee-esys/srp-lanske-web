@@ -246,14 +246,20 @@ void main() {
     final fields = find.byType(TextFormField);
     await tester.enterText(fields.at(0), '更新後イベント');
     await tester.tap(find.widgetWithText(FilledButton, '保存'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
+    expect(tester.takeException(), isNull);
+    expect(find.byType(AlertDialog), findsNothing);
     expect(repository.findCallCount, 1);
     expect(updatedResult, isNotNull);
     expect(updatedResult!.event.title, '更新後イベント');
 
-    final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
-    expect(tooltip.message, '更新後イベント');
+    final titleTooltip = find.byWidgetPredicate(
+      (widget) =>
+          widget is Tooltip && widget.message == '更新後イベント',
+    );
+    expect(titleTooltip, findsOneWidget);
   });
 
   testWidgets('can delegate event editing without showing the inline action',
