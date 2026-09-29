@@ -1045,25 +1045,33 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
                     border: const OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: _buildSaveStatus(l10n),
-                ),
               ],
             ),
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: _isActionBlocked || widget.onLoadMatch == null
-                ? null
-                : _refreshLatest,
-            child: Text(l10n.doublesMatchRefreshLatestButton),
-          ),
-          TextButton(
-            onPressed: _isActionBlocked ? null : _close,
-            child: Text(l10n.closeButton),
+          SizedBox(
+            width: double.infinity,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: _buildSaveStatus(l10n),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _isActionBlocked || widget.onLoadMatch == null
+                      ? null
+                      : _refreshLatest,
+                  child: Text(l10n.doublesMatchRefreshLatestButton),
+                ),
+                TextButton(
+                  onPressed: _isActionBlocked ? null : _close,
+                  child: Text(l10n.closeButton),
+                ),
+              ],
+            ),
           ),
         ],
       ),
