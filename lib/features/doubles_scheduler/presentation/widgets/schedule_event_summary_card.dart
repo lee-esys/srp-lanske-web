@@ -69,7 +69,7 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
   }
 
   SavedEventAggregate? get _displayAggregate {
-    return widget.aggregate ?? _loadedAggregate;
+    return _loadedAggregate ?? widget.aggregate;
   }
 
   @override
@@ -115,14 +115,16 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
     return urlPublicId;
   }
 
-  Future<SavedEventAggregate?> _loadLatestAggregate() async {
+  Future<SavedEventAggregate?> _loadLatestAggregate({
+    bool updateDisplay = true,
+  }) async {
     final publicId = _resolvePublicId();
     if (publicId == null) return null;
 
     final latest = await _repository.findByPublicId(publicId);
     if (!mounted) return latest;
 
-    if (latest != null) {
+    if (latest != null && updateDisplay) {
       setState(() {
         _loadedAggregate = latest;
       });
@@ -140,7 +142,7 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
     });
 
     try {
-      final latest = await _loadLatestAggregate();
+      final latest = await _loadLatestAggregate(updateDisplay: false);
       if (!mounted || !widget.canEditEventInfo) return;
 
       if (latest == null) {
