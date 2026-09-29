@@ -34,7 +34,7 @@ class ScheduleEventSummaryCard extends StatefulWidget {
     this.repository,
     this.onShareUrl,
     this.onRefresh,
-    this.onRefreshForEdit,
+    this.onDisplayUpdated,
     this.canRefresh = true,
     this.isRefreshing = false,
     this.progressText,
@@ -47,7 +47,7 @@ class ScheduleEventSummaryCard extends StatefulWidget {
   final EventRepository? repository;
   final VoidCallback? onShareUrl;
   final Future<void> Function()? onRefresh;
-  final Future<bool> Function()? onRefreshForEdit;
+  final Future<void> Function(SavedEventAggregate updated)? onDisplayUpdated;
   final bool canRefresh;
   final bool isRefreshing;
   final String? progressText;
@@ -77,11 +77,13 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
     super.initState();
     _loadedAggregate = widget.aggregate;
     widget.controller?.attach(_editEventInfo);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _loadLatestAggregate();
-      }
-    });
+    if (widget.aggregate == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _loadLatestAggregate();
+        }
+      });
+    }
   }
 
   @override
@@ -128,33 +130,16 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
     return latest;
   }
 
-  Future<bool> _refreshParentForEdit() async {
-    final refreshForEdit = widget.onRefreshForEdit;
-    if (refreshForEdit != null) {
-      return refreshForEdit();
-    }
-
-    final refresh = widget.onRefresh;
-    if (refresh != null) {
-      await refresh();
-    }
-    return true;
-  }
-
   Future<void> _editEventInfo() async {
     if (_isEditingEventInfo || !widget.canEditEventInfo) return;
 
     final l10n = AppLocalizations.of(context);
-    var dialogOpened = false;
 
     setState(() {
       _isEditingEventInfo = true;
     });
 
     try {
-      final refreshed = await _refreshParentForEdit();
-      if (!mounted || !refreshed || !widget.canEditEventInfo) return;
-
       final latest = await _loadLatestAggregate();
       if (!mounted || !widget.canEditEventInfo) return;
 
@@ -167,7 +152,6 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
         return;
       }
 
-      dialogOpened = true;
       final updated = await showDialog<SavedEventAggregate>(
         context: context,
         barrierDismissible: false,
@@ -184,6 +168,9 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
       setState(() {
         _loadedAggregate = updated;
       });
+      await widget.onDisplayUpdated?.call(updated);
+      if (!mounted) return;
+
       AppSnackBar.show(
         context,
         message: l10n.doublesEventInfoSavedMessage,
@@ -197,10 +184,6 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
         type: AppMessageType.error,
       );
     } finally {
-      if (mounted && dialogOpened) {
-        await _refreshParentForEdit();
-        await _loadLatestAggregate();
-      }
       if (mounted) {
         setState(() {
           _isEditingEventInfo = false;
@@ -382,8 +365,7 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
         widget.canEditEventInfo &&
         event != null &&
         !_isEditingEventInfo &&
-        !widget.isRefreshing &&
-        (widget.onRefreshForEdit != null || widget.onRefresh != null);
+        !widget.isRefreshing;
 
     return Card(
       child: Padding(
