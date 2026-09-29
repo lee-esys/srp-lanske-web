@@ -86,10 +86,21 @@ void main() {
     expect(find.text('処理中…'), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-    await tester.tap(find.text('処理中…'));
-    await tester.tap(find.text('この対戦表で確定'));
-    await tester.pump();
+    final generateButton = tester.widget<FilledButton>(
+      find.ancestor(
+        of: find.text('処理中…'),
+        matching: find.byType(FilledButton),
+      ),
+    );
+    final adoptButton = tester.widget<FilledButton>(
+      find.ancestor(
+        of: find.text('この対戦表で確定'),
+        matching: find.byType(FilledButton),
+      ),
+    );
 
+    expect(generateButton.onPressed, isNull);
+    expect(adoptButton.onPressed, isNull);
     expect(regenerateCount, 0);
     expect(adoptCount, 0);
   });
