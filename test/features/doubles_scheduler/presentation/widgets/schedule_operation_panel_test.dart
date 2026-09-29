@@ -21,7 +21,7 @@ void main() {
             canChangeCourtDisplay: true,
             onChangeCourtDisplay: () {},
             showActionButtons: true,
-            isLoading: false,
+            isGenerating: false,
             isAdopting: false,
             generateButtonLabel: '再生成',
             canAdopt: true,
