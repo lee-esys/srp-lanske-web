@@ -28,8 +28,16 @@ class ScheduleActionButtons extends StatelessWidget {
       children: [
         FilledButton.tonalIcon(
           onPressed: isGenerating ? null : onGenerate,
-          icon: const Icon(Icons.refresh),
-          label: Text(generateButtonLabel),
+          icon: isGenerating
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.refresh),
+          label: Text(
+            isGenerating ? l10n.processingButton : generateButtonLabel,
+          ),
         ),
         const SizedBox(width: 12),
         FilledButton.icon(
