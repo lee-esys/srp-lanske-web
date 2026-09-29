@@ -48,4 +48,49 @@ void main() {
     expect(regenerateCount, 1);
     expect(adoptCount, 0);
   });
+
+
+  testWidgets('keeps the panel visible while generation is in progress',
+      (tester) async {
+    var regenerateCount = 0;
+    var adoptCount = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ja'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: ScheduleOperationPanel(
+            courtDisplaySummary: '1 / 2',
+            canChangeCourtDisplay: true,
+            onChangeCourtDisplay: () {},
+            showActionButtons: true,
+            isGenerating: true,
+            isAdopting: false,
+            generateButtonLabel: '再生成',
+            canAdopt: true,
+            onGenerate: () {
+              regenerateCount += 1;
+            },
+            onAdopt: () {
+              adoptCount += 1;
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('コート表示: 1 / 2'), findsOneWidget);
+    expect(find.text('処理中...'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    await tester.tap(find.text('処理中...'));
+    await tester.tap(find.text('この対戦表で確定'));
+    await tester.pump();
+
+    expect(regenerateCount, 0);
+    expect(adoptCount, 0);
+  });
 }
