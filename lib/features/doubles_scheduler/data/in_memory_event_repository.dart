@@ -144,6 +144,29 @@ class InMemoryEventRepository implements EventRepository {
   }
 
   @override
+  Future<SavedEvent> updateCurrentGeneratedScheduleIdIfCurrent({
+    required String publicId,
+    required String? expectedCurrentGeneratedScheduleId,
+    required String generatedScheduleId,
+  }) async {
+    final event = _requireEventByPublicId(publicId);
+    _ensureScheduleStateForGenerate(
+      event,
+      expectedCurrentGeneratedScheduleId:
+          expectedCurrentGeneratedScheduleId,
+    );
+
+    final updated = event.copyWith(
+      status: SavedEventStatus.generated,
+      currentGeneratedScheduleId: generatedScheduleId,
+      revision: event.revision + 1,
+      updatedAt: _clock(),
+    );
+    _eventsById[event.id] = updated;
+    return updated;
+  }
+
+  @override
   Future<SavedEvent> updateAdoptedGeneratedScheduleId({
     required String publicId,
     required String generatedScheduleId,
@@ -160,6 +183,31 @@ class InMemoryEventRepository implements EventRepository {
       updatedAt: now,
     );
     _eventsById[eventId] = updated;
+    return updated;
+  }
+
+  @override
+  Future<SavedEvent> updateAdoptedGeneratedScheduleIdIfCurrent({
+    required String publicId,
+    required String expectedCurrentGeneratedScheduleId,
+  }) async {
+    final event = _requireEventByPublicId(publicId);
+    _ensureScheduleStateForAdopt(
+      event,
+      expectedCurrentGeneratedScheduleId:
+          expectedCurrentGeneratedScheduleId,
+    );
+
+    final now = _clock();
+    final updated = event.copyWith(
+      status: SavedEventStatus.adopted,
+      currentGeneratedScheduleId: expectedCurrentGeneratedScheduleId,
+      adoptedGeneratedScheduleId: expectedCurrentGeneratedScheduleId,
+      adoptedAt: now,
+      revision: event.revision + 1,
+      updatedAt: now,
+    );
+    _eventsById[event.id] = updated;
     return updated;
   }
 
@@ -411,6 +459,50 @@ class InMemoryEventRepository implements EventRepository {
         actualRevision: actualRevision,
       );
     }
+  }
+
+  void _ensureScheduleStateForGenerate(
+    SavedEvent event, {
+    required String? expectedCurrentGeneratedScheduleId,
+  }) {
+    if (event.hasAdoptedSchedule ||
+        event.currentGeneratedScheduleId !=
+            expectedCurrentGeneratedScheduleId) {
+      _throwScheduleStateConflict(
+        event,
+        expectedCurrentGeneratedScheduleId:
+            expectedCurrentGeneratedScheduleId,
+      );
+    }
+  }
+
+  void _ensureScheduleStateForAdopt(
+    SavedEvent event, {
+    required String expectedCurrentGeneratedScheduleId,
+  }) {
+    if (event.hasAdoptedSchedule ||
+        event.currentGeneratedScheduleId !=
+            expectedCurrentGeneratedScheduleId) {
+      _throwScheduleStateConflict(
+        event,
+        expectedCurrentGeneratedScheduleId:
+            expectedCurrentGeneratedScheduleId,
+      );
+    }
+  }
+
+  Never _throwScheduleStateConflict(
+    SavedEvent event, {
+    required String? expectedCurrentGeneratedScheduleId,
+  }) {
+    throw ScheduleStateConflictException(
+      eventId: event.id,
+      expectedCurrentGeneratedScheduleId:
+          expectedCurrentGeneratedScheduleId,
+      actualCurrentGeneratedScheduleId: event.currentGeneratedScheduleId,
+      actualAdoptedGeneratedScheduleId: event.adoptedGeneratedScheduleId,
+      actualStatus: event.status,
+    );
   }
 
   void _ensurePlayerIdsMatch(
