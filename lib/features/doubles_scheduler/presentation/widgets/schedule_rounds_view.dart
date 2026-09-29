@@ -399,12 +399,24 @@ class _ScheduleRoundsViewState extends State<ScheduleRoundsView> {
       throw StateError('displayed doubles schedule changed while editing');
     }
 
-    return _progressService.save(
+    final saved = await _progressService.save(
       scope: scope,
       current: current,
       input: input,
       totalMatchCount: totalMatchCount,
     );
+
+    final nextMatches = <ScheduleMatchProgress>[
+      for (final match in widget.matchProgresses)
+        if (match.key.value != saved.match.key.value) match,
+      saved.match,
+    ];
+    widget.onProgressChanged?.call(
+      saved.summary,
+      List<ScheduleMatchProgress>.unmodifiable(nextMatches),
+    );
+
+    return saved;
   }
 
   @override
