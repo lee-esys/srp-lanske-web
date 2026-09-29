@@ -146,6 +146,43 @@ class JsonEventRepository implements EventRepository {
   }
 
   @override
+  Future<SavedEvent> updateCurrentGeneratedScheduleIdIfCurrent({
+    required String publicId,
+    required String? expectedCurrentGeneratedScheduleId,
+    required String generatedScheduleId,
+  }) async {
+    final updatedData = await _store.updateByPublicId(
+      publicId: publicId,
+      update: (currentData) {
+        final current = SavedEventAggregate.fromJson(currentData);
+        _ensurePublicId(current, publicId);
+        _ensureScheduleStateForGenerate(
+          current.event,
+          expectedCurrentGeneratedScheduleId:
+              expectedCurrentGeneratedScheduleId,
+        );
+
+        if (current.event.status == SavedEventStatus.generated &&
+            current.event.currentGeneratedScheduleId == generatedScheduleId) {
+          return SavedEventJsonUpdate.noOp(currentData);
+        }
+
+        return _buildEventFieldsUpdate(
+          currentData,
+          <String, dynamic>{
+            'status': SavedEventStatus.generated.name,
+            'currentGeneratedScheduleId': generatedScheduleId,
+            'revision': current.event.revision + 1,
+            'updatedAt': _dateTimeToJson(_clock()),
+          },
+        );
+      },
+    );
+
+    return _requireUpdatedAggregate(updatedData, publicId).event;
+  }
+
+  @override
   Future<SavedEvent> updateAdoptedGeneratedScheduleId({
     required String publicId,
     required String generatedScheduleId,
@@ -163,6 +200,42 @@ class JsonEventRepository implements EventRepository {
             'status': SavedEventStatus.adopted.name,
             'currentGeneratedScheduleId': generatedScheduleId,
             'adoptedGeneratedScheduleId': generatedScheduleId,
+            'adoptedAt': nowJson,
+            'revision': current.event.revision + 1,
+            'updatedAt': nowJson,
+          },
+        );
+      },
+    );
+
+    return _requireUpdatedAggregate(updatedData, publicId).event;
+  }
+
+  @override
+  Future<SavedEvent> updateAdoptedGeneratedScheduleIdIfCurrent({
+    required String publicId,
+    required String expectedCurrentGeneratedScheduleId,
+  }) async {
+    final updatedData = await _store.updateByPublicId(
+      publicId: publicId,
+      update: (currentData) {
+        final current = SavedEventAggregate.fromJson(currentData);
+        _ensurePublicId(current, publicId);
+        _ensureScheduleStateForAdopt(
+          current.event,
+          expectedCurrentGeneratedScheduleId:
+              expectedCurrentGeneratedScheduleId,
+        );
+
+        final nowJson = _dateTimeToJson(_clock());
+        return _buildEventFieldsUpdate(
+          currentData,
+          <String, dynamic>{
+            'status': SavedEventStatus.adopted.name,
+            'currentGeneratedScheduleId':
+                expectedCurrentGeneratedScheduleId,
+            'adoptedGeneratedScheduleId':
+                expectedCurrentGeneratedScheduleId,
             'adoptedAt': nowJson,
             'revision': current.event.revision + 1,
             'updatedAt': nowJson,
@@ -490,6 +563,50 @@ class JsonEventRepository implements EventRepository {
         actualRevision: actualRevision,
       );
     }
+  }
+
+  void _ensureScheduleStateForGenerate(
+    SavedEvent event, {
+    required String? expectedCurrentGeneratedScheduleId,
+  }) {
+    if (event.hasAdoptedSchedule ||
+        event.currentGeneratedScheduleId !=
+            expectedCurrentGeneratedScheduleId) {
+      _throwScheduleStateConflict(
+        event,
+        expectedCurrentGeneratedScheduleId:
+            expectedCurrentGeneratedScheduleId,
+      );
+    }
+  }
+
+  void _ensureScheduleStateForAdopt(
+    SavedEvent event, {
+    required String expectedCurrentGeneratedScheduleId,
+  }) {
+    if (event.hasAdoptedSchedule ||
+        event.currentGeneratedScheduleId !=
+            expectedCurrentGeneratedScheduleId) {
+      _throwScheduleStateConflict(
+        event,
+        expectedCurrentGeneratedScheduleId:
+            expectedCurrentGeneratedScheduleId,
+      );
+    }
+  }
+
+  Never _throwScheduleStateConflict(
+    SavedEvent event, {
+    required String? expectedCurrentGeneratedScheduleId,
+  }) {
+    throw ScheduleStateConflictException(
+      eventId: event.id,
+      expectedCurrentGeneratedScheduleId:
+          expectedCurrentGeneratedScheduleId,
+      actualCurrentGeneratedScheduleId: event.currentGeneratedScheduleId,
+      actualAdoptedGeneratedScheduleId: event.adoptedGeneratedScheduleId,
+      actualStatus: event.status,
+    );
   }
 
   void _ensurePlayerIdsMatch(
