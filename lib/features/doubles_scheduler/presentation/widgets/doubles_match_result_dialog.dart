@@ -160,7 +160,7 @@ class _DoublesMatchResultDialogState extends State<DoublesMatchResultDialog> {
     _scheduleAutoSave();
   }
 
-  void _applyProgress(ScheduleMatchProgress progress) {  void _applyProgress(ScheduleMatchProgress progress) {
+  void _applyProgress(ScheduleMatchProgress progress) {
     final input = buildDoublesMatchProgressInput(progress);
     _baselineProgress = progress;
     _status = input.status;
