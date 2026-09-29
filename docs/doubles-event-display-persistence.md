@@ -149,6 +149,8 @@ no-op判定後にcourt settings revisionを確認し、一致した場合だけc
 
 対戦表作成直後の画面と共有URLから復元した画面は、同じイベント情報編集UIを利用する。
 
+### display fragment
+
 ダイアログでは次をまとめて編集する。
 
 - イベントタイトル
@@ -157,13 +159,45 @@ no-op判定後にcourt settings revisionを確認し、一致した場合だけc
 
 操作時は次の順序とする。
 
-1. ダイアログを開く前に最新情報を取得する
+1. ダイアログを開く前に最新aggregateを1回取得する
 2. 最新aggregateの `revisions.display` を保存基準としてダイアログを開く
 3. 保存成功時だけダイアログを閉じる
-4. 競合時は入力内容を保持したまま最新情報を取得する
+4. 競合時は入力内容を保持したまま最新aggregateを取得する
 5. 最新のdisplay revisionへ保存基準を更新し、利用者が確認・再保存できるようにする
+6. 保存成功結果のdisplay fragmentを親画面へ直接反映する
 
-最新情報の取得範囲や保存中の画面挙動は、更新挙動を扱う別Issueで継続して整理する。
+編集開始前後の全体schedule / progress refreshは行わない。
+
+### courtSettings fragment
+
+コート表示設定も、ダイアログを開く前に最新aggregateを1回取得し、最新の `revisions.courtSettings` を保存基準とする。
+
+保存処理はダイアログ内で実行する。
+revision競合時はダイアログを閉じず、最新のcourt settings revisionだけ保存基準へ反映し、入力中のラベルは保持する。
+
+保存成功時は更新後court settings fragmentを親画面へ直接反映し、保存後の全体refreshは行わない。
+
+### 親画面へのfragment反映
+
+repositoryの更新APIは更新後aggregate全体を返すが、親画面へそのaggregate全体をそのまま差し替えない。
+
+display保存時は次だけを現在の親画面stateへマージする。
+
+- `event.title`
+- `event.memo`
+- `players[].displayName`
+- `revisions.display`
+
+court settings保存時は次だけをマージする。
+
+- `courtSettings[]`
+- `revisions.courtSettings`
+
+親画面が保持しているschedule stateや他fragment revisionは維持する。
+また、部分反映したstateでは `event.revision` を保存結果へ進めない。
+
+これにより、別端末で無関係なfragmentが更新されていた場合、その変更を部分保存結果で暗黙に取り込んだり、逆に未反映のままaggregate revisionだけ最新として扱ったりしない。
+次回の明示的な全体refreshではrevision差分が残るため、最新aggregate全体へ再同期できる。
 
 ## 競合時の扱い
 
