@@ -71,6 +71,8 @@ void runEventRepositoryContractTests({
       expect(aggregate.players, hasLength(6));
       expect(aggregate.players[0].displayName, '参加者1');
       expect(aggregate.players[0].orderNo, 1);
+      expect(aggregate.players[0].externalIdentity, isNull);
+      expect(aggregate.players[0].sourceProfileSnapshot, isNull);
       expect(aggregate.players[5].displayName, '参加者6');
       expect(aggregate.players[5].orderNo, 6);
 
