@@ -43,6 +43,7 @@ SavedEventAggregate mergeScheduleStateFragment(
     adoptedAt: updatedEvent.adoptedAt,
     visibility: currentEvent.visibility,
     visibleUntilRoundNo: currentEvent.visibleUntilRoundNo,
+    statisticsEligible: updatedEvent.statisticsEligible,
     expiresAt: currentEvent.expiresAt,
     revision: currentEvent.revision,
     createdAt: currentEvent.createdAt,
