@@ -34,6 +34,7 @@ void main() {
         adoptedAt: adoptedAtValue,
         visibility: 'unlisted',
         visibleUntilRoundNo: 10,
+        statisticsEligible: true,
         expiresAt: expiresAt,
         revision: 3,
         createdAt: createdAt,
@@ -138,6 +139,7 @@ void main() {
       expect(restored.event.adoptedAt, adoptedAt);
       expect(restored.event.visibility, 'unlisted');
       expect(restored.event.visibleUntilRoundNo, 10);
+      expect(restored.event.statisticsEligible, isTrue);
       expect(restored.event.expiresAt, expiresAt);
       expect(restored.event.revision, 3);
       expect(restored.event.createdAt, createdAt);
@@ -208,12 +210,14 @@ void main() {
       final eventJson = json['event'] as Map<String, dynamic>;
 
       eventJson.remove('ownerUid');
+      eventJson.remove('statisticsEligible');
       json.remove('revisions');
       json['schemaVersion'] = 1;
 
       final restored = SavedEventAggregate.fromJson(json);
 
       expect(restored.event.ownerUid, isNull);
+      expect(restored.event.statisticsEligible, isFalse);
       expect(restored.revisions.display, restored.event.revision);
       expect(restored.revisions.courtSettings, restored.event.revision);
     });
