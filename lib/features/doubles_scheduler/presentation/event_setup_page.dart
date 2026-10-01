@@ -686,6 +686,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
     setState(() {
       _isUrlImportCompleted = false;
       _importedSourceUrl = null;
+      _importObservedAt = null;
       _importWarningCodes = <String>{};
       _loadedFromUrl = false;
       for (var i = 0; i < _sourceParticipantCandidates.length; i++) {
