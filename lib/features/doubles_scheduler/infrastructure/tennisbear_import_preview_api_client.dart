@@ -2,6 +2,10 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+const tennisbearImportWarningEventTitleMissing = 'event_title_missing';
+const tennisbearImportWarningParticipantDisplayNamesMissing =
+    'participant_display_names_missing';
+
 class TennisbearImportPreviewApiException implements Exception {
   TennisbearImportPreviewApiException({
     required this.statusCode,
