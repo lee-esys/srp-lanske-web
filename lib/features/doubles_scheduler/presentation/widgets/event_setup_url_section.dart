@@ -37,10 +37,8 @@ class EventSetupUrlSection extends StatelessWidget {
   final bool showParticipantDisplayNamesImportWarning;
   final VoidCallback? onOpenSourceEvent;
 
-  bool get _hasImportFeedback {
-    final sourceUrl = importedSourceUrl?.trim() ?? '';
-    return sourceUrl.isNotEmpty ||
-        showEventTitleImportWarning ||
+  bool get _hasImportWarnings {
+    return showEventTitleImportWarning ||
         showParticipantDisplayNamesImportWarning;
   }
 
@@ -88,10 +86,20 @@ class EventSetupUrlSection extends StatelessWidget {
                 icon: const Icon(Icons.download),
                 label: Text(l10n.importButton),
               ),
+              if (sourceUrl.isNotEmpty && onOpenSourceEvent != null)
+                IconButton(
+                  key: const ValueKey('open-tennisbear-source-event-button'),
+                  tooltip: l10n.openTennisbearEventButton,
+                  onPressed: onOpenSourceEvent,
+                  icon: const Text(
+                    '🐻',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                ),
             ],
           ),
         ),
-        if (_hasImportFeedback) ...[
+        if (_hasImportWarnings) ...[
           const SizedBox(height: 12),
           Container(
             width: double.infinity,
@@ -113,17 +121,6 @@ class EventSetupUrlSection extends StatelessWidget {
                   _ImportWarningRow(
                     text: l10n
                         .tennisbearParticipantDisplayNamesImportFailedWarning,
-                  ),
-                ],
-                if (sourceUrl.isNotEmpty && onOpenSourceEvent != null) ...[
-                  if (showEventTitleImportWarning ||
-                      showParticipantDisplayNamesImportWarning)
-                    const SizedBox(height: 4),
-                  TextButton.icon(
-                    key: const ValueKey('open-tennisbear-source-event-button'),
-                    onPressed: onOpenSourceEvent,
-                    icon: const Icon(Icons.open_in_new),
-                    label: Text(l10n.openTennisbearEventButton),
                   ),
                 ],
               ],
