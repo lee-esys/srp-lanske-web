@@ -12,6 +12,7 @@ import '../application/schedule_share_url.dart';
 import '../application/tennisbear_event_url.dart';
 import '../data/local_schedule_history_item.dart';
 import '../domain/player_draft.dart';
+import '../domain/player_source_metadata.dart';
 import '../domain/saved_event_models.dart';
 import '../infrastructure/tennisbear_import_preview_api_client.dart';
 import 'doubles_navigation_drawer.dart';
@@ -44,6 +45,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
   final List<FocusNode> _displayNameFocusNodes = [];
   final List<String> _defaultDisplayNames = [];
   final List<String?> _sourceDisplayNames = [];
+  final List<TennisbearParticipantCandidate?> _sourceParticipantCandidates = [];
 
   late final TennisbearImportPreviewApiClient _tennisbearImportPreviewClient;
 
@@ -52,6 +54,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
   bool _isUrlImportCompleted = false;
 
   String? _importedSourceUrl;
+  DateTime? _importObservedAt;
   Set<String> _importWarningCodes = <String>{};
 
   int _courts = 1;
@@ -191,6 +194,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
       _defaultDisplayNames.add(defaultName);
       _sourceDisplayNames.add(defaultName);
+      _sourceParticipantCandidates.add(null);
 
       focusNode.addListener(() {
         final currentIndex = _displayNameFocusNodes.indexOf(focusNode);
@@ -224,6 +228,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _displayNameFocusNodes.removeLast().dispose();
       _defaultDisplayNames.removeLast();
       _sourceDisplayNames.removeLast();
+      _sourceParticipantCandidates.removeLast();
     }
 
     _refreshManualDisplayNameDefaults();
@@ -262,6 +267,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _displayNameFocusNodes.removeAt(index).dispose();
       _defaultDisplayNames.removeAt(index);
       _sourceDisplayNames.removeAt(index);
+      _sourceParticipantCandidates.removeAt(index);
 
       _playerCountController.text = _displayNameControllers.length.toString();
 
@@ -354,6 +360,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _courts = 1;
       _isUrlImportCompleted = false;
       _importedSourceUrl = null;
+      _importObservedAt = null;
       _importWarningCodes = <String>{};
 
       _urlController.clear();
@@ -367,6 +374,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
         final defaultName = circledNumber(i + 1);
         _defaultDisplayNames[i] = defaultName;
         _sourceDisplayNames[i] = defaultName;
+        _sourceParticipantCandidates[i] = null;
         _displayNameControllers[i].text = defaultName;
       }
     });
@@ -377,14 +385,30 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
     final eventName = _buildEffectiveEventName();
     final displayNames = _buildEffectiveDisplayNames();
-
-    final players = displayNames
-        .map((name) => PlayerDraft.create(displayName: name))
-        .toList(growable: false);
-
     final importedSourceUrl = _importedSourceUrl?.trim() ?? '';
     final hasTennisbearImport =
         _isUrlImportCompleted && importedSourceUrl.isNotEmpty;
+
+    final players = List<PlayerDraft>.generate(
+      displayNames.length,
+      (index) {
+        final candidate = hasTennisbearImport &&
+                index < _sourceParticipantCandidates.length
+            ? _sourceParticipantCandidates[index]
+            : null;
+
+        return PlayerDraft.create(
+          displayName: displayNames[index],
+          sourceText: _nonEmptyOrNull(candidate?.sourceText),
+          externalIdentity: _externalIdentityFromCandidate(candidate),
+          sourceProfileSnapshot: _profileSnapshotFromCandidate(
+            candidate,
+            observedAt: _importObservedAt,
+          ),
+        );
+      },
+      growable: false,
+    );
 
     final draft = EventDraft(
       url: hasTennisbearImport ? importedSourceUrl : '',
@@ -440,6 +464,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       final preview = await _tennisbearImportPreviewClient.preview(
         sourceUrl: parsedUrl.canonicalUrl,
       );
+      final observedAt = DateTime.now();
 
       final elapsed = DateTime.now().difference(startedAt);
       const minLoading = Duration(milliseconds: 500);
@@ -449,7 +474,10 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
       if (!mounted) return;
 
-      final playerDisplayNames = _playerDisplayNamesFromPreview(preview);
+      final playerCandidates = _playerCandidatesFromPreview(preview);
+      final playerDisplayNames = playerCandidates
+          .map((candidate) => candidate.displayName.trim())
+          .toList(growable: false);
       final participantCount = preview.participantSummary?.currentCount ?? 0;
       final playerCount = participantCount > playerDisplayNames.length
           ? participantCount
@@ -459,6 +487,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
         _loadedFromUrl = true;
         _isUrlImportCompleted = true;
         _importedSourceUrl = originalUrl;
+        _importObservedAt = observedAt;
         _importWarningCodes = preview.warnings
             .map((warning) => warning.code)
             .where((code) => code.isNotEmpty)
@@ -491,6 +520,8 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
           _sourceDisplayNames[i] = name;
           _defaultDisplayNames[i] = name;
+          _sourceParticipantCandidates[i] =
+              i < playerCandidates.length ? playerCandidates[i] : null;
           _displayNameControllers[i].text = name;
         }
       });
@@ -560,13 +591,56 @@ class _EventSetupPageState extends State<EventSetupPage> {
     return eventCourts;
   }
 
-  List<String> _playerDisplayNamesFromPreview(
+  List<TennisbearParticipantCandidate> _playerCandidatesFromPreview(
     TennisbearImportPreviewResponse preview,
   ) {
     return preview.participantCandidates
-        .map((candidate) => candidate.displayName.trim())
-        .where((name) => name.isNotEmpty)
+        .where((candidate) => candidate.displayName.trim().isNotEmpty)
         .toList(growable: false);
+  }
+
+  PlayerExternalIdentity? _externalIdentityFromCandidate(
+    TennisbearParticipantCandidate? candidate,
+  ) {
+    if (candidate == null) return null;
+
+    final sourceUserId = candidate.userId.trim();
+    if (sourceUserId.isEmpty) return null;
+
+    return PlayerExternalIdentity(
+      sourceType: EventSourceType.tennisbear.name,
+      sourceUserId: sourceUserId,
+      profileUrl: _nonEmptyOrNull(candidate.profileUrl),
+    );
+  }
+
+  PlayerSourceProfileSnapshot? _profileSnapshotFromCandidate(
+    TennisbearParticipantCandidate? candidate, {
+    required DateTime? observedAt,
+  }) {
+    if (candidate == null || observedAt == null) return null;
+
+    final sourceDisplayName = candidate.displayName.trim();
+    if (sourceDisplayName.isEmpty) return null;
+
+    return PlayerSourceProfileSnapshot(
+      sourceDisplayName: sourceDisplayName,
+      imageUrl: _nonEmptyOrNull(candidate.imageUrl),
+      levelId: candidate.levelId,
+      levelName: _nonEmptyOrNull(candidate.levelName),
+      gender: _nonEmptyOrNull(candidate.gender),
+      ageGroup: _nonEmptyOrNull(candidate.ageGroup),
+      pickleballLevelId: candidate.pickleballLevelId,
+      pickleballLevelName: _nonEmptyOrNull(candidate.pickleballLevelName),
+      sourceStatus: _nonEmptyOrNull(candidate.sourceStatus),
+      isGuest: candidate.isGuest,
+      observedAt: observedAt,
+    );
+  }
+
+  String? _nonEmptyOrNull(String? value) {
+    final normalized = value?.trim() ?? '';
+    return normalized.isEmpty ? null : normalized;
   }
 
   String _eventNameFromPreview(TennisbearImportPreviewResponse preview) {
@@ -583,8 +657,12 @@ class _EventSetupPageState extends State<EventSetupPage> {
       if (_isUrlImportCompleted && current != _importedSourceUrl) {
         _isUrlImportCompleted = false;
         _importedSourceUrl = null;
+        _importObservedAt = null;
         _importWarningCodes = <String>{};
         _loadedFromUrl = false;
+        for (var i = 0; i < _sourceParticipantCandidates.length; i++) {
+          _sourceParticipantCandidates[i] = null;
+        }
       }
     });
   }
@@ -610,6 +688,9 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _importedSourceUrl = null;
       _importWarningCodes = <String>{};
       _loadedFromUrl = false;
+      for (var i = 0; i < _sourceParticipantCandidates.length; i++) {
+        _sourceParticipantCandidates[i] = null;
+      }
 
       _urlController.text = text;
       _urlController.selection = TextSelection.collapsed(offset: text.length);
@@ -632,6 +713,9 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _importedSourceUrl = null;
       _importWarningCodes = <String>{};
       _loadedFromUrl = false;
+      for (var i = 0; i < _sourceParticipantCandidates.length; i++) {
+        _sourceParticipantCandidates[i] = null;
+      }
     });
   }
 
