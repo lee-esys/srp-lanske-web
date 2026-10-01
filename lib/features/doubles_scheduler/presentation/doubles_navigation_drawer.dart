@@ -7,6 +7,7 @@ import 'package:srp_lanske/shared/presentation/app_navigation_sections.dart';
 import 'package:srp_lanske/shared/utils/external_link.dart';
 
 import '../../auth/presentation/account_routes.dart';
+import '../../auth/presentation/admin_role_visibility.dart';
 import '../../external_identity/presentation/admin_profile_link_review_routes.dart';
 import '../data/local_schedule_history_item.dart';
 import 'doubles_schedule_list_drawer.dart';
@@ -262,7 +263,13 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
               AppNavigationCommonSection(
                 onOpenTop: _openTop,
                 onOpenAccount: _openAccount,
-                onOpenAdmin: _openAdminProfileLinkReview,
+                adminItem: AdminRoleVisibility(
+                  child: AppNavigationTile(
+                    icon: Icons.admin_panel_settings_outlined,
+                    label: l10n.adminProfileLinkReviewMenuLabel,
+                    onTap: _openAdminProfileLinkReview,
+                  ),
+                ),
                 onOpenSupport: _openSupport,
               ),
               const Divider(height: 1),
