@@ -607,6 +607,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
     setState(() {
       _isUrlImportCompleted = false;
       _importedSourceUrl = null;
+      _importWarningCodes = <String>{};
       _loadedFromUrl = false;
 
       _urlController.text = text;
@@ -628,6 +629,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _urlController.clear();
       _isUrlImportCompleted = false;
       _importedSourceUrl = null;
+      _importWarningCodes = <String>{};
       _loadedFromUrl = false;
     });
   }
