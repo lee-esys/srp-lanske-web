@@ -881,6 +881,7 @@ class _RestoredSchedulePageState extends State<RestoredSchedulePage> {
           displayName: player.displayName,
         );
       }).toList(growable: false),
+      sourceType: aggregate.event.sourceType,
     );
   }
 

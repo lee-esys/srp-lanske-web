@@ -64,6 +64,66 @@ void main() {
     expect(refreshCount, 1);
   });
 
+  testWidgets('shows TennisBear source link for imported event',
+      (tester) async {
+    final aggregate = _aggregate(
+      sourceType: EventSourceType.tennisbear,
+      sourceUrl: 'https://www.tennisbear.net/event/1645753/info',
+    );
+
+    await tester.pumpWidget(
+      _testApp(
+        ScheduleEventSummaryCard(
+          aggregate: aggregate,
+          repository: _FakeEventRepository(aggregate),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('🐻'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('open-tennisbear-source-event-button')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('shows TennisBear source link for legacy unknown source',
+      (tester) async {
+    final aggregate = _aggregate(
+      sourceType: EventSourceType.unknown,
+      sourceUrl: 'https://www.tennisbear.net/event/1645753/info',
+    );
+
+    await tester.pumpWidget(
+      _testApp(
+        ScheduleEventSummaryCard(
+          aggregate: aggregate,
+          repository: _FakeEventRepository(aggregate),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('🐻'), findsOneWidget);
+  });
+
+  testWidgets('hides TennisBear source link for manual event', (tester) async {
+    final aggregate = _aggregate();
+
+    await tester.pumpWidget(
+      _testApp(
+        ScheduleEventSummaryCard(
+          aggregate: aggregate,
+          repository: _FakeEventRepository(aggregate),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('🐻'), findsNothing);
+  });
+
   testWidgets('uses tap trigger for the event title tooltip', (tester) async {
     final aggregate = _aggregate();
     final repository = _FakeEventRepository(aggregate);
@@ -321,7 +381,11 @@ Widget _testApp(Widget child) {
   );
 }
 
-SavedEventAggregate _aggregate({bool adopted = false}) {
+SavedEventAggregate _aggregate({
+  bool adopted = false,
+  EventSourceType sourceType = EventSourceType.manual,
+  String? sourceUrl,
+}) {
   final now = DateTime.utc(2026, 8, 1);
   final event = SavedEvent(
     id: 'event-1',
@@ -329,8 +393,8 @@ SavedEventAggregate _aggregate({bool adopted = false}) {
     title: 'イベント',
     memo: 'メモ',
     courtCount: 1,
-    sourceType: EventSourceType.manual,
-    sourceUrl: null,
+    sourceType: sourceType,
+    sourceUrl: sourceUrl,
     status: adopted ? SavedEventStatus.adopted : SavedEventStatus.generated,
     currentGeneratedScheduleId: 'generated-1',
     adoptedGeneratedScheduleId: adopted ? 'generated-1' : null,

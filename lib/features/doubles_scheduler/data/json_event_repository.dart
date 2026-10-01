@@ -33,15 +33,21 @@ class JsonEventRepository implements EventRepository {
     final eventId = _uuid.v4();
     final publicId = await _generateUniquePublicId();
 
+    final normalizedSourceUrl = draft.url.trim();
+    final hasImportSource = draft.sourceType != EventSourceType.manual &&
+        normalizedSourceUrl.isNotEmpty;
+    final sourceType =
+        hasImportSource ? draft.sourceType : EventSourceType.manual;
+    final sourceUrl = hasImportSource ? normalizedSourceUrl : null;
+
     final event = SavedEvent(
       id: eventId,
       publicId: publicId,
       ownerUid: normalizedOwnerUid,
       title: draft.eventName,
       courtCount: draft.courts,
-      sourceType:
-          draft.url.isEmpty ? EventSourceType.manual : EventSourceType.unknown,
-      sourceUrl: draft.url.isEmpty ? null : draft.url,
+      sourceType: sourceType,
+      sourceUrl: sourceUrl,
       status: SavedEventStatus.draft,
       createdAt: now,
       updatedAt: now,
@@ -70,13 +76,13 @@ class JsonEventRepository implements EventRepository {
       updatedAt: now,
     );
 
-    final importRecord = draft.url.isEmpty
+    final importRecord = !hasImportSource
         ? null
         : SavedEventImport(
             id: _uuid.v4(),
             eventId: eventId,
-            sourceType: EventSourceType.unknown,
-            sourceUrl: draft.url,
+            sourceType: sourceType,
+            sourceUrl: sourceUrl,
             createdAt: now,
           );
 

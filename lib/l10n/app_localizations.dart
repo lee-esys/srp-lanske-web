@@ -284,6 +284,24 @@ abstract class AppLocalizations {
   /// **'取り込み'**
   String get importButton;
 
+  /// Persistent warning shown when TennisBear event title import fails.
+  ///
+  /// In ja, this message translates to:
+  /// **'イベントタイトルが取り込めませんでした'**
+  String get tennisbearEventTitleImportFailedWarning;
+
+  /// Persistent warning shown when TennisBear participant display name import fails.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加者表示名が取り込めませんでした'**
+  String get tennisbearParticipantDisplayNamesImportFailedWarning;
+
+  /// Button label for opening the source TennisBear event in a new tab.
+  ///
+  /// In ja, this message translates to:
+  /// **'テニスベアのイベントを表示する'**
+  String get openTennisbearEventButton;
+
   /// Input label for event name.
   ///
   /// In ja, this message translates to:

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../domain/player_draft.dart';
+import '../../domain/saved_event_models.dart';
 
 class EventDraft {
   EventDraft({
@@ -8,12 +9,14 @@ class EventDraft {
     required this.courts,
     required this.eventName,
     required this.players,
+    this.sourceType = EventSourceType.unknown,
   });
 
   final String url;
   final int courts;
   final String eventName;
   final List<PlayerDraft> players;
+  final EventSourceType sourceType;
 
   int get playerCount => players.length;
 
@@ -25,12 +28,14 @@ class EventDraft {
     int? courts,
     String? eventName,
     List<PlayerDraft>? players,
+    EventSourceType? sourceType,
   }) {
     return EventDraft(
       url: url ?? this.url,
       courts: courts ?? this.courts,
       eventName: eventName ?? this.eventName,
       players: players ?? this.players.map((e) => e.copyWith()).toList(),
+      sourceType: sourceType ?? this.sourceType,
     );
   }
 
@@ -41,6 +46,7 @@ class EventDraft {
       'eventName': eventName,
       'playerCount': playerCount,
       'players': players.map((e) => e.toJson()).toList(),
+      'sourceType': sourceType.name,
     };
   }
 
