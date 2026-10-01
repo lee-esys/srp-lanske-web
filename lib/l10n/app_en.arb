@@ -12,6 +12,14 @@
   "@topPageMenu": {
     "description": "Menu item label for returning to the top page."
   },
+  "accountMenuLabel": "Account",
+  "@accountMenuLabel": {
+    "description": "Menu item label for opening account management."
+  },
+  "navigationMenuTooltip": "Open menu",
+  "@navigationMenuTooltip": {
+    "description": "Generic tooltip for opening a navigation drawer."
+  },
   "supportMenuTitle": "Support page (Japanese)",
   "@supportMenuTitle": {
     "description": "Menu item title for opening the support page."
