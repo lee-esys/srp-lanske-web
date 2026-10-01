@@ -978,7 +978,7 @@ service cloud.firestore {
         && request.resource.data.event.adoptedGeneratedScheduleId
           == currentGeneratedScheduleId
         && request.resource.data.event.adoptedAt is string
-        && request.resource.data.event.statisticsEligible is bool
+        && request.resource.data.event.get('statisticsEligible', false) is bool
         && request.resource.data.event.revision
           == resource.data.event.revision + 1
         && isValidEventSchemaUpdate()
