@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
-import '../../features/auth/presentation/admin_role_visibility.dart';
 
 class AppNavigationCommonSection extends StatelessWidget {
   const AppNavigationCommonSection({
     super.key,
     this.onOpenTop,
     this.onOpenAccount,
-    this.onOpenAdmin,
+    this.adminItem,
     this.onOpenSupport,
   });
 
   final VoidCallback? onOpenTop;
   final VoidCallback? onOpenAccount;
-  final VoidCallback? onOpenAdmin;
+  final Widget? adminItem;
   final VoidCallback? onOpenSupport;
 
   @override
@@ -36,14 +35,7 @@ class AppNavigationCommonSection extends StatelessWidget {
             label: l10n.accountMenuLabel,
             onTap: onOpenAccount!,
           ),
-        if (onOpenAdmin != null)
-          AdminRoleVisibility(
-            child: AppNavigationTile(
-              icon: Icons.admin_panel_settings_outlined,
-              label: l10n.adminProfileLinkReviewMenuLabel,
-              onTap: onOpenAdmin!,
-            ),
-          ),
+        if (adminItem != null) adminItem!,
         if (onOpenSupport != null)
           ListTile(
             leading: const Icon(Icons.help_outline),
