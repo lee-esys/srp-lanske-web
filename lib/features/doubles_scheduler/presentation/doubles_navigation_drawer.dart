@@ -3,10 +3,10 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
+import 'package:srp_lanske/shared/presentation/app_navigation_sections.dart';
 import 'package:srp_lanske/shared/utils/external_link.dart';
 
 import '../../auth/presentation/account_routes.dart';
-import '../../auth/presentation/admin_role_visibility.dart';
 import '../../external_identity/presentation/admin_profile_link_review_routes.dart';
 import '../data/local_schedule_history_item.dart';
 import 'doubles_schedule_list_drawer.dart';
@@ -215,18 +215,13 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              _DoublesNavigationTile(
-                icon: Icons.home_outlined,
-                label: l10n.topPageMenu,
-                onTap: _openTop,
-              ),
-              _DoublesNavigationTile(
+              AppNavigationTile(
                 icon: Icons.list_alt_outlined,
                 label: l10n.matchTableList,
                 onTap: _showSchedules,
               ),
               if (widget.onRefreshLatestInfo != null)
-                _DoublesNavigationTile(
+                AppNavigationTile(
                   icon: Icons.refresh,
                   label: l10n.refreshLatestButton,
                   onTap: () {
@@ -234,7 +229,7 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
                   },
                 ),
               if (widget.onEditEventInfo != null)
-                _DoublesNavigationTile(
+                AppNavigationTile(
                   icon: Icons.edit_outlined,
                   label: l10n.editDoublesEventInfoButton,
                   onTap: () {
@@ -242,7 +237,7 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
                   },
                 ),
               if (widget.onChangeCourtDisplay != null)
-                _DoublesNavigationTile(
+                AppNavigationTile(
                   icon: Icons.tune,
                   label:
                       '${l10n.courtDisplaySectionTitle}: ${l10n.changeCourtDisplayButton}',
@@ -251,93 +246,33 @@ class _DoublesNavigationDrawerState extends State<DoublesNavigationDrawer> {
                   },
                 ),
               if (widget.onRegenerate != null)
-                _DoublesNavigationTile(
+                AppNavigationTile(
                   icon: Icons.restart_alt,
                   label: l10n.regenerateButton,
                   onTap: () {
                     unawaited(_runAction(widget.onRegenerate!));
                   },
                 ),
-              _DoublesNavigationTile(
+              AppNavigationTile(
                 icon: Icons.lightbulb_outline,
                 label: l10n.doublesNavigationShowHint,
                 onTap: _showOperationHint,
               ),
               const Divider(height: 1),
-              _DoublesNavigationTile(
-                icon: Icons.person_outline,
-                label: 'アカウント',
-                onTap: _openAccount,
-              ),
-              AdminRoleVisibility(
-                child: _DoublesNavigationTile(
-                  icon: Icons.admin_panel_settings_outlined,
-                  label: l10n.adminProfileLinkReviewMenuLabel,
-                  onTap: _openAdminProfileLinkReview,
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.help_outline),
-                title: Text(l10n.supportMenuTitle),
-                subtitle: Text(l10n.supportMenuSubtitle),
-                onTap: _openSupport,
+              AppNavigationCommonSection(
+                onOpenTop: _openTop,
+                onOpenAccount: _openAccount,
+                onOpenAdmin: _openAdminProfileLinkReview,
+                onOpenSupport: _openSupport,
               ),
               const Divider(height: 1),
-              _DoublesNavigationSectionHeader(
-                label: l10n.teamNavigationServiceList,
-              ),
-              _DoublesNavigationTile(
-                icon: Icons.groups_outlined,
-                label: l10n.teamScheduleTitle,
-                onTap: _openTeam,
+              AppNavigationServiceSection(
+                onOpenTeam: _openTeam,
               ),
             ],
           ),
         ),
       ],
-    );
-  }
-}
-
-class _DoublesNavigationSectionHeader extends StatelessWidget {
-  const _DoublesNavigationSectionHeader({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w700,
-            ),
-      ),
-    );
-  }
-}
-
-class _DoublesNavigationTile extends StatelessWidget {
-  const _DoublesNavigationTile({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(label),
-      onTap: onTap,
     );
   }
 }
