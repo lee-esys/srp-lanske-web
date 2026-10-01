@@ -26,6 +26,7 @@ void runEventRepositoryContractTests({
       String url = 'https://example.com/events/1',
       String eventName = 'テストイベント',
       int courts = 1,
+      EventSourceType sourceType = EventSourceType.unknown,
     }) {
       return EventDraft(
         url: url,
@@ -39,6 +40,7 @@ void runEventRepositoryContractTests({
           PlayerDraft.create(displayName: '参加者5'),
           PlayerDraft.create(displayName: '参加者6'),
         ],
+        sourceType: sourceType,
       );
     }
 
@@ -84,6 +86,44 @@ void runEventRepositoryContractTests({
       final aggregate = await _createOwnedEvent(
         repository,
         buildDraft(url: ''),
+      );
+
+      expect(aggregate.event.sourceType, EventSourceType.manual);
+      expect(aggregate.event.sourceUrl, isNull);
+      expect(aggregate.importRecord, isNull);
+    });
+
+    test('persists explicit TennisBear source provenance', () async {
+      final repository = createRepository();
+      const sourceUrl = 'https://www.tennisbear.net/event/1645753/info';
+
+      final aggregate = await _createOwnedEvent(
+        repository,
+        buildDraft(
+          url: sourceUrl,
+          sourceType: EventSourceType.tennisbear,
+        ),
+      );
+
+      expect(aggregate.event.sourceType, EventSourceType.tennisbear);
+      expect(aggregate.event.sourceUrl, sourceUrl);
+      expect(aggregate.importRecord, isNotNull);
+      expect(
+        aggregate.importRecord!.sourceType,
+        EventSourceType.tennisbear,
+      );
+      expect(aggregate.importRecord!.sourceUrl, sourceUrl);
+    });
+
+    test('does not persist a URL for manual source type', () async {
+      final repository = createRepository();
+
+      final aggregate = await _createOwnedEvent(
+        repository,
+        buildDraft(
+          url: 'https://www.tennisbear.net/event/1645753/info',
+          sourceType: EventSourceType.manual,
+        ),
       );
 
       expect(aggregate.event.sourceType, EventSourceType.manual);
