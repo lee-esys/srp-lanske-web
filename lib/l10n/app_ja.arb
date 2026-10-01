@@ -12,6 +12,14 @@
   "@topPageMenu": {
     "description": "Menu item label for returning to the top page."
   },
+  "accountMenuLabel": "アカウント",
+  "@accountMenuLabel": {
+    "description": "Menu item label for opening account management."
+  },
+  "navigationMenuTooltip": "メニューを開く",
+  "@navigationMenuTooltip": {
+    "description": "Generic tooltip for opening a navigation drawer."
+  },
   "matchTableList": "対戦表一覧",
   "@matchTableList": {
     "description": "Menu item label for the saved/generated match table list."
