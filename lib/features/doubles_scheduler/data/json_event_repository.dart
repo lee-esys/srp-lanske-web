@@ -64,6 +64,9 @@ class JsonEventRepository implements EventRepository {
         displayName: player.displayName,
         orderNo: index + 1,
         status: 'active',
+        sourceText: player.sourceText,
+        externalIdentity: player.externalIdentity,
+        sourceProfileSnapshot: player.sourceProfileSnapshot,
         createdAt: now,
         updatedAt: now,
       );
