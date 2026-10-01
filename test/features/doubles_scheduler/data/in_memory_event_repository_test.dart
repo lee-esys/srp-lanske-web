@@ -39,14 +39,16 @@ void main() {
 
       expect(created.event.statisticsEligible, isFalse);
 
-      final generated = await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+      final generated =
+          await repository.updateCurrentGeneratedScheduleIdIfCurrent(
         publicId: created.event.publicId,
         expectedCurrentGeneratedScheduleId: null,
         generatedScheduleId: 'generated-1',
       );
       expect(generated.statisticsEligible, isFalse);
 
-      final adopted = await repository.updateAdoptedGeneratedScheduleIdIfCurrent(
+      final adopted =
+          await repository.updateAdoptedGeneratedScheduleIdIfCurrent(
         publicId: created.event.publicId,
         expectedCurrentGeneratedScheduleId: 'generated-1',
       );
