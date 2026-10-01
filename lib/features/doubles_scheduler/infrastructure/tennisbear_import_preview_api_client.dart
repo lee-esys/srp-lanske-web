@@ -217,8 +217,7 @@ class TennisbearParticipantCandidate {
       gender: json['gender']?.toString() ?? '',
       ageGroup: json['age_group']?.toString() ?? '',
       pickleballLevelId: _nullableInt(json['pickleball_level_id']),
-      pickleballLevelName:
-          json['pickleball_level_name']?.toString() ?? '',
+      pickleballLevelName: json['pickleball_level_name']?.toString() ?? '',
       sourceStatus: json['source_status']?.toString() ?? '',
       isGuest: json['is_guest'] is bool ? json['is_guest'] as bool : null,
       sourceText: json['source_text']?.toString() ?? '',
@@ -270,7 +269,6 @@ List<Map<String, dynamic>> _asObjectList(Object? value) {
       .map((e) => e.map((key, value) => MapEntry(key.toString(), value)))
       .toList(growable: false);
 }
-
 
 int? _nullableInt(Object? value) {
   if (value == null) return null;

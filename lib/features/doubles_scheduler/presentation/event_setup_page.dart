@@ -392,10 +392,10 @@ class _EventSetupPageState extends State<EventSetupPage> {
     final players = List<PlayerDraft>.generate(
       displayNames.length,
       (index) {
-        final candidate = hasTennisbearImport &&
-                index < _sourceParticipantCandidates.length
-            ? _sourceParticipantCandidates[index]
-            : null;
+        final candidate =
+            hasTennisbearImport && index < _sourceParticipantCandidates.length
+                ? _sourceParticipantCandidates[index]
+                : null;
 
         return PlayerDraft.create(
           displayName: displayNames[index],
