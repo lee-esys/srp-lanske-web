@@ -1,3 +1,5 @@
+import 'player_source_metadata.dart';
+
 const savedEventAggregateSchemaVersion = 2;
 const savedEventDefaultVisibility = 'unlisted';
 const savedEventDefaultExpiresInDays = 10;
@@ -197,6 +199,8 @@ class SavedEventPlayer {
     required this.updatedAt,
     String? initialDisplayName,
     this.sourceText,
+    this.externalIdentity,
+    this.sourceProfileSnapshot,
   }) : initialDisplayName = initialDisplayName ?? displayName;
 
   final String id;
@@ -206,6 +210,8 @@ class SavedEventPlayer {
   final int orderNo;
   final String status;
   final String? sourceText;
+  final PlayerExternalIdentity? externalIdentity;
+  final PlayerSourceProfileSnapshot? sourceProfileSnapshot;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -221,6 +227,8 @@ class SavedEventPlayer {
       orderNo: orderNo,
       status: status,
       sourceText: sourceText,
+      externalIdentity: externalIdentity,
+      sourceProfileSnapshot: sourceProfileSnapshot,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -235,6 +243,8 @@ class SavedEventPlayer {
       'orderNo': orderNo,
       'status': status,
       'sourceText': sourceText,
+      'externalIdentity': externalIdentity?.toJson(),
+      'sourceProfileSnapshot': sourceProfileSnapshot?.toJson(),
       'createdAt': _dateTimeToJson(createdAt),
       'updatedAt': _dateTimeToJson(updatedAt),
     };
@@ -242,6 +252,12 @@ class SavedEventPlayer {
 
   factory SavedEventPlayer.fromJson(Map<String, dynamic> json) {
     final displayName = json['displayName'].toString();
+    final externalIdentityJson = _nullableMapFromJson(
+      json['externalIdentity'],
+    );
+    final sourceProfileSnapshotJson = _nullableMapFromJson(
+      json['sourceProfileSnapshot'],
+    );
 
     return SavedEventPlayer(
       id: json['id'].toString(),
@@ -251,6 +267,12 @@ class SavedEventPlayer {
       orderNo: _intFromJson(json['orderNo']),
       status: json['status']?.toString() ?? 'active',
       sourceText: json['sourceText']?.toString(),
+      externalIdentity: externalIdentityJson == null
+          ? null
+          : PlayerExternalIdentity.fromJson(externalIdentityJson),
+      sourceProfileSnapshot: sourceProfileSnapshotJson == null
+          ? null
+          : PlayerSourceProfileSnapshot.fromJson(sourceProfileSnapshotJson),
       createdAt: _dateTimeFromJson(json['createdAt']),
       updatedAt: _dateTimeFromJson(json['updatedAt']),
     );

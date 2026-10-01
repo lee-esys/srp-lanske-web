@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:srp_lanske/features/doubles_scheduler/application/event_repository.dart';
 import 'package:srp_lanske/features/doubles_scheduler/domain/player_draft.dart';
+import 'package:srp_lanske/features/doubles_scheduler/domain/player_source_metadata.dart';
 import 'package:srp_lanske/features/doubles_scheduler/domain/saved_event_models.dart';
 import 'package:srp_lanske/features/doubles_scheduler/presentation/models/event_draft.dart';
 
@@ -70,6 +71,8 @@ void runEventRepositoryContractTests({
       expect(aggregate.players, hasLength(6));
       expect(aggregate.players[0].displayName, '参加者1');
       expect(aggregate.players[0].orderNo, 1);
+      expect(aggregate.players[0].externalIdentity, isNull);
+      expect(aggregate.players[0].sourceProfileSnapshot, isNull);
       expect(aggregate.players[5].displayName, '参加者6');
       expect(aggregate.players[5].orderNo, 6);
 
@@ -113,6 +116,84 @@ void runEventRepositoryContractTests({
         EventSourceType.tennisbear,
       );
       expect(aggregate.importRecord!.sourceUrl, sourceUrl);
+    });
+
+    test('persists imported player identity and snapshot across display edits',
+        () async {
+      final repository = createRepository();
+      final observedAt = DateTime.utc(2026, 10, 1, 5, 30);
+      final draft = EventDraft(
+        url: 'https://www.tennisbear.net/event/1645753/info',
+        courts: 1,
+        eventName: 'TennisBear event',
+        players: [
+          PlayerDraft.create(
+            displayName: 'イベント内表示名',
+            sourceText: 'い',
+            externalIdentity: const PlayerExternalIdentity(
+              sourceType: 'tennisbear',
+              sourceUserId: '4380',
+              profileUrl: 'https://www.tennisbear.net/user/4380/info',
+            ),
+            sourceProfileSnapshot: PlayerSourceProfileSnapshot(
+              sourceDisplayName: 'い',
+              imageUrl: 'https://example.com/4380.jpg',
+              levelId: 6,
+              levelName: '中上級',
+              gender: '男性',
+              ageGroup: '40代',
+              pickleballLevelName: '未設定',
+              sourceStatus: 'APPROVE',
+              isGuest: false,
+              observedAt: observedAt,
+            ),
+          ),
+          PlayerDraft.create(displayName: '参加者2'),
+          PlayerDraft.create(displayName: '参加者3'),
+          PlayerDraft.create(displayName: '参加者4'),
+        ],
+        sourceType: EventSourceType.tennisbear,
+      );
+
+      final created = await _createOwnedEvent(repository, draft);
+      final importedPlayer = created.players.first;
+
+      expect(importedPlayer.displayName, 'イベント内表示名');
+      expect(importedPlayer.initialDisplayName, 'イベント内表示名');
+      expect(importedPlayer.externalIdentity, isNotNull);
+      expect(importedPlayer.externalIdentity!.sourceType, 'tennisbear');
+      expect(importedPlayer.externalIdentity!.sourceUserId, '4380');
+      expect(
+        importedPlayer.externalIdentity!.profileUrl,
+        'https://www.tennisbear.net/user/4380/info',
+      );
+      expect(importedPlayer.sourceProfileSnapshot, isNotNull);
+      expect(importedPlayer.sourceProfileSnapshot!.sourceDisplayName, 'い');
+      expect(importedPlayer.sourceProfileSnapshot!.levelId, 6);
+      expect(importedPlayer.sourceProfileSnapshot!.levelName, '中上級');
+      expect(importedPlayer.sourceProfileSnapshot!.observedAt, observedAt);
+
+      final names = <String, String>{
+        for (final player in created.players)
+          player.id:
+              player.id == importedPlayer.id ? '表示名変更後' : player.displayName,
+      };
+      await repository.updateDisplayInfo(
+        publicId: created.event.publicId,
+        expectedDisplayRevision: created.revisions.display,
+        title: created.event.title,
+        memo: created.event.memo,
+        playerDisplayNamesById: names,
+      );
+
+      final restored = await repository.findByPublicId(created.event.publicId);
+      expect(restored, isNotNull);
+      final restoredPlayer = restored!.players.first;
+      expect(restoredPlayer.displayName, '表示名変更後');
+      expect(restoredPlayer.initialDisplayName, 'イベント内表示名');
+      expect(restoredPlayer.externalIdentity!.sourceUserId, '4380');
+      expect(restoredPlayer.sourceProfileSnapshot!.sourceDisplayName, 'い');
+      expect(restoredPlayer.sourceProfileSnapshot!.observedAt, observedAt);
     });
 
     test('does not persist a URL for manual source type', () async {

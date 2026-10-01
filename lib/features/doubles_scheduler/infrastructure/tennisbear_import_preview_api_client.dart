@@ -192,6 +192,15 @@ class TennisbearParticipantCandidate {
     required this.status,
     required this.userId,
     required this.profileUrl,
+    required this.imageUrl,
+    required this.levelId,
+    required this.levelName,
+    required this.gender,
+    required this.ageGroup,
+    required this.pickleballLevelId,
+    required this.pickleballLevelName,
+    required this.sourceStatus,
+    required this.isGuest,
     required this.sourceText,
   });
 
@@ -202,6 +211,15 @@ class TennisbearParticipantCandidate {
       status: json['status']?.toString() ?? '',
       userId: json['user_id']?.toString() ?? '',
       profileUrl: json['profile_url']?.toString() ?? '',
+      imageUrl: json['image_url']?.toString() ?? '',
+      levelId: _nullableInt(json['level_id']),
+      levelName: json['level_name']?.toString() ?? '',
+      gender: json['gender']?.toString() ?? '',
+      ageGroup: json['age_group']?.toString() ?? '',
+      pickleballLevelId: _nullableInt(json['pickleball_level_id']),
+      pickleballLevelName: json['pickleball_level_name']?.toString() ?? '',
+      sourceStatus: json['source_status']?.toString() ?? '',
+      isGuest: json['is_guest'] is bool ? json['is_guest'] as bool : null,
       sourceText: json['source_text']?.toString() ?? '',
     );
   }
@@ -211,6 +229,15 @@ class TennisbearParticipantCandidate {
   final String status;
   final String userId;
   final String profileUrl;
+  final String imageUrl;
+  final int? levelId;
+  final String levelName;
+  final String gender;
+  final String ageGroup;
+  final int? pickleballLevelId;
+  final String pickleballLevelName;
+  final String sourceStatus;
+  final bool? isGuest;
   final String sourceText;
 }
 
@@ -241,4 +268,10 @@ List<Map<String, dynamic>> _asObjectList(Object? value) {
       .whereType<Map>()
       .map((e) => e.map((key, value) => MapEntry(key.toString(), value)))
       .toList(growable: false);
+}
+
+int? _nullableInt(Object? value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  return int.tryParse(value.toString());
 }

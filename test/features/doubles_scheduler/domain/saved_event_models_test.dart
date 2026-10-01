@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:srp_lanske/features/doubles_scheduler/domain/player_source_metadata.dart';
 import 'package:srp_lanske/features/doubles_scheduler/domain/saved_event_models.dart';
 
 void main() {
@@ -47,6 +48,23 @@ void main() {
           orderNo: 1,
           status: 'active',
           sourceText: '参加者1 Lv5',
+          externalIdentity: const PlayerExternalIdentity(
+            sourceType: 'tennisbear',
+            sourceUserId: '4380',
+            profileUrl: 'https://www.tennisbear.net/user/4380/info',
+          ),
+          sourceProfileSnapshot: PlayerSourceProfileSnapshot(
+            sourceDisplayName: 'い',
+            imageUrl: 'https://example.com/4380.jpg',
+            levelId: 6,
+            levelName: '中上級',
+            gender: '男性',
+            ageGroup: '40代',
+            pickleballLevelName: '未設定',
+            sourceStatus: 'APPROVE',
+            isGuest: false,
+            observedAt: DateTime.utc(2026, 5, 14, 4, 29),
+          ),
           createdAt: createdAt,
           updatedAt: updatedAt,
         ),
@@ -134,11 +152,33 @@ void main() {
       expect(restored.players[0].orderNo, 1);
       expect(restored.players[0].status, 'active');
       expect(restored.players[0].sourceText, '参加者1 Lv5');
+      expect(restored.players[0].externalIdentity, isNotNull);
+      expect(restored.players[0].externalIdentity!.sourceType, 'tennisbear');
+      expect(restored.players[0].externalIdentity!.sourceUserId, '4380');
+      expect(
+        restored.players[0].externalIdentity!.profileUrl,
+        'https://www.tennisbear.net/user/4380/info',
+      );
+      expect(restored.players[0].sourceProfileSnapshot, isNotNull);
+      expect(
+        restored.players[0].sourceProfileSnapshot!.sourceDisplayName,
+        'い',
+      );
+      expect(restored.players[0].sourceProfileSnapshot!.levelId, 6);
+      expect(restored.players[0].sourceProfileSnapshot!.levelName, '中上級');
+      expect(restored.players[0].sourceProfileSnapshot!.gender, '男性');
+      expect(restored.players[0].sourceProfileSnapshot!.ageGroup, '40代');
+      expect(
+        restored.players[0].sourceProfileSnapshot!.observedAt,
+        DateTime.utc(2026, 5, 14, 4, 29),
+      );
 
       expect(restored.players[1].id, 'player-2');
       expect(restored.players[1].displayName, '参加者2');
       expect(restored.players[1].orderNo, 2);
       expect(restored.players[1].sourceText, isNull);
+      expect(restored.players[1].externalIdentity, isNull);
+      expect(restored.players[1].sourceProfileSnapshot, isNull);
 
       expect(restored.share.publicId, 'ABCD1234');
       expect(restored.share.eventId, 'event-1');
@@ -176,6 +216,22 @@ void main() {
       expect(restored.event.ownerUid, isNull);
       expect(restored.revisions.display, restored.event.revision);
       expect(restored.revisions.courtSettings, restored.event.revision);
+    });
+
+    test('restores legacy players without source metadata', () {
+      final aggregate = buildAggregate();
+      final json = aggregate.toJson();
+      final players = json['players'] as List<dynamic>;
+      final firstPlayer = players.first as Map<String, dynamic>;
+
+      firstPlayer.remove('externalIdentity');
+      firstPlayer.remove('sourceProfileSnapshot');
+
+      final restored = SavedEventAggregate.fromJson(json);
+
+      expect(restored.players.first.externalIdentity, isNull);
+      expect(restored.players.first.sourceProfileSnapshot, isNull);
+      expect(restored.players.first.displayName, '参加者1');
     });
 
     test('restores legacy participant keys through JSON', () {
