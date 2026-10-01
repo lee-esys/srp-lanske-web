@@ -38,7 +38,7 @@ void main() {
 
     expect(find.text('イベントタイトルが取り込めませんでした'), findsOneWidget);
     expect(find.text('参加者表示名が取り込めませんでした'), findsOneWidget);
-    expect(find.text('テニスベアのイベントを表示する'), findsOneWidget);
+    expect(find.text('🐻'), findsOneWidget);
 
     await tester.tap(
       find.byKey(const ValueKey('open-tennisbear-source-event-button')),
@@ -73,7 +73,7 @@ void main() {
 
     expect(find.text('イベントタイトルが取り込めませんでした'), findsNothing);
     expect(find.text('参加者表示名が取り込めませんでした'), findsNothing);
-    expect(find.text('テニスベアのイベントを表示する'), findsNothing);
+    expect(find.text('🐻'), findsNothing);
   });
 }
 
