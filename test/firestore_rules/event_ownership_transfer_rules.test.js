@@ -104,6 +104,7 @@ function eventData(publicId, ownerUid) {
       adoptedAt: null,
       visibility: 'unlisted',
       visibleUntilRoundNo: null,
+      statisticsEligible: false,
       expiresAt: '2026-10-08T00:00:00.000Z',
       revision: 1,
       createdAt: now,
