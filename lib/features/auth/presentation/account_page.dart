@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
-import '../../../shared/utils/external_link.dart';
 import '../../external_identity/presentation/tennisbear_profile_link_card.dart';
 import '../application/account_auth_repository.dart';
 import '../application/account_service.dart';
 import '../domain/account_transition.dart';
 import '../domain/auth_session.dart';
 import '../domain/event_ownership_transfer.dart';
+import 'account_navigation_drawer.dart';
 import 'account_scope.dart';
 import 'admin_role_scope.dart';
 import 'auth_scope.dart';
@@ -371,15 +371,26 @@ class _AccountPageState extends State<AccountPage> {
   Widget build(BuildContext context) {
     final session = AuthScope.of(context).session;
 
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'TOPへ',
-          onPressed: () => openUrlInCurrentTab('/'),
-          icon: const Icon(Icons.home_outlined),
-        ),
-        title: const Text('アカウント'),
+        automaticallyImplyLeading: false,
+        title: Text(l10n.accountMenuLabel),
+        actions: [
+          Builder(
+            builder: (context) {
+              return IconButton(
+                key: const ValueKey('account-navigation-menu-button'),
+                tooltip: l10n.navigationMenuTooltip,
+                onPressed: Scaffold.of(context).openEndDrawer,
+                icon: const Icon(Icons.menu),
+              );
+            },
+          ),
+        ],
       ),
+      endDrawer: const AccountNavigationDrawer(),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
