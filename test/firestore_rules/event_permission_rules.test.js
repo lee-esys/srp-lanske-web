@@ -465,10 +465,15 @@ test('legacy event keeps shared operations but cannot gain owner edits', async (
   const promoted = (await sharedRef.get()).data();
   assert.equal(promoted.schemaVersion, 2);
   assert.equal(promoted.event.ownerUid, undefined);
+  assert.equal(promoted.event.statisticsEligible, undefined);
   assert.deepEqual(promoted.revisions, {
     display: 1,
     courtSettings: 1,
   });
+
+  await assertSucceeds(sharedRef.set(adoptUpdate(promoted)));
+  const adopted = (await sharedRef.get()).data();
+  assert.equal(adopted.event.statisticsEligible, undefined);
 });
 
 test('shared progress and match writes preserve identity fields', async () => {
