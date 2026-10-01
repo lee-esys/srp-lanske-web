@@ -134,6 +134,18 @@
   "@importButton": {
     "description": "Button label for importing event information."
   },
+  "tennisbearEventTitleImportFailedWarning": "イベントタイトルが取り込めませんでした",
+  "@tennisbearEventTitleImportFailedWarning": {
+    "description": "Persistent warning shown when TennisBear event title import fails."
+  },
+  "tennisbearParticipantDisplayNamesImportFailedWarning": "参加者表示名が取り込めませんでした",
+  "@tennisbearParticipantDisplayNamesImportFailedWarning": {
+    "description": "Persistent warning shown when TennisBear participant display name import fails."
+  },
+  "openTennisbearEventButton": "テニスベアのイベントを表示する",
+  "@openTennisbearEventButton": {
+    "description": "Button label for opening the source TennisBear event in a new tab."
+  },
   "eventNameLabel": "イベント名",
   "@eventNameLabel": {
     "description": "Input label for event name."
