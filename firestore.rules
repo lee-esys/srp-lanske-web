@@ -817,7 +817,7 @@ service cloud.firestore {
         && event.courtCount is int
         && event.courtCount > 0
         && event.status == 'draft'
-        && event.statisticsEligible == false
+        && event.get('statisticsEligible', false) == false
         && event.revision == 1
         && event.createdAt is string
         && event.updatedAt is string
