@@ -5,12 +5,14 @@ import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/presentation/app_message_type.dart';
 import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
 import 'package:srp_lanske/shared/utils/browser_url.dart';
+import 'package:srp_lanske/shared/utils/external_link.dart';
 import 'package:srp_lanske/shared/utils/number_label_mapper.dart';
 
 import '../application/schedule_share_url.dart';
 import '../application/tennisbear_event_url.dart';
 import '../data/local_schedule_history_item.dart';
 import '../domain/player_draft.dart';
+import '../domain/saved_event_models.dart';
 import '../infrastructure/tennisbear_import_preview_api_client.dart';
 import 'doubles_navigation_drawer.dart';
 import 'models/event_draft.dart';
@@ -50,6 +52,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
   bool _isUrlImportCompleted = false;
 
   String? _importedSourceUrl;
+  Set<String> _importWarningCodes = <String>{};
 
   int _courts = 1;
 
@@ -89,6 +92,18 @@ class _EventSetupPageState extends State<EventSetupPage> {
   }
 
   bool get _canRemovePlayer => _displayNameControllers.length > _minPlayerCount;
+
+  bool get _eventTitleImportFailed {
+    return _importWarningCodes.contains(
+      tennisbearImportWarningEventTitleMissing,
+    );
+  }
+
+  bool get _participantDisplayNamesImportFailed {
+    return _importWarningCodes.contains(
+      tennisbearImportWarningParticipantDisplayNamesMissing,
+    );
+  }
 
   @override
   void initState() {
@@ -339,6 +354,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _courts = 1;
       _isUrlImportCompleted = false;
       _importedSourceUrl = null;
+      _importWarningCodes = <String>{};
 
       _urlController.clear();
       _eventNameController.clear();
@@ -366,11 +382,18 @@ class _EventSetupPageState extends State<EventSetupPage> {
         .map((name) => PlayerDraft.create(displayName: name))
         .toList(growable: false);
 
+    final importedSourceUrl = _importedSourceUrl?.trim() ?? '';
+    final hasTennisbearImport =
+        _isUrlImportCompleted && importedSourceUrl.isNotEmpty;
+
     final draft = EventDraft(
-      url: _urlController.text.trim(),
+      url: hasTennisbearImport ? importedSourceUrl : '',
       courts: _courts,
       eventName: eventName,
       players: players,
+      sourceType: hasTennisbearImport
+          ? EventSourceType.tennisbear
+          : EventSourceType.manual,
     );
 
     Navigator.push(
@@ -408,6 +431,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
 
     setState(() {
       _isLoadingEvent = true;
+      _importWarningCodes = <String>{};
     });
 
     final startedAt = DateTime.now();
@@ -434,6 +458,10 @@ class _EventSetupPageState extends State<EventSetupPage> {
         _loadedFromUrl = true;
         _isUrlImportCompleted = true;
         _importedSourceUrl = originalUrl;
+        _importWarningCodes = preview.warnings
+            .map((warning) => warning.code)
+            .where((code) => code.isNotEmpty)
+            .toSet();
 
         if (playerCount > 0) {
           _courts = _inferCourtsForPlayerCount(playerCount);
@@ -554,6 +582,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       if (_isUrlImportCompleted && current != _importedSourceUrl) {
         _isUrlImportCompleted = false;
         _importedSourceUrl = null;
+        _importWarningCodes = <String>{};
         _loadedFromUrl = false;
       }
     });
@@ -601,6 +630,13 @@ class _EventSetupPageState extends State<EventSetupPage> {
       _importedSourceUrl = null;
       _loadedFromUrl = false;
     });
+  }
+
+  void _openImportedSourceEvent() {
+    final sourceUrl = _importedSourceUrl?.trim() ?? '';
+    if (sourceUrl.isEmpty) return;
+
+    openExternalUrl(sourceUrl);
   }
 
   String _formatDateTimeLabel(DateTime dateTime) {
@@ -697,6 +733,13 @@ class _EventSetupPageState extends State<EventSetupPage> {
                         onClear: _clearEventUrl,
                         onPaste: _pasteEventUrl,
                         onImport: _fetchEventInfo,
+                        importedSourceUrl: _importedSourceUrl,
+                        showEventTitleImportWarning: _eventTitleImportFailed,
+                        showParticipantDisplayNamesImportWarning:
+                            _participantDisplayNamesImportFailed,
+                        onOpenSourceEvent: _importedSourceUrl == null
+                            ? null
+                            : _openImportedSourceEvent,
                       ),
                       const SizedBox(height: 16),
                       Row(
