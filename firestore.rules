@@ -802,6 +802,7 @@ service cloud.firestore {
           'adoptedAt',
           'visibility',
           'visibleUntilRoundNo',
+          'statisticsEligible',
           'expiresAt',
           'revision',
           'createdAt',
@@ -816,6 +817,7 @@ service cloud.firestore {
         && event.courtCount is int
         && event.courtCount > 0
         && event.status == 'draft'
+        && event.get('statisticsEligible', false) == false
         && event.revision == 1
         && event.createdAt is string
         && event.updatedAt is string
@@ -945,7 +947,7 @@ service cloud.firestore {
         && isValidUpdatedProvenance();
     }
 
-    function isSharedAdoptUpdate() {
+    function isValidAdoptUpdateBase() {
       let rootChanged =
         request.resource.data.diff(resource.data).affectedKeys();
       let eventChanged =
@@ -963,6 +965,7 @@ service cloud.firestore {
           'currentGeneratedScheduleId',
           'adoptedGeneratedScheduleId',
           'adoptedAt',
+          'statisticsEligible',
           'revision',
           'updatedAt'
         ])
@@ -975,11 +978,25 @@ service cloud.firestore {
         && request.resource.data.event.adoptedGeneratedScheduleId
           == currentGeneratedScheduleId
         && request.resource.data.event.adoptedAt is string
+        && request.resource.data.event.get('statisticsEligible', false) is bool
         && request.resource.data.event.revision
           == resource.data.event.revision + 1
         && isValidEventSchemaUpdate()
         && isValidOperationalRevisions()
         && isValidUpdatedProvenance();
+    }
+
+    function isSharedAdoptUpdate() {
+      return isValidAdoptUpdateBase()
+        && request.resource.data.event.get('statisticsEligible', false)
+          == resource.data.event.get('statisticsEligible', false);
+    }
+
+    function isOwnerStatisticsEligibleAdoptUpdate() {
+      return isEventOwner()
+        && isValidAdoptUpdateBase()
+        && resource.data.event.get('statisticsEligible', false) == false
+        && request.resource.data.event.statisticsEligible == true;
     }
 
     function hasValidProgressCounts(data) {
@@ -1167,6 +1184,7 @@ service cloud.firestore {
         || isOwnerCourtSettingsUpdate()
         || isSharedGenerateUpdate()
         || isSharedAdoptUpdate()
+        || isOwnerStatisticsEligibleAdoptUpdate()
         || isOwnershipTransferEventUpdate();
       allow delete: if false;
 

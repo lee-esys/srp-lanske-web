@@ -66,6 +66,48 @@ void main() {
         throwsA(isA<StateError>()),
       );
     });
+    test('promotes statistics eligibility on adopt when policy allows',
+        () async {
+      final repository = JsonEventRepository(
+        store: FakeSavedEventJsonStore(),
+        publicIdGenerator: () => 'STAT0001',
+        statisticsEligibilityOnAdopt: (_) => true,
+      );
+      final created = await repository.createFromDraft(
+        buildDraft(),
+        ownerUid: 'owner-1',
+      );
+
+      expect(created.event.statisticsEligible, isFalse);
+
+      final generated =
+          await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: null,
+        generatedScheduleId: 'generated-1',
+      );
+      expect(generated.statisticsEligible, isFalse);
+
+      final adopted =
+          await repository.updateAdoptedGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: 'generated-1',
+      );
+      expect(adopted.statisticsEligible, isTrue);
+
+      final names = <String, String>{
+        for (final player in created.players) player.id: player.displayName,
+      };
+      final updated = await repository.updateDisplayInfo(
+        publicId: created.event.publicId,
+        expectedDisplayRevision: created.revisions.display,
+        title: 'Updated event',
+        memo: '',
+        playerDisplayNamesById: names,
+      );
+      expect(updated.event.statisticsEligible, isTrue);
+    });
+
     test('promotes legacy revision metadata on the next update', () async {
       final store = FakeSavedEventJsonStore();
       final repository = JsonEventRepository(

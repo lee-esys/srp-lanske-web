@@ -8,6 +8,8 @@ Firebase Hosting Preview や Codespaces、local から production Firestore を�
 
 provenance は削除専用フラグではなく、調査・移行・テストデータ整理などに利用できる補助メタデータとして扱う。
 
+provenance はWebクライアントが保存するmetadataであり、Firestore Rules上の信頼済み実行環境証明や権限判定には利用しない。
+
 ## 保存形式
 
 新規 document では次の形式を保存する。

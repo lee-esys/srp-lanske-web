@@ -9,12 +9,16 @@ class InMemoryEventRepository implements EventRepository {
   InMemoryEventRepository({
     String Function()? publicIdGenerator,
     DateTime Function()? clock,
+    bool Function(SavedEvent event)? statisticsEligibilityOnAdopt,
   })  : _publicIdGenerator = publicIdGenerator ?? generatePublicId,
-        _clock = clock ?? DateTime.now;
+        _clock = clock ?? DateTime.now,
+        _statisticsEligibilityOnAdopt =
+            statisticsEligibilityOnAdopt ?? ((_) => false);
 
   final _uuid = const Uuid();
   final String Function() _publicIdGenerator;
   final DateTime Function() _clock;
+  final bool Function(SavedEvent event) _statisticsEligibilityOnAdopt;
 
   final Map<String, SavedEvent> _eventsById = {};
   final Map<String, String> _eventIdByPublicId = {};
@@ -192,6 +196,8 @@ class InMemoryEventRepository implements EventRepository {
       currentGeneratedScheduleId: generatedScheduleId,
       adoptedGeneratedScheduleId: generatedScheduleId,
       adoptedAt: now,
+      statisticsEligible:
+          event.statisticsEligible || _statisticsEligibilityOnAdopt(event),
       revision: event.revision + 1,
       updatedAt: now,
     );
@@ -216,6 +222,8 @@ class InMemoryEventRepository implements EventRepository {
       currentGeneratedScheduleId: expectedCurrentGeneratedScheduleId,
       adoptedGeneratedScheduleId: expectedCurrentGeneratedScheduleId,
       adoptedAt: now,
+      statisticsEligible:
+          event.statisticsEligible || _statisticsEligibilityOnAdopt(event),
       revision: event.revision + 1,
       updatedAt: now,
     );

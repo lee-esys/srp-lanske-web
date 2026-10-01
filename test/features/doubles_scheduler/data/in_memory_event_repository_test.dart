@@ -28,6 +28,36 @@ void main() {
       );
     }
 
+    test('promotes statistics eligibility on adopt when policy allows',
+        () async {
+      final repository = InMemoryEventRepository(
+        publicIdGenerator: () => 'STAT0001',
+        statisticsEligibilityOnAdopt: (_) => true,
+      );
+      final created =
+          await repository.createFromDraft(buildDraft(), ownerUid: 'owner-1');
+
+      expect(created.event.statisticsEligible, isFalse);
+
+      final generated =
+          await repository.updateCurrentGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: null,
+        generatedScheduleId: 'generated-1',
+      );
+      expect(generated.statisticsEligible, isFalse);
+
+      final adopted =
+          await repository.updateAdoptedGeneratedScheduleIdIfCurrent(
+        publicId: created.event.publicId,
+        expectedCurrentGeneratedScheduleId: 'generated-1',
+      );
+      expect(adopted.statisticsEligible, isTrue);
+
+      final found = await repository.findByPublicId(created.event.publicId);
+      expect(found!.event.statisticsEligible, isTrue);
+    });
+
     test('creates public id with eight uppercase alphanumeric chars', () async {
       final repository = InMemoryEventRepository();
 

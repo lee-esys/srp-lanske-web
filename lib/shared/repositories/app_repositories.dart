@@ -1,9 +1,12 @@
 // lib/shared/repositories/app_repositories.dart
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:srp_lanske/app/config/app_config.dart';
 import 'package:srp_lanske/features/doubles_scheduler/application/event_repository.dart';
+import 'package:srp_lanske/features/doubles_scheduler/application/event_statistics_eligibility.dart';
 import 'package:srp_lanske/features/doubles_scheduler/data/firestore_event_repository.dart';
 import 'package:srp_lanske/features/doubles_scheduler/data/in_memory_event_repository.dart';
+import 'package:srp_lanske/features/doubles_scheduler/domain/saved_event_models.dart';
 import 'package:srp_lanske/features/schedule_progress/application/schedule_progress_repository.dart';
 import 'package:srp_lanske/features/schedule_progress/data/firestore_schedule_progress_repository.dart';
 import 'package:srp_lanske/features/schedule_progress/data/in_memory_schedule_progress_repository.dart';
@@ -20,8 +23,18 @@ final ScheduleProgressRepository appScheduleProgressRepository =
     _createScheduleProgressRepository();
 
 EventRepository _createEventRepository() {
+  bool statisticsEligibilityOnAdopt(SavedEvent event) {
+    return shouldPromoteStatisticsEligibleOnAdopt(
+      event: event,
+      appEnvironment: AppConfig.appEnvironment,
+      currentUid: FirebaseAuth.instance.currentUser?.uid,
+    );
+  }
+
   if (AppConfig.usesFirestoreEventRepository) {
-    return FirestoreEventRepository();
+    return FirestoreEventRepository(
+      statisticsEligibilityOnAdopt: statisticsEligibilityOnAdopt,
+    );
   }
 
   return InMemoryEventRepository();

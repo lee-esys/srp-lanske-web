@@ -62,6 +62,7 @@ void runEventRepositoryContractTests({
       expect(aggregate.event.adoptedAt, isNull);
       expect(aggregate.event.visibility, savedEventDefaultVisibility);
       expect(aggregate.event.visibleUntilRoundNo, isNull);
+      expect(aggregate.event.statisticsEligible, isFalse);
       expect(
         aggregate.event.expiresAt,
         defaultSavedEventExpiresAt(aggregate.event.createdAt),
@@ -369,7 +370,9 @@ void runEventRepositoryContractTests({
       );
 
       expect(first.currentGeneratedScheduleId, 'generated-1');
+      expect(first.statisticsEligible, isFalse);
       expect(second.currentGeneratedScheduleId, 'generated-2');
+      expect(second.statisticsEligible, isFalse);
       expect(second.hasAdoptedSchedule, isFalse);
     });
 
@@ -487,6 +490,7 @@ void runEventRepositoryContractTests({
       expect(adopted.currentGeneratedScheduleId, 'generated-1');
       expect(adopted.adoptedGeneratedScheduleId, 'generated-1');
       expect(adopted.hasAdoptedSchedule, isTrue);
+      expect(adopted.statisticsEligible, isFalse);
 
       await expectLater(
         repository.updateAdoptedGeneratedScheduleIdIfCurrent(
@@ -517,6 +521,7 @@ void runEventRepositoryContractTests({
       expect(updated.adoptedGeneratedScheduleId, 'generated-1');
       expect(updated.adoptedAt, isNotNull);
       expect(updated.status, SavedEventStatus.adopted);
+      expect(updated.statisticsEligible, isFalse);
       expect(updated.displayGeneratedScheduleId, 'generated-1');
       expect(updated.hasAdoptedSchedule, isTrue);
       expect(updated.revision, created.event.revision + 1);

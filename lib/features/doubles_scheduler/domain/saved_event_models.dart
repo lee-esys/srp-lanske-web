@@ -43,6 +43,7 @@ class SavedEvent {
     this.adoptedAt,
     this.visibility = savedEventDefaultVisibility,
     this.visibleUntilRoundNo,
+    this.statisticsEligible = false,
     DateTime? expiresAt,
     this.revision = 1,
   }) : expiresAt = expiresAt ?? defaultSavedEventExpiresAt(createdAt);
@@ -65,6 +66,7 @@ class SavedEvent {
   final DateTime? adoptedAt;
   final String visibility;
   final int? visibleUntilRoundNo;
+  final bool statisticsEligible;
   final DateTime expiresAt;
   final int revision;
   final DateTime createdAt;
@@ -96,6 +98,7 @@ class SavedEvent {
     DateTime? adoptedAt,
     String? visibility,
     int? visibleUntilRoundNo,
+    bool? statisticsEligible,
     DateTime? expiresAt,
     int? revision,
     DateTime? updatedAt,
@@ -121,6 +124,7 @@ class SavedEvent {
       adoptedAt: adoptedAt ?? this.adoptedAt,
       visibility: visibility ?? this.visibility,
       visibleUntilRoundNo: visibleUntilRoundNo ?? this.visibleUntilRoundNo,
+      statisticsEligible: statisticsEligible ?? this.statisticsEligible,
       expiresAt: expiresAt ?? this.expiresAt,
       revision: revision ?? this.revision,
       createdAt: createdAt,
@@ -148,6 +152,7 @@ class SavedEvent {
       'adoptedAt': _nullableDateTimeToJson(adoptedAt),
       'visibility': visibility,
       'visibleUntilRoundNo': visibleUntilRoundNo,
+      'statisticsEligible': statisticsEligible,
       'expiresAt': _dateTimeToJson(expiresAt),
       'revision': revision,
       'createdAt': _dateTimeToJson(createdAt),
@@ -179,6 +184,7 @@ class SavedEvent {
       adoptedAt: _nullableDateTimeFromJson(json['adoptedAt']),
       visibility: json['visibility']?.toString() ?? savedEventDefaultVisibility,
       visibleUntilRoundNo: _nullableIntFromJson(json['visibleUntilRoundNo']),
+      statisticsEligible: json['statisticsEligible'] == true,
       expiresAt: _nullableDateTimeFromJson(json['expiresAt']) ??
           defaultSavedEventExpiresAt(createdAt),
       revision: _nullableIntFromJson(json['revision']) ?? 1,

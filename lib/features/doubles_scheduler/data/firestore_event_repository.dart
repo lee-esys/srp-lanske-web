@@ -8,6 +8,7 @@ class FirestoreEventRepository extends JsonEventRepository {
     FirebaseFirestore? firestore,
     String collectionPath = 'events',
     super.publicIdGenerator,
+    super.statisticsEligibilityOnAdopt,
   }) : super(
           store: FirestoreSavedEventJsonStore(
             firestore: firestore,
