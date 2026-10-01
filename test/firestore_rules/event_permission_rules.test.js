@@ -283,6 +283,12 @@ test('event create requires authenticated UID to match ownerUid', async () => {
   await assertFails(
     alice.doc('events/PUBLIC04').set(eligibleAtCreate),
   );
+
+  const legacyCreate = eventData('PUBLIC05', 'alice');
+  delete legacyCreate.event.statisticsEligible;
+  await assertSucceeds(
+    alice.doc('events/PUBLIC05').set(legacyCreate),
+  );
 });
 
 test('known public ID is readable while collection queries are owner-scoped', async () => {
@@ -422,8 +428,8 @@ test('owner can promote statistics eligibility only as part of adopt', async () 
 
 test('owner cannot promote statistics eligibility through display update', async () => {
   const alice = anonymousDb('alice');
-  const eventRef = alice.doc('events/PUBLIC05');
-  await assertSucceeds(eventRef.set(eventData('PUBLIC05', 'alice')));
+  const eventRef = alice.doc('events/PUBLIC06');
+  await assertSucceeds(eventRef.set(eventData('PUBLIC06', 'alice')));
 
   const created = (await eventRef.get()).data();
   const forged = displayUpdate(created);
