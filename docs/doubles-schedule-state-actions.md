@@ -14,6 +14,7 @@ schedule stateの更新では、progress全体の再取得を前提にせず、�
 - `currentGeneratedScheduleId`
 - `adoptedGeneratedScheduleId`
 - `adoptedAt`
+- `statisticsEligible`（adopt時のみ昇格判定）
 
 `event.revision` はaggregate全体の変更検知用として引き続き更新するが、schedule state専用の競合判定には利用しない。
 
@@ -48,6 +49,8 @@ transaction内で次を確認する。
 - まだadoptされていない
 
 条件が一致した場合だけ、同じgenerated schedule IDを `adoptedGeneratedScheduleId` として保存する。
+
+`statisticsEligible` は新規作成時を `false` とし、production環境でevent owner本人がadoptした場合のみ `true` へ昇格する。preview / dev / local / unknown、またはshared URL経由の非owner adoptでは昇格させない。一度 `true` になった値は通常更新で `false` に戻さない。
 
 adopt成功後はrepositoryの更新結果をローカルへ直接反映し、通常の全体refreshは行わない。
 
@@ -92,8 +95,10 @@ repositoryのschedule state更新結果には最新event全体が含まれるが
 
 ## Firestore Rules
 
-既存Rulesではgenerate / adopt更新で変更可能fieldを限定している。
+Rulesではgenerate / adopt更新で変更可能fieldを限定する。
 
 adoptでは保存済みの `currentGeneratedScheduleId` と同じIDだけをadoptできるため、repository側のcompare-and-set方針と整合する。
 
-本整理ではRules自体の変更は行わない。
+`statisticsEligible` のfalse→trueはevent owner本人のadopt時だけ許可する。shared adoptでは現在値の維持だけを許可し、owner以外が統計対象へ昇格させることを防ぐ。
+
+`provenance.lastWrittenFrom.environment` はクライアントが保存するmetadataであり、Rules上の信頼できる環境証明には利用しない。environment判定はWeb側のデータ品質判定、Rulesはowner境界の保護を担当する。
