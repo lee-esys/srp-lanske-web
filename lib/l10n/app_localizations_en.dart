@@ -108,6 +108,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importButton => 'Import';
 
   @override
+  String get tennisbearEventTitleImportFailedWarning =>
+      'The event title could not be imported.';
+
+  @override
+  String get tennisbearParticipantDisplayNamesImportFailedWarning =>
+      'Participant display names could not be imported.';
+
+  @override
+  String get openTennisbearEventButton => 'Open TennisBear event';
+
+  @override
   String get eventNameLabel => 'Event name';
 
   @override

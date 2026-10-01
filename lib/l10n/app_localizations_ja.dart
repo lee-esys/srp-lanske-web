@@ -106,6 +106,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get importButton => '取り込み';
 
   @override
+  String get tennisbearEventTitleImportFailedWarning => 'イベントタイトルが取り込めませんでした';
+
+  @override
+  String get tennisbearParticipantDisplayNamesImportFailedWarning =>
+      '参加者表示名が取り込めませんでした';
+
+  @override
+  String get openTennisbearEventButton => 'テニスベアのイベントを表示する';
+
+  @override
   String get eventNameLabel => 'イベント名';
 
   @override
