@@ -128,7 +128,7 @@ void runEventRepositoryContractTests({
         eventName: 'TennisBear event',
         players: [
           PlayerDraft.create(
-            displayName: 'い',
+            displayName: 'イベント内表示名',
             sourceText: 'い',
             externalIdentity: const PlayerExternalIdentity(
               sourceType: 'tennisbear',
@@ -158,6 +158,8 @@ void runEventRepositoryContractTests({
       final created = await _createOwnedEvent(repository, draft);
       final importedPlayer = created.players.first;
 
+      expect(importedPlayer.displayName, 'イベント内表示名');
+      expect(importedPlayer.initialDisplayName, 'イベント内表示名');
       expect(importedPlayer.externalIdentity, isNotNull);
       expect(importedPlayer.externalIdentity!.sourceType, 'tennisbear');
       expect(importedPlayer.externalIdentity!.sourceUserId, '4380');
@@ -188,7 +190,7 @@ void runEventRepositoryContractTests({
       expect(restored, isNotNull);
       final restoredPlayer = restored!.players.first;
       expect(restoredPlayer.displayName, '表示名変更後');
-      expect(restoredPlayer.initialDisplayName, 'い');
+      expect(restoredPlayer.initialDisplayName, 'イベント内表示名');
       expect(restoredPlayer.externalIdentity!.sourceUserId, '4380');
       expect(restoredPlayer.sourceProfileSnapshot!.sourceDisplayName, 'い');
       expect(restoredPlayer.sourceProfileSnapshot!.observedAt, observedAt);
