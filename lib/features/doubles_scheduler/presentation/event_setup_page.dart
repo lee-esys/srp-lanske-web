@@ -464,7 +464,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
       final preview = await _tennisbearImportPreviewClient.preview(
         sourceUrl: parsedUrl.canonicalUrl,
       );
-      final observedAt = DateTime.now();
+      final observedAt = DateTime.now().toUtc();
 
       final elapsed = DateTime.now().difference(startedAt);
       const minLoading = Duration(milliseconds: 500);
@@ -605,7 +605,7 @@ class _EventSetupPageState extends State<EventSetupPage> {
     if (candidate == null) return null;
 
     final sourceUserId = candidate.userId.trim();
-    if (sourceUserId.isEmpty) return null;
+    if (sourceUserId.isEmpty || candidate.isGuest == true) return null;
 
     return PlayerExternalIdentity(
       sourceType: EventSourceType.tennisbear.name,
