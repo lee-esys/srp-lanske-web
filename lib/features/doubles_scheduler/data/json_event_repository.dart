@@ -11,13 +11,17 @@ class JsonEventRepository implements EventRepository {
     required SavedEventJsonStore store,
     String Function()? publicIdGenerator,
     DateTime Function()? clock,
+    bool Function(SavedEvent event)? statisticsEligibilityOnAdopt,
   })  : _store = store,
         _publicIdGenerator = publicIdGenerator ?? generatePublicId,
-        _clock = clock ?? DateTime.now;
+        _clock = clock ?? DateTime.now,
+        _statisticsEligibilityOnAdopt =
+            statisticsEligibilityOnAdopt ?? ((_) => false);
 
   final SavedEventJsonStore _store;
   final String Function() _publicIdGenerator;
   final DateTime Function() _clock;
+  final bool Function(SavedEvent event) _statisticsEligibilityOnAdopt;
   final _uuid = const Uuid();
 
   @override
@@ -202,6 +206,8 @@ class JsonEventRepository implements EventRepository {
         final current = SavedEventAggregate.fromJson(currentData);
         _ensurePublicId(current, publicId);
         final nowJson = _dateTimeToJson(_clock());
+        final statisticsEligible = current.event.statisticsEligible ||
+            _statisticsEligibilityOnAdopt(current.event);
 
         return _buildEventFieldsUpdate(
           currentData,
@@ -210,6 +216,7 @@ class JsonEventRepository implements EventRepository {
             'currentGeneratedScheduleId': generatedScheduleId,
             'adoptedGeneratedScheduleId': generatedScheduleId,
             'adoptedAt': nowJson,
+            'statisticsEligible': statisticsEligible,
             'revision': current.event.revision + 1,
             'updatedAt': nowJson,
           },
@@ -237,6 +244,8 @@ class JsonEventRepository implements EventRepository {
         );
 
         final nowJson = _dateTimeToJson(_clock());
+        final statisticsEligible = current.event.statisticsEligible ||
+            _statisticsEligibilityOnAdopt(current.event);
         return _buildEventFieldsUpdate(
           currentData,
           <String, dynamic>{
@@ -244,6 +253,7 @@ class JsonEventRepository implements EventRepository {
             'currentGeneratedScheduleId': expectedCurrentGeneratedScheduleId,
             'adoptedGeneratedScheduleId': expectedCurrentGeneratedScheduleId,
             'adoptedAt': nowJson,
+            'statisticsEligible': statisticsEligible,
             'revision': current.event.revision + 1,
             'updatedAt': nowJson,
           },
