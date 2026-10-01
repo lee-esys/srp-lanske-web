@@ -16,8 +16,7 @@ void main() {
             'target': 'https://www.tennisbear.net/event/1645753/info',
           },
           <String, dynamic>{
-            'code':
-                tennisbearImportWarningParticipantDisplayNamesMissing,
+            'code': tennisbearImportWarningParticipantDisplayNamesMissing,
             'message':
                 'failed to import all tennisbear participant display names',
             'target': 'https://www.tennisbear.net/event/1645753/info',

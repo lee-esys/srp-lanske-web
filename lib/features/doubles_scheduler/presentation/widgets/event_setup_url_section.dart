@@ -111,8 +111,8 @@ class EventSetupUrlSection extends StatelessWidget {
                 if (showParticipantDisplayNamesImportWarning) ...[
                   if (showEventTitleImportWarning) const SizedBox(height: 4),
                   _ImportWarningRow(
-                    text:
-                        l10n.tennisbearParticipantDisplayNamesImportFailedWarning,
+                    text: l10n
+                        .tennisbearParticipantDisplayNamesImportFailedWarning,
                   ),
                 ],
                 if (sourceUrl.isNotEmpty && onOpenSourceEvent != null) ...[

@@ -26,8 +26,7 @@ void main() {
           onClear: () {},
           onPaste: () {},
           onImport: () {},
-          importedSourceUrl:
-              'https://www.tennisbear.net/event/1645753/info',
+          importedSourceUrl: 'https://www.tennisbear.net/event/1645753/info',
           showEventTitleImportWarning: true,
           showParticipantDisplayNamesImportWarning: true,
           onOpenSourceEvent: () {
