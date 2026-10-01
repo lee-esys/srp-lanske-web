@@ -81,7 +81,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('テニスベアのイベントを表示する'), findsOneWidget);
+    expect(find.text('🐻'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('open-tennisbear-source-event-button')),
       findsOneWidget,
@@ -105,7 +105,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('テニスベアのイベントを表示する'), findsOneWidget);
+    expect(find.text('🐻'), findsOneWidget);
   });
 
   testWidgets('hides TennisBear source link for manual event', (tester) async {
@@ -121,7 +121,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('テニスベアのイベントを表示する'), findsNothing);
+    expect(find.text('🐻'), findsNothing);
   });
 
   testWidgets('uses tap trigger for the event title tooltip', (tester) async {
