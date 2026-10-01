@@ -423,11 +423,14 @@ events/{publicId}
   event.adoptedAt
   event.visibility
   event.visibleUntilRoundNo
+  event.statisticsEligible
   event.expiresAt
   event.revision
   event.createdAt
   event.updatedAt
 ```
+
+`statisticsEligible` はeventが統計pipelineへ入ってよいかを表し、新規作成時は `false` とする。production上でowner本人がadoptした場合に `true` へ昇格し、match単位・統計項目単位の採用可否は将来の統計処理側で別途判定する。
 
 `expiresAt` は作成から10日後を初期値として持つ。
 ただし、ver0.1.xでは期限切れによる非表示処理はまだ行わない。
