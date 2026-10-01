@@ -450,9 +450,10 @@ class _EventSetupPageState extends State<EventSetupPage> {
       if (!mounted) return;
 
       final playerDisplayNames = _playerDisplayNamesFromPreview(preview);
-      final playerCount = playerDisplayNames.isNotEmpty
-          ? playerDisplayNames.length
-          : (preview.participantSummary?.currentCount ?? 0);
+      final participantCount = preview.participantSummary?.currentCount ?? 0;
+      final playerCount = participantCount > playerDisplayNames.length
+          ? participantCount
+          : playerDisplayNames.length;
 
       setState(() {
         _loadedFromUrl = true;
