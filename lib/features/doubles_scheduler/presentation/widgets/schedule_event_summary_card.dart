@@ -4,8 +4,10 @@ import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/presentation/app_message_type.dart';
 import 'package:srp_lanske/shared/presentation/app_snack_bar.dart';
 import 'package:srp_lanske/shared/repositories/app_repositories.dart';
+import 'package:srp_lanske/shared/utils/external_link.dart';
 
 import '../../application/event_repository.dart';
+import '../../application/tennisbear_event_url.dart';
 import '../../application/saved_event_aggregate_helpers.dart';
 import '../../domain/saved_event_models.dart';
 import 'doubles_event_info_dialog.dart';
@@ -131,6 +133,33 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
       });
     }
     return latest;
+  }
+
+  String? _resolveTennisbearSourceUrl() {
+    final aggregate = _displayAggregate;
+    if (aggregate == null) return null;
+
+    String? resolve(EventSourceType sourceType, String? sourceUrl) {
+      final normalized = sourceUrl?.trim() ?? '';
+      if (normalized.isEmpty) return null;
+
+      if (sourceType == EventSourceType.tennisbear) {
+        return normalized;
+      }
+
+      if (sourceType == EventSourceType.unknown &&
+          parseTennisbearEventUrl(normalized) != null) {
+        return normalized;
+      }
+
+      return null;
+    }
+
+    return resolve(aggregate.event.sourceType, aggregate.event.sourceUrl) ??
+        resolve(
+          aggregate.importRecord?.sourceType ?? EventSourceType.manual,
+          aggregate.importRecord?.sourceUrl,
+        );
   }
 
   Future<void> _editEventInfo() async {
@@ -366,6 +395,7 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
     final l10n = AppLocalizations.of(context);
     final event = _displayAggregate?.event;
     final hasAdoptedSchedule = event?.hasAdoptedSchedule ?? false;
+    final tennisbearSourceUrl = _resolveTennisbearSourceUrl();
     final canEdit = widget.showEditAction &&
         widget.canEditEventInfo &&
         event != null &&
@@ -423,6 +453,13 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
                     onPressed: widget.onShareUrl,
                     icon: const Icon(Icons.share),
                     label: Text(l10n.shareUrlButton),
+                  ),
+                if (tennisbearSourceUrl != null)
+                  OutlinedButton.icon(
+                    key: const ValueKey('open-tennisbear-source-event-button'),
+                    onPressed: () => openExternalUrl(tennisbearSourceUrl),
+                    icon: const Icon(Icons.open_in_new),
+                    label: Text(l10n.openTennisbearEventButton),
                   ),
                 if (widget.onRefresh != null)
                   FilledButton.tonalIcon(
