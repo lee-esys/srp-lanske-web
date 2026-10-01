@@ -412,6 +412,25 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  if (tennisbearSourceUrl != null) ...[
+                    IconButton(
+                      key: const ValueKey(
+                        'open-tennisbear-source-event-button',
+                      ),
+                      tooltip: l10n.openTennisbearEventButton,
+                      onPressed: () => openExternalUrl(tennisbearSourceUrl),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                      icon: const Text(
+                        '🐻',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                  ],
                   Expanded(
                     child: Tooltip(
                       message: event.title,
@@ -453,13 +472,6 @@ class _ScheduleEventSummaryCardState extends State<ScheduleEventSummaryCard> {
                     onPressed: widget.onShareUrl,
                     icon: const Icon(Icons.share),
                     label: Text(l10n.shareUrlButton),
-                  ),
-                if (tennisbearSourceUrl != null)
-                  OutlinedButton.icon(
-                    key: const ValueKey('open-tennisbear-source-event-button'),
-                    onPressed: () => openExternalUrl(tennisbearSourceUrl),
-                    icon: const Icon(Icons.open_in_new),
-                    label: Text(l10n.openTennisbearEventButton),
                   ),
                 if (widget.onRefresh != null)
                   FilledButton.tonalIcon(
