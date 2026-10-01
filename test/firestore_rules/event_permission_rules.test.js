@@ -95,6 +95,7 @@ function eventData(publicId, ownerUid) {
       adoptedAt: null,
       visibility: 'unlisted',
       visibleUntilRoundNo: null,
+      statisticsEligible: false,
       expiresAt: '2026-10-07T00:00:00.000Z',
       revision: 1,
       createdAt: now,
@@ -192,7 +193,7 @@ function generateUpdate(current, generatedScheduleId = 'generated-1') {
   return next;
 }
 
-function adoptUpdate(current) {
+function adoptUpdate(current, { statisticsEligible } = {}) {
   const next = clone(current);
   promoteOperationalMetadata(next, current);
   const generatedScheduleId = current.event.currentGeneratedScheduleId;
@@ -200,6 +201,9 @@ function adoptUpdate(current) {
   next.event.currentGeneratedScheduleId = generatedScheduleId;
   next.event.adoptedGeneratedScheduleId = generatedScheduleId;
   next.event.adoptedAt = '2026-09-27T00:04:00.000Z';
+  if (statisticsEligible !== undefined) {
+    next.event.statisticsEligible = statisticsEligible;
+  }
   next.event.revision = current.event.revision + 1;
   next.event.updatedAt = next.event.adoptedAt;
   setUpdatedProvenance(next, 'adopt');
@@ -216,6 +220,7 @@ function legacyEventData(publicId) {
   const data = eventData(publicId, 'legacy-owner-placeholder');
   data.schemaVersion = 1;
   delete data.event.ownerUid;
+  delete data.event.statisticsEligible;
   delete data.revisions;
   delete data.provenance;
   return data;
@@ -271,6 +276,12 @@ test('event create requires authenticated UID to match ownerUid', async () => {
 
   await assertFails(
     alice.doc('events/PUBLIC03').set(eventData('PUBLIC03', 'bob')),
+  );
+
+  const eligibleAtCreate = eventData('PUBLIC04', 'alice');
+  eligibleAtCreate.event.statisticsEligible = true;
+  await assertFails(
+    alice.doc('events/PUBLIC04').set(eligibleAtCreate),
   );
 });
 
@@ -381,8 +392,43 @@ test('shared user can regenerate and adopt without structural edit permission', 
   forgedOwner.event.ownerUid = 'shared-user';
   await assertFails(sharedRef.set(forgedOwner));
 
+  const forgedEligible = adoptUpdate(afterGenerate, {
+    statisticsEligible: true,
+  });
+  await assertFails(sharedRef.set(forgedEligible));
+
   const adopted = adoptUpdate(afterGenerate);
   await assertSucceeds(sharedRef.set(adopted));
+});
+
+test('owner can promote statistics eligibility only as part of adopt', async () => {
+  const alice = anonymousDb('alice');
+  const eventRef = alice.doc('events/PUBLIC04');
+  await assertSucceeds(eventRef.set(eventData('PUBLIC04', 'alice')));
+
+  const created = (await eventRef.get()).data();
+  const generated = generateUpdate(created);
+  await assertSucceeds(eventRef.set(generated));
+
+  const afterGenerate = (await eventRef.get()).data();
+  const promoted = adoptUpdate(afterGenerate, {
+    statisticsEligible: true,
+  });
+  await assertSucceeds(eventRef.set(promoted));
+
+  const stored = (await eventRef.get()).data();
+  assert.equal(stored.event.statisticsEligible, true);
+});
+
+test('owner cannot promote statistics eligibility through display update', async () => {
+  const alice = anonymousDb('alice');
+  const eventRef = alice.doc('events/PUBLIC05');
+  await assertSucceeds(eventRef.set(eventData('PUBLIC05', 'alice')));
+
+  const created = (await eventRef.get()).data();
+  const forged = displayUpdate(created);
+  forged.event.statisticsEligible = true;
+  await assertFails(eventRef.set(forged));
 });
 
 test('legacy event keeps shared operations but cannot gain owner edits', async () => {
