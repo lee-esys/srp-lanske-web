@@ -988,7 +988,7 @@ service cloud.firestore {
 
     function isSharedAdoptUpdate() {
       return isValidAdoptUpdateBase()
-        && request.resource.data.event.statisticsEligible
+        && request.resource.data.event.get('statisticsEligible', false)
           == resource.data.event.get('statisticsEligible', false);
     }
 
