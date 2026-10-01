@@ -72,6 +72,7 @@ void main() {
       status: SavedEventStatus.adopted,
       currentGeneratedScheduleId: 'generated-latest',
       adoptedGeneratedScheduleId: 'generated-latest',
+      statisticsEligible: true,
       playerName: 'Remote player',
       courtLabel: 'A',
     );
@@ -82,6 +83,7 @@ void main() {
     expect(merged.event.currentGeneratedScheduleId, 'generated-latest');
     expect(merged.event.adoptedGeneratedScheduleId, 'generated-latest');
     expect(merged.event.adoptedAt, updated.event.adoptedAt);
+    expect(merged.event.statisticsEligible, isTrue);
 
     expect(merged.event.title, 'Current');
     expect(merged.event.memo, 'current memo');
@@ -186,6 +188,7 @@ SavedEventAggregate _aggregate({
   required SavedEventStatus status,
   required String currentGeneratedScheduleId,
   String? adoptedGeneratedScheduleId,
+  bool statisticsEligible = false,
   required String playerName,
   required String courtLabel,
 }) {
@@ -202,6 +205,7 @@ SavedEventAggregate _aggregate({
     currentGeneratedScheduleId: currentGeneratedScheduleId,
     adoptedGeneratedScheduleId: adoptedGeneratedScheduleId,
     adoptedAt: adoptedGeneratedScheduleId == null ? null : now,
+    statisticsEligible: statisticsEligible,
     revision: eventRevision,
     createdAt: now,
     updatedAt: now,
