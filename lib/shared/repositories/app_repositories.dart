@@ -37,9 +37,7 @@ EventRepository _createEventRepository() {
     );
   }
 
-  return InMemoryEventRepository(
-    statisticsEligibilityOnAdopt: statisticsEligibilityOnAdopt,
-  );
+  return InMemoryEventRepository();
 }
 
 TeamScheduleRepository _createTeamScheduleRepository() {
