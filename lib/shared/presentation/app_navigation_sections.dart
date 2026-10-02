@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
-
 class AppNavigationCommonSection extends StatelessWidget {
   const AppNavigationCommonSection({
     super.key,

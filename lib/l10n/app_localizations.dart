@@ -116,6 +116,18 @@ abstract class AppLocalizations {
   /// **'TOPへ'**
   String get topPageMenu;
 
+  /// Menu item label for opening account management.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウント'**
+  String get accountMenuLabel;
+
+  /// Generic tooltip for opening a navigation drawer.
+  ///
+  /// In ja, this message translates to:
+  /// **'メニューを開く'**
+  String get navigationMenuTooltip;
+
   /// Menu item label for the saved/generated match table list.
   ///
   /// In ja, this message translates to:

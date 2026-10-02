@@ -18,6 +18,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get topPageMenu => 'Top';
 
   @override
+  String get accountMenuLabel => 'Account';
+
+  @override
+  String get navigationMenuTooltip => 'Open menu';
+
+  @override
   String get matchTableList => 'Match table list';
 
   @override

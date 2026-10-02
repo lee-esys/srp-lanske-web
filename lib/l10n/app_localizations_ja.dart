@@ -18,6 +18,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get topPageMenu => 'TOPへ';
 
   @override
+  String get accountMenuLabel => 'アカウント';
+
+  @override
+  String get navigationMenuTooltip => 'メニューを開く';
+
+  @override
   String get matchTableList => '対戦表一覧';
 
   @override
