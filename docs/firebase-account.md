@@ -4,7 +4,7 @@
 
 This document covers the registered-account layer introduced by web #203 on top of the Firebase Auth foundation from #202.
 
-The account page is available at `/account`. Lanske remains usable without an explicit login; account registration is optional and is used by later My Page, ownership, profile-linking, role, and entitlement features.
+The account-management page is available at `/account`. The signed-in user entry point is `/mypage`, which shows a private Lanske account summary and provides the shell for later owner-event, profile-linking, and self-history sections. Lanske remains usable without an explicit login; account registration is optional.
 
 Anonymous user account transition is implemented by web #204 and documented separately in [`firebase-account-transition.md`](./firebase-account-transition.md).
 
@@ -36,6 +36,8 @@ The active mapping itself is stored separately in `externalIdentityMappings`; th
 The Firebase UID is internal and is not intended to be exposed as a public user ID.
 
 Provider-owned profile data such as email, Google display name, and profile image is not copied into the Firestore user document. Firebase Authentication remains the source for those values.
+
+My Page may show the signed-in email as private account information, but provider `displayName` and `photoURL` are not treated as a Lanske profile name or avatar. A future Lanske profile must opt into its own profile data explicitly.
 
 Anonymous Firebase users do not create `users/{uid}` documents.
 
@@ -118,9 +120,13 @@ When `/account` is opened with an anonymous Firebase session, the user can now a
 
 See [`firebase-account-transition.md`](./firebase-account-transition.md) for the detailed boundary.
 
-## Restored account sessions
+## My Page and restored account sessions
 
-When `/account` is opened with an already restored registered Firebase session, the page calls `ensureCurrentUser()` so a missing `users/{uid}` document can be created or repaired.
+`/mypage` is the main signed-in account entry point. For a registered account it calls `ensureCurrentUser()` and shows the current private account summary, including email when available, Plan, and the Lanske user-document creation date.
+
+Signed-out and Anonymous sessions can open My Page, but no Lanske user document is created for them. Instead, the page links to `/account` for login or Anonymous-to-account transition.
+
+`/account` remains responsible for login, account creation, Anonymous account transition, ownership-transfer recovery, logout, and related account-management operations. When opened with an already restored registered Firebase session, it also calls `ensureCurrentUser()` so a missing `users/{uid}` document can be created or repaired.
 
 ## Additional providers
 
