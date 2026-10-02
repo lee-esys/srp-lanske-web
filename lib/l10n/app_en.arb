@@ -85,6 +85,93 @@
   "@myPageRetryButton": {
     "description": "Button for retrying the My Page account summary load."
   },
+  "myPageMatchTableListTitle": "Match table list",
+  "@myPageMatchTableListTitle": {
+    "description": "Title for the account-owned match table list on My Page."
+  },
+  "myPageMatchTableListSubtitle": "Match tables managed by this account",
+  "@myPageMatchTableListSubtitle": {
+    "description": "Subtitle for the account-owned match table list on My Page."
+  },
+  "myPageMatchTableLoadingMessage": "Loading match tables…",
+  "@myPageMatchTableLoadingMessage": {
+    "description": "Loading message for the My Page match table list."
+  },
+  "myPageMatchTableEmptyMessage": "This account does not manage any match tables yet",
+  "@myPageMatchTableEmptyMessage": {
+    "description": "Empty message for the My Page match table list."
+  },
+  "myPageMatchTableLoadErrorTitle": "Could not load match tables",
+  "@myPageMatchTableLoadErrorTitle": {
+    "description": "Error title for the My Page match table list."
+  },
+  "myPageMatchTableCreatedAtLabel": "Created: {date}",
+  "@myPageMatchTableCreatedAtLabel": {
+    "description": "Created date shown for an item in the My Page match table list.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "myPageMatchTableEventDateLabel": "Event date: {date}",
+  "@myPageMatchTableEventDateLabel": {
+    "description": "Event date shown for an item in the My Page match table list.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "myPageMatchTableLocationLabel": "Location: {location}",
+  "@myPageMatchTableLocationLabel": {
+    "description": "Location shown for an item in the My Page match table list.",
+    "placeholders": {
+      "location": {
+        "type": "String"
+      }
+    }
+  },
+  "myPageMatchTableDraftStatus": "Preparing",
+  "@myPageMatchTableDraftStatus": {
+    "description": "Status label for an event before a schedule is generated."
+  },
+  "myPageMatchTableGeneratedStatus": "Unconfirmed",
+  "@myPageMatchTableGeneratedStatus": {
+    "description": "Status label for a generated but unconfirmed match table."
+  },
+  "myPageMatchTableAdoptedStatus": "Confirmed",
+  "@myPageMatchTableAdoptedStatus": {
+    "description": "Status label for a confirmed match table."
+  },
+  "myPageMatchTableOpenButton": "Open",
+  "@myPageMatchTableOpenButton": {
+    "description": "Action label for opening a match table from My Page."
+  },
+  "myPageMatchTableRefreshTooltip": "Refresh match table list",
+  "@myPageMatchTableRefreshTooltip": {
+    "description": "Tooltip for refreshing the My Page match table list."
+  },
+  "myPageMatchTablePreviousPage": "Previous",
+  "@myPageMatchTablePreviousPage": {
+    "description": "Button label for the previous page in the My Page match table list."
+  },
+  "myPageMatchTableNextPage": "Next",
+  "@myPageMatchTableNextPage": {
+    "description": "Button label for the next page in the My Page match table list."
+  },
+  "myPageMatchTablePageLabel": "{current} / {total}",
+  "@myPageMatchTablePageLabel": {
+    "description": "Current and total page indicator for the My Page match table list.",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "navigationMenuTooltip": "Open menu",
   "@navigationMenuTooltip": {
     "description": "Generic tooltip for opening a navigation drawer."
