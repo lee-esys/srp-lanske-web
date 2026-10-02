@@ -118,9 +118,9 @@
       }
     }
   },
-  "myPageMatchTableEventDateLabel": "Event date: {date}",
+  "myPageMatchTableEventDateLabel": "Event date/time: {date}",
   "@myPageMatchTableEventDateLabel": {
-    "description": "Event date shown for an item in the My Page match table list.",
+    "description": "Event date/time shown for an item in the My Page match table list.",
     "placeholders": {
       "date": {
         "type": "String"
@@ -147,10 +147,6 @@
   "myPageMatchTableAdoptedStatus": "Confirmed",
   "@myPageMatchTableAdoptedStatus": {
     "description": "Status label for a confirmed match table."
-  },
-  "myPageMatchTableOpenButton": "Open",
-  "@myPageMatchTableOpenButton": {
-    "description": "Action label for opening a match table from My Page."
   },
   "myPageMatchTableRefreshTooltip": "Refresh match table list",
   "@myPageMatchTableRefreshTooltip": {
