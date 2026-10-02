@@ -282,7 +282,7 @@ class _MatchTableListItem extends StatelessWidget {
     final dateLocalizations = MaterialLocalizations.of(context);
     final createdDate =
         dateLocalizations.formatMediumDate(event.createdAt.toLocal());
-    final eventDate = event.eventDate;
+    final eventDateTime = _eventDateTimeText(event, dateLocalizations);
     final location = event.location?.trim();
 
     return Material(
@@ -295,7 +295,7 @@ class _MatchTableListItem extends StatelessWidget {
       child: InkWell(
         onTap: onOpen,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 12, 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -319,32 +319,43 @@ class _MatchTableListItem extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(l10n.myPageMatchTableCreatedAtLabel(createdDate)),
-              if (eventDate != null) ...[
+              if (eventDateTime != null) ...[
                 const SizedBox(height: 4),
-                Text(
-                  l10n.myPageMatchTableEventDateLabel(
-                    dateLocalizations.formatMediumDate(eventDate),
-                  ),
-                ),
+                Text(l10n.myPageMatchTableEventDateLabel(eventDateTime)),
               ],
               if (location != null && location.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Text(l10n.myPageMatchTableLocationLabel(location)),
               ],
-              const SizedBox(height: 4),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: onOpen,
-                  icon: const Icon(Icons.arrow_forward),
-                  label: Text(l10n.myPageMatchTableOpenButton),
-                ),
-              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  String? _eventDateTimeText(
+    SavedEvent event,
+    MaterialLocalizations localizations,
+  ) {
+    final date = event.eventDate == null
+        ? null
+        : localizations.formatMediumDate(event.eventDate!);
+    final startTime = event.startTime?.trim();
+    final endTime = event.endTime?.trim();
+    final hasStartTime = startTime != null && startTime.isNotEmpty;
+    final hasEndTime = endTime != null && endTime.isNotEmpty;
+
+    final time = switch ((hasStartTime, hasEndTime)) {
+      (true, true) => '$startTime〜$endTime',
+      (true, false) => startTime,
+      (false, true) => endTime,
+      (false, false) => null,
+    };
+
+    if (date == null) return time;
+    if (time == null) return date;
+    return '$date $time';
   }
 
   String _statusLabel(
