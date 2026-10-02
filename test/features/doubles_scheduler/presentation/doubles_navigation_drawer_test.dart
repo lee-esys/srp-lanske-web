@@ -26,6 +26,7 @@ void main() {
     expect(find.byKey(const ValueKey('doubles-navigation-drawer-close')),
         findsOneWidget);
     expect(find.text('TOPへ'), findsOneWidget);
+    expect(find.text('マイページ'), findsOneWidget);
     expect(find.text('対戦表一覧'), findsOneWidget);
     expect(find.text('操作ヒントを表示'), findsOneWidget);
     expect(find.text('サポート'), findsOneWidget);
