@@ -18,6 +18,8 @@ void main() {
       title: '10月の対戦表',
       createdAt: DateTime(2026, 10, 1, 12),
       eventDate: DateTime(2026, 10, 5),
+      startTime: '19:00',
+      endTime: '21:00',
       location: '大久保スポーツプラザ',
       status: SavedEventStatus.adopted,
     );
@@ -44,14 +46,38 @@ void main() {
     expect(find.text('10月の対戦表'), findsOneWidget);
     expect(find.text('他のownerの対戦表'), findsNothing);
     expect(find.textContaining('作成日:'), findsOneWidget);
-    expect(find.textContaining('開催日:'), findsOneWidget);
+    expect(find.textContaining('開催日時:'), findsOneWidget);
+    expect(find.textContaining('19:00〜21:00'), findsOneWidget);
     expect(find.text('場所: 大久保スポーツプラザ'), findsOneWidget);
     expect(find.text('確定済み'), findsOneWidget);
+    expect(find.text('開く'), findsNothing);
 
-    await tester.tap(find.text('開く'));
+    await tester.tap(find.text('10月の対戦表'));
     await tester.pump();
 
     expect(opened?.event.publicId, 'OWN00001');
+  });
+
+  testWidgets('omits unavailable event date time and location',
+      (tester) async {
+    final item = _aggregate(
+      publicId: 'COMPACT1',
+      ownerUid: 'owner-1',
+      title: '手動作成の対戦表',
+      createdAt: DateTime(2026, 10, 2),
+    );
+
+    await _pumpSection(
+      tester,
+      loadOwnedEvents: (_) async => [item],
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('手動作成の対戦表'), findsOneWidget);
+    expect(find.textContaining('作成日:'), findsOneWidget);
+    expect(find.textContaining('開催日時:'), findsNothing);
+    expect(find.textContaining('場所:'), findsNothing);
+    expect(find.text('開く'), findsNothing);
   });
 
   testWidgets('sorts owned events and pages them ten at a time',
@@ -176,6 +202,8 @@ SavedEventAggregate _aggregate({
   required String title,
   required DateTime createdAt,
   DateTime? eventDate,
+  String? startTime,
+  String? endTime,
   String? location,
   SavedEventStatus status = SavedEventStatus.draft,
 }) {
@@ -186,6 +214,8 @@ SavedEventAggregate _aggregate({
     ownerUid: ownerUid,
     title: title,
     eventDate: eventDate,
+    startTime: startTime,
+    endTime: endTime,
     location: location,
     courtCount: 1,
     sourceType: EventSourceType.manual,
