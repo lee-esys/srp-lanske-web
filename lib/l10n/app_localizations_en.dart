@@ -74,7 +74,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myPageRetryButton => 'Reload';
 
   @override
-  String get myPageMatchTableListTitle => 'Match table list';
+  String get myPageDoublesMatchTablesHeading => '🎾 Doubles match tables';
+
+  @override
+  String get myPageMatchTableListTitle => 'Created match tables';
 
   @override
   String get myPageMatchTableListSubtitle =>

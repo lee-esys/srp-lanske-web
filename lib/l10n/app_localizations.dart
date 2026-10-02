@@ -218,10 +218,16 @@ abstract class AppLocalizations {
   /// **'再読み込み'**
   String get myPageRetryButton;
 
+  /// Heading for doubles match table features on My Page.
+  ///
+  /// In ja, this message translates to:
+  /// **'🎾 ダブルス対戦表'**
+  String get myPageDoublesMatchTablesHeading;
+
   /// Title for the account-owned match table list on My Page.
   ///
   /// In ja, this message translates to:
-  /// **'対戦表一覧'**
+  /// **'作成した対戦表'**
   String get myPageMatchTableListTitle;
 
   /// Subtitle for the account-owned match table list on My Page.

@@ -72,7 +72,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get myPageRetryButton => '再読み込み';
 
   @override
-  String get myPageMatchTableListTitle => '対戦表一覧';
+  String get myPageDoublesMatchTablesHeading => '🎾 ダブルス対戦表';
+
+  @override
+  String get myPageMatchTableListTitle => '作成した対戦表';
 
   @override
   String get myPageMatchTableListSubtitle => 'このアカウントで管理している対戦表';
