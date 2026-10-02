@@ -124,6 +124,8 @@ See [`firebase-account-transition.md`](./firebase-account-transition.md) for the
 
 `/mypage` is the main signed-in account entry point. For a registered account it calls `ensureCurrentUser()` and shows the current private account summary, including email when available, Plan, and the Lanske user-document creation date.
 
+My Page also shows a `対戦表一覧` section based on the authenticated account UID and `EventRepository.listByOwnerUid()`. This list is account ownership data, not the browser-local recently opened schedule history. The Firestore implementation uses an equality query on `event.ownerUid`; the current My Page loads the matching events and pages them ten at a time in the client. Ownership transfer therefore moves an event to the target account's list when its `ownerUid` is updated.
+
 Signed-out and Anonymous sessions can open My Page, but no Lanske user document is created for them. Instead, the page links to `/account` for login or Anonymous-to-account transition.
 
 `/account` remains responsible for login, account creation, Anonymous account transition, ownership-transfer recovery, logout, and related account-management operations. When opened with an already restored registered Firebase session, it also calls `ensureCurrentUser()` so a missing `users/{uid}` document can be created or repaired.
