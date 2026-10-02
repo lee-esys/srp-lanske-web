@@ -130,7 +130,10 @@ Future<void> _pumpMyPage(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         locale: const Locale('ja'),
-        home: MyPage(accountService: accountService),
+        home: MyPage(
+          accountService: accountService,
+          ownedEventsLoader: (_) async => const [],
+        ),
       ),
     ),
   );
