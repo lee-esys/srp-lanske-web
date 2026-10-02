@@ -63,9 +63,8 @@ void main() {
         ownerUid: 'owner-1',
         title: '対戦表 $number',
         createdAt: DateTime(2026, 9, number),
-        status: number.isEven
-            ? SavedEventStatus.generated
-            : SavedEventStatus.draft,
+        status:
+            number.isEven ? SavedEventStatus.generated : SavedEventStatus.draft,
       );
     });
 

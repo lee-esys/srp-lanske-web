@@ -74,6 +74,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myPageRetryButton => 'Reload';
 
   @override
+  String get myPageMatchTableListTitle => 'Match table list';
+
+  @override
+  String get myPageMatchTableListSubtitle =>
+      'Match tables managed by this account';
+
+  @override
+  String get myPageMatchTableLoadingMessage => 'Loading match tables…';
+
+  @override
+  String get myPageMatchTableEmptyMessage =>
+      'This account does not manage any match tables yet';
+
+  @override
+  String get myPageMatchTableLoadErrorTitle => 'Could not load match tables';
+
+  @override
+  String myPageMatchTableCreatedAtLabel(String date) {
+    return 'Created: $date';
+  }
+
+  @override
+  String myPageMatchTableEventDateLabel(String date) {
+    return 'Event date: $date';
+  }
+
+  @override
+  String myPageMatchTableLocationLabel(String location) {
+    return 'Location: $location';
+  }
+
+  @override
+  String get myPageMatchTableDraftStatus => 'Preparing';
+
+  @override
+  String get myPageMatchTableGeneratedStatus => 'Unconfirmed';
+
+  @override
+  String get myPageMatchTableAdoptedStatus => 'Confirmed';
+
+  @override
+  String get myPageMatchTableOpenButton => 'Open';
+
+  @override
+  String get myPageMatchTableRefreshTooltip => 'Refresh match table list';
+
+  @override
+  String get myPageMatchTablePreviousPage => 'Previous';
+
+  @override
+  String get myPageMatchTableNextPage => 'Next';
+
+  @override
+  String myPageMatchTablePageLabel(int current, int total) {
+    return '$current / $total';
+  }
+
+  @override
   String get navigationMenuTooltip => 'Open menu';
 
   @override

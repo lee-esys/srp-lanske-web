@@ -63,8 +63,7 @@ class _MyPageMatchTableListSectionState
   Future<void> _load() async {
     final sequence = ++_loadSequence;
     final requestedOwnerUid = widget.ownerUid;
-    final loader =
-        widget.loadOwnedEvents ?? appEventRepository.listByOwnerUid;
+    final loader = widget.loadOwnedEvents ?? appEventRepository.listByOwnerUid;
 
     if (mounted) {
       setState(() {
@@ -91,9 +90,8 @@ class _MyPageMatchTableListSectionState
         _items = owned;
         _loading = false;
         _loadError = null;
-        _pageIndex = pageCount == 0
-            ? 0
-            : _pageIndex.clamp(0, pageCount - 1).toInt();
+        _pageIndex =
+            pageCount == 0 ? 0 : _pageIndex.clamp(0, pageCount - 1).toInt();
       });
     } catch (error) {
       if (!mounted ||
@@ -127,8 +125,7 @@ class _MyPageMatchTableListSectionState
     if (_items.isEmpty) return const [];
 
     final start = _pageIndex * widget.pageSize;
-    final end =
-        (start + widget.pageSize).clamp(0, _items.length).toInt();
+    final end = (start + widget.pageSize).clamp(0, _items.length).toInt();
     return _items.sublist(start, end);
   }
 

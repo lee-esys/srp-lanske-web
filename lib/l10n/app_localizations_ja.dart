@@ -72,6 +72,62 @@ class AppLocalizationsJa extends AppLocalizations {
   String get myPageRetryButton => '再読み込み';
 
   @override
+  String get myPageMatchTableListTitle => '対戦表一覧';
+
+  @override
+  String get myPageMatchTableListSubtitle => 'このアカウントで管理している対戦表';
+
+  @override
+  String get myPageMatchTableLoadingMessage => '対戦表を読み込んでいます…';
+
+  @override
+  String get myPageMatchTableEmptyMessage => 'このアカウントで管理している対戦表はありません';
+
+  @override
+  String get myPageMatchTableLoadErrorTitle => '対戦表を読み込めませんでした';
+
+  @override
+  String myPageMatchTableCreatedAtLabel(String date) {
+    return '作成日: $date';
+  }
+
+  @override
+  String myPageMatchTableEventDateLabel(String date) {
+    return '開催日: $date';
+  }
+
+  @override
+  String myPageMatchTableLocationLabel(String location) {
+    return '場所: $location';
+  }
+
+  @override
+  String get myPageMatchTableDraftStatus => '作成中';
+
+  @override
+  String get myPageMatchTableGeneratedStatus => '未確定';
+
+  @override
+  String get myPageMatchTableAdoptedStatus => '確定済み';
+
+  @override
+  String get myPageMatchTableOpenButton => '開く';
+
+  @override
+  String get myPageMatchTableRefreshTooltip => '対戦表一覧を更新';
+
+  @override
+  String get myPageMatchTablePreviousPage => '前へ';
+
+  @override
+  String get myPageMatchTableNextPage => '次へ';
+
+  @override
+  String myPageMatchTablePageLabel(int current, int total) {
+    return '$current / $total';
+  }
+
+  @override
   String get navigationMenuTooltip => 'メニューを開く';
 
   @override
