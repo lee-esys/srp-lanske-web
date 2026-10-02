@@ -6,13 +6,11 @@ class AppNavigationCommonSection extends StatelessWidget {
     super.key,
     this.onOpenTop,
     this.onOpenMyPage,
-    this.adminItem,
     this.onOpenSupport,
   });
 
   final VoidCallback? onOpenTop;
   final VoidCallback? onOpenMyPage;
-  final Widget? adminItem;
   final VoidCallback? onOpenSupport;
 
   @override
@@ -34,7 +32,6 @@ class AppNavigationCommonSection extends StatelessWidget {
             label: l10n.myPageMenuLabel,
             onTap: onOpenMyPage!,
           ),
-        if (adminItem != null) adminItem!,
         if (onOpenSupport != null)
           ListTile(
             leading: const Icon(Icons.help_outline),
