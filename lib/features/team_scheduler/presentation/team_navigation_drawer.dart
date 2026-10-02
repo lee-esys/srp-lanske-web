@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/presentation/app_navigation_sections.dart';
 import 'package:srp_lanske/shared/utils/external_link.dart';
-import '../../auth/presentation/account_routes.dart';
 import '../../auth/presentation/admin_role_visibility.dart';
 import '../../external_identity/presentation/admin_profile_link_review_routes.dart';
+import '../../my_page/presentation/my_page_routes.dart';
 import '../data/local_team_schedule_history_item.dart';
 import 'team_schedule_page.dart';
 import 'widgets/team_schedule_history_list_view.dart';
@@ -152,7 +152,7 @@ class _TeamNavigationDrawerState extends State<TeamNavigationDrawer> {
         const Divider(height: 1),
         AppNavigationCommonSection(
           onOpenTop: () => _openPath(context, '/'),
-          onOpenAccount: () => _openPath(context, accountPagePath),
+          onOpenMyPage: () => _openPath(context, myPagePath),
           adminItem: AdminRoleVisibility(
             child: AppNavigationTile(
               icon: Icons.admin_panel_settings_outlined,
