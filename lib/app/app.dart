@@ -56,9 +56,9 @@ class _AppState extends State<App> {
             ? const MyPage()
             : uri.path == adminProfileLinkReviewPath
                 ? const AdminProfileLinkReviewPage()
-            : publicId == null || publicId.isEmpty
-                ? _homeForPath(uri.path)
-                : RestoredSchedulePage(publicId: publicId);
+                : publicId == null || publicId.isEmpty
+                    ? _homeForPath(uri.path)
+                    : RestoredSchedulePage(publicId: publicId);
 
     return MaterialApp(
       title: 'Lanske',
