@@ -85,7 +85,11 @@
   "@myPageRetryButton": {
     "description": "Button for retrying the My Page account summary load."
   },
-  "myPageMatchTableListTitle": "Match table list",
+  "myPageDoublesMatchTablesHeading": "🎾 Doubles match tables",
+  "@myPageDoublesMatchTablesHeading": {
+    "description": "Heading for doubles match table features on My Page."
+  },
+  "myPageMatchTableListTitle": "Created match tables",
   "@myPageMatchTableListTitle": {
     "description": "Title for the account-owned match table list on My Page."
   },
