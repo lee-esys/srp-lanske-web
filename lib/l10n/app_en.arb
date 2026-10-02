@@ -12,9 +12,78 @@
   "@topPageMenu": {
     "description": "Menu item label for returning to the top page."
   },
-  "accountMenuLabel": "Account",
+  "accountMenuLabel": "Account settings",
   "@accountMenuLabel": {
     "description": "Menu item label for opening account management."
+  },
+  "myPageMenuLabel": "My Page",
+  "@myPageMenuLabel": {
+    "description": "Menu item and page title for My Page."
+  },
+  "myPageAccountSectionTitle": "Lanske account",
+  "@myPageAccountSectionTitle": {
+    "description": "Title for the Lanske account summary section on My Page."
+  },
+  "myPageAccountSectionSubtitle": "Account information and current plan",
+  "@myPageAccountSectionSubtitle": {
+    "description": "Subtitle for the Lanske account summary section on My Page."
+  },
+  "myPageAccountRequiredTitle": "A Lanske account is required to use My Page",
+  "@myPageAccountRequiredTitle": {
+    "description": "Title shown on My Page when there is no registered account session."
+  },
+  "myPageAccountRequiredBody": "Sign in or move your current no-login session to an account to use My Page features.",
+  "@myPageAccountRequiredBody": {
+    "description": "Body shown on My Page when there is no registered account session."
+  },
+  "myPageOpenAccountButton": "Sign in / account settings",
+  "@myPageOpenAccountButton": {
+    "description": "Button for opening account management from an unavailable My Page."
+  },
+  "myPageEmailLabel": "Email",
+  "@myPageEmailLabel": {
+    "description": "Label for the signed-in account email on My Page."
+  },
+  "myPagePlanLabel": "Plan",
+  "@myPagePlanLabel": {
+    "description": "Label for the Lanske account plan on My Page."
+  },
+  "myPagePlanFree": "Free",
+  "@myPagePlanFree": {
+    "description": "Display name for the free plan on My Page."
+  },
+  "myPagePlanPremium": "Premium",
+  "@myPagePlanPremium": {
+    "description": "Display name for the premium plan on My Page."
+  },
+  "myPageStartedAtLabel": "Joined: {date}",
+  "@myPageStartedAtLabel": {
+    "description": "Label showing when the Lanske account was created.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "myPageAccountManagementButton": "Account settings",
+  "@myPageAccountManagementButton": {
+    "description": "Button for opening account management from My Page."
+  },
+  "myPageLoadingAccountMessage": "Loading account information…",
+  "@myPageLoadingAccountMessage": {
+    "description": "Loading message while reading the Lanske account summary."
+  },
+  "myPageLoadErrorTitle": "Could not load account information",
+  "@myPageLoadErrorTitle": {
+    "description": "Error title when the Lanske account summary cannot be loaded."
+  },
+  "myPageLoadErrorBody": "Check your connection and try again.",
+  "@myPageLoadErrorBody": {
+    "description": "Error body when the Lanske account summary cannot be loaded."
+  },
+  "myPageRetryButton": "Reload",
+  "@myPageRetryButton": {
+    "description": "Button for retrying the My Page account summary load."
   },
   "navigationMenuTooltip": "Open menu",
   "@navigationMenuTooltip": {
