@@ -24,7 +24,7 @@ class MyPageMatchTableListSection extends StatefulWidget {
     this.loadOwnedEvents,
     this.onOpenEvent,
     this.pageSize = 10,
-  });
+  }) : assert(pageSize > 0);
 
   final String ownerUid;
   final MyPageOwnedEventsLoader? loadOwnedEvents;
@@ -326,7 +326,7 @@ class _MatchTableListItem extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   l10n.myPageMatchTableEventDateLabel(
-                    dateLocalizations.formatMediumDate(eventDate.toLocal()),
+                    dateLocalizations.formatMediumDate(eventDate),
                   ),
                 ),
               ],
@@ -339,7 +339,7 @@ class _MatchTableListItem extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(
                   onPressed: onOpen,
-                  icon: const Icon(Icons.open_in_new),
+                  icon: const Icon(Icons.arrow_forward),
                   label: Text(l10n.myPageMatchTableOpenButton),
                 ),
               ),
