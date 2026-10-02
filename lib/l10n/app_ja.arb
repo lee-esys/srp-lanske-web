@@ -118,9 +118,9 @@
       }
     }
   },
-  "myPageMatchTableEventDateLabel": "開催日: {date}",
+  "myPageMatchTableEventDateLabel": "開催日時: {date}",
   "@myPageMatchTableEventDateLabel": {
-    "description": "Event date shown for an item in the My Page match table list.",
+    "description": "Event date/time shown for an item in the My Page match table list.",
     "placeholders": {
       "date": {
         "type": "String"
@@ -147,10 +147,6 @@
   "myPageMatchTableAdoptedStatus": "確定済み",
   "@myPageMatchTableAdoptedStatus": {
     "description": "Status label for a confirmed match table."
-  },
-  "myPageMatchTableOpenButton": "開く",
-  "@myPageMatchTableOpenButton": {
-    "description": "Action label for opening a match table from My Page."
   },
   "myPageMatchTableRefreshTooltip": "対戦表一覧を更新",
   "@myPageMatchTableRefreshTooltip": {
