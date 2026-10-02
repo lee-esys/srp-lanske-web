@@ -58,8 +58,7 @@ void main() {
     expect(opened?.event.publicId, 'OWN00001');
   });
 
-  testWidgets('omits unavailable event date time and location',
-      (tester) async {
+  testWidgets('omits unavailable event date time and location', (tester) async {
     final item = _aggregate(
       publicId: 'COMPACT1',
       ownerUid: 'owner-1',

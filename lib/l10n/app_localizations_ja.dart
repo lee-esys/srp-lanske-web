@@ -96,7 +96,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String myPageMatchTableEventDateLabel(String date) {
-    return '開催日: $date';
+    return '開催日時: $date';
   }
 
   @override
@@ -112,9 +112,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get myPageMatchTableAdoptedStatus => '確定済み';
-
-  @override
-  String get myPageMatchTableOpenButton => '開く';
 
   @override
   String get myPageMatchTableRefreshTooltip => '対戦表一覧を更新';

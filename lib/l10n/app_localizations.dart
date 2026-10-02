@@ -260,10 +260,10 @@ abstract class AppLocalizations {
   /// **'作成日: {date}'**
   String myPageMatchTableCreatedAtLabel(String date);
 
-  /// Event date shown for an item in the My Page match table list.
+  /// Event date/time shown for an item in the My Page match table list.
   ///
   /// In ja, this message translates to:
-  /// **'開催日: {date}'**
+  /// **'開催日時: {date}'**
   String myPageMatchTableEventDateLabel(String date);
 
   /// Location shown for an item in the My Page match table list.
@@ -289,12 +289,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'確定済み'**
   String get myPageMatchTableAdoptedStatus;
-
-  /// Action label for opening a match table from My Page.
-  ///
-  /// In ja, this message translates to:
-  /// **'開く'**
-  String get myPageMatchTableOpenButton;
 
   /// Tooltip for refreshing the My Page match table list.
   ///
