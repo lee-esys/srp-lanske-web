@@ -27,6 +27,17 @@ void main() {
     expect(find.text('このプロフィールで連携を申請'), findsOneWidget);
   });
 
+  testWidgets('shows profile link title as semantic wrap segments',
+      (tester) async {
+    final fixture = _Fixture(now: now);
+
+    await tester.pumpWidget(_testApp(fixture.service, now: now));
+    await tester.pumpAndSettle();
+
+    expect(find.text('プロフィール連携：'), findsOneWidget);
+    expect(find.text('TennisBear'), findsOneWidget);
+  });
+
   testWidgets('shows issued confirmation code after request creation',
       (tester) async {
     final fixture = _Fixture(now: now);
