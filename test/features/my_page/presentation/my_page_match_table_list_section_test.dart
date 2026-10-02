@@ -81,6 +81,8 @@ void main() {
     expect(find.text('対戦表 2'), findsNothing);
     expect(find.text('対戦表 1'), findsNothing);
 
+    await tester.ensureVisible(find.text('次へ'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('次へ'));
     await tester.pumpAndSettle();
 
