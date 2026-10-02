@@ -29,7 +29,8 @@ void main() {
     final drawer = tester.widget<Drawer>(find.byType(Drawer));
     expect(drawer.width, 300);
 
-    expect(find.text('アカウント'), findsOneWidget);
+    expect(find.text('アカウント管理'), findsOneWidget);
+    expect(find.text('マイページ'), findsOneWidget);
     expect(find.text('TOPへ'), findsOneWidget);
     expect(find.text('サポート'), findsOneWidget);
     expect(find.text('サービス一覧'), findsOneWidget);
