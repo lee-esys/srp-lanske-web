@@ -148,7 +148,14 @@ class _MyPageState extends State<MyPage> {
                 else if (_user != null)
                   _buildAccountSummary(context, session, _user!),
                 if (session.isAccount && session.uid != null) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
+                  Text(
+                    l10n.myPageDoublesMatchTablesHeading,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                  const SizedBox(height: 12),
                   MyPageMatchTableListSection(
                     ownerUid: session.uid!,
                     loadOwnedEvents: widget.ownedEventsLoader,
