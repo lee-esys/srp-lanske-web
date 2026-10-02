@@ -6,8 +6,6 @@ import 'package:srp_lanske/shared/presentation/app_navigation_sections.dart';
 import 'package:srp_lanske/shared/utils/external_link.dart';
 
 import '../../auth/presentation/account_routes.dart';
-import '../../auth/presentation/admin_role_visibility.dart';
-import '../../external_identity/presentation/admin_profile_link_review_routes.dart';
 
 const _supportPagePath = '/support/index.html';
 
@@ -74,16 +72,6 @@ class MyPageNavigationDrawer extends StatelessWidget {
                   const Divider(height: 1),
                   AppNavigationCommonSection(
                     onOpenTop: () => _openPath(context, '/'),
-                    adminItem: AdminRoleVisibility(
-                      child: AppNavigationTile(
-                        icon: Icons.admin_panel_settings_outlined,
-                        label: l10n.adminProfileLinkReviewMenuLabel,
-                        onTap: () => _openPath(
-                          context,
-                          adminProfileLinkReviewPath,
-                        ),
-                      ),
-                    ),
                     onOpenSupport: () => _openPath(context, _supportPagePath),
                   ),
                   const Divider(height: 1),
