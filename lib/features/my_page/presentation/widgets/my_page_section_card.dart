@@ -7,11 +7,13 @@ class MyPageSectionCard extends StatelessWidget {
     required this.title,
     required this.child,
     this.subtitle,
+    this.trailing,
   });
 
   final IconData icon;
   final String title;
   final String? subtitle;
+  final Widget? trailing;
   final Widget child;
 
   @override
@@ -57,6 +59,10 @@ class MyPageSectionCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (trailing != null) ...[
+                  const SizedBox(width: 8),
+                  trailing!,
+                ],
               ],
             ),
             const SizedBox(height: 20),
