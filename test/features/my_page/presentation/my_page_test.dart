@@ -65,6 +65,11 @@ void main() {
     expect(find.text('Premium'), findsOneWidget);
     expect(find.textContaining('利用開始日:'), findsOneWidget);
     expect(find.text('アカウント管理'), findsWidgets);
+    expect(find.text('対戦表一覧'), findsOneWidget);
+    expect(
+      find.text('このアカウントで管理している対戦表はありません'),
+      findsOneWidget,
+    );
 
     expect(find.text('Provider Display Name'), findsNothing);
     expect(users.calls, 1);
