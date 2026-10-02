@@ -12,15 +12,20 @@ import '../../auth/presentation/account_routes.dart';
 import '../../auth/presentation/account_scope.dart';
 import '../../auth/presentation/auth_scope.dart';
 import 'my_page_navigation_drawer.dart';
+import 'widgets/my_page_match_table_list_section.dart';
 import 'widgets/my_page_section_card.dart';
 
 class MyPage extends StatefulWidget {
   const MyPage({
     super.key,
     this.accountService,
+    this.ownedEventsLoader,
+    this.onOpenOwnedEvent,
   });
 
   final AccountService? accountService;
+  final MyPageOwnedEventsLoader? ownedEventsLoader;
+  final MyPageOwnedEventOpenCallback? onOpenOwnedEvent;
 
   @override
   State<MyPage> createState() => _MyPageState();
@@ -142,6 +147,14 @@ class _MyPageState extends State<MyPage> {
                   _buildError(context)
                 else if (_user != null)
                   _buildAccountSummary(context, session, _user!),
+                if (session.isAccount && session.uid != null) ...[
+                  const SizedBox(height: 16),
+                  MyPageMatchTableListSection(
+                    ownerUid: session.uid!,
+                    loadOwnedEvents: widget.ownedEventsLoader,
+                    onOpenEvent: widget.onOpenOwnedEvent,
+                  ),
+                ],
               ],
             ),
           ),
