@@ -27,7 +27,8 @@ extension TennisBearProfileLinkLocalizations on AppLocalizations {
   String get tennisBearProfileLinkTitlePrefix =>
       _isJapanese ? 'プロフィール連携：' : 'Profile link: ';
 
-  String get tennisBearProfileLinkTitleSource => 'TennisBear';
+  String get tennisBearProfileLinkTitleSource =>
+      _isJapanese ? 'テニスベア' : 'TennisBear';
 
   String get tennisBearProfileLinkSubtitle => _isJapanese
       ? 'Lanskeアカウントと、ご自身のテニスベア公開プロフィールを対応付ける補助機能です。'

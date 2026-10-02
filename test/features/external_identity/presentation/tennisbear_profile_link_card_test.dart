@@ -35,7 +35,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('プロフィール連携：'), findsOneWidget);
-    expect(find.text('TennisBear'), findsOneWidget);
+    expect(find.text('テニスベア'), findsOneWidget);
   });
 
   testWidgets('shows issued confirmation code after request creation',
