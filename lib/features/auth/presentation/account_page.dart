@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
+import 'package:srp_lanske/shared/utils/external_link.dart';
 
 import '../../external_identity/presentation/tennisbear_profile_link_card.dart';
+import '../../my_page/presentation/my_page_routes.dart';
 import '../application/account_auth_repository.dart';
 import '../application/account_service.dart';
 import '../domain/account_transition.dart';
@@ -278,6 +280,10 @@ class _AccountPageState extends State<AccountPage> {
         _statusIsError = false;
       });
     }
+  }
+
+  void _openMyPage() {
+    openUrlInCurrentTab(myPagePath);
   }
 
   Future<void> _signOut() async {
@@ -833,6 +839,12 @@ class _AccountPageState extends State<AccountPage> {
                     label: const Text('アカウント情報を再確認'),
                   ),
                 const SizedBox(height: 24),
+                FilledButton.tonalIcon(
+                  onPressed: _busy ? null : _openMyPage,
+                  icon: const Icon(Icons.person_outline),
+                  label: Text(l10n.myPageMenuLabel),
+                ),
+                const SizedBox(height: 8),
                 OutlinedButton.icon(
                   onPressed: _busy ? null : _signOut,
                   icon: const Icon(Icons.logout),
