@@ -5,9 +5,7 @@ import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/presentation/app_navigation_sections.dart';
 import 'package:srp_lanske/shared/utils/external_link.dart';
 
-import '../../external_identity/presentation/admin_profile_link_review_routes.dart';
 import '../../my_page/presentation/my_page_routes.dart';
-import 'admin_role_visibility.dart';
 
 const _supportPagePath = '/support/index.html';
 
@@ -69,16 +67,6 @@ class AccountNavigationDrawer extends StatelessWidget {
                   AppNavigationCommonSection(
                     onOpenTop: () => _openPath(context, '/'),
                     onOpenMyPage: () => _openPath(context, myPagePath),
-                    adminItem: AdminRoleVisibility(
-                      child: AppNavigationTile(
-                        icon: Icons.admin_panel_settings_outlined,
-                        label: l10n.adminProfileLinkReviewMenuLabel,
-                        onTap: () => _openPath(
-                          context,
-                          adminProfileLinkReviewPath,
-                        ),
-                      ),
-                    ),
                     onOpenSupport: () => _openPath(context, _supportPagePath),
                   ),
                   const Divider(height: 1),
