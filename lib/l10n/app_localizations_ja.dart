@@ -18,6 +18,63 @@ class AppLocalizationsJa extends AppLocalizations {
   String get topPageMenu => 'TOPへ';
 
   @override
+  String get accountMenuLabel => 'アカウント管理';
+
+  @override
+  String get myPageMenuLabel => 'マイページ';
+
+  @override
+  String get myPageAccountSectionTitle => 'Lanskeアカウント';
+
+  @override
+  String get myPageAccountSectionSubtitle => 'アカウント情報と利用状況';
+
+  @override
+  String get myPageAccountRequiredTitle => 'マイページを利用するにはLanskeアカウントが必要です';
+
+  @override
+  String get myPageAccountRequiredBody =>
+      'ログインまたはアカウントへの引き継ぎを行うと、マイページの機能を利用できます。';
+
+  @override
+  String get myPageOpenAccountButton => 'ログイン・アカウント管理へ';
+
+  @override
+  String get myPageEmailLabel => 'メールアドレス';
+
+  @override
+  String get myPagePlanLabel => 'プラン';
+
+  @override
+  String get myPagePlanFree => 'Free';
+
+  @override
+  String get myPagePlanPremium => 'Premium';
+
+  @override
+  String myPageStartedAtLabel(String date) {
+    return '利用開始日: $date';
+  }
+
+  @override
+  String get myPageAccountManagementButton => 'アカウント管理';
+
+  @override
+  String get myPageLoadingAccountMessage => 'アカウント情報を読み込んでいます…';
+
+  @override
+  String get myPageLoadErrorTitle => 'アカウント情報を読み込めませんでした';
+
+  @override
+  String get myPageLoadErrorBody => '通信状態を確認して、もう一度お試しください。';
+
+  @override
+  String get myPageRetryButton => '再読み込み';
+
+  @override
+  String get navigationMenuTooltip => 'メニューを開く';
+
+  @override
   String get matchTableList => '対戦表一覧';
 
   @override

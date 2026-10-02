@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:srp_lanske/shared/utils/external_link.dart';
-
 import 'package:srp_lanske/l10n/l10n.dart';
-import '../../auth/presentation/account_routes.dart';
-import '../../auth/presentation/admin_role_visibility.dart';
-import '../../external_identity/presentation/admin_profile_link_review_routes.dart';
+import 'package:srp_lanske/shared/presentation/app_navigation_sections.dart';
+import 'package:srp_lanske/shared/utils/external_link.dart';
+import '../../my_page/presentation/my_page_routes.dart';
 import '../data/local_team_schedule_history_item.dart';
 import 'team_schedule_page.dart';
 import 'widgets/team_schedule_history_list_view.dart';
@@ -130,18 +128,18 @@ class _TeamNavigationDrawerState extends State<TeamNavigationDrawer> {
       padding: EdgeInsets.zero,
       children: [
         if (widget.showHomeLink)
-          _TeamNavigationTile(
+          AppNavigationTile(
             icon: Icons.home_outlined,
             label: l10n.teamNavigationHome,
             onTap: () => _openPath(context, '/team'),
           ),
-        _TeamNavigationTile(
+        AppNavigationTile(
           icon: Icons.list_alt_outlined,
           label: l10n.teamNavigationScheduleList,
           onTap: _showSchedules,
         ),
         if (widget.onRefreshLatestInfo != null)
-          _TeamNavigationTile(
+          AppNavigationTile(
             icon: Icons.refresh,
             label: l10n.refreshLatestButton,
             onTap: () {
@@ -150,32 +148,14 @@ class _TeamNavigationDrawerState extends State<TeamNavigationDrawer> {
             },
           ),
         const Divider(height: 1),
-        _TeamNavigationTile(
-          icon: Icons.person_outline,
-          label: 'アカウント',
-          onTap: () => _openPath(context, accountPagePath),
-        ),
-        AdminRoleVisibility(
-          child: _TeamNavigationTile(
-            icon: Icons.admin_panel_settings_outlined,
-            label: l10n.adminProfileLinkReviewMenuLabel,
-            onTap: () => _openPath(context, adminProfileLinkReviewPath),
-          ),
-        ),
-        _TeamNavigationTile(
-          icon: Icons.help_outline,
-          label: l10n.teamNavigationSupport,
-          onTap: () {
-            Navigator.of(context).pop();
-            openUrlInCurrentTab(_supportPagePath);
-          },
+        AppNavigationCommonSection(
+          onOpenTop: () => _openPath(context, '/'),
+          onOpenMyPage: () => _openPath(context, myPagePath),
+          onOpenSupport: () => _openPath(context, _supportPagePath),
         ),
         const Divider(height: 1),
-        _TeamNavigationSectionHeader(label: l10n.teamNavigationServiceList),
-        _TeamNavigationTile(
-          icon: Icons.sports_tennis_outlined,
-          label: l10n.teamNavigationDoublesScheduler,
-          onTap: () => _openPath(context, '/'),
+        AppNavigationServiceSection(
+          onOpenDoubles: () => _openPath(context, '/'),
         ),
       ],
     );
@@ -205,49 +185,6 @@ class _TeamNavigationDrawerState extends State<TeamNavigationDrawer> {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _TeamNavigationSectionHeader extends StatelessWidget {
-  const _TeamNavigationSectionHeader({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w700,
-            ),
-      ),
-    );
-  }
-}
-
-class _TeamNavigationTile extends StatelessWidget {
-  const _TeamNavigationTile({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(label),
-      onTap: onTap,
     );
   }
 }

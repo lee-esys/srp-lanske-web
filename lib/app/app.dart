@@ -8,6 +8,8 @@ import '../features/auth/presentation/account_routes.dart';
 import '../features/auth/presentation/auth_scope.dart';
 import '../features/external_identity/presentation/admin_profile_link_review_page.dart';
 import '../features/external_identity/presentation/admin_profile_link_review_routes.dart';
+import '../features/my_page/presentation/my_page.dart';
+import '../features/my_page/presentation/my_page_routes.dart';
 import '../features/doubles_scheduler/presentation/event_setup_page.dart';
 import '../features/doubles_scheduler/presentation/restored_schedule_page.dart';
 import '../features/doubles_scheduler/presentation/widgets/schedule_rounds_view.dart'
@@ -50,11 +52,13 @@ class _AppState extends State<App> {
 
     final home = uri.path == accountPagePath
         ? const _DebugAccountPage()
-        : uri.path == adminProfileLinkReviewPath
-            ? const AdminProfileLinkReviewPage()
-            : publicId == null || publicId.isEmpty
-                ? _homeForPath(uri.path)
-                : RestoredSchedulePage(publicId: publicId);
+        : uri.path == myPagePath
+            ? const MyPage()
+            : uri.path == adminProfileLinkReviewPath
+                ? const AdminProfileLinkReviewPage()
+                : publicId == null || publicId.isEmpty
+                    ? _homeForPath(uri.path)
+                    : RestoredSchedulePage(publicId: publicId);
 
     return MaterialApp(
       title: 'Lanske',

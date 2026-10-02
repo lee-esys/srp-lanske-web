@@ -2,14 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
+import 'package:srp_lanske/shared/utils/external_link.dart';
 
-import '../../../shared/utils/external_link.dart';
 import '../../external_identity/presentation/tennisbear_profile_link_card.dart';
+import '../../my_page/presentation/my_page_routes.dart';
 import '../application/account_auth_repository.dart';
 import '../application/account_service.dart';
 import '../domain/account_transition.dart';
 import '../domain/auth_session.dart';
 import '../domain/event_ownership_transfer.dart';
+import 'account_navigation_drawer.dart';
 import 'account_scope.dart';
 import 'admin_role_scope.dart';
 import 'auth_scope.dart';
@@ -280,6 +282,10 @@ class _AccountPageState extends State<AccountPage> {
     }
   }
 
+  void _openMyPage() {
+    openUrlInCurrentTab(myPagePath);
+  }
+
   Future<void> _signOut() async {
     final auth = AuthScope.of(context);
     await _runAction(auth.signOut);
@@ -371,15 +377,26 @@ class _AccountPageState extends State<AccountPage> {
   Widget build(BuildContext context) {
     final session = AuthScope.of(context).session;
 
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'TOPへ',
-          onPressed: () => openUrlInCurrentTab('/'),
-          icon: const Icon(Icons.home_outlined),
-        ),
-        title: const Text('アカウント'),
+        automaticallyImplyLeading: false,
+        title: Text(l10n.accountMenuLabel),
+        actions: [
+          Builder(
+            builder: (context) {
+              return IconButton(
+                key: const ValueKey('account-navigation-menu-button'),
+                tooltip: l10n.navigationMenuTooltip,
+                onPressed: Scaffold.of(context).openEndDrawer,
+                icon: const Icon(Icons.menu),
+              );
+            },
+          ),
+        ],
       ),
+      endDrawer: const AccountNavigationDrawer(),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -822,6 +839,12 @@ class _AccountPageState extends State<AccountPage> {
                     label: const Text('アカウント情報を再確認'),
                   ),
                 const SizedBox(height: 24),
+                FilledButton.tonalIcon(
+                  onPressed: _busy ? null : _openMyPage,
+                  icon: const Icon(Icons.person_outline),
+                  label: Text(l10n.myPageMenuLabel),
+                ),
+                const SizedBox(height: 8),
                 OutlinedButton.icon(
                   onPressed: _busy ? null : _signOut,
                   icon: const Icon(Icons.logout),

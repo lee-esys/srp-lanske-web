@@ -286,11 +286,21 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
                 Icon(Icons.sports_tennis, color: colorScheme.primary),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    l10n.tennisBearProfileLinkTitle,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                  child: Wrap(
+                    children: [
+                      Text(
+                        l10n.tennisBearProfileLinkTitlePrefix,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                      Text(
+                        l10n.tennisBearProfileLinkTitleSource,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                    ],
                   ),
                 ),
                 IconButton(

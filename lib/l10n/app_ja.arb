@@ -12,6 +12,83 @@
   "@topPageMenu": {
     "description": "Menu item label for returning to the top page."
   },
+  "accountMenuLabel": "アカウント管理",
+  "@accountMenuLabel": {
+    "description": "Menu item label for opening account management."
+  },
+  "myPageMenuLabel": "マイページ",
+  "@myPageMenuLabel": {
+    "description": "Menu item and page title for My Page."
+  },
+  "myPageAccountSectionTitle": "Lanskeアカウント",
+  "@myPageAccountSectionTitle": {
+    "description": "Title for the Lanske account summary section on My Page."
+  },
+  "myPageAccountSectionSubtitle": "アカウント情報と利用状況",
+  "@myPageAccountSectionSubtitle": {
+    "description": "Subtitle for the Lanske account summary section on My Page."
+  },
+  "myPageAccountRequiredTitle": "マイページを利用するにはLanskeアカウントが必要です",
+  "@myPageAccountRequiredTitle": {
+    "description": "Title shown on My Page when there is no registered account session."
+  },
+  "myPageAccountRequiredBody": "ログインまたはアカウントへの引き継ぎを行うと、マイページの機能を利用できます。",
+  "@myPageAccountRequiredBody": {
+    "description": "Body shown on My Page when there is no registered account session."
+  },
+  "myPageOpenAccountButton": "ログイン・アカウント管理へ",
+  "@myPageOpenAccountButton": {
+    "description": "Button for opening account management from an unavailable My Page."
+  },
+  "myPageEmailLabel": "メールアドレス",
+  "@myPageEmailLabel": {
+    "description": "Label for the signed-in account email on My Page."
+  },
+  "myPagePlanLabel": "プラン",
+  "@myPagePlanLabel": {
+    "description": "Label for the Lanske account plan on My Page."
+  },
+  "myPagePlanFree": "Free",
+  "@myPagePlanFree": {
+    "description": "Display name for the free plan on My Page."
+  },
+  "myPagePlanPremium": "Premium",
+  "@myPagePlanPremium": {
+    "description": "Display name for the premium plan on My Page."
+  },
+  "myPageStartedAtLabel": "利用開始日: {date}",
+  "@myPageStartedAtLabel": {
+    "description": "Label showing when the Lanske account was created.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "myPageAccountManagementButton": "アカウント管理",
+  "@myPageAccountManagementButton": {
+    "description": "Button for opening account management from My Page."
+  },
+  "myPageLoadingAccountMessage": "アカウント情報を読み込んでいます…",
+  "@myPageLoadingAccountMessage": {
+    "description": "Loading message while reading the Lanske account summary."
+  },
+  "myPageLoadErrorTitle": "アカウント情報を読み込めませんでした",
+  "@myPageLoadErrorTitle": {
+    "description": "Error title when the Lanske account summary cannot be loaded."
+  },
+  "myPageLoadErrorBody": "通信状態を確認して、もう一度お試しください。",
+  "@myPageLoadErrorBody": {
+    "description": "Error body when the Lanske account summary cannot be loaded."
+  },
+  "myPageRetryButton": "再読み込み",
+  "@myPageRetryButton": {
+    "description": "Button for retrying the My Page account summary load."
+  },
+  "navigationMenuTooltip": "メニューを開く",
+  "@navigationMenuTooltip": {
+    "description": "Generic tooltip for opening a navigation drawer."
+  },
   "matchTableList": "対戦表一覧",
   "@matchTableList": {
     "description": "Menu item label for the saved/generated match table list."

@@ -18,6 +18,65 @@ class AppLocalizationsEn extends AppLocalizations {
   String get topPageMenu => 'Top';
 
   @override
+  String get accountMenuLabel => 'Account settings';
+
+  @override
+  String get myPageMenuLabel => 'My Page';
+
+  @override
+  String get myPageAccountSectionTitle => 'Lanske account';
+
+  @override
+  String get myPageAccountSectionSubtitle =>
+      'Account information and current plan';
+
+  @override
+  String get myPageAccountRequiredTitle =>
+      'A Lanske account is required to use My Page';
+
+  @override
+  String get myPageAccountRequiredBody =>
+      'Sign in or move your current no-login session to an account to use My Page features.';
+
+  @override
+  String get myPageOpenAccountButton => 'Sign in / account settings';
+
+  @override
+  String get myPageEmailLabel => 'Email';
+
+  @override
+  String get myPagePlanLabel => 'Plan';
+
+  @override
+  String get myPagePlanFree => 'Free';
+
+  @override
+  String get myPagePlanPremium => 'Premium';
+
+  @override
+  String myPageStartedAtLabel(String date) {
+    return 'Joined: $date';
+  }
+
+  @override
+  String get myPageAccountManagementButton => 'Account settings';
+
+  @override
+  String get myPageLoadingAccountMessage => 'Loading account information…';
+
+  @override
+  String get myPageLoadErrorTitle => 'Could not load account information';
+
+  @override
+  String get myPageLoadErrorBody => 'Check your connection and try again.';
+
+  @override
+  String get myPageRetryButton => 'Reload';
+
+  @override
+  String get navigationMenuTooltip => 'Open menu';
+
+  @override
   String get matchTableList => 'Match table list';
 
   @override

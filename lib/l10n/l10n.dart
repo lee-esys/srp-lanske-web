@@ -24,8 +24,11 @@ extension DoublesMatchNavigationLocalizations on AppLocalizations {
 extension TennisBearProfileLinkLocalizations on AppLocalizations {
   bool get _isJapanese => localeName.startsWith('ja');
 
-  String get tennisBearProfileLinkTitle =>
-      _isJapanese ? 'テニスベアプロフィール連携' : 'TennisBear profile link';
+  String get tennisBearProfileLinkTitlePrefix =>
+      _isJapanese ? 'プロフィール連携：' : 'Profile link: ';
+
+  String get tennisBearProfileLinkTitleSource =>
+      _isJapanese ? 'テニスベア' : 'TennisBear';
 
   String get tennisBearProfileLinkSubtitle => _isJapanese
       ? 'Lanskeアカウントと、ご自身のテニスベア公開プロフィールを対応付ける補助機能です。'

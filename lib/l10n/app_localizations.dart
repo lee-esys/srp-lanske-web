@@ -116,6 +116,114 @@ abstract class AppLocalizations {
   /// **'TOPへ'**
   String get topPageMenu;
 
+  /// Menu item label for opening account management.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウント管理'**
+  String get accountMenuLabel;
+
+  /// Menu item and page title for My Page.
+  ///
+  /// In ja, this message translates to:
+  /// **'マイページ'**
+  String get myPageMenuLabel;
+
+  /// Title for the Lanske account summary section on My Page.
+  ///
+  /// In ja, this message translates to:
+  /// **'Lanskeアカウント'**
+  String get myPageAccountSectionTitle;
+
+  /// Subtitle for the Lanske account summary section on My Page.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウント情報と利用状況'**
+  String get myPageAccountSectionSubtitle;
+
+  /// Title shown on My Page when there is no registered account session.
+  ///
+  /// In ja, this message translates to:
+  /// **'マイページを利用するにはLanskeアカウントが必要です'**
+  String get myPageAccountRequiredTitle;
+
+  /// Body shown on My Page when there is no registered account session.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログインまたはアカウントへの引き継ぎを行うと、マイページの機能を利用できます。'**
+  String get myPageAccountRequiredBody;
+
+  /// Button for opening account management from an unavailable My Page.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログイン・アカウント管理へ'**
+  String get myPageOpenAccountButton;
+
+  /// Label for the signed-in account email on My Page.
+  ///
+  /// In ja, this message translates to:
+  /// **'メールアドレス'**
+  String get myPageEmailLabel;
+
+  /// Label for the Lanske account plan on My Page.
+  ///
+  /// In ja, this message translates to:
+  /// **'プラン'**
+  String get myPagePlanLabel;
+
+  /// Display name for the free plan on My Page.
+  ///
+  /// In ja, this message translates to:
+  /// **'Free'**
+  String get myPagePlanFree;
+
+  /// Display name for the premium plan on My Page.
+  ///
+  /// In ja, this message translates to:
+  /// **'Premium'**
+  String get myPagePlanPremium;
+
+  /// Label showing when the Lanske account was created.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用開始日: {date}'**
+  String myPageStartedAtLabel(String date);
+
+  /// Button for opening account management from My Page.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウント管理'**
+  String get myPageAccountManagementButton;
+
+  /// Loading message while reading the Lanske account summary.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウント情報を読み込んでいます…'**
+  String get myPageLoadingAccountMessage;
+
+  /// Error title when the Lanske account summary cannot be loaded.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウント情報を読み込めませんでした'**
+  String get myPageLoadErrorTitle;
+
+  /// Error body when the Lanske account summary cannot be loaded.
+  ///
+  /// In ja, this message translates to:
+  /// **'通信状態を確認して、もう一度お試しください。'**
+  String get myPageLoadErrorBody;
+
+  /// Button for retrying the My Page account summary load.
+  ///
+  /// In ja, this message translates to:
+  /// **'再読み込み'**
+  String get myPageRetryButton;
+
+  /// Generic tooltip for opening a navigation drawer.
+  ///
+  /// In ja, this message translates to:
+  /// **'メニューを開く'**
+  String get navigationMenuTooltip;
+
   /// Menu item label for the saved/generated match table list.
   ///
   /// In ja, this message translates to:
