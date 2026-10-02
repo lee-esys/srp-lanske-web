@@ -5,13 +5,13 @@ class AppNavigationCommonSection extends StatelessWidget {
   const AppNavigationCommonSection({
     super.key,
     this.onOpenTop,
-    this.onOpenAccount,
+    this.onOpenMyPage,
     this.adminItem,
     this.onOpenSupport,
   });
 
   final VoidCallback? onOpenTop;
-  final VoidCallback? onOpenAccount;
+  final VoidCallback? onOpenMyPage;
   final Widget? adminItem;
   final VoidCallback? onOpenSupport;
 
@@ -28,11 +28,11 @@ class AppNavigationCommonSection extends StatelessWidget {
             label: l10n.topPageMenu,
             onTap: onOpenTop!,
           ),
-        if (onOpenAccount != null)
+        if (onOpenMyPage != null)
           AppNavigationTile(
             icon: Icons.person_outline,
-            label: l10n.accountMenuLabel,
-            onTap: onOpenAccount!,
+            label: l10n.myPageMenuLabel,
+            onTap: onOpenMyPage!,
           ),
         if (adminItem != null) adminItem!,
         if (onOpenSupport != null)
