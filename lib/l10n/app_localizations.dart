@@ -218,6 +218,102 @@ abstract class AppLocalizations {
   /// **'再読み込み'**
   String get myPageRetryButton;
 
+  /// Heading for doubles match table features on My Page.
+  ///
+  /// In ja, this message translates to:
+  /// **'🎾 ダブルス対戦表'**
+  String get myPageDoublesMatchTablesHeading;
+
+  /// Title for the account-owned match table list on My Page.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成した対戦表'**
+  String get myPageMatchTableListTitle;
+
+  /// Subtitle for the account-owned match table list on My Page.
+  ///
+  /// In ja, this message translates to:
+  /// **'このアカウントで管理している対戦表'**
+  String get myPageMatchTableListSubtitle;
+
+  /// Loading message for the My Page match table list.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表を読み込んでいます…'**
+  String get myPageMatchTableLoadingMessage;
+
+  /// Empty message for the My Page match table list.
+  ///
+  /// In ja, this message translates to:
+  /// **'このアカウントで管理している対戦表はありません'**
+  String get myPageMatchTableEmptyMessage;
+
+  /// Error title for the My Page match table list.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表を読み込めませんでした'**
+  String get myPageMatchTableLoadErrorTitle;
+
+  /// Created date shown for an item in the My Page match table list.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成日: {date}'**
+  String myPageMatchTableCreatedAtLabel(String date);
+
+  /// Event date/time shown for an item in the My Page match table list.
+  ///
+  /// In ja, this message translates to:
+  /// **'開催日時: {date}'**
+  String myPageMatchTableEventDateLabel(String date);
+
+  /// Location shown for an item in the My Page match table list.
+  ///
+  /// In ja, this message translates to:
+  /// **'場所: {location}'**
+  String myPageMatchTableLocationLabel(String location);
+
+  /// Status label for an event before a schedule is generated.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成中'**
+  String get myPageMatchTableDraftStatus;
+
+  /// Status label for a generated but unconfirmed match table.
+  ///
+  /// In ja, this message translates to:
+  /// **'未確定'**
+  String get myPageMatchTableGeneratedStatus;
+
+  /// Status label for a confirmed match table.
+  ///
+  /// In ja, this message translates to:
+  /// **'確定済み'**
+  String get myPageMatchTableAdoptedStatus;
+
+  /// Tooltip for refreshing the My Page match table list.
+  ///
+  /// In ja, this message translates to:
+  /// **'対戦表一覧を更新'**
+  String get myPageMatchTableRefreshTooltip;
+
+  /// Button label for the previous page in the My Page match table list.
+  ///
+  /// In ja, this message translates to:
+  /// **'前へ'**
+  String get myPageMatchTablePreviousPage;
+
+  /// Button label for the next page in the My Page match table list.
+  ///
+  /// In ja, this message translates to:
+  /// **'次へ'**
+  String get myPageMatchTableNextPage;
+
+  /// Current and total page indicator for the My Page match table list.
+  ///
+  /// In ja, this message translates to:
+  /// **'{current} / {total}'**
+  String myPageMatchTablePageLabel(int current, int total);
+
   /// Generic tooltip for opening a navigation drawer.
   ///
   /// In ja, this message translates to:

@@ -65,6 +65,12 @@ void main() {
     expect(find.text('Premium'), findsOneWidget);
     expect(find.textContaining('利用開始日:'), findsOneWidget);
     expect(find.text('アカウント管理'), findsWidgets);
+    expect(find.text('🎾 ダブルス対戦表'), findsOneWidget);
+    expect(find.text('作成した対戦表'), findsOneWidget);
+    expect(
+      find.text('このアカウントで管理している対戦表はありません'),
+      findsOneWidget,
+    );
 
     expect(find.text('Provider Display Name'), findsNothing);
     expect(users.calls, 1);
@@ -130,7 +136,10 @@ Future<void> _pumpMyPage(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         locale: const Locale('ja'),
-        home: MyPage(accountService: accountService),
+        home: MyPage(
+          accountService: accountService,
+          ownedEventsLoader: (_) async => const [],
+        ),
       ),
     ),
   );
