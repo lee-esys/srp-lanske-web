@@ -10,6 +10,7 @@ import 'package:srp_lanske/features/auth/domain/auth_session.dart';
 import 'package:srp_lanske/features/auth/domain/lanske_plan.dart';
 import 'package:srp_lanske/features/auth/domain/lanske_user.dart';
 import 'package:srp_lanske/features/auth/presentation/auth_scope.dart';
+import 'package:srp_lanske/features/external_identity/application/tennisbear_profile_link_service.dart';
 import 'package:srp_lanske/features/my_page/presentation/my_page.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
@@ -65,6 +66,13 @@ void main() {
     expect(find.text('Premium'), findsOneWidget);
     expect(find.textContaining('利用開始日:'), findsOneWidget);
     expect(find.text('アカウント管理'), findsWidgets);
+    expect(find.text('プロフィール連携'), findsOneWidget);
+    expect(find.text('未連携'), findsOneWidget);
+    expect(find.text('プロフィール連携を管理'), findsOneWidget);
+    expect(
+      find.textContaining('あなたの統計データを集計するために利用します'),
+      findsOneWidget,
+    );
     expect(find.text('🎾 ダブルス対戦表'), findsOneWidget);
     expect(find.text('作成した対戦表'), findsOneWidget);
     expect(
@@ -139,6 +147,11 @@ Future<void> _pumpMyPage(
         home: MyPage(
           accountService: accountService,
           ownedEventsLoader: (_) async => const [],
+          profileLinkLoader: (_) async => const TennisBearProfileLinkSnapshot(
+            activeMapping: null,
+            activeRequest: null,
+            latestRequest: null,
+          ),
         ),
       ),
     ),
