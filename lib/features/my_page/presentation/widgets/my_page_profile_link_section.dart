@@ -5,7 +5,6 @@ import 'package:srp_lanske/l10n/l10n.dart';
 
 import '../../../external_identity/application/tennisbear_profile_link_service.dart';
 import '../../../external_identity/domain/external_identity_link_request.dart';
-import '../../../external_identity/presentation/external_identity_link_scope.dart';
 import 'my_page_section_card.dart';
 
 typedef MyPageProfileLinkLoader = Future<TennisBearProfileLinkSnapshot> Function(
@@ -17,13 +16,13 @@ class MyPageProfileLinkSection extends StatefulWidget {
     super.key,
     required this.lanskeUserId,
     required this.onOpenManagement,
-    this.loadProfileLink,
+    required this.loadProfileLink,
     this.now,
   });
 
   final String lanskeUserId;
   final VoidCallback onOpenManagement;
-  final MyPageProfileLinkLoader? loadProfileLink;
+  final MyPageProfileLinkLoader loadProfileLink;
   final DateTime Function()? now;
 
   @override
@@ -60,8 +59,7 @@ class _MyPageProfileLinkSectionState extends State<MyPageProfileLinkSection> {
   Future<void> _load() async {
     final sequence = ++_loadSequence;
     final requestedUid = widget.lanskeUserId;
-    final loader =
-        widget.loadProfileLink ?? ExternalIdentityLinkScope.of(context).load;
+    final loader = widget.loadProfileLink;
 
     if (mounted) {
       setState(() {
