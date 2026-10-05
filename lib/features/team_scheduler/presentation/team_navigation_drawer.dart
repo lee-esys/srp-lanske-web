@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 import 'package:srp_lanske/shared/presentation/app_navigation_sections.dart';
 import 'package:srp_lanske/shared/utils/external_link.dart';
-import '../../my_page/presentation/my_page_routes.dart';
 import '../data/local_team_schedule_history_item.dart';
 import 'team_schedule_page.dart';
 import 'widgets/team_schedule_history_list_view.dart';
@@ -150,7 +149,6 @@ class _TeamNavigationDrawerState extends State<TeamNavigationDrawer> {
         const Divider(height: 1),
         AppNavigationCommonSection(
           onOpenTop: () => _openPath(context, '/'),
-          onOpenMyPage: () => _openPath(context, myPagePath),
           onOpenSupport: () => _openPath(context, _supportPagePath),
         ),
         const Divider(height: 1),
