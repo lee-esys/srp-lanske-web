@@ -25,6 +25,8 @@ void main() {
 
     expect(find.text('未連携'), findsOneWidget);
     expect(find.text('このプロフィールで連携を申請'), findsOneWidget);
+    expect(find.textContaining('あなたの統計データを集計するために利用します'), findsOneWidget);
+    expect(find.textContaining('本人確認'), findsNothing);
   });
 
   testWidgets('shows profile link title as semantic wrap segments',
@@ -57,6 +59,16 @@ void main() {
     expect(find.text('申請中'), findsOneWidget);
     expect(find.textContaining('LSK-'), findsWidgets);
     expect(find.text('新しい確認コードを再発行'), findsOneWidget);
+    expect(
+      find.text('確認コードをテニスベア個人チャットからLanske管理者へ送信してください。'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('連携完了後、テニスベアのチャットでお知らせします。'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('1時間以内'), findsNothing);
+    expect(find.textContaining('2営業日以内'), findsNothing);
   });
 
   testWidgets(
