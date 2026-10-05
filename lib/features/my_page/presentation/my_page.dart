@@ -11,6 +11,7 @@ import '../../auth/domain/lanske_user.dart';
 import '../../auth/presentation/account_routes.dart';
 import '../../auth/presentation/account_scope.dart';
 import '../../auth/presentation/auth_scope.dart';
+import '../../external_identity/presentation/external_identity_link_scope.dart';
 import 'my_page_navigation_drawer.dart';
 import 'widgets/my_page_match_table_list_section.dart';
 import 'widgets/my_page_profile_link_section.dart';
@@ -158,7 +159,8 @@ class _MyPageState extends State<MyPage> {
                   const SizedBox(height: 24),
                   MyPageProfileLinkSection(
                     lanskeUserId: session.uid!,
-                    loadProfileLink: widget.profileLinkLoader,
+                    loadProfileLink: widget.profileLinkLoader ??
+                        ExternalIdentityLinkScope.of(context).load,
                     onOpenManagement:
                         widget.onOpenProfileLinkManagement ?? _openAccount,
                     now: widget.profileLinkNow,
