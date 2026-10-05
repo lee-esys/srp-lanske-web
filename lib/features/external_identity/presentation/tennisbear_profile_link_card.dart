@@ -445,6 +445,10 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
               ? l10n.tennisBearProfileLinkExpiredMessage
               : l10n.tennisBearProfileLinkPendingInstruction,
         ),
+        if (!expired) ...[
+          const SizedBox(height: 8),
+          Text(l10n.tennisBearProfileLinkPendingCompletionNotice),
+        ],
         const SizedBox(height: 16),
         FilledButton.icon(
           onPressed: _busy ? null : _reissue,
