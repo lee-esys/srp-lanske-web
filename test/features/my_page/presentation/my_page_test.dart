@@ -73,6 +73,13 @@ void main() {
       find.textContaining('あなたの統計データを集計するために利用します'),
       findsOneWidget,
     );
+
+    await tester.scrollUntilVisible(
+      find.text('🎾 ダブルス対戦表'),
+      300,
+    );
+    await tester.pumpAndSettle();
+
     expect(find.text('🎾 ダブルス対戦表'), findsOneWidget);
     expect(find.text('作成した対戦表'), findsOneWidget);
     expect(
