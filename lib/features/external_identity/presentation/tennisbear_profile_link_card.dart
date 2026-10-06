@@ -518,11 +518,55 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
           const SizedBox(height: 16),
           _buildRiskNotice(context),
           const SizedBox(height: 16),
+          _buildApplicationSteps(context),
+          const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: _busy ? null : _createRequest,
             icon: const Icon(Icons.link),
             label: Text(l10n.tennisBearProfileLinkSubmitButton),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildApplicationSteps(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final l10n = _l10n;
+    final steps = l10n.tennisBearProfileLinkApplicationSteps;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        border: Border.all(color: colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.tennisBearProfileLinkApplicationStepsTitle,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 8),
+          for (var index = 0; index < steps.length; index++)
+            Padding(
+              padding: EdgeInsets.only(
+                bottom: index == steps.length - 1 ? 0 : 6,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 24,
+                    child: Text('${index + 1}.'),
+                  ),
+                  Expanded(child: Text(steps[index])),
+                ],
+              ),
+            ),
         ],
       ),
     );
