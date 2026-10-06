@@ -496,7 +496,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
             keyboardType: TextInputType.url,
             decoration: InputDecoration(
               labelText: l10n.tennisBearProfileLinkProfileUrlLabel,
-              hintText: 'https://www.tennisbear.net/user/899212/info',
+              hintText: 'https://www.tennisbear.net/user/4380/info',
               border: const OutlineInputBorder(),
             ),
             validator: (value) {
