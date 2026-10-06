@@ -36,10 +36,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get myPageAccountRequiredBody =>
-      'Sign in or move your current no-login session to an account to use My Page features.';
+      'Sign in or create an account to use My Page features.';
 
   @override
-  String get myPageOpenAccountButton => 'Sign in / account settings';
+  String get myPageOpenAccountButton => 'Sign in / create account';
 
   @override
   String get myPageEmailLabel => 'Email';
@@ -1411,15 +1411,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ownershipTransferPreparedTitle =>
-      'Ready to transfer to an existing account';
+      'An existing Lanske account was found';
 
   @override
   String get ownershipTransferPreparedBody =>
-      'Proof of ownership for the current no-login session has been saved securely. After switching to your existing Lanske account, event ownership created on this device will be transferred.';
+      'These credentials are already used by an existing Lanske account. Sign in to that account to manage match tables created on this device there as well.';
 
   @override
   String get ownershipTransferSwitchButton =>
-      'Switch to existing account and transfer';
+      'Sign in to existing account and continue';
 
   @override
   String get ownershipTransferCancelButton => 'Not now';
@@ -1430,22 +1430,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ownershipTransferLoginBody =>
-      'Your transfer handoff is saved. Sign in to the existing Lanske account that should receive the events. Do not create a new account.';
+      'Sign in to your existing Lanske account. After signing in, match tables created on this device can also be managed from that account. Do not create a new account.';
 
   @override
   String get ownershipTransferResumeTitle =>
-      'Event ownership transfer is incomplete';
+      'Account update is incomplete';
 
   @override
   String get ownershipTransferResumeBody =>
-      'You can resume transferring event ownership to this account. If part of the transfer already completed, only the remaining events will be moved.';
+      'You can make match tables created on this device manageable from this account. If part of the update already completed, only the remaining items will be updated.';
 
   @override
-  String get ownershipTransferResumeButton => 'Resume transfer';
+  String get ownershipTransferResumeButton => 'Resume update';
 
   @override
   String get ownershipTransferPreparedMessage =>
-      'The secure handoff to an existing account is ready. Your current no-login session remains active until you switch accounts.';
+      'An existing Lanske account was found. Sign in to that account to continue.';
 
   @override
   String get ownershipTransferLoginMessage =>
@@ -1453,14 +1453,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ownershipTransferCanceledMessage =>
-      'The transfer handoff was ended. You can continue using the current no-login session.';
+      'Account sign-in was canceled. You can continue using Lanske without signing in.';
 
   @override
   String ownershipTransferCompletedMessage(int count) {
-    return 'Transferred $count event(s) to the existing Lanske account.';
+    return '$count match tables can now be managed from this Lanske account.';
   }
 
   @override
   String get ownershipTransferGenericFailureMessage =>
-      'Event ownership transfer could not be completed. The handoff is still saved. Check your connection and try again.';
+      'The account update could not be completed. The current state was kept. Check your connection and try again.';
 }
