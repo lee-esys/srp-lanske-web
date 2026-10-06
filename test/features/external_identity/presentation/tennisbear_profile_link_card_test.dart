@@ -25,6 +25,11 @@ void main() {
 
     expect(find.text('未連携'), findsOneWidget);
     expect(find.text('このプロフィールで連携を申請'), findsOneWidget);
+    expect(find.text('申請手順'), findsOneWidget);
+    expect(find.text('1.'), findsOneWidget);
+    expect(find.text('テニスベアのアプリで自分のマイページを開く'), findsOneWidget);
+    expect(find.text('6.'), findsOneWidget);
+    expect(find.text('「このプロフィールで連携を申請」をタップ'), findsOneWidget);
     expect(find.textContaining('あなたの統計データを集計するために利用します'), findsOneWidget);
     expect(find.textContaining('本人確認'), findsNothing);
   });
@@ -60,7 +65,7 @@ void main() {
     expect(find.textContaining('LSK-'), findsWidgets);
     expect(find.text('新しい確認コードを再発行'), findsOneWidget);
     expect(
-      find.text('確認コードをテニスベア個人チャットからLanske管理者へ送信してください。'),
+      find.text('テニスベアでLanske管理者のプロフィールを開き、チャットから確認コードを送信してください。'),
       findsOneWidget,
     );
     expect(
