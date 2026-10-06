@@ -265,7 +265,11 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
   Future<void> _copyCode() async {
     final code = _confirmationCode;
     if (code == null) return;
-    await Clipboard.setData(ClipboardData(text: code));
+    await Clipboard.setData(
+      ClipboardData(
+        text: _l10n.tennisBearProfileLinkClipboardText(code),
+      ),
+    );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(_l10n.tennisBearProfileLinkCodeCopied)),
