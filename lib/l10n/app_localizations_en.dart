@@ -1433,8 +1433,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Sign in to your existing Lanske account. After signing in, match tables created on this device can also be managed from that account. Do not create a new account.';
 
   @override
-  String get ownershipTransferResumeTitle =>
-      'Account update is incomplete';
+  String get ownershipTransferResumeTitle => 'Account update is incomplete';
 
   @override
   String get ownershipTransferResumeBody =>
@@ -1449,7 +1448,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ownershipTransferLoginMessage =>
-      'The handoff was kept while signing out. Sign in to the existing Lanske account that should receive the events.';
+      'Sign in to your existing Lanske account.';
 
   @override
   String get ownershipTransferCanceledMessage =>

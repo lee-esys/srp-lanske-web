@@ -33,8 +33,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get myPageAccountRequiredTitle => 'マイページを利用するにはLanskeアカウントが必要です';
 
   @override
-  String get myPageAccountRequiredBody =>
-      'ログインまたはアカウント作成を行うと、マイページ機能を利用できます。';
+  String get myPageAccountRequiredBody => 'ログインまたはアカウント作成を行うと、マイページ機能を利用できます。';
 
   @override
   String get myPageOpenAccountButton => 'ログイン・アカウント作成へ';
@@ -1387,8 +1386,7 @@ class AppLocalizationsJa extends AppLocalizations {
       '既存のLanskeアカウントが見つかりました。既存アカウントにログインして続けてください。';
 
   @override
-  String get ownershipTransferLoginMessage =>
-      '既存のLanskeアカウントでログインしてください。';
+  String get ownershipTransferLoginMessage => '既存のLanskeアカウントでログインしてください。';
 
   @override
   String get ownershipTransferCanceledMessage =>

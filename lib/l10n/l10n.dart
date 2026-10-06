@@ -40,9 +40,8 @@ extension TennisBearProfileLinkLocalizations on AppLocalizations {
   String get myPageProfileLinkRefreshTooltip =>
       _isJapanese ? '連携状態を更新' : 'Refresh link status';
 
-  String get myPageProfileLinkLoadingMessage => _isJapanese
-      ? 'プロフィール連携の状態を確認しています…'
-      : 'Checking profile link status…';
+  String get myPageProfileLinkLoadingMessage =>
+      _isJapanese ? 'プロフィール連携の状態を確認しています…' : 'Checking profile link status…';
 
   String get myPageProfileLinkLoadErrorTitle => _isJapanese
       ? 'プロフィール連携の状態を確認できませんでした'

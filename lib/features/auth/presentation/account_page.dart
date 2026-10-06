@@ -708,7 +708,6 @@ class _AccountPageState extends State<AccountPage> {
                   onPressed: _busy ? null : _linkAnonymousWithEmailPassword,
                   child: const Text('Email / Password でアカウントを作成'),
                 ),
-
                 if (_busy) ...[
                   const SizedBox(height: 12),
                   const LinearProgressIndicator(),
@@ -729,12 +728,11 @@ class _AccountPageState extends State<AccountPage> {
     final isAdmin = uid != null && _resolvedAdminRoleUid == uid && _isAdmin;
     final email = session.email?.trim();
     final providerDisplayName = session.displayName?.trim();
-    final accountDisplayName =
-        providerDisplayName?.isNotEmpty == true
-            ? providerDisplayName!
-            : email?.isNotEmpty == true
-                ? email!
-                : 'Lanske アカウント';
+    final accountDisplayName = providerDisplayName?.isNotEmpty == true
+        ? providerDisplayName!
+        : email?.isNotEmpty == true
+            ? email!
+            : 'Lanske アカウント';
 
     final l10n = AppLocalizations.of(context);
 

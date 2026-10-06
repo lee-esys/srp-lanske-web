@@ -7,7 +7,8 @@ import '../../../external_identity/application/tennisbear_profile_link_service.d
 import '../../../external_identity/domain/external_identity_link_request.dart';
 import 'my_page_section_card.dart';
 
-typedef MyPageProfileLinkLoader = Future<TennisBearProfileLinkSnapshot> Function(
+typedef MyPageProfileLinkLoader = Future<TennisBearProfileLinkSnapshot>
+    Function(
   String lanskeUserId,
 );
 
@@ -271,8 +272,7 @@ enum _MyPageProfileLinkStatus {
         l10n.tennisBearProfileLinkExpiredStatus,
       _MyPageProfileLinkStatus.retryable =>
         l10n.tennisBearProfileLinkRetryStatus,
-      _MyPageProfileLinkStatus.linked =>
-        l10n.tennisBearProfileLinkLinkedStatus,
+      _MyPageProfileLinkStatus.linked => l10n.tennisBearProfileLinkLinkedStatus,
     };
   }
 }
