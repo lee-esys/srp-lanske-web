@@ -2069,7 +2069,7 @@
       }
     }
   },
-  "ownershipTransferGenericFailureMessage": "イベント所有権の引継ぎを完了できませんでした。引継ぎ情報は保持されています。通信状態を確認して、もう一度お試しください。",
+  "ownershipTransferGenericFailureMessage": "アカウントへの反映を完了できませんでした。状態は保持されています。通信状態を確認して、もう一度お試しください。",
   "@ownershipTransferGenericFailureMessage": {
     "description": "Generic ownership transfer failure message."
   }
