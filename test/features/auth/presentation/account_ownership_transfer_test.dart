@@ -45,6 +45,8 @@ void main() {
     expect(find.text('既存のLanskeアカウントが見つかりました'), findsOneWidget);
     expect(find.text('既存アカウントにログインして続ける'), findsOneWidget);
     expect(find.text('今はログインしない'), findsOneWidget);
+    expect(find.textContaining('引き継'), findsNothing);
+    expect(find.textContaining('引継'), findsNothing);
 
     await tester.tap(find.text('今はログインしない'));
     await tester.pumpAndSettle();
@@ -75,7 +77,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('既存アカウントへ切り替えて引き継ぐ'), findsOneWidget);
+    expect(find.text('既存アカウントにログインして続ける'), findsOneWidget);
     expect(find.text('今はログインしない'), findsNothing);
 
     await tester.tap(find.text('既存アカウントにログインして続ける'));
