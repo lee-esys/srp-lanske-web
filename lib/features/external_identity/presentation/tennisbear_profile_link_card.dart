@@ -28,6 +28,8 @@ class TennisBearProfileLinkCard extends StatefulWidget {
 
 class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
   static const _parser = TennisBearProfileUrlParser();
+  static const _lanskeAdminTennisBearProfileUrl =
+      'https://www.tennisbear.net/user/4380/info';
 
   final _formKey = GlobalKey<FormState>();
   final _profileUrlController = TextEditingController();
@@ -446,7 +448,16 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
               : l10n.tennisBearProfileLinkPendingInstruction,
         ),
         if (!expired) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          FilledButton.tonalIcon(
+            onPressed: () =>
+                openExternalUrl(_lanskeAdminTennisBearProfileUrl),
+            icon: const Icon(Icons.open_in_new),
+            label: Text(
+              l10n.tennisBearProfileLinkOpenAdminProfileButton,
+            ),
+          ),
+          const SizedBox(height: 12),
           Text(l10n.tennisBearProfileLinkPendingCompletionNotice),
         ],
         const SizedBox(height: 16),
