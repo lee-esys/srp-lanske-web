@@ -30,6 +30,13 @@ void main() {
     expect(find.text('テニスベアのアプリで自分のマイページを開く'), findsOneWidget);
     expect(find.text('6.'), findsOneWidget);
     expect(find.text('「このプロフィールで連携を申請」をタップ'), findsOneWidget);
+    final profileUrlField = tester.widget<TextFormField>(
+      find.byType(TextFormField),
+    );
+    expect(
+      profileUrlField.decoration?.hintText,
+      'https://www.tennisbear.net/user/4380/info',
+    );
     expect(find.textContaining('あなたの統計データを集計するために利用します'), findsOneWidget);
     expect(find.textContaining('本人確認'), findsNothing);
   });
