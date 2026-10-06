@@ -149,13 +149,13 @@ abstract class AppLocalizations {
   /// Body shown on My Page when there is no registered account session.
   ///
   /// In ja, this message translates to:
-  /// **'ログインまたはアカウントへの引き継ぎを行うと、マイページの機能を利用できます。'**
+  /// **'ログインまたはアカウント作成を行うと、マイページ機能を利用できます。'**
   String get myPageAccountRequiredBody;
 
   /// Button for opening account management from an unavailable My Page.
   ///
   /// In ja, this message translates to:
-  /// **'ログイン・アカウント管理へ'**
+  /// **'ログイン・アカウント作成へ'**
   String get myPageOpenAccountButton;
 
   /// Label for the signed-in account email on My Page.
@@ -2235,7 +2235,7 @@ abstract class AppLocalizations {
   /// Admin TennisBear profile link review UI text.
   ///
   /// In ja, this message translates to:
-  /// **'TennisBearから届いた確認コードで申請を確認します。'**
+  /// **'テニスベアから届いた確認コードで申請を確認します。'**
   String get adminProfileLinkReviewSubtitle;
 
   /// Admin TennisBear profile link review UI text.
@@ -2283,7 +2283,7 @@ abstract class AppLocalizations {
   /// Admin TennisBear profile link review UI text.
   ///
   /// In ja, this message translates to:
-  /// **'TennisBear ユーザーID'**
+  /// **'テニスベア ユーザーID'**
   String get adminProfileLinkReviewSourceUserIdLabel;
 
   /// Admin TennisBear profile link review UI text.
@@ -2391,13 +2391,13 @@ abstract class AppLocalizations {
   /// Admin TennisBear profile link review UI text.
   ///
   /// In ja, this message translates to:
-  /// **'TennisBearプロフィールを開く'**
+  /// **'テニスベアプロフィールを開く'**
   String get adminProfileLinkReviewOpenProfileButton;
 
   /// Admin TennisBear profile link review UI text.
   ///
   /// In ja, this message translates to:
-  /// **'TennisBear個人チャットの送信元プロフィールと、表示中のプロフィールが一致することを確認してください。'**
+  /// **'テニスベア個人チャットの送信元プロフィールと、表示中のプロフィールが一致することを確認してください。'**
   String get adminProfileLinkReviewVerifyInstruction;
 
   /// Admin TennisBear profile link review UI text.
@@ -2421,7 +2421,7 @@ abstract class AppLocalizations {
   /// Admin TennisBear profile link review UI text.
   ///
   /// In ja, this message translates to:
-  /// **'TennisBear側の送信元と表示中のプロフィールが一致することを確認してください。'**
+  /// **'テニスベア側の送信元と表示中のプロフィールが一致することを確認してください。'**
   String get adminProfileLinkReviewApproveDialogBody;
 
   /// Admin TennisBear profile link review UI text.
@@ -2475,25 +2475,25 @@ abstract class AppLocalizations {
   /// Title shown after an anonymous ownership transfer handoff is prepared.
   ///
   /// In ja, this message translates to:
-  /// **'既存アカウントへの引継ぎ準備ができました'**
+  /// **'既存のLanskeアカウントが見つかりました'**
   String get ownershipTransferPreparedTitle;
 
   /// Explanation shown before switching from the anonymous source to an existing account.
   ///
   /// In ja, this message translates to:
-  /// **'現在のログインなし利用状態の所有権証跡を安全に保存しました。既存のLanskeアカウントへ切り替えたあと、この端末で作成したイベントの所有権を移管します。'**
+  /// **'この認証情報は既存のLanskeアカウントで使用されています。既存アカウントにログインすると、この端末で作成した対戦表もそのアカウントで管理できます。'**
   String get ownershipTransferPreparedBody;
 
   /// Button label for signing out the anonymous source before target account login.
   ///
   /// In ja, this message translates to:
-  /// **'既存アカウントへ切り替えて引き継ぐ'**
+  /// **'既存アカウントにログインして続ける'**
   String get ownershipTransferSwitchButton;
 
   /// Button label for abandoning the local ownership handoff while the anonymous source remains active.
   ///
   /// In ja, this message translates to:
-  /// **'今は引き継がない'**
+  /// **'今はログインしない'**
   String get ownershipTransferCancelButton;
 
   /// Title of the login card while an ownership handoff is pending.
@@ -2505,43 +2505,43 @@ abstract class AppLocalizations {
   /// Instruction shown while waiting for the target account login.
   ///
   /// In ja, this message translates to:
-  /// **'引継ぎ準備は保存されています。移管先にする既存のLanskeアカウントでログインしてください。新しいアカウントは作成しないでください。'**
+  /// **'既存のLanskeアカウントでログインしてください。ログイン後、この端末で作成した対戦表もそのアカウントで管理できます。新しいアカウントは作成しないでください。'**
   String get ownershipTransferLoginBody;
 
   /// Title shown when a signed-in target still has a pending ownership handoff.
   ///
   /// In ja, this message translates to:
-  /// **'イベント所有権の引継ぎが未完了です'**
+  /// **'アカウントへの反映が未完了です'**
   String get ownershipTransferResumeTitle;
 
   /// Retry explanation for an interrupted ownership transfer.
   ///
   /// In ja, this message translates to:
-  /// **'このアカウントへのイベント所有権移管を再開できます。途中まで完了している場合は、残っているイベントだけを移管します。'**
+  /// **'この端末で作成した対戦表を、このアカウントで管理できる状態にできます。途中まで完了している場合は、残りだけを反映します。'**
   String get ownershipTransferResumeBody;
 
   /// Button label for resuming an ownership transfer.
   ///
   /// In ja, this message translates to:
-  /// **'引継ぎを再開'**
+  /// **'反映を再開'**
   String get ownershipTransferResumeButton;
 
   /// Status message shown after preparing the ownership handoff.
   ///
   /// In ja, this message translates to:
-  /// **'既存アカウントへの安全な引継ぎ準備ができました。アカウントを切り替えるまでは、現在のログインなし利用状態をそのまま継続できます。'**
+  /// **'既存のLanskeアカウントが見つかりました。既存アカウントにログインして続けてください。'**
   String get ownershipTransferPreparedMessage;
 
   /// Status shown after leaving the anonymous source session for target login.
   ///
   /// In ja, this message translates to:
-  /// **'引継ぎ準備を保持したままログアウトしました。移管先にする既存のLanskeアカウントでログインしてください。'**
+  /// **'既存のLanskeアカウントでログインしてください。'**
   String get ownershipTransferLoginMessage;
 
   /// Status shown after locally abandoning a prepared handoff.
   ///
   /// In ja, this message translates to:
-  /// **'引継ぎ準備を終了しました。ログインなし利用をそのまま継続できます。'**
+  /// **'アカウントへのログインを中止しました。ログインなしでそのまま利用できます。'**
   String get ownershipTransferCanceledMessage;
 
   /// Status shown after event ownership transfer completes.
@@ -2553,7 +2553,7 @@ abstract class AppLocalizations {
   /// Generic ownership transfer failure message.
   ///
   /// In ja, this message translates to:
-  /// **'イベント所有権の引継ぎを完了できませんでした。引継ぎ情報は保持されています。通信状態を確認して、もう一度お試しください。'**
+  /// **'アカウントへの反映を完了できませんでした。状態は保持されています。通信状態を確認して、もう一度お試しください。'**
   String get ownershipTransferGenericFailureMessage;
 }
 
