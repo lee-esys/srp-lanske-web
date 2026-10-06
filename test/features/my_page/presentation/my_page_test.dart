@@ -25,7 +25,12 @@ void main() {
       find.text('マイページを利用するにはLanskeアカウントが必要です'),
       findsOneWidget,
     );
-    expect(find.text('ログイン・アカウント管理へ'), findsOneWidget);
+    expect(find.text('ログイン・アカウント作成へ'), findsOneWidget);
+    expect(
+      find.text('ログインまたはアカウント作成を行うと、マイページ機能を利用できます。'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('引き継ぎ'), findsNothing);
     expect(users.calls, 0);
   });
 
