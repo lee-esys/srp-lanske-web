@@ -2051,15 +2051,15 @@
   "@ownershipTransferPreparedMessage": {
     "description": "Status message shown after preparing the ownership handoff."
   },
-  "ownershipTransferLoginMessage": "The handoff was kept while signing out. Sign in to the existing Lanske account that should receive the events.",
+  "ownershipTransferLoginMessage": "Sign in to your existing Lanske account.",
   "@ownershipTransferLoginMessage": {
     "description": "Status shown after leaving the anonymous source session for target login."
   },
-  "ownershipTransferCanceledMessage": "The transfer handoff was ended. You can continue using the current no-login session.",
+  "ownershipTransferCanceledMessage": "Account sign-in was canceled. You can continue using Lanske without signing in.",
   "@ownershipTransferCanceledMessage": {
     "description": "Status shown after locally abandoning a prepared handoff."
   },
-  "ownershipTransferCompletedMessage": "Transferred {count} event(s) to the existing Lanske account.",
+  "ownershipTransferCompletedMessage": "{count} match tables can now be managed from this Lanske account.",
   "@ownershipTransferCompletedMessage": {
     "description": "Status shown after event ownership transfer completes.",
     "placeholders": {
@@ -2069,7 +2069,7 @@
       }
     }
   },
-  "ownershipTransferGenericFailureMessage": "Event ownership transfer could not be completed. The handoff is still saved. Check your connection and try again.",
+  "ownershipTransferGenericFailureMessage": "The account update could not be completed. The current state was kept. Check your connection and try again.",
   "@ownershipTransferGenericFailureMessage": {
     "description": "Generic ownership transfer failure message."
   }
