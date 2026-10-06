@@ -32,11 +32,11 @@
   "@myPageAccountRequiredTitle": {
     "description": "Title shown on My Page when there is no registered account session."
   },
-  "myPageAccountRequiredBody": "Sign in or move your current no-login session to an account to use My Page features.",
+  "myPageAccountRequiredBody": "Sign in or create an account to use My Page features.",
   "@myPageAccountRequiredBody": {
     "description": "Body shown on My Page when there is no registered account session."
   },
-  "myPageOpenAccountButton": "Sign in / account settings",
+  "myPageOpenAccountButton": "Sign in / create account",
   "@myPageOpenAccountButton": {
     "description": "Button for opening account management from an unavailable My Page."
   },
@@ -2011,15 +2011,15 @@
   "@adminProfileLinkReviewGenericFailureMessage": {
     "description": "Admin TennisBear profile link review UI text."
   },
-  "ownershipTransferPreparedTitle": "Ready to transfer to an existing account",
+  "ownershipTransferPreparedTitle": "An existing Lanske account was found",
   "@ownershipTransferPreparedTitle": {
     "description": "Title shown after an anonymous ownership transfer handoff is prepared."
   },
-  "ownershipTransferPreparedBody": "Proof of ownership for the current no-login session has been saved securely. After switching to your existing Lanske account, event ownership created on this device will be transferred.",
+  "ownershipTransferPreparedBody": "These credentials are already used by an existing Lanske account. Sign in to that account to manage match tables created on this device there as well.",
   "@ownershipTransferPreparedBody": {
     "description": "Explanation shown before switching from the anonymous source to an existing account."
   },
-  "ownershipTransferSwitchButton": "Switch to existing account and transfer",
+  "ownershipTransferSwitchButton": "Sign in to existing account and continue",
   "@ownershipTransferSwitchButton": {
     "description": "Button label for signing out the anonymous source before target account login."
   },
@@ -2031,23 +2031,23 @@
   "@ownershipTransferLoginTitle": {
     "description": "Title of the login card while an ownership handoff is pending."
   },
-  "ownershipTransferLoginBody": "Your transfer handoff is saved. Sign in to the existing Lanske account that should receive the events. Do not create a new account.",
+  "ownershipTransferLoginBody": "Sign in to your existing Lanske account. After signing in, match tables created on this device can also be managed from that account. Do not create a new account.",
   "@ownershipTransferLoginBody": {
     "description": "Instruction shown while waiting for the target account login."
   },
-  "ownershipTransferResumeTitle": "Event ownership transfer is incomplete",
+  "ownershipTransferResumeTitle": "Account update is incomplete",
   "@ownershipTransferResumeTitle": {
     "description": "Title shown when a signed-in target still has a pending ownership handoff."
   },
-  "ownershipTransferResumeBody": "You can resume transferring event ownership to this account. If part of the transfer already completed, only the remaining events will be moved.",
+  "ownershipTransferResumeBody": "You can make match tables created on this device manageable from this account. If part of the update already completed, only the remaining items will be updated.",
   "@ownershipTransferResumeBody": {
     "description": "Retry explanation for an interrupted ownership transfer."
   },
-  "ownershipTransferResumeButton": "Resume transfer",
+  "ownershipTransferResumeButton": "Resume update",
   "@ownershipTransferResumeButton": {
     "description": "Button label for resuming an ownership transfer."
   },
-  "ownershipTransferPreparedMessage": "The secure handoff to an existing account is ready. Your current no-login session remains active until you switch accounts.",
+  "ownershipTransferPreparedMessage": "An existing Lanske account was found. Sign in to that account to continue.",
   "@ownershipTransferPreparedMessage": {
     "description": "Status message shown after preparing the ownership handoff."
   },
