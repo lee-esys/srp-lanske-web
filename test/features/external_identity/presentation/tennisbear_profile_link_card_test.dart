@@ -73,6 +73,10 @@ void main() {
       findsOneWidget,
     );
     expect(
+      find.text('Lanske管理者のテニスベアプロフィールを開く'),
+      findsOneWidget,
+    );
+    expect(
       find.text('連携完了後、テニスベアのチャットでお知らせします。'),
       findsOneWidget,
     );
