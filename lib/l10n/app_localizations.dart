@@ -2547,7 +2547,7 @@ abstract class AppLocalizations {
   /// Status shown after event ownership transfer completes.
   ///
   /// In ja, this message translates to:
-  /// **'{count}件のイベントを既存のLanskeアカウントへ引き継ぎました。'**
+  /// **'{count}件の対戦表をこのLanskeアカウントで管理できるようにしました。'**
   String ownershipTransferCompletedMessage(int count);
 
   /// Generic ownership transfer failure message.
