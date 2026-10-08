@@ -375,8 +375,6 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
             label: Text(l10n.tennisBearProfileLinkOpenProfileButton),
           ),
         ),
-        const SizedBox(height: 12),
-        Text(l10n.tennisBearProfileLinkPermissionNotice),
         const SizedBox(height: 16),
         OutlinedButton.icon(
           onPressed: _busy ? null : _unlink,
@@ -659,7 +657,6 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
     final items = [
       l10n.tennisBearProfileLinkRiskOfficial,
       l10n.tennisBearProfileLinkRiskWrongProfile,
-      l10n.tennisBearProfileLinkRiskPermission,
       l10n.tennisBearProfileLinkRiskUnlinkData,
     ];
 
