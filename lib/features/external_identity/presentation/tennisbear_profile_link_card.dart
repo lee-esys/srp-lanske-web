@@ -30,6 +30,8 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
   static const _parser = TennisBearProfileUrlParser();
   static const _lanskeAdminTennisBearProfileUrl =
       'https://www.tennisbear.net/user/4380/info';
+  static const _lanskeAdminTennisBearProfileImageAsset =
+      'assets/images/lanske_admin_tennisbear_profile.webp';
 
   final _formKey = GlobalKey<FormState>();
   final _profileUrlController = TextEditingController();
@@ -453,6 +455,8 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
         ),
         if (!expired) ...[
           const SizedBox(height: 12),
+          _buildAdminProfilePreview(context),
+          const SizedBox(height: 12),
           FilledButton.tonalIcon(
             onPressed: () =>
                 openExternalUrl(_lanskeAdminTennisBearProfileUrl),
@@ -480,6 +484,69 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
           child: Text(l10n.tennisBearProfileLinkCancelRequestButton),
         ),
       ],
+    );
+  }
+
+  Widget _buildAdminProfilePreview(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final l10n = _l10n;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLowest,
+        border: Border.all(color: colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          ClipOval(
+            child: Image.asset(
+              _lanskeAdminTennisBearProfileImageAsset,
+              key: const ValueKey('tennisbear-admin-profile-image'),
+              width: 72,
+              height: 72,
+              fit: BoxFit.cover,
+              semanticLabel:
+                  l10n.tennisBearProfileLinkAdminProfileImageSemanticLabel,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 72,
+                  height: 72,
+                  color: colorScheme.surfaceContainerHighest,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.person_outline,
+                    color: colorScheme.onSurfaceVariant,
+                    size: 36,
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.tennisBearProfileLinkAdminProfileTitle,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.tennisBearProfileLinkAdminProfileSubtitle,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
