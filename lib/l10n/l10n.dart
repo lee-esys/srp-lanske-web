@@ -75,10 +75,6 @@ extension TennisBearProfileLinkLocalizations on AppLocalizations {
   String get tennisBearProfileLinkOpenProfileButton =>
       _isJapanese ? 'テニスベアでプロフィールを開く' : 'Open profile on TennisBear';
 
-  String get tennisBearProfileLinkPermissionNotice => _isJapanese
-      ? 'プロフィール連携だけを理由に、イベントや対戦表全体の閲覧権が付与されることはありません。'
-      : 'Linking a profile does not grant access to entire events or schedules.';
-
   String get tennisBearProfileLinkUnlinkButton =>
       _isJapanese ? 'プロフィール連携を解除' : 'Unlink profile';
 
@@ -171,10 +167,6 @@ extension TennisBearProfileLinkLocalizations on AppLocalizations {
   String get tennisBearProfileLinkRiskWrongProfile => _isJapanese
       ? '誤ったプロフィールを連携すると、そのプロフィールに紐づく統計が自分の情報として集計される可能性があります。'
       : 'Linking the wrong profile may cause statistics for that profile to be aggregated as your information.';
-
-  String get tennisBearProfileLinkRiskPermission => _isJapanese
-      ? 'プロフィール連携だけでは、イベントや対戦表全体の閲覧権は付与されません。'
-      : 'Profile linking alone does not grant access to entire events or schedules.';
 
   String get tennisBearProfileLinkRiskUnlinkData => _isJapanese
       ? '連携を解除しても、過去のイベント・試合結果などの元データは削除されません。'
