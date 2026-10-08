@@ -42,15 +42,17 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('既存アカウントへの引継ぎ準備ができました'), findsOneWidget);
-    expect(find.text('既存アカウントへ切り替えて引き継ぐ'), findsOneWidget);
-    expect(find.text('今は引き継がない'), findsOneWidget);
+    expect(find.text('既存のLanskeアカウントが見つかりました'), findsOneWidget);
+    expect(find.text('既存アカウントにログインして続ける'), findsOneWidget);
+    expect(find.text('今はログインしない'), findsOneWidget);
+    expect(find.textContaining('引き継'), findsNothing);
+    expect(find.textContaining('引継'), findsNothing);
 
-    await tester.tap(find.text('今は引き継がない'));
+    await tester.tap(find.text('今はログインしない'));
     await tester.pumpAndSettle();
 
     expect(handoffs.value, isNull);
-    expect(find.text('ログインなしで利用中'), findsOneWidget);
+    expect(find.text('Lanske アカウントを作成'), findsOneWidget);
   });
 
   testWidgets(
@@ -75,10 +77,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('既存アカウントへ切り替えて引き継ぐ'), findsOneWidget);
-    expect(find.text('今は引き継がない'), findsNothing);
+    expect(find.text('既存アカウントにログインして続ける'), findsOneWidget);
+    expect(find.text('今はログインしない'), findsNothing);
 
-    await tester.tap(find.text('既存アカウントへ切り替えて引き継ぐ'));
+    await tester.tap(find.text('既存アカウントにログインして続ける'));
     await tester.pumpAndSettle();
 
     expect(auth.currentSession, const AuthSession.signedOut());

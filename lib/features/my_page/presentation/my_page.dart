@@ -11,8 +11,10 @@ import '../../auth/domain/lanske_user.dart';
 import '../../auth/presentation/account_routes.dart';
 import '../../auth/presentation/account_scope.dart';
 import '../../auth/presentation/auth_scope.dart';
+import '../../external_identity/presentation/external_identity_link_scope.dart';
 import 'my_page_navigation_drawer.dart';
 import 'widgets/my_page_match_table_list_section.dart';
+import 'widgets/my_page_profile_link_section.dart';
 import 'widgets/my_page_section_card.dart';
 
 class MyPage extends StatefulWidget {
@@ -21,11 +23,17 @@ class MyPage extends StatefulWidget {
     this.accountService,
     this.ownedEventsLoader,
     this.onOpenOwnedEvent,
+    this.profileLinkLoader,
+    this.onOpenProfileLinkManagement,
+    this.profileLinkNow,
   });
 
   final AccountService? accountService;
   final MyPageOwnedEventsLoader? ownedEventsLoader;
   final MyPageOwnedEventOpenCallback? onOpenOwnedEvent;
+  final MyPageProfileLinkLoader? profileLinkLoader;
+  final VoidCallback? onOpenProfileLinkManagement;
+  final DateTime Function()? profileLinkNow;
 
   @override
   State<MyPage> createState() => _MyPageState();
@@ -148,6 +156,15 @@ class _MyPageState extends State<MyPage> {
                 else if (_user != null)
                   _buildAccountSummary(context, session, _user!),
                 if (session.isAccount && session.uid != null) ...[
+                  const SizedBox(height: 24),
+                  MyPageProfileLinkSection(
+                    lanskeUserId: session.uid!,
+                    loadProfileLink: widget.profileLinkLoader ??
+                        ExternalIdentityLinkScope.of(context).load,
+                    onOpenManagement:
+                        widget.onOpenProfileLinkManagement ?? _openAccount,
+                    now: widget.profileLinkNow,
+                  ),
                   const SizedBox(height: 24),
                   Text(
                     l10n.myPageDoublesMatchTablesHeading,

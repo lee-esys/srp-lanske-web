@@ -31,8 +31,28 @@ extension TennisBearProfileLinkLocalizations on AppLocalizations {
       _isJapanese ? 'テニスベア' : 'TennisBear';
 
   String get tennisBearProfileLinkSubtitle => _isJapanese
-      ? 'Lanskeアカウントと、ご自身のテニスベア公開プロフィールを対応付ける補助機能です。'
-      : 'Link your Lanske account with your public TennisBear profile.';
+      ? 'テニスベアの公開プロフィールとLanskeアカウントの連携情報は、Lanskeで記録された対戦スコアから、あなたの統計データを集計するために利用します。'
+      : 'Your TennisBear public profile link is used to aggregate your statistics from match scores recorded in Lanske.';
+
+  String get myPageProfileLinkTitle =>
+      _isJapanese ? 'プロフィール連携' : 'Profile links';
+
+  String get myPageProfileLinkRefreshTooltip =>
+      _isJapanese ? '連携状態を更新' : 'Refresh link status';
+
+  String get myPageProfileLinkLoadingMessage =>
+      _isJapanese ? 'プロフィール連携の状態を確認しています…' : 'Checking profile link status…';
+
+  String get myPageProfileLinkLoadErrorTitle => _isJapanese
+      ? 'プロフィール連携の状態を確認できませんでした'
+      : 'Could not check profile link status';
+
+  String get myPageProfileLinkLoadErrorBody => _isJapanese
+      ? '通信状態を確認して、もう一度お試しください。連携の管理画面はそのまま開けます。'
+      : 'Check your connection and try again. You can still open profile link management.';
+
+  String get myPageProfileLinkManageButton =>
+      _isJapanese ? 'プロフィール連携を管理' : 'Manage profile link';
 
   String get tennisBearProfileLinkRefreshTooltip =>
       _isJapanese ? '最新の状態に更新' : 'Refresh status';
@@ -55,10 +75,6 @@ extension TennisBearProfileLinkLocalizations on AppLocalizations {
   String get tennisBearProfileLinkOpenProfileButton =>
       _isJapanese ? 'テニスベアでプロフィールを開く' : 'Open profile on TennisBear';
 
-  String get tennisBearProfileLinkPermissionNotice => _isJapanese
-      ? 'プロフィール連携だけを理由に、イベントや対戦表全体の閲覧権が付与されることはありません。'
-      : 'Linking a profile does not grant access to entire events or schedules.';
-
   String get tennisBearProfileLinkUnlinkButton =>
       _isJapanese ? 'プロフィール連携を解除' : 'Unlink profile';
 
@@ -69,16 +85,34 @@ extension TennisBearProfileLinkLocalizations on AppLocalizations {
       _isJapanese ? '確認コードをコピー' : 'Copy confirmation code';
 
   String get tennisBearProfileLinkCodeNotRestoredMessage => _isJapanese
-      ? '確認コードは安全のため保存していません。この画面を再読み込みした場合、同じコードは再表示できません。必要なら新しいコードを再発行してください。'
-      : 'For security, the confirmation code is not stored. After reloading this page, the same code cannot be shown again. Reissue a new code if needed.';
+      ? '確認コードは安全のため保存していません。この画面を再読み込みした場合、同じコードは再表示できません。確認コードが不明の場合は再発行してください。'
+      : 'For security, the confirmation code is not stored. After reloading this page, the same code cannot be shown again. Reissue the code if you no longer have it.';
 
   String get tennisBearProfileLinkExpiredMessage => _isJapanese
       ? '確認コードのシステム上の有効期限（7日間）が過ぎています。再発行すると新しいコードで確認をやり直せます。'
       : 'The seven-day system validity period has expired. Reissue a new code to restart confirmation.';
 
   String get tennisBearProfileLinkPendingInstruction => _isJapanese
-      ? '発行後1時間以内を目安に、確認コードをテニスベア個人チャットからLanske管理者へ送信してください。システム上の有効期限は7日間です。送信後は2営業日以内を目安に確認します。'
-      : 'Please send the confirmation code to a Lanske administrator through TennisBear direct chat, preferably within one hour. The system validity period is seven days. We aim to review it within two business days after you send it.';
+      ? 'テニスベアでLanske管理者のプロフィールを開き、チャットから確認コードを送信してください。'
+      : 'Open the Lanske administrator profile on TennisBear and send the confirmation code through chat.';
+
+  String get tennisBearProfileLinkPendingCompletionNotice => _isJapanese
+      ? '連携完了後、テニスベアのチャットでお知らせします。'
+      : 'We will let you know through TennisBear chat after the link is completed.';
+
+  String get tennisBearProfileLinkAdminProfileTitle =>
+      _isJapanese ? 'Lanske管理者' : 'Lanske administrator';
+
+  String get tennisBearProfileLinkAdminProfileSubtitle =>
+      _isJapanese ? 'テニスベアプロフィール' : 'TennisBear profile';
+
+  String get tennisBearProfileLinkAdminProfileImageSemanticLabel => _isJapanese
+      ? 'Lanske管理者のテニスベアプロフィール画像'
+      : 'Lanske administrator TennisBear profile image';
+
+  String get tennisBearProfileLinkOpenAdminProfileButton => _isJapanese
+      ? 'Lanske管理者のテニスベアプロフィールを開く'
+      : 'Open the Lanske administrator profile on TennisBear';
 
   String get tennisBearProfileLinkReissueExpiredButton =>
       _isJapanese ? '確認コードを再発行' : 'Reissue confirmation code';
@@ -100,22 +134,39 @@ extension TennisBearProfileLinkLocalizations on AppLocalizations {
       : 'Enter a valid public TennisBear profile URL.';
 
   String get tennisBearProfileLinkSubmitButton =>
-      _isJapanese ? 'このプロフィールで連携を申請' : 'Request link with this profile';
+      _isJapanese ? '確認コードを発行' : 'Issue confirmation code';
+
+  String get tennisBearProfileLinkApplicationStepsTitle =>
+      _isJapanese ? '申請手順' : 'How to apply';
+
+  List<String> get tennisBearProfileLinkApplicationSteps => _isJapanese
+      ? const [
+          'テニスベアのアプリで自分のマイページを開く',
+          '右上の共有ボタンをタップ',
+          '「外部サービスで共有」をタップ',
+          'プロフィールURLをコピー',
+          'Lanskeの入力欄に貼り付ける',
+          '「確認コードを発行」をタップ',
+        ]
+      : const [
+          'Open your My Page in the TennisBear app',
+          'Tap the share button in the top-right corner',
+          'Tap “Share with external services”',
+          'Copy your profile URL',
+          'Paste it into the Lanske input field',
+          'Tap “Issue confirmation code”',
+        ];
 
   String get tennisBearProfileLinkRiskTitle =>
       _isJapanese ? '申請前に確認してください' : 'Before you apply';
 
   String get tennisBearProfileLinkRiskOfficial => _isJapanese
-      ? 'TennisBear公式のアカウント連携・本人確認機能ではなく、Lanske独自の補助機能です。'
-      : 'This is a Lanske helper feature, not an official TennisBear account-link or identity-verification feature.';
+      ? 'テニスベア公式のアカウント連携機能ではなく、Lanske独自のプロフィール連携機能です。'
+      : 'This is a Lanske profile-link feature, not an official TennisBear account-link feature.';
 
   String get tennisBearProfileLinkRiskWrongProfile => _isJapanese
-      ? '誤ったプロフィールを連携すると、将来そのプロフィールに紐づく本人向け履歴・統計が自分の情報として表示される可能性があります。'
-      : 'Linking the wrong profile may cause future personal history or statistics for that profile to appear as your information.';
-
-  String get tennisBearProfileLinkRiskPermission => _isJapanese
-      ? 'プロフィール連携だけでは、イベントや対戦表全体の閲覧権は付与されません。'
-      : 'Profile linking alone does not grant access to entire events or schedules.';
+      ? '誤ったプロフィールを連携すると、そのプロフィールに紐づく統計が自分の情報として集計される可能性があります。'
+      : 'Linking the wrong profile may cause statistics for that profile to be aggregated as your information.';
 
   String get tennisBearProfileLinkRiskUnlinkData => _isJapanese
       ? '連携を解除しても、過去のイベント・試合結果などの元データは削除されません。'
@@ -138,15 +189,15 @@ extension TennisBearProfileLinkLocalizations on AppLocalizations {
       : 'The previous request expired. You can apply again.';
 
   String get tennisBearProfileLinkCreateSuccess => _isJapanese
-      ? '連携申請を作成しました。確認コードをテニスベア個人チャットから送信してください。'
-      : 'Link request created. Send the confirmation code through TennisBear direct chat.';
+      ? '確認コードを発行しました。テニスベアでLanske管理者のプロフィールを開き、チャットから確認コードを送信してください。'
+      : 'Confirmation code issued. Open the Lanske administrator profile on TennisBear and send the confirmation code through chat.';
 
   String get tennisBearProfileLinkReissueDialogTitle =>
       _isJapanese ? '確認コードを再発行しますか？' : 'Reissue the confirmation code?';
 
   String get tennisBearProfileLinkReissueDialogBody => _isJapanese
-      ? '現在の確認コードは無効になります。新しいコードを発行したあと、テニスベア個人チャットから送信してください。'
-      : 'The current confirmation code will become invalid. After a new code is issued, send it through TennisBear direct chat.';
+      ? '現在の確認コードは無効になります。新しいコードを発行したあと、テニスベアでLanske管理者のプロフィールを開き、チャットから送信してください。'
+      : 'The current confirmation code will become invalid. After a new code is issued, open the Lanske administrator profile on TennisBear and send it through chat.';
 
   String get tennisBearProfileLinkReissueDialogAction =>
       _isJapanese ? '再発行する' : 'Reissue';
@@ -182,8 +233,13 @@ extension TennisBearProfileLinkLocalizations on AppLocalizations {
       ? 'テニスベアプロフィール連携を解除しました。必要な場合は改めて申請できます。'
       : 'The TennisBear profile was unlinked. You can apply again if needed.';
 
-  String get tennisBearProfileLinkCodeCopied =>
-      _isJapanese ? '確認コードをコピーしました。' : 'Confirmation code copied.';
+  String tennisBearProfileLinkClipboardText(String code) => _isJapanese
+      ? 'Lanske-テニスベアプロフィール連携確認コード\n$code'
+      : 'Lanske-TennisBear profile link confirmation code\n$code';
+
+  String get tennisBearProfileLinkCodeCopied => _isJapanese
+      ? 'テニスベアチャット送信用の確認コードをコピーしました。'
+      : 'Copied the confirmation code for TennisBear chat.';
 
   String get tennisBearProfileLinkInvalidUrlMessage => _isJapanese
       ? 'テニスベアの公開プロフィールURLの形式を確認してください。'

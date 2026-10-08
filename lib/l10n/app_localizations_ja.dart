@@ -33,11 +33,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get myPageAccountRequiredTitle => 'マイページを利用するにはLanskeアカウントが必要です';
 
   @override
-  String get myPageAccountRequiredBody =>
-      'ログインまたはアカウントへの引き継ぎを行うと、マイページの機能を利用できます。';
+  String get myPageAccountRequiredBody => 'ログインまたはアカウント作成を行うと、マイページ機能を利用できます。';
 
   @override
-  String get myPageOpenAccountButton => 'ログイン・アカウント管理へ';
+  String get myPageOpenAccountButton => 'ログイン・アカウント作成へ';
 
   @override
   String get myPageEmailLabel => 'メールアドレス';
@@ -1226,7 +1225,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get adminProfileLinkReviewTitle => 'プロフィール連携確認';
 
   @override
-  String get adminProfileLinkReviewSubtitle => 'TennisBearから届いた確認コードで申請を確認します。';
+  String get adminProfileLinkReviewSubtitle => 'テニスベアから届いた確認コードで申請を確認します。';
 
   @override
   String get adminProfileLinkReviewAccessDeniedMessage => '管理者権限が必要です。';
@@ -1251,7 +1250,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get adminProfileLinkReviewSourceLabel => '連携先';
 
   @override
-  String get adminProfileLinkReviewSourceUserIdLabel => 'TennisBear ユーザーID';
+  String get adminProfileLinkReviewSourceUserIdLabel => 'テニスベア ユーザーID';
 
   @override
   String get adminProfileLinkReviewStateLabel => '申請状態';
@@ -1306,11 +1305,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get adminProfileLinkReviewProfileUrlLabel => 'プロフィール';
 
   @override
-  String get adminProfileLinkReviewOpenProfileButton => 'TennisBearプロフィールを開く';
+  String get adminProfileLinkReviewOpenProfileButton => 'テニスベアプロフィールを開く';
 
   @override
   String get adminProfileLinkReviewVerifyInstruction =>
-      'TennisBear個人チャットの送信元プロフィールと、表示中のプロフィールが一致することを確認してください。';
+      'テニスベア個人チャットの送信元プロフィールと、表示中のプロフィールが一致することを確認してください。';
 
   @override
   String get adminProfileLinkReviewApproveButton => '承認';
@@ -1323,7 +1322,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get adminProfileLinkReviewApproveDialogBody =>
-      'TennisBear側の送信元と表示中のプロフィールが一致することを確認してください。';
+      'テニスベア側の送信元と表示中のプロフィールが一致することを確認してください。';
 
   @override
   String get adminProfileLinkReviewApproveDialogAction => '承認する';
@@ -1353,53 +1352,52 @@ class AppLocalizationsJa extends AppLocalizations {
       '処理に失敗しました。通信状態を確認して、もう一度お試しください。';
 
   @override
-  String get ownershipTransferPreparedTitle => '既存アカウントへの引継ぎ準備ができました';
+  String get ownershipTransferPreparedTitle => '既存のLanskeアカウントが見つかりました';
 
   @override
   String get ownershipTransferPreparedBody =>
-      '現在のログインなし利用状態の所有権証跡を安全に保存しました。既存のLanskeアカウントへ切り替えたあと、この端末で作成したイベントの所有権を移管します。';
+      'この認証情報は既存のLanskeアカウントで使用されています。既存アカウントにログインすると、この端末で作成した対戦表もそのアカウントで管理できます。';
 
   @override
-  String get ownershipTransferSwitchButton => '既存アカウントへ切り替えて引き継ぐ';
+  String get ownershipTransferSwitchButton => '既存アカウントにログインして続ける';
 
   @override
-  String get ownershipTransferCancelButton => '今は引き継がない';
+  String get ownershipTransferCancelButton => '今はログインしない';
 
   @override
   String get ownershipTransferLoginTitle => '既存のLanskeアカウントにログイン';
 
   @override
   String get ownershipTransferLoginBody =>
-      '引継ぎ準備は保存されています。移管先にする既存のLanskeアカウントでログインしてください。新しいアカウントは作成しないでください。';
+      '既存のLanskeアカウントでログインしてください。ログイン後、この端末で作成した対戦表もそのアカウントで管理できます。新しいアカウントは作成しないでください。';
 
   @override
-  String get ownershipTransferResumeTitle => 'イベント所有権の引継ぎが未完了です';
+  String get ownershipTransferResumeTitle => 'アカウントへの反映が未完了です';
 
   @override
   String get ownershipTransferResumeBody =>
-      'このアカウントへのイベント所有権移管を再開できます。途中まで完了している場合は、残っているイベントだけを移管します。';
+      'この端末で作成した対戦表を、このアカウントで管理できる状態にできます。途中まで完了している場合は、残りだけを反映します。';
 
   @override
-  String get ownershipTransferResumeButton => '引継ぎを再開';
+  String get ownershipTransferResumeButton => '反映を再開';
 
   @override
   String get ownershipTransferPreparedMessage =>
-      '既存アカウントへの安全な引継ぎ準備ができました。アカウントを切り替えるまでは、現在のログインなし利用状態をそのまま継続できます。';
+      '既存のLanskeアカウントが見つかりました。既存アカウントにログインして続けてください。';
 
   @override
-  String get ownershipTransferLoginMessage =>
-      '引継ぎ準備を保持したままログアウトしました。移管先にする既存のLanskeアカウントでログインしてください。';
+  String get ownershipTransferLoginMessage => '既存のLanskeアカウントでログインしてください。';
 
   @override
   String get ownershipTransferCanceledMessage =>
-      '引継ぎ準備を終了しました。ログインなし利用をそのまま継続できます。';
+      'アカウントへのログインを中止しました。ログインなしでそのまま利用できます。';
 
   @override
   String ownershipTransferCompletedMessage(int count) {
-    return '$count件のイベントを既存のLanskeアカウントへ引き継ぎました。';
+    return '$count件の対戦表をこのLanskeアカウントで管理できるようにしました。';
   }
 
   @override
   String get ownershipTransferGenericFailureMessage =>
-      'イベント所有権の引継ぎを完了できませんでした。引継ぎ情報は保持されています。通信状態を確認して、もう一度お試しください。';
+      'アカウントへの反映を完了できませんでした。状態は保持されています。通信状態を確認して、もう一度お試しください。';
 }

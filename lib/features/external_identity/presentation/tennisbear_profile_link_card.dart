@@ -28,6 +28,10 @@ class TennisBearProfileLinkCard extends StatefulWidget {
 
 class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
   static const _parser = TennisBearProfileUrlParser();
+  static const _lanskeAdminTennisBearProfileUrl =
+      'https://www.tennisbear.net/user/4380/info';
+  static const _lanskeAdminTennisBearProfileImageAsset =
+      'assets/images/lanske_admin_tennisbear_profile.webp';
 
   final _formKey = GlobalKey<FormState>();
   final _profileUrlController = TextEditingController();
@@ -263,7 +267,11 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
   Future<void> _copyCode() async {
     final code = _confirmationCode;
     if (code == null) return;
-    await Clipboard.setData(ClipboardData(text: code));
+    await Clipboard.setData(
+      ClipboardData(
+        text: _l10n.tennisBearProfileLinkClipboardText(code),
+      ),
+    );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(_l10n.tennisBearProfileLinkCodeCopied)),
@@ -367,8 +375,6 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
             label: Text(l10n.tennisBearProfileLinkOpenProfileButton),
           ),
         ),
-        const SizedBox(height: 12),
-        Text(l10n.tennisBearProfileLinkPermissionNotice),
         const SizedBox(height: 16),
         OutlinedButton.icon(
           onPressed: _busy ? null : _unlink,
@@ -445,6 +451,20 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
               ? l10n.tennisBearProfileLinkExpiredMessage
               : l10n.tennisBearProfileLinkPendingInstruction,
         ),
+        if (!expired) ...[
+          const SizedBox(height: 12),
+          _buildAdminProfilePreview(context),
+          const SizedBox(height: 12),
+          FilledButton.tonalIcon(
+            onPressed: () => openExternalUrl(_lanskeAdminTennisBearProfileUrl),
+            icon: const Icon(Icons.open_in_new),
+            label: Text(
+              l10n.tennisBearProfileLinkOpenAdminProfileButton,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(l10n.tennisBearProfileLinkPendingCompletionNotice),
+        ],
         const SizedBox(height: 16),
         FilledButton.icon(
           onPressed: _busy ? null : _reissue,
@@ -461,6 +481,69 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
           child: Text(l10n.tennisBearProfileLinkCancelRequestButton),
         ),
       ],
+    );
+  }
+
+  Widget _buildAdminProfilePreview(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final l10n = _l10n;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLowest,
+        border: Border.all(color: colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          ClipOval(
+            child: Image.asset(
+              _lanskeAdminTennisBearProfileImageAsset,
+              key: const ValueKey('tennisbear-admin-profile-image'),
+              width: 72,
+              height: 72,
+              fit: BoxFit.cover,
+              semanticLabel:
+                  l10n.tennisBearProfileLinkAdminProfileImageSemanticLabel,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 72,
+                  height: 72,
+                  color: colorScheme.surfaceContainerHighest,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.person_outline,
+                    color: colorScheme.onSurfaceVariant,
+                    size: 36,
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.tennisBearProfileLinkAdminProfileTitle,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.tennisBearProfileLinkAdminProfileSubtitle,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -492,7 +575,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
             keyboardType: TextInputType.url,
             decoration: InputDecoration(
               labelText: l10n.tennisBearProfileLinkProfileUrlLabel,
-              hintText: 'https://www.tennisbear.net/user/899212/info',
+              hintText: 'https://www.tennisbear.net/user/4380/info',
               border: const OutlineInputBorder(),
             ),
             validator: (value) {
@@ -514,11 +597,55 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
           const SizedBox(height: 16),
           _buildRiskNotice(context),
           const SizedBox(height: 16),
+          _buildApplicationSteps(context),
+          const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: _busy ? null : _createRequest,
             icon: const Icon(Icons.link),
             label: Text(l10n.tennisBearProfileLinkSubmitButton),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildApplicationSteps(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final l10n = _l10n;
+    final steps = l10n.tennisBearProfileLinkApplicationSteps;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        border: Border.all(color: colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.tennisBearProfileLinkApplicationStepsTitle,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 8),
+          for (var index = 0; index < steps.length; index++)
+            Padding(
+              padding: EdgeInsets.only(
+                bottom: index == steps.length - 1 ? 0 : 6,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 24,
+                    child: Text('${index + 1}.'),
+                  ),
+                  Expanded(child: Text(steps[index])),
+                ],
+              ),
+            ),
         ],
       ),
     );
@@ -530,7 +657,6 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
     final items = [
       l10n.tennisBearProfileLinkRiskOfficial,
       l10n.tennisBearProfileLinkRiskWrongProfile,
-      l10n.tennisBearProfileLinkRiskPermission,
       l10n.tennisBearProfileLinkRiskUnlinkData,
     ];
 

@@ -24,7 +24,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('未連携'), findsOneWidget);
-    expect(find.text('このプロフィールで連携を申請'), findsOneWidget);
+    expect(find.text('確認コードを発行'), findsOneWidget);
+    expect(find.text('申請手順'), findsOneWidget);
+    expect(find.text('1.'), findsOneWidget);
+    expect(find.text('テニスベアのアプリで自分のマイページを開く'), findsOneWidget);
+    expect(find.text('6.'), findsOneWidget);
+    expect(find.text('「確認コードを発行」をタップ'), findsOneWidget);
+    expect(
+      find.text('https://www.tennisbear.net/user/4380/info'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('あなたの統計データを集計するために利用します'), findsOneWidget);
+    expect(find.textContaining('本人確認'), findsNothing);
+    expect(find.textContaining('閲覧権'), findsNothing);
   });
 
   testWidgets('shows profile link title as semantic wrap segments',
@@ -49,7 +61,7 @@ void main() {
       find.byType(TextFormField),
       'https://www.tennisbear.net/user/899212/info',
     );
-    final submit = find.text('このプロフィールで連携を申請');
+    final submit = find.text('確認コードを発行');
     await tester.ensureVisible(submit);
     await tester.tap(submit);
     await tester.pumpAndSettle();
@@ -57,6 +69,26 @@ void main() {
     expect(find.text('申請中'), findsOneWidget);
     expect(find.textContaining('LSK-'), findsWidgets);
     expect(find.text('新しい確認コードを再発行'), findsOneWidget);
+    expect(
+      find.text('テニスベアでLanske管理者のプロフィールを開き、チャットから確認コードを送信してください。'),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('tennisbear-admin-profile-image')),
+      findsOneWidget,
+    );
+    expect(find.text('Lanske管理者'), findsOneWidget);
+    expect(find.text('テニスベアプロフィール'), findsOneWidget);
+    expect(
+      find.text('Lanske管理者のテニスベアプロフィールを開く'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('連携完了後、テニスベアのチャットでお知らせします。'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('1時間以内'), findsNothing);
+    expect(find.textContaining('2営業日以内'), findsNothing);
   });
 
   testWidgets(
@@ -77,6 +109,10 @@ void main() {
 
     expect(find.text('申請中'), findsOneWidget);
     expect(find.textContaining('同じコードは再表示できません'), findsOneWidget);
+    expect(
+      find.textContaining('確認コードが不明の場合は再発行してください'),
+      findsOneWidget,
+    );
     expect(find.textContaining('LSK-'), findsNothing);
   });
 
@@ -123,6 +159,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('承認済み'), findsOneWidget);
+    expect(find.textContaining('閲覧権'), findsNothing);
     expect(find.text('プロフィール連携を解除'), findsOneWidget);
   });
 }

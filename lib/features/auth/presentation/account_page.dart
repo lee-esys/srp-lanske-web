@@ -249,7 +249,7 @@ class _AccountPageState extends State<AccountPage> {
     final l10n = AppLocalizations.of(context);
     setState(() {
       if (resolved.isLinked) {
-        _statusMessage = 'ログインなしの利用状態を引き継いでLanskeアカウントへ移行しました。';
+        _statusMessage = 'Lanskeアカウントを作成しました。';
         _statusIsError = false;
       } else {
         _ownershipHandoff = preparedHandoff;
@@ -455,7 +455,9 @@ class _AccountPageState extends State<AccountPage> {
                 Text(
                   ownershipTransferPending
                       ? l10n.ownershipTransferLoginBody
-                      : 'ログインしなくても対戦表は利用できます。アカウントを使うと、今後マイページや本人履歴などを利用できるようになります。',
+                      : _registerMode
+                          ? 'アカウントを作成すると、マイページを利用でき、今後追加される対戦データ統計などのアカウント向け機能も利用できるようになります。'
+                          : 'ログインすると、マイページやアカウント向け機能を利用できます。',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -626,20 +628,14 @@ class _AccountPageState extends State<AccountPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'ログインなしで利用中',
+                  'Lanske アカウントを作成',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'この端末のログインなし利用状態を、新しいLanskeアカウントへ引き継げます。'
-                  '新規アカウントへ移行できる場合は現在の識別情報をそのまま維持します。',
-                ),
-                const SizedBox(height: 12),
                 Text(
-                  '入力した認証情報が既存アカウントに紐付いている場合は、現在の利用状態を保持したまま停止し、'
-                  'アカウントを勝手に切り替えません。',
+                  'アカウントを作成すると、マイページを利用でき、今後追加される対戦データ統計などのアカウント向け機能も利用できるようになります。',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -648,7 +644,7 @@ class _AccountPageState extends State<AccountPage> {
                 OutlinedButton.icon(
                   onPressed: _busy ? null : _linkAnonymousWithGoogle,
                   icon: const Icon(Icons.login),
-                  label: const Text('Google でアカウントへ引き継ぐ'),
+                  label: const Text('Google でアカウントを作成'),
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -710,14 +706,7 @@ class _AccountPageState extends State<AccountPage> {
                 const SizedBox(height: 16),
                 FilledButton(
                   onPressed: _busy ? null : _linkAnonymousWithEmailPassword,
-                  child: const Text('Email / Password でアカウントへ引き継ぐ'),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  '通常の対戦表利用は、アカウントへ引き継がなくてもそのまま継続できます。',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                  child: const Text('Email / Password でアカウントを作成'),
                 ),
                 if (_busy) ...[
                   const SizedBox(height: 12),
@@ -737,6 +726,13 @@ class _AccountPageState extends State<AccountPage> {
     final userReady = uid != null && _ensuredUid == uid;
     final userLoading = uid != null && _ensuringUid == uid;
     final isAdmin = uid != null && _resolvedAdminRoleUid == uid && _isAdmin;
+    final email = session.email?.trim();
+    final providerDisplayName = session.displayName?.trim();
+    final accountDisplayName = providerDisplayName?.isNotEmpty == true
+        ? providerDisplayName!
+        : email?.isNotEmpty == true
+            ? email!
+            : 'Lanske アカウント';
 
     final l10n = AppLocalizations.of(context);
 
@@ -791,17 +787,16 @@ class _AccountPageState extends State<AccountPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            session.displayName?.trim().isNotEmpty == true
-                                ? session.displayName!.trim()
-                                : 'Lanske アカウント',
+                            accountDisplayName,
                             style: Theme.of(context)
                                 .textTheme
                                 .titleLarge
                                 ?.copyWith(fontWeight: FontWeight.w700),
                           ),
-                          if (session.email?.trim().isNotEmpty == true)
+                          if (email?.isNotEmpty == true &&
+                              email != accountDisplayName)
                             Text(
-                              session.email!.trim(),
+                              email!,
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
@@ -819,26 +814,15 @@ class _AccountPageState extends State<AccountPage> {
                   const LinearProgressIndicator(),
                   const SizedBox(height: 8),
                   const Text('Lanske アカウント情報を確認しています…'),
-                ] else if (userReady)
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.check_circle_outline,
-                        color: colorScheme.primary,
-                      ),
-                      const SizedBox(width: 8),
-                      const Expanded(
-                        child: Text('Lanske アカウント情報を確認済みです。'),
-                      ),
-                    ],
-                  )
-                else
+                  const SizedBox(height: 24),
+                ] else if (!userReady) ...[
                   OutlinedButton.icon(
                     onPressed: _retryEnsureUser,
                     icon: const Icon(Icons.refresh),
                     label: const Text('アカウント情報を再確認'),
                   ),
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
+                ],
                 FilledButton.tonalIcon(
                   onPressed: _busy ? null : _openMyPage,
                   icon: const Icon(Icons.person_outline),
@@ -891,7 +875,7 @@ class _AccountPageState extends State<AccountPage> {
           .ownershipTransferGenericFailureMessage;
     }
     if (error is AccountTransitionRequiredException) {
-      return 'ログインなし利用の引継ぎを開始できる状態ではありません。現在の認証状態を確認して、もう一度お試しください。';
+      return 'アカウント作成を続けられない状態です。現在の認証状態を確認して、もう一度お試しください。';
     }
     if (error is AccountAlreadySignedInException) {
       return 'すでにLanskeアカウントへログインしています。';
