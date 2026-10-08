@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "name": "lanske-participation-projector",
+  "version": "0.1.0",
+  "description": "Trusted operator-run TennisBear participation projection reconciliation",
+  "scripts": {
+    "test": "node --test *.test.cjs",
+    "dry-run": "node run.cjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.4.0"
+  }
+}
