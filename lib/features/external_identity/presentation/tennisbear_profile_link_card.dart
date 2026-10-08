@@ -458,8 +458,7 @@ class _TennisBearProfileLinkCardState extends State<TennisBearProfileLinkCard> {
           _buildAdminProfilePreview(context),
           const SizedBox(height: 12),
           FilledButton.tonalIcon(
-            onPressed: () =>
-                openExternalUrl(_lanskeAdminTennisBearProfileUrl),
+            onPressed: () => openExternalUrl(_lanskeAdminTennisBearProfileUrl),
             icon: const Icon(Icons.open_in_new),
             label: Text(
               l10n.tennisBearProfileLinkOpenAdminProfileButton,
