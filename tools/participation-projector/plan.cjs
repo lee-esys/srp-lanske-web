@@ -55,8 +55,8 @@ function parseEventDate(sourceDate) {
   }
   // 12:00 JST keeps the calendar day stable across browser time zones.
   const date = new Date(sourceDate + 'T12:00:00+09:00');
-  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) ===
-    new Date(date.getTime() + 9 * 3600 * 1000).toISOString().slice(0, 10)
+  return Number.isFinite(date.getTime()) &&
+    new Date(date.getTime() + 9 * 3600 * 1000).toISOString().slice(0, 10) === sourceDate
     ? date : null;
 }
 
