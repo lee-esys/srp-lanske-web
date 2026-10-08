@@ -36,6 +36,7 @@ void main() {
     );
     expect(find.textContaining('あなたの統計データを集計するために利用します'), findsOneWidget);
     expect(find.textContaining('本人確認'), findsNothing);
+    expect(find.textContaining('閲覧権'), findsNothing);
   });
 
   testWidgets('shows profile link title as semantic wrap segments',
@@ -158,6 +159,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('承認済み'), findsOneWidget);
+    expect(find.textContaining('閲覧権'), findsNothing);
     expect(find.text('プロフィール連携を解除'), findsOneWidget);
   });
 }
