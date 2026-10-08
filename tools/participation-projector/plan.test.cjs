@@ -46,5 +46,5 @@ test('duplicate claimed identities and duplicate source identities do not projec
 test('missing dates and malformed dates are represented by null', () => {
   assert.equal(parseEventDate(undefined), null);
   assert.equal(parseEventDate('2026-02-30'), null);
-  assert.equal(parseEventDate('2026-10-08'), '2026-10-08T03:00:00.000Z' && parseEventDate('2026-10-08'));
+  assert.equal(parseEventDate('2026-10-08')?.toISOString(), '2026-10-08T03:00:00.000Z');
 });
