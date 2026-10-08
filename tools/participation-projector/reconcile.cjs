@@ -79,6 +79,13 @@ async function synchronize(db, apiUrl, apply, logger = console) {
   let published = 0;
   let removed = 0;
   const events = await db.collection('events').get();
+  const eventIdCounts = new Map();
+  for (const eventDoc of events.docs) {
+    const id = eventDoc.data()?.event?.id;
+    if (typeof id === 'string') {
+      eventIdCounts.set(id, (eventIdCounts.get(id) ?? 0) + 1);
+    }
+  }
   for (const eventDoc of events.docs) {
     const aggregate = eventDoc.data();
     const eventId = aggregate?.event?.id;
@@ -87,13 +94,19 @@ async function synchronize(db, apiUrl, apply, logger = console) {
       logger.error('Skipped invalid event ID', eventDoc.id);
       continue;
     }
-    if (seen.has(eventId)) {
-      // Duplicate internal event UUID is ambiguous; never publish either.
+    if (seen.has(eventId)) continue;
+    seen.add(eventId);
+    if (eventIdCounts.get(eventId) !== 1) {
       failed++;
       logger.error('Duplicate event identity', eventId);
+      try {
+        const outcome = await reconcileEvent(db, eventId, { eventId, entries: [] }, apply);
+        removed += outcome.removed;
+      } catch (cleanupError) {
+        logger.error('Duplicate identity cleanup failed', eventId, cleanupError.message);
+      }
       continue;
     }
-    seen.add(eventId);
     let plan = { eventId, entries: [] };
     try {
       const url = sourceUrl(aggregate);
