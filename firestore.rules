@@ -1207,6 +1207,25 @@ service cloud.firestore {
       }
     }
 
+    // Participation history is a privacy-minimized trusted projection.
+    // The identity-to-UID mapping is the active source of read authority.
+    // Client writes are denied even for administrator-role users.
+    match /externalIdentityParticipationHistories/{mappingDocumentId} {
+      allow read, write: if false;
+
+      match /events/{eventId} {
+        allow get, list: if isRegisteredAccount()
+          && exists(mappingPath(mappingDocumentId))
+          && get(mappingPath(mappingDocumentId)).data.lanskeUserId
+            == request.auth.uid
+          && get(userPath(request.auth.uid)).data
+            .get('externalIdentityIds', {})
+            .get(get(mappingPath(mappingDocumentId)).data.sourceType, null)
+            == mappingDocumentId;
+        allow create, update, delete: if false;
+      }
+    }
+
     // Public share documents used by team schedules, including boccia data.
     match /team_schedules/{shareId} {
       allow read, create, update: if true;
