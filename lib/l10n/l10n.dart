@@ -104,6 +104,16 @@ extension TennisBearProfileLinkLocalizations on AppLocalizations {
       ? '連携完了後、テニスベアのチャットでお知らせします。'
       : 'We will let you know through TennisBear chat after the link is completed.';
 
+  String get tennisBearProfileLinkAdminProfileTitle =>
+      _isJapanese ? 'Lanske管理者' : 'Lanske administrator';
+
+  String get tennisBearProfileLinkAdminProfileSubtitle =>
+      _isJapanese ? 'テニスベアプロフィール' : 'TennisBear profile';
+
+  String get tennisBearProfileLinkAdminProfileImageSemanticLabel => _isJapanese
+      ? 'Lanske管理者のテニスベアプロフィール画像'
+      : 'Lanske administrator TennisBear profile image';
+
   String get tennisBearProfileLinkOpenAdminProfileButton => _isJapanese
       ? 'Lanske管理者のテニスベアプロフィールを開く'
       : 'Open the Lanske administrator profile on TennisBear';
