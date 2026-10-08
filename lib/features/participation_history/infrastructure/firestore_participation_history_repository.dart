@@ -89,8 +89,7 @@ ParticipationHistoryEntry parseParticipationHistoryEntry({
               'observedAt',
             }.contains(key)) ||
         rawSnapshot['sourceDisplayName'] is! String ||
-        (rawSnapshot['levelId'] != null &&
-            rawSnapshot['levelId'] is! int) ||
+        (rawSnapshot['levelId'] != null && rawSnapshot['levelId'] is! int) ||
         (rawSnapshot['levelName'] != null &&
             rawSnapshot['levelName'] is! String) ||
         (rawSnapshot['observedAt'] != null &&
