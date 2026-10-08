@@ -73,6 +73,12 @@ void main() {
       findsOneWidget,
     );
     expect(
+      find.byKey(const ValueKey('tennisbear-admin-profile-image')),
+      findsOneWidget,
+    );
+    expect(find.text('Lanske管理者'), findsOneWidget);
+    expect(find.text('テニスベアプロフィール'), findsOneWidget);
+    expect(
       find.text('Lanske管理者のテニスベアプロフィールを開く'),
       findsOneWidget,
     );
