@@ -42,6 +42,7 @@ export FIREBASE_PROJECT_ID='<dev-project-id>'
 export LANSKE_TENNISBEAR_PREVIEW_URL='<full-existing-preview-endpoint>'
 # Authenticate to Google with an appropriate dev service identity/ADC.
 node run.cjs                      # dry run: NO WRITES
+node run.cjs --event-id XTR1HOMN  # one events/{publicId} document only
 
 export CONFIRM_PROJECT_ID="$FIREBASE_PROJECT_ID"
 node run.cjs --apply              # explicit writes, inspect first
@@ -62,6 +63,8 @@ A `legacy_no_identity` event may still be fetched to independently inspect
 its source; it does not produce projections. `processed` counts events that
 finished reconciliation, including skipped events; it does **not** count
 verified TennisBear events. This diagnostic scan remains read-only in dry-run.
+
+The `--event-id` value is the **Firestore document ID/publicId** (such as `XTR1HOMN`), not the internal UUID. A scoped run reads one event only and **does not run the deleted-event cleanup sweep**. Logs now show `provenance.lastWrittenFrom.environment` / `appVersion` (falling back to `createdFrom`) when available; this is informational, NOT an apply filter.
 
 The command scans current `events`, independently refetches each usable source
 event, then reconciles the privacy-safe per-identity projections. It removes
