@@ -72,7 +72,8 @@ async function reconcileEvent(db, eventId, plan, apply) {
     removed: prior.filter((id) => !desiredSet.has(id)).length };
 }
 
-async function synchronize(db, apiUrl, apply, logger = console) {
+async function synchronize(db, apiUrl, apply, logger = console, options = {}) {
+  const selectedPublicId = options.eventId ?? null;
   const seen = new Set();
   const diagnostics = {
     scanned: 0,
@@ -94,7 +95,13 @@ async function synchronize(db, apiUrl, apply, logger = console) {
   let failed = 0;
   let published = 0;
   let removed = 0;
-  const events = await db.collection('events').get();
+  const events = selectedPublicId
+    ? { docs: await (async () => {
+        const doc = await db.collection('events').doc(selectedPublicId).get();
+        if (!doc.exists) throw new Error('Event not found: ' + selectedPublicId);
+        return [doc];
+      })() }
+    : await db.collection('events').get();
   diagnostics.scanned = events.docs.length;
   const eventIdCounts = new Map();
   for (const eventDoc of events.docs) {
@@ -105,6 +112,9 @@ async function synchronize(db, apiUrl, apply, logger = console) {
   }
   for (const eventDoc of events.docs) {
     const aggregate = eventDoc.data();
+    const provenance = aggregate?.provenance ?? {};
+    const environment = provenance.lastWrittenFrom?.environment ?? provenance.createdFrom?.environment ?? null;
+    const appVersion = provenance.lastWrittenFrom?.appVersion ?? provenance.createdFrom?.appVersion ?? null;
     const eventId = aggregate?.event?.id;
     if (typeof eventId !== 'string' || !/^[a-zA-Z0-9-]{8,64}$/.test(eventId)) {
       failed++;
@@ -160,7 +170,8 @@ async function synchronize(db, apiUrl, apply, logger = console) {
         !url ? 'invalid_source' :
         identityPlayers === 0 ? 'legacy_no_identity' :
         plan.entries.length === 0 ? 'no_verified_match' : 'verified_match';
-      logger.log(eventDoc.id, reason, result.outcome,
+      logger.log(eventDoc.id, 'environment:', environment, 'appVersion:', appVersion,
+        reason, result.outcome,
         'identities:', identityPlayers, 'matches:', plan.entries.length,
         'write:', result.written, 'delete:', result.removed);
     } catch (err) {
@@ -177,7 +188,8 @@ async function synchronize(db, apiUrl, apply, logger = console) {
       }
     }
   }
-  const oldStates = await db.collection(stateCollection).get();
+  // A scoped run must never sweep states belonging to other events.
+  const oldStates = selectedPublicId ? { docs: [] } : await db.collection(stateCollection).get();
   for (const state of oldStates.docs) {
     if (seen.has(state.id)) continue;
     try {
@@ -190,7 +202,7 @@ async function synchronize(db, apiUrl, apply, logger = console) {
       logger.error('Deleted event cleanup failed', state.id, err.message);
     }
   }
-  return { processed, failed, published, removed, mode: apply ? 'apply' : 'dry-run', diagnostics };
+  return { processed, failed, published, removed, mode: apply ? 'apply' : 'dry-run', selectedEventId: selectedPublicId, diagnostics };
 }
 
 module.exports = { sourceUrl, previewEvent, fingerprint, reconcileEvent, synchronize };
