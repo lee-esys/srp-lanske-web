@@ -87,3 +87,56 @@ test('diagnostics distinguish skipped events from verified candidates', async ()
   assert.equal(result.diagnostics.projectionCandidates, 0);
   assert.equal(db.commits, 0);
 });
+
+test('single event only is read and no global stale-state sweep runs', async () => {
+  const db = new FakeFirestore();
+  const selected = {
+    id: 'XTR1HOMN',
+    exists: true,
+    data: () => ({
+      event: { id: 'selected-01', sourceType: 'manual' },
+      provenance: { lastWrittenFrom: { environment: 'local', appVersion: '0.2.0' } },
+    }),
+  };
+  let globalReads = 0;
+  let staleReads = 0;
+  const originalCollection = db.collection.bind(db);
+  db.collection = (path) => {
+    if (path === 'events') return {
+      get: async () => { globalReads++; throw new Error('must not scan all events'); },
+      doc: (id) => {
+        assert.equal(id, 'XTR1HOMN');
+        return { get: async () => selected };
+      },
+    };
+    if (path === 'participationProjectionStates') return {
+      ...originalCollection(path),
+      get: async () => { staleReads++; throw new Error('must not sweep state'); },
+    };
+    return originalCollection(path);
+  };
+  const logs = [];
+  const result = await synchronize(db, 'https://unused.example.test', false, {
+    log: (...args) => logs.push(args.join(' ')),
+    error: () => {},
+  }, { eventId: 'XTR1HOMN' });
+  assert.equal(result.processed, 1);
+  assert.equal(result.selectedEventId, 'XTR1HOMN');
+  assert.equal(globalReads, 0);
+  assert.equal(staleReads, 0);
+  assert.equal(db.commits, 0);
+  assert.match(logs[0], /environment: local appVersion: 0.2.0/);
+});
+
+test('unknown selected event fails rather than silently scanning or deleting', async () => {
+  const db = new FakeFirestore();
+  const originalCollection = db.collection.bind(db);
+  db.collection = (path) => path === 'events' ? {
+    doc: () => ({ get: async () => ({ exists: false }) }),
+  } : originalCollection(path);
+  await assert.rejects(
+    synchronize(db, 'https://unused.example.test', false,
+      { log() {}, error() {} }, { eventId: 'NOTFOUND' }),
+    /Event not found/,
+  );
+});
