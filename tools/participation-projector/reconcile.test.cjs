@@ -1,7 +1,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { reconcileEvent } = require('./reconcile.cjs');
+const { reconcileEvent, synchronize } = require('./reconcile.cjs');
 
 class FakeFirestore {
   constructor() { this.items = new Map(); this.commits = 0; }
@@ -57,4 +57,33 @@ test('changed participants remove old mapping and write the new mapping', async 
   assert.equal(db.items.has('externalIdentityParticipationHistories/tennisbear_88/events/' + id), true);
   await reconcileEvent(db, id, plan([]), true);
   assert.equal(db.items.has('externalIdentityParticipationHistories/tennisbear_88/events/' + id), false);
+});
+
+test('diagnostics distinguish skipped events from verified candidates', async () => {
+  const db = new FakeFirestore();
+  const documents = [
+    { id: 'MANUAL01', data: () => ({ event: { id: 'manual-01', sourceType: 'manual' } }) },
+    { id: 'LEGACY01', data: () => ({
+      event: { id: 'legacy-01', sourceType: 'tennisbear', sourceUrl: null },
+      players: [{ externalIdentity: null }],
+    }) },
+  ];
+  const originalCollection = db.collection.bind(db);
+  db.collection = (path) => path === 'events'
+    ? { get: async () => ({ docs: documents }) }
+    : path === 'participationProjectionStates'
+      ? { ...originalCollection(path), get: async () => ({ docs: [] }) }
+      : originalCollection(path);
+  const result = await synchronize(db, 'https://unused.example.test', false, {
+    log() {}, error() {},
+  });
+  assert.equal(result.failed, 0);
+  assert.equal(result.processed, 2);
+  assert.equal(result.diagnostics.scanned, 2);
+  assert.equal(result.diagnostics.tennisbearEvents, 1);
+  assert.equal(result.diagnostics.nonTennisbearEvents, 1);
+  assert.equal(result.diagnostics.invalidSourceEvents, 1);
+  assert.equal(result.diagnostics.missingExternalIdentity, 1);
+  assert.equal(result.diagnostics.projectionCandidates, 0);
+  assert.equal(db.commits, 0);
 });
