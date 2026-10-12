@@ -47,6 +47,22 @@ export CONFIRM_PROJECT_ID="$FIREBASE_PROJECT_ID"
 node run.cjs --apply              # explicit writes, inspect first
 ```
 
+The JSON summary now includes a `diagnostics` breakdown:
+
+- `scanned` / `nonTennisbearEvents` / `tennisbearEvents`
+- `validSourceEvents` / `invalidSourceEvents`
+- `withExternalIdentity` / `missingExternalIdentity` (event counts)
+- `verifiedEvents` / `matchedEvents` / `noMatchingPlayers`
+- `projectionCandidates` (participant rows, not events)
+- `fetchOrVerifyFailures`, `duplicateEventIds`, `invalidEventIds`
+
+Per-event logs include `non_tennisbear`, `invalid_source`,
+`legacy_no_identity`, `no_verified_match` or `verified_match`.
+A `legacy_no_identity` event may still be fetched to independently inspect
+its source; it does not produce projections. `processed` counts events that
+finished reconciliation, including skipped events; it does **not** count
+verified TennisBear events. This diagnostic scan remains read-only in dry-run.
+
 The command scans current `events`, independently refetches each usable source
 event, then reconciles the privacy-safe per-identity projections. It removes
 tracked records from deleted events. It is safe to rerun and uses a fingerprint
