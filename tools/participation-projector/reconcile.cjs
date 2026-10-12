@@ -74,11 +74,28 @@ async function reconcileEvent(db, eventId, plan, apply) {
 
 async function synchronize(db, apiUrl, apply, logger = console) {
   const seen = new Set();
+  const diagnostics = {
+    scanned: 0,
+    tennisbearEvents: 0,
+    validSourceEvents: 0,
+    invalidSourceEvents: 0,
+    nonTennisbearEvents: 0,
+    withExternalIdentity: 0,
+    missingExternalIdentity: 0,
+    verifiedEvents: 0,
+    matchedEvents: 0,
+    noMatchingPlayers: 0,
+    projectionCandidates: 0,
+    fetchOrVerifyFailures: 0,
+    duplicateEventIds: 0,
+    invalidEventIds: 0,
+  };
   let processed = 0;
   let failed = 0;
   let published = 0;
   let removed = 0;
   const events = await db.collection('events').get();
+  diagnostics.scanned = events.docs.length;
   const eventIdCounts = new Map();
   for (const eventDoc of events.docs) {
     const id = eventDoc.data()?.event?.id;
@@ -91,6 +108,7 @@ async function synchronize(db, apiUrl, apply, logger = console) {
     const eventId = aggregate?.event?.id;
     if (typeof eventId !== 'string' || !/^[a-zA-Z0-9-]{8,64}$/.test(eventId)) {
       failed++;
+      diagnostics.invalidEventIds++;
       logger.error('Skipped invalid event ID', eventDoc.id);
       continue;
     }
@@ -98,6 +116,7 @@ async function synchronize(db, apiUrl, apply, logger = console) {
     seen.add(eventId);
     if (eventIdCounts.get(eventId) !== 1) {
       failed++;
+      diagnostics.duplicateEventIds++;
       logger.error('Duplicate event identity', eventId);
       try {
         const outcome = await reconcileEvent(db, eventId, { eventId, entries: [] }, apply);
@@ -108,21 +127,47 @@ async function synchronize(db, apiUrl, apply, logger = console) {
       continue;
     }
     let plan = { eventId, entries: [] };
+    const isTennisbear = aggregate?.event?.sourceType === 'tennisbear';
+    const identityPlayers = Array.isArray(aggregate?.players)
+      ? aggregate.players.filter((player) =>
+        player?.externalIdentity?.sourceType === 'tennisbear' &&
+        typeof player.externalIdentity.sourceUserId === 'string' &&
+        player.externalIdentity.sourceUserId.length > 0).length : 0;
+    if (isTennisbear) {
+      diagnostics.tennisbearEvents++;
+      if (identityPlayers > 0) diagnostics.withExternalIdentity++;
+      else diagnostics.missingExternalIdentity++;
+    } else {
+      diagnostics.nonTennisbearEvents++;
+    }
     try {
       const url = sourceUrl(aggregate);
+      if (isTennisbear && !url) diagnostics.invalidSourceEvents++;
       if (url) {
+        diagnostics.validSourceEvents++;
         const preview = await previewEvent(apiUrl, url);
+        diagnostics.verifiedEvents++;
         plan = buildProjectionPlan(aggregate, preview);
+        diagnostics.projectionCandidates += plan.entries.length;
+        if (plan.entries.length > 0) diagnostics.matchedEvents++;
+        else if (identityPlayers > 0) diagnostics.noMatchingPlayers++;
       }
       const result = await reconcileEvent(db, eventId, plan, apply);
       processed++;
       published += result.written;
       removed += result.removed;
-      logger.log(eventDoc.id, result.outcome, 'write:', result.written, 'delete:', result.removed);
+      const reason = !isTennisbear ? 'non_tennisbear' :
+        !url ? 'invalid_source' :
+        identityPlayers === 0 ? 'legacy_no_identity' :
+        plan.entries.length === 0 ? 'no_verified_match' : 'verified_match';
+      logger.log(eventDoc.id, reason, result.outcome,
+        'identities:', identityPlayers, 'matches:', plan.entries.length,
+        'write:', result.written, 'delete:', result.removed);
     } catch (err) {
       // An unavailable external source must not lead to a positive verification.
       // Delete previously published event projections as a fail-closed policy.
       failed++;
+      diagnostics.fetchOrVerifyFailures++;
       logger.error('Verification failed', eventDoc.id, err.message);
       try {
         const outcome = await reconcileEvent(db, eventId, { eventId, entries: [] }, apply);
@@ -145,7 +190,7 @@ async function synchronize(db, apiUrl, apply, logger = console) {
       logger.error('Deleted event cleanup failed', state.id, err.message);
     }
   }
-  return { processed, failed, published, removed, mode: apply ? 'apply' : 'dry-run' };
+  return { processed, failed, published, removed, mode: apply ? 'apply' : 'dry-run', diagnostics };
 }
 
 module.exports = { sourceUrl, previewEvent, fingerprint, reconcileEvent, synchronize };
