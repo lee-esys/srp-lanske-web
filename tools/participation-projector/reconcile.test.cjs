@@ -48,15 +48,15 @@ test('dry run does not write data; repeated apply skips unchanged writes', async
   assert.equal((await reconcileEvent(db, id, value, true)).outcome, 'unchanged');
   assert.equal(db.commits, 1);
 });
-test('changed participants remove old mapping and write the new mapping', async () => {
+test('changed participants retain previous mapping while upserting the new mapping', async () => {
   const db = new FakeFirestore();
   await reconcileEvent(db, id, plan(['tennisbear_77']), true);
   const result = await reconcileEvent(db, id, plan(['tennisbear_88']), true);
-  assert.equal(result.removed, 1);
-  assert.equal(db.items.has('externalIdentityParticipationHistories/tennisbear_77/events/' + id), false);
+  assert.equal(result.removed, 0);
+  assert.equal(db.items.has('externalIdentityParticipationHistories/tennisbear_77/events/' + id), true);
   assert.equal(db.items.has('externalIdentityParticipationHistories/tennisbear_88/events/' + id), true);
   await reconcileEvent(db, id, plan([]), true);
-  assert.equal(db.items.has('externalIdentityParticipationHistories/tennisbear_88/events/' + id), false);
+  assert.equal(db.items.has('externalIdentityParticipationHistories/tennisbear_88/events/' + id), true);
 });
 
 test('diagnostics distinguish skipped events from verified candidates', async () => {
@@ -149,4 +149,14 @@ test('statistics eligibility diagnostics count projected identities only', () =>
   ];
   assert.deepEqual(statisticsEligibilityCounts(entries), { eligible: 2, ineligible: 1 });
   assert.deepEqual(statisticsEligibilityCounts([]), { eligible: 0, ineligible: 0 });
+});
+
+test('empty verified plan never deletes or rewrites existing projection', async () => {
+  const db = new FakeFirestore();
+  await reconcileEvent(db, id, plan(['tennisbear_77']), true);
+  const priorCommits = db.commits;
+  const result = await reconcileEvent(db, id, plan([]), true);
+  assert.equal(result.removed, 0);
+  assert.equal(db.items.has('externalIdentityParticipationHistories/tennisbear_77/events/' + id), true);
+  assert.equal(db.commits, priorCommits + 1); // state fingerprint update only
 });
