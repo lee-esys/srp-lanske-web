@@ -12,6 +12,7 @@ import 'package:srp_lanske/features/auth/domain/lanske_user.dart';
 import 'package:srp_lanske/features/auth/presentation/auth_scope.dart';
 import 'package:srp_lanske/features/external_identity/application/tennisbear_profile_link_service.dart';
 import 'package:srp_lanske/features/my_page/presentation/my_page.dart';
+import 'package:srp_lanske/features/participation_history/application/participation_history_service.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
 void main() {
@@ -159,6 +160,8 @@ Future<void> _pumpMyPage(
         home: MyPage(
           accountService: accountService,
           ownedEventsLoader: (_) async => const [],
+          participationHistoryLoader: (_) async =>
+              const ParticipationHistoryResult.unlinked(),
           profileLinkLoader: (_) async => const TennisBearProfileLinkSnapshot(
             activeMapping: null,
             activeRequest: null,
