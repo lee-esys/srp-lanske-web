@@ -54,7 +54,7 @@ The JSON summary now includes a `diagnostics` breakdown:
 - `validSourceEvents` / `invalidSourceEvents`
 - `withExternalIdentity` / `missingExternalIdentity` (event counts)
 - `verifiedEvents` / `matchedEvents` / `noMatchingPlayers`
-- `projectionCandidates` (participant rows, not events)
+- `projectionCandidates` (participant rows, not events)\n- `statisticsEligibleTrue` / `statisticsEligibleFalse` (breakdown of the projection candidates; this is the stored event flag, not a score-derived calculation)
 - `fetchOrVerifyFailures`, `duplicateEventIds`, `invalidEventIds`
 
 Per-event logs include `non_tennisbear`, `invalid_source`,
