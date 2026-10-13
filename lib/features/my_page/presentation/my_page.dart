@@ -12,6 +12,7 @@ import '../../auth/presentation/account_routes.dart';
 import '../../auth/presentation/account_scope.dart';
 import '../../auth/presentation/auth_scope.dart';
 import '../../external_identity/presentation/external_identity_link_scope.dart';
+import '../../participation_history/application/participation_history_service.dart';
 import '../../participation_history/presentation/participation_history_scope.dart';
 import 'my_page_navigation_drawer.dart';
 import 'widgets/my_page_match_table_list_section.dart';
@@ -121,6 +122,9 @@ class _MyPageState extends State<MyPage> {
     openUrlInCurrentTab(accountPagePath);
   }
 
+  Future<ParticipationHistoryResult> _loadParticipationHistory(String uid) =>
+      ParticipationHistoryScope.of(context).loadForUser(lanskeUserId: uid);
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -173,8 +177,7 @@ class _MyPageState extends State<MyPage> {
                   MyPageParticipationHistorySection(
                     lanskeUserId: session.uid!,
                     loadHistory: widget.participationHistoryLoader ??
-                        (uid) => ParticipationHistoryScope.of(context)
-                            .loadForUser(lanskeUserId: uid),
+                        _loadParticipationHistory,
                     onOpenProfileLinkManagement:
                         widget.onOpenProfileLinkManagement ?? _openAccount,
                   ),
