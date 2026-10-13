@@ -39,6 +39,11 @@ function fingerprint(plan) {
   return createHash('sha256').update(JSON.stringify(canonical)).digest('hex');
 }
 
+function statisticsEligibilityCounts(entries) {
+  const eligible = entries.filter((entry) => entry.data.statisticsEligible === true).length;
+  return { eligible, ineligible: entries.length - eligible };
+}
+
 async function reconcileEvent(db, eventId, plan, apply) {
   const stateRef = db.collection(stateCollection).doc(eventId);
   const oldState = (await stateRef.get()).data() ?? {};
@@ -161,10 +166,9 @@ async function synchronize(db, apiUrl, apply, logger = console, options = {}) {
         diagnostics.verifiedEvents++;
         plan = buildProjectionPlan(aggregate, preview);
         diagnostics.projectionCandidates += plan.entries.length;
-        diagnostics.statisticsEligibleTrue += plan.entries.filter(
-          (entry) => entry.data.statisticsEligible === true).length;
-        diagnostics.statisticsEligibleFalse += plan.entries.filter(
-          (entry) => entry.data.statisticsEligible !== true).length;
+        const eligibility = statisticsEligibilityCounts(plan.entries);
+        diagnostics.statisticsEligibleTrue += eligibility.eligible;
+        diagnostics.statisticsEligibleFalse += eligibility.ineligible;
         if (plan.entries.length > 0) diagnostics.matchedEvents++;
         else if (identityPlayers > 0) diagnostics.noMatchingPlayers++;
       }
@@ -179,10 +183,8 @@ async function synchronize(db, apiUrl, apply, logger = console, options = {}) {
       logger.log(eventDoc.id, 'environment:', environment, 'appVersion:', appVersion,
         reason, result.outcome,
         'identities:', identityPlayers, 'matches:', plan.entries.length,
-        'statisticsEligible:', 'true=' +
-          plan.entries.filter((entry) => entry.data.statisticsEligible === true).length,
-        'false=' +
-          plan.entries.filter((entry) => entry.data.statisticsEligible !== true).length,
+        'statisticsEligible:', 'true=' + statisticsEligibilityCounts(plan.entries).eligible,
+        'false=' + statisticsEligibilityCounts(plan.entries).ineligible,
         'write:', result.written, 'delete:', result.removed);
     } catch (err) {
       // An unavailable external source must not lead to a positive verification.
@@ -215,4 +217,4 @@ async function synchronize(db, apiUrl, apply, logger = console, options = {}) {
   return { processed, failed, published, removed, mode: apply ? 'apply' : 'dry-run', selectedEventId: selectedPublicId, diagnostics };
 }
 
-module.exports = { sourceUrl, previewEvent, fingerprint, reconcileEvent, synchronize };
+module.exports = { sourceUrl, previewEvent, fingerprint, statisticsEligibilityCounts, reconcileEvent, synchronize };
