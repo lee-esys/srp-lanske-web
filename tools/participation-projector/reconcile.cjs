@@ -165,7 +165,8 @@ async function synchronize(db, apiUrl, apply, logger = console, options = {}) {
       // reconciliation. Deletion is deferred until Core completeness is proven.
       if (!url || plan.entries.length === 0) {
         processed++;
-        logger.log(eventDoc.id, 'skipped_no_candidates', 'write: 0 delete: 0');
+        logger.log(eventDoc.id, 'environment:', environment, 'appVersion:', appVersion,
+          'skipped_no_candidates', 'write: 0 delete: 0');
         continue;
       }
       const result = await reconcileEvent(db, eventId, plan, apply);
