@@ -25,10 +25,8 @@ preview endpoint URL configured for your environment; do not guess it.
   closed.
 - The projection exposes no title, source URL, share ID or other players.
 - This tool uses `participationProjectionStates/{eventId}` as a private write
-  index for deletion/reconciliation. No client access to that collection.
-- A source fetch error causes existing corresponding projections to be removed
-  (fail closed); rerun after recovery. Unlink revokes read immediately via
-  existing mapping Rules and does not delete this projection.
+  index for reconciliation (deletion disabled for now). No client access to that collection.
+- A source fetch/verification failure does **not** delete existing projections.\n  The run logs a failure and exits nonzero; rerun after recovery. Existing\n  entries may therefore be stale until a future deletion-safe reconciliation.\n  Unlink revokes read via existing mapping Rules without deleting projections.\n- **All automatic deletes are disabled**: missing members, missing events,\n  duplicate event identities, invalid sources, and incomplete responses must\n  never trigger a projection removal. Existing mappingIds are retained when\n  new candidates are added. Deletion requires future Core completeness\n  guarantees (core #175) and Web follow-up implementation.
 
 ## Run
 
@@ -66,9 +64,7 @@ verified TennisBear events. This diagnostic scan remains read-only in dry-run.
 
 The `--event-id` value is the **Firestore document ID/publicId** (such as `XTR1HOMN`), not the internal UUID. A scoped run reads one event only and **does not run the deleted-event cleanup sweep**. Logs now show `provenance.lastWrittenFrom.environment` / `appVersion` (falling back to `createdFrom`) when available; this is informational, NOT an apply filter.
 
-The command scans current `events`, independently refetches each usable source
-event, then reconciles the privacy-safe per-identity projections. It removes
-tracked records from deleted events. It is safe to rerun and uses a fingerprint
+The command scans current `events`, independently refetches each usable source\nevent, then upserts the privacy-safe per-identity projections. It **does not\nremove** tracked records from deleted events, missing participants, or invalid\nsources. It is safe to rerun and uses a fingerprint
 to avoid writing unchanged projections. Note that the scan is a full-collection
 read and makes one external request per eligible event, so control frequency
 and cost. A failed verification sets a nonzero exit code.
@@ -87,8 +83,6 @@ and cost. A failed verification sets a nonzero exit code.
 - Handle source availability and import HTML changes as operational failures.
   Do not bypass verification when the external source becomes unavailable.
 - Large event collections require pagination/checkpointing before scheduling.
-- For strict deleted-event handling, a production event-deletion trigger or
-  regular full reconciliation is required. Until it exists, projections remain
-  potentially stale between explicit runs.
+- Deletion handling is intentionally deferred. Projections for deleted events\n  or removed participants can remain stale even after a full run. Before\n  statistical use, rerun after the Core completeness contract and safe Web\n  deletion handling are implemented.
 
 See `docs/firebase-participation-history.md` for the consumer schema.
