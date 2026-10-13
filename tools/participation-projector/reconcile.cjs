@@ -50,31 +50,23 @@ async function reconcileEvent(db, eventId, plan, apply) {
   const prior = Array.isArray(oldState.mappingIds) ? oldState.mappingIds : [];
   const desired = plan.entries.map((entry) => entry.mappingId);
   const digest = fingerprint(plan);
-  if (oldState.fingerprint === digest &&
-      prior.length === desired.length &&
-      prior.every((mappingId) => desired.includes(mappingId))) {
+  if (oldState.fingerprint === digest && desired.every((mappingId) => prior.includes(mappingId))) {
     return { outcome: 'unchanged', written: 0, removed: 0 };
   }
-  if (prior.length + desired.length + 1 > 450) {
+  if (desired.length + 1 > 450) {
     throw new Error('Too many projection writes for one event');
   }
 
   const batch = db.batch();
-  const desiredSet = new Set(desired);
-  for (const mappingId of prior) {
-    if (desiredSet.has(mappingId)) continue;
-    batch.delete(db.collection(historyCollection).doc(mappingId).collection('events').doc(eventId));
-  }
   for (const { mappingId, data } of plan.entries) {
     const document = db.collection(historyCollection).doc(mappingId).collection('events').doc(eventId);
     batch.set(document, data);
   }
   batch.set(stateRef, {
-    mappingIds: desired, fingerprint: digest, syncedAt: new Date(),
+    mappingIds: [...new Set([...prior, ...desired])], fingerprint: digest, syncedAt: new Date(),
   });
   if (apply) await batch.commit();
-  return { outcome: apply ? 'synced' : 'dry-run', written: desired.length,
-    removed: prior.filter((id) => !desiredSet.has(id)).length };
+  return { outcome: apply ? 'synced' : 'dry-run', written: desired.length, removed: 0 };
 }
 
 async function synchronize(db, apiUrl, apply, logger = console, options = {}) {
@@ -135,12 +127,6 @@ async function synchronize(db, apiUrl, apply, logger = console, options = {}) {
       failed++;
       diagnostics.duplicateEventIds++;
       logger.error('Duplicate event identity', eventId);
-      try {
-        const outcome = await reconcileEvent(db, eventId, { eventId, entries: [] }, apply);
-        removed += outcome.removed;
-      } catch (cleanupError) {
-        logger.error('Duplicate identity cleanup failed', eventId, cleanupError.message);
-      }
       continue;
     }
     let plan = { eventId, entries: [] };
@@ -172,6 +158,13 @@ async function synchronize(db, apiUrl, apply, logger = console, options = {}) {
         if (plan.entries.length > 0) diagnostics.matchedEvents++;
         else if (identityPlayers > 0) diagnostics.noMatchingPlayers++;
       }
+      // Do not turn an unverifiable or empty candidate set into a destructive
+      // reconciliation. Deletion is deferred until Core completeness is proven.
+      if (!url || plan.entries.length === 0) {
+        processed++;
+        logger.log(eventDoc.id, 'skipped_no_candidates', 'write: 0 delete: 0');
+        continue;
+      }
       const result = await reconcileEvent(db, eventId, plan, apply);
       processed++;
       published += result.written;
@@ -187,33 +180,14 @@ async function synchronize(db, apiUrl, apply, logger = console, options = {}) {
         'false=' + statisticsEligibilityCounts(plan.entries).ineligible,
         'write:', result.written, 'delete:', result.removed);
     } catch (err) {
-      // An unavailable external source must not lead to a positive verification.
-      // Delete previously published event projections as a fail-closed policy.
+      // Verification failures are observable but never remove existing history.
       failed++;
       diagnostics.fetchOrVerifyFailures++;
-      logger.error('Verification failed', eventDoc.id, err.message);
-      try {
-        const outcome = await reconcileEvent(db, eventId, { eventId, entries: [] }, apply);
-        removed += outcome.removed;
-      } catch (cleanupError) {
-        logger.error('Cleanup failed', eventDoc.id, cleanupError.message);
-      }
+      logger.error('Verification failed; existing projections retained', eventDoc.id, err.message);
     }
   }
-  // A scoped run must never sweep states belonging to other events.
-  const oldStates = selectedPublicId ? { docs: [] } : await db.collection(stateCollection).get();
-  for (const state of oldStates.docs) {
-    if (seen.has(state.id)) continue;
-    try {
-      const result = await reconcileEvent(db, state.id, { eventId: state.id, entries: [] }, apply);
-      removed += result.removed;
-      if (apply) await state.ref.delete();
-      logger.log('deleted event', state.id, result.outcome);
-    } catch (err) {
-      failed++;
-      logger.error('Deleted event cleanup failed', state.id, err.message);
-    }
-  }
+  // Deleted-event cleanup is deliberately disabled until Core can attest
+  // a complete source response. No global projection-state sweep runs.
   return { processed, failed, published, removed, mode: apply ? 'apply' : 'dry-run', selectedEventId: selectedPublicId, diagnostics };
 }
 
