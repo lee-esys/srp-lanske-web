@@ -93,7 +93,8 @@ class _MyPageParticipationHistorySectionState
             triggerMode: TooltipTriggerMode.manual,
             child: IconButton(
               tooltip: l10n.myPageParticipationInfoTooltip,
-              onPressed: () => _infoTooltipKey.currentState?.ensureTooltipVisible(),
+              onPressed: () =>
+                  _infoTooltipKey.currentState?.ensureTooltipVisible(),
               icon: const Icon(Icons.help_outline),
             ),
           ),

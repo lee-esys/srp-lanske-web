@@ -14,13 +14,15 @@ class _Reader implements ExternalIdentityUserReader {
   Future<ExternalIdentityMapping?> getActiveMapping({
     required String lanskeUserId,
     required ExternalIdentitySourceType sourceType,
-  }) async => mapping;
+  }) async =>
+      mapping;
 
   @override
   Future<ExternalIdentityLinkRequest?> getLatestRequest({
     required String lanskeUserId,
     required ExternalIdentitySourceType sourceType,
-  }) async => null;
+  }) async =>
+      null;
 }
 
 class _Repository implements ParticipationHistoryRepository {

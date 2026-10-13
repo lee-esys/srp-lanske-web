@@ -1462,4 +1462,43 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get ownershipTransferGenericFailureMessage =>
       'The account update could not be completed. The current state was kept. Check your connection and try again.';
+
+  @override
+  String get myPageParticipationTitle => 'Participated events';
+
+  @override
+  String get myPageParticipationInfoTooltip => 'About included events';
+
+  @override
+  String get myPageParticipationInfo =>
+      'Shows events where your participation was verified through an approved TennisBear profile link. Some events you attended may not appear.';
+
+  @override
+  String get myPageParticipationClose => 'Close';
+
+  @override
+  String get myPageParticipationRefresh => 'Refresh participation history';
+
+  @override
+  String get myPageParticipationLoading => 'Loading participated events…';
+
+  @override
+  String get myPageParticipationError => 'Could not load participated events';
+
+  @override
+  String get myPageParticipationUnlinked =>
+      'Link your TennisBear profile to view verified participation history.';
+
+  @override
+  String get myPageParticipationLinkAction => 'Manage profile link';
+
+  @override
+  String get myPageParticipationEmpty =>
+      'No participated events are currently available';
+
+  @override
+  String get myPageParticipationUnknownDate => 'Event date unknown';
+
+  @override
+  String get myPageParticipationEligible => 'Included in statistics';
 }

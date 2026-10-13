@@ -4,7 +4,9 @@ import '../domain/participation_history_entry.dart';
 import 'participation_history_repository.dart';
 
 class ParticipationHistoryResult {
-  const ParticipationHistoryResult.unlinked() : linked = false, entries = const [];
+  const ParticipationHistoryResult.unlinked()
+      : linked = false,
+        entries = const [];
   const ParticipationHistoryResult.linked(this.entries) : linked = true;
 
   final bool linked;
@@ -42,6 +44,7 @@ class ParticipationHistoryService {
     required String lanskeUserId,
     int limit = 20,
   }) async {
-    return (await loadForUser(lanskeUserId: lanskeUserId, limit: limit)).entries;
+    return (await loadForUser(lanskeUserId: lanskeUserId, limit: limit))
+        .entries;
   }
 }

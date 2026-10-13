@@ -19,8 +19,7 @@ void main() {
           child: MyPageParticipationHistorySection(
             lanskeUserId: 'user-1',
             loadHistory: loader,
-            onOpenProfileLinkManagement:
-                onOpenProfileLinkManagement ?? () {},
+            onOpenProfileLinkManagement: onOpenProfileLinkManagement ?? () {},
           ),
         ),
       ),
