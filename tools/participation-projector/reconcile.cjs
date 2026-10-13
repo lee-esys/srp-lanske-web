@@ -45,6 +45,9 @@ function statisticsEligibilityCounts(entries) {
 }
 
 async function reconcileEvent(db, eventId, plan, apply) {
+  if (plan.entries.length === 0) {
+    return { outcome: 'skipped_empty', written: 0, removed: 0 };
+  }
   const stateRef = db.collection(stateCollection).doc(eventId);
   const oldState = (await stateRef.get()).data() ?? {};
   const prior = Array.isArray(oldState.mappingIds) ? oldState.mappingIds : [];
