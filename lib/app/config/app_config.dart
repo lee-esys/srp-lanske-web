@@ -61,6 +61,7 @@ String normalizeAppEnvironment(String value) {
 
 void validateFirebaseProject(String project) {
   if (project != 'prod' && project != 'dev') {
-    throw StateError('Invalid LANSKE_FIREBASE_PROJECT: $project (expected prod or dev)');
+    throw StateError(
+        'Invalid LANSKE_FIREBASE_PROJECT: $project (expected prod or dev)');
   }
 }

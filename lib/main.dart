@@ -55,9 +55,8 @@ Future<void> main() async {
     );
   } else {
     final defaults = DefaultFirebaseOptions.currentPlatform;
-    firebaseOptions = kIsWeb
-        ? defaults.copyWith(authDomain: 'lanske.jp')
-        : defaults;
+    firebaseOptions =
+        kIsWeb ? defaults.copyWith(authDomain: 'lanske.jp') : defaults;
   }
   await Firebase.initializeApp(options: firebaseOptions);
 
