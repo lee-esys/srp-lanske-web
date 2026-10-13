@@ -87,6 +87,8 @@ async function synchronize(db, apiUrl, apply, logger = console, options = {}) {
     matchedEvents: 0,
     noMatchingPlayers: 0,
     projectionCandidates: 0,
+    statisticsEligibleTrue: 0,
+    statisticsEligibleFalse: 0,
     fetchOrVerifyFailures: 0,
     duplicateEventIds: 0,
     invalidEventIds: 0,
@@ -159,6 +161,10 @@ async function synchronize(db, apiUrl, apply, logger = console, options = {}) {
         diagnostics.verifiedEvents++;
         plan = buildProjectionPlan(aggregate, preview);
         diagnostics.projectionCandidates += plan.entries.length;
+        diagnostics.statisticsEligibleTrue += plan.entries.filter(
+          (entry) => entry.data.statisticsEligible === true).length;
+        diagnostics.statisticsEligibleFalse += plan.entries.filter(
+          (entry) => entry.data.statisticsEligible !== true).length;
         if (plan.entries.length > 0) diagnostics.matchedEvents++;
         else if (identityPlayers > 0) diagnostics.noMatchingPlayers++;
       }
@@ -173,6 +179,10 @@ async function synchronize(db, apiUrl, apply, logger = console, options = {}) {
       logger.log(eventDoc.id, 'environment:', environment, 'appVersion:', appVersion,
         reason, result.outcome,
         'identities:', identityPlayers, 'matches:', plan.entries.length,
+        'statisticsEligible:', 'true=' +
+          plan.entries.filter((entry) => entry.data.statisticsEligible === true).length,
+        'false=' +
+          plan.entries.filter((entry) => entry.data.statisticsEligible !== true).length,
         'write:', result.written, 'delete:', result.removed);
     } catch (err) {
       // An unavailable external source must not lead to a positive verification.
