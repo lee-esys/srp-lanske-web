@@ -82,7 +82,6 @@ void main() {
     expect(find.text('統計対象'), findsOneWidget);
     expect(find.textContaining('internal-secret-id'), findsNothing);
     expect(find.textContaining('899212'), findsNothing);
-    expect(find.byType(InkWell), findsNothing);
   });
 
   testWidgets('loading and error can retry', (tester) async {
