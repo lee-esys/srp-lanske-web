@@ -1,7 +1,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { reconcileEvent, synchronize } = require('./reconcile.cjs');
+const { reconcileEvent, synchronize, statisticsEligibilityCounts } = require('./reconcile.cjs');
 
 class FakeFirestore {
   constructor() { this.items = new Map(); this.commits = 0; }
@@ -139,4 +139,14 @@ test('unknown selected event fails rather than silently scanning or deleting', a
       { log() {}, error() {} }, { eventId: 'NOTFOUND' }),
     /Event not found/,
   );
+});
+
+test('statistics eligibility diagnostics count projected identities only', () => {
+  const entries = [
+    { data: { statisticsEligible: true } },
+    { data: { statisticsEligible: false } },
+    { data: { statisticsEligible: true } },
+  ];
+  assert.deepEqual(statisticsEligibilityCounts(entries), { eligible: 2, ineligible: 1 });
+  assert.deepEqual(statisticsEligibilityCounts([]), { eligible: 0, ineligible: 0 });
 });
