@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'app/app.dart';
+import 'app/config/app_config.dart';
 import 'features/auth/application/account_service.dart';
 import 'features/auth/application/anonymous_event_ownership_transfer_service.dart';
 import 'features/auth/infrastructure/firebase_admin_role_reader.dart';
@@ -28,12 +29,37 @@ import 'shared/repositories/app_repositories.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final firebaseOptions = DefaultFirebaseOptions.currentPlatform;
-  await Firebase.initializeApp(
-    options: kIsWeb
-        ? firebaseOptions.copyWith(authDomain: 'lanske.jp')
-        : firebaseOptions,
-  );
+  // Preserve the existing production configuration unless dev is explicit.
+  validateFirebaseProject(AppConfig.firebaseProject);
+  final FirebaseOptions firebaseOptions;
+  if (AppConfig.firebaseProject == 'dev') {
+    if (!kIsWeb) {
+      throw StateError('LANSKE_FIREBASE_PROJECT=dev is supported for Web only');
+    }
+    if (AppConfig.firebaseDevApiKey.isEmpty ||
+        AppConfig.firebaseDevAppId.isEmpty ||
+        AppConfig.firebaseDevMessagingSenderId.isEmpty) {
+      throw StateError(
+        'Missing dev Web Firebase SDK configuration. '
+        'Set LANSKE_FIREBASE_DEV_API_KEY, LANSKE_FIREBASE_DEV_APP_ID '
+        'and LANSKE_FIREBASE_DEV_MESSAGING_SENDER_ID.',
+      );
+    }
+    firebaseOptions = FirebaseOptions(
+      apiKey: AppConfig.firebaseDevApiKey,
+      appId: AppConfig.firebaseDevAppId,
+      messagingSenderId: AppConfig.firebaseDevMessagingSenderId,
+      projectId: 'srp-lanske-web-dev',
+      authDomain: 'srp-lanske-web-dev.firebaseapp.com',
+      storageBucket: 'srp-lanske-web-dev.firebasestorage.app',
+    );
+  } else {
+    final defaults = DefaultFirebaseOptions.currentPlatform;
+    firebaseOptions = kIsWeb
+        ? defaults.copyWith(authDomain: 'lanske.jp')
+        : defaults;
+  }
+  await Firebase.initializeApp(options: firebaseOptions);
 
   final firestore = FirebaseFirestore.instance;
   final firebaseAuth = FirebaseAuth.instance;
