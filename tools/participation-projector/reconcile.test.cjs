@@ -158,5 +158,5 @@ test('empty verified plan never deletes or rewrites existing projection', async 
   const result = await reconcileEvent(db, id, plan([]), true);
   assert.equal(result.removed, 0);
   assert.equal(db.items.has('externalIdentityParticipationHistories/tennisbear_77/events/' + id), true);
-  assert.equal(db.commits, priorCommits + 1); // state fingerprint update only
+  assert.equal(db.commits, priorCommits);
 });
