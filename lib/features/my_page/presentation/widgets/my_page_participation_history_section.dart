@@ -29,6 +29,7 @@ class MyPageParticipationHistorySection extends StatefulWidget {
 
 class _MyPageParticipationHistorySectionState
     extends State<MyPageParticipationHistorySection> {
+  final _infoTooltipKey = GlobalKey<TooltipState>();
   int _loadSequence = 0;
   bool _loading = true;
   Object? _error;
@@ -87,25 +88,12 @@ class _MyPageParticipationHistorySectionState
         mainAxisSize: MainAxisSize.min,
         children: [
           Tooltip(
+            key: _infoTooltipKey,
             message: l10n.myPageParticipationInfo,
-            triggerMode: TooltipTriggerMode.tap,
+            triggerMode: TooltipTriggerMode.manual,
             child: IconButton(
               tooltip: l10n.myPageParticipationInfoTooltip,
-              onPressed: () {
-                final messenger = ScaffoldMessenger.of(context);
-                messenger.hideCurrentMaterialBanner();
-                messenger.showMaterialBanner(
-                  MaterialBanner(
-                    content: Text(l10n.myPageParticipationInfo),
-                    actions: [
-                      TextButton(
-                        onPressed: messenger.hideCurrentMaterialBanner,
-                        child: Text(l10n.myPageParticipationClose),
-                      ),
-                    ],
-                  ),
-                );
-              },
+              onPressed: () => _infoTooltipKey.currentState?.ensureTooltipVisible(),
               icon: const Icon(Icons.help_outline),
             ),
           ),
