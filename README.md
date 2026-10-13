@@ -154,6 +154,33 @@ Codespaces で起動した開発中の画面をスマートフォンやタブレ
 
 ---
 
+
+### Local Web: dev Firebase connection
+
+The default Web Firebase project remains production (`lanske-srp`).
+`.firebaserc` and `firebase.json` do not switch the runtime Firebase SDK
+connection. Use an explicit Flutter dart-define for dev:
+
+```bash
+flutter run -d chrome \
+  --dart-define=LANSKE_FIREBASE_PROJECT=dev \
+  --dart-define=LANSKE_FIREBASE_DEV_API_KEY='<apiKey from dev Web SDK config>' \
+  --dart-define=LANSKE_FIREBASE_DEV_APP_ID='<appId from dev Web SDK config>' \
+  --dart-define=LANSKE_FIREBASE_DEV_MESSAGING_SENDER_ID='<messagingSenderId from dev Web SDK config>' \
+  --dart-define=LANSKE_EVENT_REPOSITORY=firestore \
+  --dart-define=LANSKE_APP_ENV=local \
+  --dart-define=LANSKE_CORE_API_BASE_URL=http://localhost:8080
+```
+
+Obtain the three values from Firebase Console → `srp-lanske-web-dev` →
+Project settings → Web app → SDK setup and configuration → Config.
+The dev target pins `projectId=srp-lanske-web-dev`, and uses its normal
+`authDomain` and `storageBucket`. Invalid Firebase targets and missing
+dev Web config fail at startup rather than silently using production.
+`LANSKE_APP_ENV=local` only controls saved event provenance, not Firebase
+target selection. Do not use your production user account for dev testing;
+Firebase Authentication users are separate per project.
+
 ## 🔌 core API URL の指定
 
 web から接続する core API の base URL は、Flutter の `dart-define` で指定します。
