@@ -23,6 +23,9 @@ import 'features/external_identity/infrastructure/firestore_external_identity_li
 import 'features/external_identity/infrastructure/firestore_external_identity_user_reader.dart';
 import 'features/external_identity/presentation/external_identity_admin_review_scope.dart';
 import 'features/external_identity/presentation/external_identity_link_scope.dart';
+import 'features/participation_history/application/participation_history_service.dart';
+import 'features/participation_history/infrastructure/firestore_participation_history_repository.dart';
+import 'features/participation_history/presentation/participation_history_scope.dart';
 import 'firebase_options.dart';
 import 'shared/repositories/app_repositories.dart';
 
@@ -78,9 +81,14 @@ Future<void> main() async {
   final externalIdentityLinkService = ExternalIdentityLinkService(
     repository: FirestoreExternalIdentityLinkRepository(firestore),
   );
+  final identityUserReader = FirestoreExternalIdentityUserReader(firestore);
   final tennisBearProfileLinkService = TennisBearProfileLinkService(
     linkService: externalIdentityLinkService,
-    userReader: FirestoreExternalIdentityUserReader(firestore),
+    userReader: identityUserReader,
+  );
+  final participationHistoryService = ParticipationHistoryService(
+    identityReader: identityUserReader,
+    historyRepository: FirestoreParticipationHistoryRepository(firestore),
   );
   final tennisBearAdminProfileLinkReviewService =
       TennisBearAdminProfileLinkReviewService(
@@ -99,9 +107,12 @@ Future<void> main() async {
           ownershipTransferService: ownershipTransferService,
           child: ExternalIdentityLinkScope(
             service: tennisBearProfileLinkService,
-            child: ExternalIdentityAdminReviewScope(
-              service: tennisBearAdminProfileLinkReviewService,
-              child: const App(),
+            child: ParticipationHistoryScope(
+              service: participationHistoryService,
+              child: ExternalIdentityAdminReviewScope(
+                service: tennisBearAdminProfileLinkReviewService,
+                child: const App(),
+              ),
             ),
           ),
         ),
