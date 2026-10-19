@@ -45,8 +45,8 @@ Queries order by `eventDate desc` and page through results until the requested
 number of **confirmed** entries is collected; missing event dates must be
 represented as `null`, not omitted, to participate in ordered queries. The
 single-field index is automatic; no composite index is required for this
-query. `isConfirmed` is explicitly published only when the saved event has
-status `adopted`; it must not be inferred from `statisticsEligible`.
+query. `isConfirmed` is true only when the saved event has status `adopted`;
+it must not be inferred from `statisticsEligible`.
 
 `participantCount` is the number of active Lanske event players (not TennisBear
 registration count). It is owner-maintained metadata and is not independently
