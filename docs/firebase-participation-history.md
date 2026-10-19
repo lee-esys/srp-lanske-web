@@ -22,6 +22,8 @@ externalIdentityParticipationHistories/{mappingId}/events/{eventId}
     observedAt: Timestamp | null
   } | null
   statisticsEligible: boolean
+  isConfirmed: boolean  // event.status == adopted
+  participantCount: int // active players in Lanske's event
   updatedAt: Timestamp
 ```
 
@@ -39,9 +41,21 @@ underlying projection. Re-link re-enables history for the same external identity
 The Flutter repository resolves the approved mapping through the existing
 `ExternalIdentityUserReader.getActiveMapping` and then calls
 `listByMappingId(mappingId: mapping.id)`. UI integration belongs to #251.
-Queries order by `eventDate desc`; missing event dates must be represented as
-`null`, not omitted, to participate in ordered queries. The single-field
-index is automatic; no composite index is required for this query.
+Queries order by `eventDate desc` and page through results until the requested
+number of **confirmed** entries is collected; missing event dates must be
+represented as `null`, not omitted, to participate in ordered queries. The
+single-field index is automatic; no composite index is required for this
+query. `isConfirmed` is explicitly published only when the saved event has
+status `adopted`; it must not be inferred from `statisticsEligible`.
+
+`participantCount` is the number of active Lanske event players (not TennisBear
+registration count). It is owner-maintained metadata and is not independently
+verified by TennisBear. Legacy projection documents without these two fields
+remain parseable but are **not treated as confirmed**; they are hidden from My
+Page until a trusted projector backfill updates them. Re-run the operator-run
+projector explicitly after deployment to bring existing confirmed events into
+the new display. Client reads do not backfill projections, and the projector
+currently does not sync automatically.
 
 ## Writes and trust boundary
 
