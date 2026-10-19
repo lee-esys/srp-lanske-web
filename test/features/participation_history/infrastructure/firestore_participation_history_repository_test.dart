@@ -17,6 +17,8 @@ void main() {
           'observedAt': updatedAt,
         },
         'statisticsEligible': false,
+        'isConfirmed': true,
+        'participantCount': 7,
         'updatedAt': updatedAt,
       };
 
@@ -30,6 +32,8 @@ void main() {
     expect(entry.selfSnapshot?.sourceDisplayName, 'Guest B');
     expect(entry.eventDate, isNull);
     expect(entry.statisticsEligible, isFalse);
+    expect(entry.isConfirmed, isTrue);
+    expect(entry.participantCount, 7);
   });
 
   test('rejects share capability and unrelated fields', () {
@@ -66,4 +70,39 @@ void main() {
       throwsFormatException,
     );
   });
+  test('legacy projections remain parseable but are unconfirmed', () {
+    final data = valid()
+      ..remove('isConfirmed')
+      ..remove('participantCount');
+    final entry = parseParticipationHistoryEntry(
+      eventId: 'event-uuid',
+      mappingId: 'tennisbear_899212',
+      data: data,
+    );
+    expect(entry.isConfirmed, isFalse);
+    expect(entry.participantCount, isNull);
+  });
+
+  test('rejects invalid new projection summary fields', () {
+    final invalidStatus = valid()..['isConfirmed'] = 'true';
+    expect(
+      () => parseParticipationHistoryEntry(
+        eventId: 'event-uuid',
+        mappingId: 'tennisbear_899212',
+        data: invalidStatus,
+      ),
+      throwsFormatException,
+    );
+
+    final invalidCount = valid()..['participantCount'] = 0;
+    expect(
+      () => parseParticipationHistoryEntry(
+        eventId: 'event-uuid',
+        mappingId: 'tennisbear_899212',
+        data: invalidCount,
+      ),
+      throwsFormatException,
+    );
+  });
+
 }
