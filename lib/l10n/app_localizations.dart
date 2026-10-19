@@ -2571,7 +2571,7 @@ abstract class AppLocalizations {
   /// No description provided for @myPageParticipationInfo.
   ///
   /// In ja, this message translates to:
-  /// **'承認済みのテニスベアプロフィールとの連携から、本人として確認できた参加イベントを表示します。すべての参加イベントが表示されるとは限りません。'**
+  /// **'承認済みのテニスベアプロフィールとの連携から、本人として確認できた確定済みの参加イベントを表示します。すべての参加イベントが表示されるとは限りません。'**
   String get myPageParticipationInfo;
 
   /// No description provided for @myPageParticipationClose.
@@ -2627,6 +2627,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'統計対象'**
   String get myPageParticipationEligible;
+
+  /// No description provided for @myPageParticipationDisplayNameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示名：'**
+  String get myPageParticipationDisplayNameLabel;
+
+  /// No description provided for @myPageParticipationLevelLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'レベル：'**
+  String get myPageParticipationLevelLabel;
+
+  /// Number of active players.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}人'**
+  String myPageParticipationParticipantCount(int count);
 }
 
 class _AppLocalizationsDelegate

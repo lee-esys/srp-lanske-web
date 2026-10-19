@@ -1471,7 +1471,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get myPageParticipationInfo =>
-      'Shows events where your participation was verified through an approved TennisBear profile link. Some events you attended may not appear.';
+      'Shows confirmed events where your participation was verified through an approved TennisBear profile link. Some events you attended may not appear.';
 
   @override
   String get myPageParticipationClose => 'Close';
@@ -1501,4 +1501,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get myPageParticipationEligible => 'Included in statistics';
+
+  @override
+  String get myPageParticipationDisplayNameLabel => 'Name: ';
+
+  @override
+  String get myPageParticipationLevelLabel => 'Level: ';
+
+  @override
+  String myPageParticipationParticipantCount(int count) {
+    return '$count players';
+  }
 }

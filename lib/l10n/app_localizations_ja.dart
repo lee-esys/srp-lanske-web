@@ -1409,7 +1409,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get myPageParticipationInfo =>
-      '承認済みのテニスベアプロフィールとの連携から、本人として確認できた参加イベントを表示します。すべての参加イベントが表示されるとは限りません。';
+      '承認済みのテニスベアプロフィールとの連携から、本人として確認できた確定済みの参加イベントを表示します。すべての参加イベントが表示されるとは限りません。';
 
   @override
   String get myPageParticipationClose => '閉じる';
@@ -1438,4 +1438,15 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get myPageParticipationEligible => '統計対象';
+
+  @override
+  String get myPageParticipationDisplayNameLabel => '表示名：';
+
+  @override
+  String get myPageParticipationLevelLabel => 'レベル：';
+
+  @override
+  String myPageParticipationParticipantCount(int count) {
+    return '$count人';
+  }
 }

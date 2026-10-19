@@ -32,7 +32,8 @@ class FirestoreParticipationHistoryRepository
     final entries = <ParticipationHistoryEntry>[];
     QueryDocumentSnapshot<Map<String, dynamic>>? cursor;
     while (entries.length < limit) {
-      var query = collection.orderBy('eventDate', descending: true).limit(limit);
+      var query =
+          collection.orderBy('eventDate', descending: true).limit(limit);
       if (cursor != null) {
         query = query.startAfterDocument(cursor);
       }
