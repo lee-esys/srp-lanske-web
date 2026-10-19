@@ -5,7 +5,7 @@ const { buildProjectionPlan, eventIdentity, parseEventDate } = require('./plan.c
 const id = '123e4567-e89b-42d3-a456-426614174000';
 const url = 'https://www.tennisbear.net/event/123/info';
 const event = () => ({
-  event: { id, sourceType: 'tennisbear', sourceUrl: url, statisticsEligible: true },
+  event: { id, sourceType: 'tennisbear', sourceUrl: url, status: 'adopted', statisticsEligible: true },
   importRecord: { sourceType: 'tennisbear', sourceUrl: url },
   players: [{ eventId: id, status: 'active', displayName: 'spoofed',
     externalIdentity: { sourceType: 'tennisbear', sourceUserId: '77' } }],
@@ -22,9 +22,11 @@ test('source ID and participant are independently verified; owner display name i
   assert.equal(result.entries[0].mappingId, 'tennisbear_77');
   assert.equal(result.entries[0].data.selfSnapshot.sourceDisplayName, 'Verified B');
   assert.equal(result.entries[0].data.eventDate.toISOString(), '2026-10-08T03:00:00.000Z');
+  assert.equal(result.entries[0].data.isConfirmed, true);
+  assert.equal(result.entries[0].data.participantCount, 1);
   assert.deepEqual(Object.keys(result.entries[0].data).sort(), [
-    'eventDate','eventId','schemaVersion','selfSnapshot','sourceType',
-    'sourceUserId','statisticsEligible','updatedAt',
+    'eventDate','eventId','isConfirmed','participantCount','schemaVersion',
+    'selfSnapshot','sourceType','sourceUserId','statisticsEligible','updatedAt',
   ]);
 });
 test('unverifiable source, missing participation and mismatched event ID fail closed', () => {
@@ -47,4 +49,15 @@ test('missing dates and malformed dates are represented by null', () => {
   assert.equal(parseEventDate(undefined), null);
   assert.equal(parseEventDate('2026-02-30'), null);
   assert.equal(parseEventDate('2026-10-08')?.toISOString(), '2026-10-08T03:00:00.000Z');
+});
+
+test('unadopted event projects a non-displayable record; active count excludes inactive guests', () => {
+  const draft = event();
+  draft.event.status = 'generated';
+  draft.players.push({ eventId: id, status: 'inactive' });
+  draft.players.push({ eventId: id, status: 'active', externalIdentity: null });
+  const result = buildProjectionPlan(draft, preview());
+  assert.equal(result.entries.length, 1);
+  assert.equal(result.entries[0].data.isConfirmed, false);
+  assert.equal(result.entries[0].data.participantCount, 2);
 });
