@@ -151,13 +151,16 @@ class _MyPageParticipationHistorySectionState
         ],
       );
     }
-    if (result.entries.isEmpty) {
+    final confirmedEntries = result.entries
+        .where((entry) => entry.isConfirmed)
+        .toList(growable: false);
+    if (confirmedEntries.isEmpty) {
       return Text(l10n.myPageParticipationEmpty);
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final entry in result.entries) ...[
+        for (final entry in confirmedEntries) ...[
           _ParticipationRow(entry: entry),
           const SizedBox(height: 10),
         ],
@@ -180,7 +183,12 @@ class _ParticipationRow extends StatelessWidget {
         ? l10n.myPageParticipationUnknownDate
         : MaterialLocalizations.of(context).formatMediumDate(date.toLocal());
     final name = entry.selfSnapshot?.sourceDisplayName.trim();
-    final level = entry.selfSnapshot?.levelName?.trim();
+    final levelName = entry.selfSnapshot?.levelName?.trim();
+    final levelId = entry.selfSnapshot?.levelId;
+    final level = [
+      if (levelName != null && levelName.isNotEmpty) levelName,
+      if (levelId != null) '（$levelId）',
+    ].join();
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: color.outlineVariant),
@@ -200,6 +208,11 @@ class _ParticipationRow extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
+              if (entry.participantCount != null) ...[
+                Text(l10n.myPageParticipationParticipantCount(
+                    entry.participantCount!)),
+                const SizedBox(width: 8),
+              ],
               if (entry.statisticsEligible)
                 Chip(
                   label: Text(l10n.myPageParticipationEligible),
@@ -207,16 +220,17 @@ class _ParticipationRow extends StatelessWidget {
                 ),
             ],
           ),
-          if ((name != null && name.isNotEmpty) ||
-              (level != null && level.isNotEmpty)) ...[
+          if ((name != null && name.isNotEmpty) || level.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text(
-              [
-                if (name != null && name.isNotEmpty) name,
-                if (level != null && level.isNotEmpty) level,
-              ].join(' · '),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            Wrap(
+              spacing: 12,
+              runSpacing: 4,
+              children: [
+                if (name != null && name.isNotEmpty)
+                  Text('${l10n.myPageParticipationDisplayNameLabel}$name'),
+                if (level.isNotEmpty)
+                  Text('${l10n.myPageParticipationLevelLabel}$level'),
+              ],
             ),
           ],
         ],
