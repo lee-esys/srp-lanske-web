@@ -70,6 +70,7 @@ void main() {
       throwsFormatException,
     );
   });
+
   test('legacy projections remain parseable but are unconfirmed', () {
     final data = valid()
       ..remove('isConfirmed')
@@ -104,5 +105,4 @@ void main() {
       throwsFormatException,
     );
   });
-
 }
