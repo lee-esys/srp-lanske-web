@@ -6,6 +6,8 @@ class ParticipationHistoryEntry {
     required this.sourceUserId,
     required this.statisticsEligible,
     required this.updatedAt,
+    this.isConfirmed = false,
+    this.participantCount,
     this.eventDate,
     this.selfSnapshot,
   });
@@ -16,6 +18,8 @@ class ParticipationHistoryEntry {
   final DateTime? eventDate;
   final ParticipationSelfSnapshot? selfSnapshot;
   final bool statisticsEligible;
+  final bool isConfirmed;
+  final int? participantCount;
   final DateTime updatedAt;
 }
 
