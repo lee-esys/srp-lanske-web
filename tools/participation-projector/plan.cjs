@@ -75,6 +75,9 @@ function buildProjectionPlan(aggregate, preview) {
     }
   }
 
+  const participantCount = players.filter((player) =>
+    player?.eventId === identity.eventId && player?.status === 'active').length;
+  const isConfirmed = aggregate.event.status === 'adopted';
   const entries = [];
   for (const player of players) {
     const external = player?.externalIdentity;
@@ -103,6 +106,8 @@ function buildProjectionPlan(aggregate, preview) {
           observedAt: new Date(),
         },
         statisticsEligible: aggregate.event.statisticsEligible === true,
+        isConfirmed,
+        participantCount,
         updatedAt: new Date(),
       },
     });
