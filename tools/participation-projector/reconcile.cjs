@@ -35,6 +35,8 @@ function fingerprint(plan) {
       levelName: data.selfSnapshot.levelName,
     },
     statisticsEligible: data.statisticsEligible,
+    isConfirmed: data.isConfirmed,
+    participantCount: data.participantCount,
   })).sort((a, b) => a.mappingId.localeCompare(b.mappingId));
   return createHash('sha256').update(JSON.stringify(canonical)).digest('hex');
 }
