@@ -24,6 +24,8 @@ preview endpoint URL configured for your environment; do not guess it.
   projections as owner-recorded participation. Verification ambiguity fails
   closed.
 - The projection exposes no title, source URL, share ID or other players.
+- It includes `isConfirmed` from the saved Lanske event's `adopted` status and `participantCount` from active Lanske event players. This is owner-maintained event metadata, not independently verified participant-count evidence.
+- My Page displays only `isConfirmed: true` documents. Existing projections lacking this field are considered unconfirmed until an explicit operator-run re-projection. Re-running the projector is required after this schema addition; a Web rebuild does not backfill Firestore documents.
 - This tool uses `participationProjectionStates/{eventId}` as a private write
   index for reconciliation (deletion disabled for now). No client access to that collection.
 - A source fetch/verification failure does **not** delete existing projections.
