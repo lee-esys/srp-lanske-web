@@ -57,9 +57,12 @@ void main() {
         eventDate: DateTime.utc(2026, 10, 10, 3),
         selfSnapshot: const ParticipationSelfSnapshot(
           sourceDisplayName: '本人の表示名',
-          levelName: 'Lv4',
+          levelName: '中上級',
+          levelId: 6,
         ),
         statisticsEligible: true,
+        isConfirmed: true,
+        participantCount: 7,
         updatedAt: DateTime.utc(2026, 10, 12),
       ),
       ParticipationHistoryEntry(
@@ -67,6 +70,8 @@ void main() {
         sourceType: 'tennisbear',
         sourceUserId: '899212',
         statisticsEligible: false,
+        isConfirmed: true,
+        participantCount: 4,
         updatedAt: DateTime.utc(2026, 10, 12),
       ),
     ];
@@ -76,11 +81,69 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('参加イベント一覧'), findsOneWidget);
-    expect(find.text('本人の表示名 · Lv4'), findsOneWidget);
+    expect(find.text('表示名：本人の表示名'), findsOneWidget);
+    expect(find.text('レベル：中上級（6）'), findsOneWidget);
+    expect(find.text('7人'), findsOneWidget);
+    expect(find.text('4人'), findsOneWidget);
     expect(find.text('開催日不明'), findsOneWidget);
     expect(find.text('統計対象'), findsOneWidget);
     expect(find.textContaining('internal-secret-id'), findsNothing);
     expect(find.textContaining('899212'), findsNothing);
+  });
+
+  testWidgets('unconfirmed entries are not shown', (tester) async {
+    final entries = [
+      ParticipationHistoryEntry(
+        eventId: 'unconfirmed-event',
+        sourceType: 'tennisbear',
+        sourceUserId: '899212',
+        eventDate: DateTime.utc(2026, 10, 13),
+        selfSnapshot: const ParticipationSelfSnapshot(
+          sourceDisplayName: '未確定の本人',
+        ),
+        statisticsEligible: false,
+        isConfirmed: false,
+        participantCount: 7,
+        updatedAt: DateTime.utc(2026, 10, 13),
+      ),
+    ];
+    await tester.pumpWidget(app(
+      (_) async => ParticipationHistoryResult.linked(entries),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('現在表示できる参加イベントはありません'), findsOneWidget);
+    expect(find.text('表示名：未確定の本人'), findsNothing);
+    expect(find.text('7人'), findsNothing);
+  });
+
+  testWidgets('long second-row labels wrap on narrow screens', (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(app(
+      (_) async => ParticipationHistoryResult.linked([
+        ParticipationHistoryEntry(
+          eventId: 'confirmed-event',
+          sourceType: 'tennisbear',
+          sourceUserId: '899212',
+          eventDate: DateTime.utc(2026, 10, 13),
+          selfSnapshot: const ParticipationSelfSnapshot(
+            sourceDisplayName: 'とても長い本人のテニスベア表示名',
+            levelId: 6,
+            levelName: '中上級',
+          ),
+          statisticsEligible: true,
+          isConfirmed: true,
+          participantCount: 7,
+          updatedAt: DateTime.utc(2026, 10, 13),
+        ),
+      ]),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('表示名：とても長い本人のテニスベア表示名'), findsOneWidget);
+    expect(find.text('レベル：中上級（6）'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('loading and error can retry', (tester) async {
