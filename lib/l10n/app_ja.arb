@@ -2075,7 +2075,7 @@
   },
   "myPageParticipationTitle": "参加イベント一覧",
   "myPageParticipationInfoTooltip": "表示対象について",
-  "myPageParticipationInfo": "承認済みのテニスベアプロフィールとの連携から、本人として確認できた参加イベントを表示します。すべての参加イベントが表示されるとは限りません。",
+  "myPageParticipationInfo": "承認済みのテニスベアプロフィールとの連携から、本人として確認できた確定済みの参加イベントを表示します。すべての参加イベントが表示されるとは限りません。",
   "myPageParticipationClose": "閉じる",
   "myPageParticipationRefresh": "参加イベント一覧を更新",
   "myPageParticipationLoading": "参加イベントを読み込んでいます…",
@@ -2084,5 +2084,17 @@
   "myPageParticipationLinkAction": "プロフィール連携へ",
   "myPageParticipationEmpty": "現在表示できる参加イベントはありません",
   "myPageParticipationUnknownDate": "開催日不明",
-  "myPageParticipationEligible": "統計対象"
+  "myPageParticipationEligible": "統計対象",
+  "myPageParticipationDisplayNameLabel": "表示名：",
+  "myPageParticipationLevelLabel": "レベル：",
+  "myPageParticipationParticipantCount": "{count}人",
+  "@myPageParticipationParticipantCount": {
+    "description": "Number of active players.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  }
 }
