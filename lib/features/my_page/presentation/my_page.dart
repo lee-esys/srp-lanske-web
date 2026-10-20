@@ -45,6 +45,7 @@ class MyPage extends StatefulWidget {
 }
 
 class _MyPageState extends State<MyPage> {
+  int _refreshSequence = 0;
   String? _requestedUid;
   bool _loading = false;
   LanskeUser? _user;
@@ -118,6 +119,14 @@ class _MyPageState extends State<MyPage> {
     unawaited(_loadAccount(uid));
   }
 
+  void _refreshPage() {
+    final session = AuthScope.of(context).session;
+    if (!session.isAccount || session.uid == null || _loading) return;
+
+    setState(() => _refreshSequence++);
+    _retry();
+  }
+
   void _openAccount() {
     openUrlInCurrentTab(accountPagePath);
   }
@@ -135,6 +144,12 @@ class _MyPageState extends State<MyPage> {
         automaticallyImplyLeading: false,
         title: Text(l10n.myPageMenuLabel),
         actions: [
+          IconButton(
+            key: const ValueKey('my-page-refresh-button'),
+            tooltip: l10n.myPageRefresh,
+            onPressed: session.isAccount && !_loading ? _refreshPage : null,
+            icon: const Icon(Icons.refresh),
+          ),
           Builder(
             builder: (context) {
               return IconButton(
@@ -166,6 +181,7 @@ class _MyPageState extends State<MyPage> {
                 if (session.isAccount && session.uid != null) ...[
                   const SizedBox(height: 24),
                   MyPageProfileLinkSection(
+                    key: ValueKey('profile-link-$_refreshSequence'),
                     lanskeUserId: session.uid!,
                     loadProfileLink: widget.profileLinkLoader ??
                         ExternalIdentityLinkScope.of(context).load,
@@ -175,6 +191,7 @@ class _MyPageState extends State<MyPage> {
                   ),
                   const SizedBox(height: 24),
                   MyPageParticipationHistorySection(
+                    key: ValueKey('participation-history-$_refreshSequence'),
                     lanskeUserId: session.uid!,
                     loadHistory: widget.participationHistoryLoader ??
                         _loadParticipationHistory,
@@ -190,6 +207,7 @@ class _MyPageState extends State<MyPage> {
                   ),
                   const SizedBox(height: 12),
                   MyPageMatchTableListSection(
+                    key: ValueKey('owned-match-tables-$_refreshSequence'),
                     ownerUid: session.uid!,
                     loadOwnedEvents: widget.ownedEventsLoader,
                     onOpenEvent: widget.onOpenOwnedEvent,
