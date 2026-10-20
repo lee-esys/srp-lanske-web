@@ -1,7 +1,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { buildProjectionPlan, eventIdentity, parseEventDate } = require('./plan.cjs');
+const { buildProjectionPlan, eventIdentity, sourceEventId, parseEventDate } = require('./plan.cjs');
 const id = '123e4567-e89b-42d3-a456-426614174000';
 const url = 'https://www.tennisbear.net/event/123/info';
 const event = () => ({
@@ -16,6 +16,53 @@ const preview = () => ({
   participant_candidates: [{ user_id: '77', display_name: 'Verified B', level_id: 5 }],
   warnings: [],
 });
+test('calendar share URLs identify the same TennisBear event regardless of query parameters', () => {
+  const validUrls = [
+    'https://www.tennisbear.net/event/1677958/info',
+    'https://www.tennisbear.net/event/1677958/info/',
+    'https://www.tennisbear.net/event/1677958/info/?openExternalBrowser=1',
+    'https://tennisbear.net/event/1677958/info/?openExternalBrowser=1',
+    'https://www.tennisbear.net/event/1677958/info?openExternalBrowser=1&source=calendar',
+  ];
+  for (const sourceUrl of validUrls) {
+    assert.equal(sourceEventId(sourceUrl), '1677958', sourceUrl);
+  }
+
+  const aggregate = event();
+  aggregate.event.sourceUrl =
+    'https://www.tennisbear.net/event/123/info/?openExternalBrowser=1';
+  // The original and imported URLs may differ in irrelevant query parameters.
+  assert.deepEqual(eventIdentity(aggregate), { eventId: id, sourceId: '123' });
+  const result = buildProjectionPlan(aggregate, preview());
+  assert.equal(result.entries.length, 1);
+});
+
+test('untrusted event URLs must still use an approved host and exact event path', () => {
+  const invalidUrls = [
+    'http://www.tennisbear.net/event/1677958/info',
+    'https://www.tennisbear.net.evil.example/event/1677958/info',
+    'https://evil.example/event/1677958/info?next=https://www.tennisbear.net',
+    'https://www.tennisbear.net:444/event/1677958/info',
+    'https://user@www.tennisbear.net/event/1677958/info',
+    'https://www.tennisbear.net/events/1677958/info',
+    'https://www.tennisbear.net/event/abc/info',
+    'https://www.tennisbear.net/event/1677958/other',
+    'https://www.tennisbear.net/event/1677958/info/extra',
+    ' https://www.tennisbear.net/event/1677958/info',
+    'not-a-url',
+  ];
+  for (const sourceUrl of invalidUrls) {
+    assert.equal(sourceEventId(sourceUrl), null, sourceUrl);
+  }
+
+  const aggregate = event();
+  aggregate.event.sourceUrl =
+    'https://www.tennisbear.net/event/123/info/?openExternalBrowser=1';
+  aggregate.importRecord.sourceUrl =
+    'https://www.tennisbear.net/event/124/info/?openExternalBrowser=1';
+  assert.equal(eventIdentity(aggregate), null);
+});
+
 test('source ID and participant are independently verified; owner display name is ignored', () => {
   const result = buildProjectionPlan(event(), preview());
   assert.equal(result.entries.length, 1);
