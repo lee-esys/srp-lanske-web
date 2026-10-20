@@ -84,26 +84,15 @@ class _MyPageParticipationHistorySectionState
     return MyPageSectionCard(
       icon: Icons.event_note_outlined,
       title: l10n.myPageParticipationTitle,
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Tooltip(
-            key: _infoTooltipKey,
-            message: l10n.myPageParticipationInfo,
-            triggerMode: TooltipTriggerMode.manual,
-            child: IconButton(
-              tooltip: l10n.myPageParticipationInfoTooltip,
-              onPressed: () =>
-                  _infoTooltipKey.currentState?.ensureTooltipVisible(),
-              icon: const Icon(Icons.help_outline),
-            ),
-          ),
-          IconButton(
-            tooltip: l10n.myPageParticipationRefresh,
-            onPressed: _loading ? null : _load,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
+      trailing: Tooltip(
+        key: _infoTooltipKey,
+        message: l10n.myPageParticipationInfo,
+        triggerMode: TooltipTriggerMode.manual,
+        child: IconButton(
+          tooltip: l10n.myPageParticipationInfoTooltip,
+          onPressed: () => _infoTooltipKey.currentState?.ensureTooltipVisible(),
+          icon: const Icon(Icons.help_outline),
+        ),
       ),
       child: _content(context),
     );
@@ -182,57 +171,43 @@ class _ParticipationRow extends StatelessWidget {
     final dateText = date == null
         ? l10n.myPageParticipationUnknownDate
         : MaterialLocalizations.of(context).formatMediumDate(date.toLocal());
-    final name = entry.selfSnapshot?.sourceDisplayName.trim();
-    final levelName = entry.selfSnapshot?.levelName?.trim();
-    final levelId = entry.selfSnapshot?.levelId;
-    final level = [
-      if (levelName != null && levelName.isNotEmpty) levelName,
-      if (levelId != null) '（$levelId）',
-    ].join();
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: color.outlineVariant),
         borderRadius: BorderRadius.circular(12),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        runSpacing: 4,
         children: [
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: Text(
-                  dateText,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+              Text(
+                dateText,
+                style: Theme.of(context).textTheme.titleMedium,
               ),
               if (entry.participantCount != null) ...[
+                const SizedBox(width: 12),
+                Icon(
+                  Icons.groups_outlined,
+                  size: 18,
+                  color: color.onSurfaceVariant,
+                ),
+                const SizedBox(width: 4),
                 Text(l10n.myPageParticipationParticipantCount(
                     entry.participantCount!)),
-                const SizedBox(width: 8),
               ],
-              if (entry.statisticsEligible)
-                Chip(
-                  label: Text(l10n.myPageParticipationEligible),
-                  visualDensity: VisualDensity.compact,
-                ),
             ],
           ),
-          if ((name != null && name.isNotEmpty) || level.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Wrap(
-              spacing: 12,
-              runSpacing: 4,
-              children: [
-                if (name != null && name.isNotEmpty)
-                  Text('${l10n.myPageParticipationDisplayNameLabel}$name'),
-                if (level.isNotEmpty)
-                  Text('${l10n.myPageParticipationLevelLabel}$level'),
-              ],
+          if (entry.statisticsEligible)
+            Chip(
+              label: Text(l10n.myPageParticipationEligible),
+              visualDensity: VisualDensity.compact,
             ),
-          ],
         ],
       ),
     );
