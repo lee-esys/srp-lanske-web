@@ -81,8 +81,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('参加イベント一覧'), findsOneWidget);
-    expect(find.text('表示名：本人の表示名'), findsOneWidget);
-    expect(find.text('レベル：中上級（6）'), findsOneWidget);
+    // Self snapshot remains in the projection, but is no longer shown in the list.
+    expect(find.textContaining('本人の表示名'), findsNothing);
+    expect(find.textContaining('中上級'), findsNothing);
+    expect(find.byIcon(Icons.groups_outlined), findsNWidgets(2));
     expect(find.text('7人'), findsOneWidget);
     expect(find.text('4人'), findsOneWidget);
     expect(find.text('開催日不明'), findsOneWidget);
@@ -116,7 +118,8 @@ void main() {
     expect(find.text('7人'), findsNothing);
   });
 
-  testWidgets('long second-row labels wrap on narrow screens', (tester) async {
+  testWidgets('keeps date and attendee count visible on narrow screens',
+      (tester) async {
     tester.view.physicalSize = const Size(320, 640);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -129,7 +132,7 @@ void main() {
           sourceUserId: '899212',
           eventDate: DateTime.utc(2026, 10, 13),
           selfSnapshot: const ParticipationSelfSnapshot(
-            sourceDisplayName: 'とても長い本人のテニスベア表示名',
+            sourceDisplayName: '長い本人のテニスベア表示名',
             levelId: 6,
             levelName: '中上級',
           ),
@@ -141,8 +144,10 @@ void main() {
       ]),
     ));
     await tester.pumpAndSettle();
-    expect(find.text('表示名：とても長い本人のテニスベア表示名'), findsOneWidget);
-    expect(find.text('レベル：中上級（6）'), findsOneWidget);
+    expect(find.byIcon(Icons.groups_outlined), findsOneWidget);
+    expect(find.text('7人'), findsOneWidget);
+    expect(find.text('統計対象'), findsOneWidget);
+    expect(find.textContaining('長い本人'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
