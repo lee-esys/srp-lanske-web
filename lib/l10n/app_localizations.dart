@@ -2555,6 +2555,84 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'アカウントへの反映を完了できませんでした。状態は保持されています。通信状態を確認して、もう一度お試しください。'**
   String get ownershipTransferGenericFailureMessage;
+
+  /// No description provided for @myPageParticipationTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加イベント一覧'**
+  String get myPageParticipationTitle;
+
+  /// No description provided for @myPageParticipationInfoTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示対象について'**
+  String get myPageParticipationInfoTooltip;
+
+  /// No description provided for @myPageParticipationInfo.
+  ///
+  /// In ja, this message translates to:
+  /// **'承認済みのテニスベアプロフィールとの連携から、本人として確認できた確定済みの参加イベントを表示します。すべての参加イベントが表示されるとは限りません。'**
+  String get myPageParticipationInfo;
+
+  /// No description provided for @myPageParticipationClose.
+  ///
+  /// In ja, this message translates to:
+  /// **'閉じる'**
+  String get myPageParticipationClose;
+
+  /// No description provided for @myPageParticipationLoading.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加イベントを読み込んでいます…'**
+  String get myPageParticipationLoading;
+
+  /// No description provided for @myPageParticipationError.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加イベントを読み込めませんでした'**
+  String get myPageParticipationError;
+
+  /// No description provided for @myPageParticipationUnlinked.
+  ///
+  /// In ja, this message translates to:
+  /// **'テニスベアプロフィールが連携されていないため、本人参加履歴を表示できません'**
+  String get myPageParticipationUnlinked;
+
+  /// No description provided for @myPageParticipationLinkAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロフィール連携へ'**
+  String get myPageParticipationLinkAction;
+
+  /// No description provided for @myPageParticipationEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在表示できる参加イベントはありません'**
+  String get myPageParticipationEmpty;
+
+  /// No description provided for @myPageParticipationUnknownDate.
+  ///
+  /// In ja, this message translates to:
+  /// **'開催日不明'**
+  String get myPageParticipationUnknownDate;
+
+  /// No description provided for @myPageParticipationEligible.
+  ///
+  /// In ja, this message translates to:
+  /// **'統計対象'**
+  String get myPageParticipationEligible;
+
+  /// Number of active players.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}人'**
+  String myPageParticipationParticipantCount(int count);
+
+  /// No description provided for @myPageRefresh.
+  ///
+  /// In ja, this message translates to:
+  /// **'マイページを更新'**
+  String get myPageRefresh;
 }
 
 class _AppLocalizationsDelegate

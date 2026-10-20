@@ -2072,5 +2072,27 @@
   "ownershipTransferGenericFailureMessage": "The account update could not be completed. The current state was kept. Check your connection and try again.",
   "@ownershipTransferGenericFailureMessage": {
     "description": "Generic ownership transfer failure message."
-  }
+  },
+  "myPageParticipationTitle": "Participated events",
+  "myPageParticipationInfoTooltip": "About included events",
+  "myPageParticipationInfo": "Shows confirmed events where your participation was verified through an approved TennisBear profile link. Some events you attended may not appear.",
+  "myPageParticipationClose": "Close",
+  "myPageParticipationLoading": "Loading participated events…",
+  "myPageParticipationError": "Could not load participated events",
+  "myPageParticipationUnlinked": "Link your TennisBear profile to view verified participation history.",
+  "myPageParticipationLinkAction": "Manage profile link",
+  "myPageParticipationEmpty": "No participated events are currently available",
+  "myPageParticipationUnknownDate": "Event date unknown",
+  "myPageParticipationEligible": "Included in statistics",
+  "myPageParticipationParticipantCount": "{count} players",
+  "@myPageParticipationParticipantCount": {
+    "description": "Number of active players.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "myPageRefresh": "Refresh My Page"
 }

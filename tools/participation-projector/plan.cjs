@@ -2,14 +2,25 @@
 
 // Pure, independently testable validation and projection planning.
 // All raw event fields are untrusted, including externalIdentity and sourceUrl.
-const URL_PATTERN = /^https:\/\/(?:www\.)?tennisbear\.net\/event\/(\d+)\/info\/?$/;
+const EVENT_PATH_PATTERN = /^\/event\/(\d+)\/info\/?$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const ID_PATTERN = /^\d{1,20}$/;
 
 function sourceEventId(url) {
-  if (typeof url !== 'string') return null;
-  const match = URL_PATTERN.exec(url);
-  return match?.[1] ?? null;
+  if (typeof url !== 'string' || url.trim() !== url) return null;
+
+  // The shared/calendar URL may include query parameters such as
+  // openExternalBrowser=1. They are not part of the event identity.
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return null;
+  }
+  if (parsed.protocol !== 'https:' ||
+      !['www.tennisbear.net', 'tennisbear.net'].includes(parsed.host) ||
+      parsed.username || parsed.password) return null;
+  return EVENT_PATH_PATTERN.exec(parsed.pathname)?.[1] ?? null;
 }
 
 function eventIdentity(aggregate) {
@@ -75,6 +86,9 @@ function buildProjectionPlan(aggregate, preview) {
     }
   }
 
+  const participantCount = players.filter((player) =>
+    player?.eventId === identity.eventId && player?.status === 'active').length;
+  const isConfirmed = aggregate.event.status === 'adopted';
   const entries = [];
   for (const player of players) {
     const external = player?.externalIdentity;
@@ -103,6 +117,8 @@ function buildProjectionPlan(aggregate, preview) {
           observedAt: new Date(),
         },
         statisticsEligible: aggregate.event.statisticsEligible === true,
+        isConfirmed,
+        participantCount,
         updatedAt: new Date(),
       },
     });

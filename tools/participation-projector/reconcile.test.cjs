@@ -33,7 +33,8 @@ function plan(mappings) {
         sourceType: 'tennisbear', sourceUserId: mappingId.split('_')[1],
         eventDate: null,
         selfSnapshot: { sourceDisplayName: 'B', levelId: null, levelName: null },
-        statisticsEligible: true, updatedAt: new Date(),
+        statisticsEligible: true, isConfirmed: true, participantCount: 1,
+        updatedAt: new Date(),
       },
     })),
   };
@@ -48,6 +49,18 @@ test('dry run does not write data; repeated apply skips unchanged writes', async
   assert.equal((await reconcileEvent(db, id, value, true)).outcome, 'unchanged');
   assert.equal(db.commits, 1);
 });
+test('confirmation or participation count updates invalidate the projection fingerprint', async () => {
+  const db = new FakeFirestore();
+  await reconcileEvent(db, id, plan(['tennisbear_77']), true);
+  const changed = plan(['tennisbear_77']);
+  changed.entries[0].data.isConfirmed = false;
+  changed.entries[0].data.participantCount = 4;
+  assert.equal((await reconcileEvent(db, id, changed, true)).outcome, 'synced');
+  const stored = db.items.get('externalIdentityParticipationHistories/tennisbear_77/events/' + id);
+  assert.equal(stored.isConfirmed, false);
+  assert.equal(stored.participantCount, 4);
+});
+
 test('changed participants retain previous mapping while upserting the new mapping', async () => {
   const db = new FakeFirestore();
   await reconcileEvent(db, id, plan(['tennisbear_77']), true);

@@ -12,9 +12,12 @@ import '../../auth/presentation/account_routes.dart';
 import '../../auth/presentation/account_scope.dart';
 import '../../auth/presentation/auth_scope.dart';
 import '../../external_identity/presentation/external_identity_link_scope.dart';
+import '../../participation_history/application/participation_history_service.dart';
+import '../../participation_history/presentation/participation_history_scope.dart';
 import 'my_page_navigation_drawer.dart';
 import 'widgets/my_page_match_table_list_section.dart';
 import 'widgets/my_page_profile_link_section.dart';
+import 'widgets/my_page_participation_history_section.dart';
 import 'widgets/my_page_section_card.dart';
 
 class MyPage extends StatefulWidget {
@@ -26,6 +29,7 @@ class MyPage extends StatefulWidget {
     this.profileLinkLoader,
     this.onOpenProfileLinkManagement,
     this.profileLinkNow,
+    this.participationHistoryLoader,
   });
 
   final AccountService? accountService;
@@ -34,12 +38,14 @@ class MyPage extends StatefulWidget {
   final MyPageProfileLinkLoader? profileLinkLoader;
   final VoidCallback? onOpenProfileLinkManagement;
   final DateTime Function()? profileLinkNow;
+  final MyPageParticipationHistoryLoader? participationHistoryLoader;
 
   @override
   State<MyPage> createState() => _MyPageState();
 }
 
 class _MyPageState extends State<MyPage> {
+  int _refreshSequence = 0;
   String? _requestedUid;
   bool _loading = false;
   LanskeUser? _user;
@@ -113,9 +119,20 @@ class _MyPageState extends State<MyPage> {
     unawaited(_loadAccount(uid));
   }
 
+  void _refreshPage() {
+    final session = AuthScope.of(context).session;
+    if (!session.isAccount || session.uid == null || _loading) return;
+
+    setState(() => _refreshSequence++);
+    _retry();
+  }
+
   void _openAccount() {
     openUrlInCurrentTab(accountPagePath);
   }
+
+  Future<ParticipationHistoryResult> _loadParticipationHistory(String uid) =>
+      ParticipationHistoryScope.of(context).loadForUser(lanskeUserId: uid);
 
   @override
   Widget build(BuildContext context) {
@@ -127,6 +144,12 @@ class _MyPageState extends State<MyPage> {
         automaticallyImplyLeading: false,
         title: Text(l10n.myPageMenuLabel),
         actions: [
+          IconButton(
+            key: const ValueKey('my-page-refresh-button'),
+            tooltip: l10n.myPageRefresh,
+            onPressed: session.isAccount && !_loading ? _refreshPage : null,
+            icon: const Icon(Icons.refresh),
+          ),
           Builder(
             builder: (context) {
               return IconButton(
@@ -158,12 +181,22 @@ class _MyPageState extends State<MyPage> {
                 if (session.isAccount && session.uid != null) ...[
                   const SizedBox(height: 24),
                   MyPageProfileLinkSection(
+                    key: ValueKey('profile-link-$_refreshSequence'),
                     lanskeUserId: session.uid!,
                     loadProfileLink: widget.profileLinkLoader ??
                         ExternalIdentityLinkScope.of(context).load,
                     onOpenManagement:
                         widget.onOpenProfileLinkManagement ?? _openAccount,
                     now: widget.profileLinkNow,
+                  ),
+                  const SizedBox(height: 24),
+                  MyPageParticipationHistorySection(
+                    key: ValueKey('participation-history-$_refreshSequence'),
+                    lanskeUserId: session.uid!,
+                    loadHistory: widget.participationHistoryLoader ??
+                        _loadParticipationHistory,
+                    onOpenProfileLinkManagement:
+                        widget.onOpenProfileLinkManagement ?? _openAccount,
                   ),
                   const SizedBox(height: 24),
                   Text(
@@ -174,6 +207,7 @@ class _MyPageState extends State<MyPage> {
                   ),
                   const SizedBox(height: 12),
                   MyPageMatchTableListSection(
+                    key: ValueKey('owned-match-tables-$_refreshSequence'),
                     ownerUid: session.uid!,
                     loadOwnedEvents: widget.ownedEventsLoader,
                     onOpenEvent: widget.onOpenOwnedEvent,

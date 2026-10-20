@@ -1400,4 +1400,47 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get ownershipTransferGenericFailureMessage =>
       'アカウントへの反映を完了できませんでした。状態は保持されています。通信状態を確認して、もう一度お試しください。';
+
+  @override
+  String get myPageParticipationTitle => '参加イベント一覧';
+
+  @override
+  String get myPageParticipationInfoTooltip => '表示対象について';
+
+  @override
+  String get myPageParticipationInfo =>
+      '承認済みのテニスベアプロフィールとの連携から、本人として確認できた確定済みの参加イベントを表示します。すべての参加イベントが表示されるとは限りません。';
+
+  @override
+  String get myPageParticipationClose => '閉じる';
+
+  @override
+  String get myPageParticipationLoading => '参加イベントを読み込んでいます…';
+
+  @override
+  String get myPageParticipationError => '参加イベントを読み込めませんでした';
+
+  @override
+  String get myPageParticipationUnlinked =>
+      'テニスベアプロフィールが連携されていないため、本人参加履歴を表示できません';
+
+  @override
+  String get myPageParticipationLinkAction => 'プロフィール連携へ';
+
+  @override
+  String get myPageParticipationEmpty => '現在表示できる参加イベントはありません';
+
+  @override
+  String get myPageParticipationUnknownDate => '開催日不明';
+
+  @override
+  String get myPageParticipationEligible => '統計対象';
+
+  @override
+  String myPageParticipationParticipantCount(int count) {
+    return '$count人';
+  }
+
+  @override
+  String get myPageRefresh => 'マイページを更新';
 }

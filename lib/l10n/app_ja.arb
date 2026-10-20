@@ -2072,5 +2072,27 @@
   "ownershipTransferGenericFailureMessage": "アカウントへの反映を完了できませんでした。状態は保持されています。通信状態を確認して、もう一度お試しください。",
   "@ownershipTransferGenericFailureMessage": {
     "description": "Generic ownership transfer failure message."
-  }
+  },
+  "myPageParticipationTitle": "参加イベント一覧",
+  "myPageParticipationInfoTooltip": "表示対象について",
+  "myPageParticipationInfo": "承認済みのテニスベアプロフィールとの連携から、本人として確認できた確定済みの参加イベントを表示します。すべての参加イベントが表示されるとは限りません。",
+  "myPageParticipationClose": "閉じる",
+  "myPageParticipationLoading": "参加イベントを読み込んでいます…",
+  "myPageParticipationError": "参加イベントを読み込めませんでした",
+  "myPageParticipationUnlinked": "テニスベアプロフィールが連携されていないため、本人参加履歴を表示できません",
+  "myPageParticipationLinkAction": "プロフィール連携へ",
+  "myPageParticipationEmpty": "現在表示できる参加イベントはありません",
+  "myPageParticipationUnknownDate": "開催日不明",
+  "myPageParticipationEligible": "統計対象",
+  "myPageParticipationParticipantCount": "{count}人",
+  "@myPageParticipationParticipantCount": {
+    "description": "Number of active players.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "myPageRefresh": "マイページを更新"
 }

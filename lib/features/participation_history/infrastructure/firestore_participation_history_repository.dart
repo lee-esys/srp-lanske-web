@@ -22,21 +22,37 @@ class FirestoreParticipationHistoryRepository
       throw RangeError.range(limit, 1, 100, 'limit');
     }
 
-    final snapshot = await _firestore
+    // Confirmed entries can be interspersed with legacy and draft records.
+    // Page through the date-ordered projection instead of filtering a single
+    // limited page, which could hide older confirmed participation.
+    final collection = _firestore
         .collection('externalIdentityParticipationHistories')
         .doc(mappingId)
-        .collection('events')
-        .orderBy('eventDate', descending: true)
-        .limit(limit)
-        .get();
-
-    return List<ParticipationHistoryEntry>.unmodifiable(
-      snapshot.docs.map((document) => parseParticipationHistoryEntry(
-            eventId: document.id,
-            mappingId: mappingId,
-            data: document.data(),
-          )),
-    );
+        .collection('events');
+    final entries = <ParticipationHistoryEntry>[];
+    QueryDocumentSnapshot<Map<String, dynamic>>? cursor;
+    while (entries.length < limit) {
+      var query =
+          collection.orderBy('eventDate', descending: true).limit(limit);
+      if (cursor != null) {
+        query = query.startAfterDocument(cursor);
+      }
+      final snapshot = await query.get();
+      for (final document in snapshot.docs) {
+        final entry = parseParticipationHistoryEntry(
+          eventId: document.id,
+          mappingId: mappingId,
+          data: document.data(),
+        );
+        if (entry.isConfirmed) {
+          entries.add(entry);
+          if (entries.length >= limit) break;
+        }
+      }
+      if (snapshot.docs.length < limit) break;
+      cursor = snapshot.docs.last;
+    }
+    return List<ParticipationHistoryEntry>.unmodifiable(entries);
   }
 }
 
@@ -55,12 +71,17 @@ ParticipationHistoryEntry parseParticipationHistoryEntry({
     'eventDate',
     'selfSnapshot',
     'statisticsEligible',
+    'isConfirmed',
+    'participantCount',
     'updatedAt',
   };
   if (data.keys.any((key) => !fields.contains(key)) ||
       data['schemaVersion'] != 1 ||
       data['eventId'] != eventId ||
       data['statisticsEligible'] is! bool ||
+      (data.containsKey('isConfirmed') && data['isConfirmed'] is! bool) ||
+      (data.containsKey('participantCount') &&
+          (data['participantCount'] is! int || data['participantCount'] < 1)) ||
       data['updatedAt'] is! Timestamp) {
     throw const FormatException('Invalid participation projection');
   }
@@ -111,6 +132,8 @@ ParticipationHistoryEntry parseParticipationHistoryEntry({
     eventDate: (rawDate as Timestamp?)?.toDate().toUtc(),
     selfSnapshot: selfSnapshot,
     statisticsEligible: data['statisticsEligible'] as bool,
+    isConfirmed: data['isConfirmed'] as bool? ?? false,
+    participantCount: data['participantCount'] as int?,
     updatedAt: (data['updatedAt'] as Timestamp).toDate().toUtc(),
   );
 }
