@@ -12,6 +12,7 @@ import 'package:srp_lanske/features/auth/domain/lanske_user.dart';
 import 'package:srp_lanske/features/auth/presentation/auth_scope.dart';
 import 'package:srp_lanske/features/external_identity/application/tennisbear_profile_link_service.dart';
 import 'package:srp_lanske/features/my_page/presentation/my_page.dart';
+import 'package:srp_lanske/features/my_page/presentation/widgets/my_page_participation_history_section.dart';
 import 'package:srp_lanske/features/participation_history/application/participation_history_service.dart';
 import 'package:srp_lanske/l10n/l10n.dart';
 
@@ -98,6 +99,40 @@ void main() {
     expect(users.ensuredUids, ['account-uid']);
   });
 
+  testWidgets('app bar refresh reloads account and participation history',
+      (tester) async {
+    final auth = _FakeAuthRepository(
+      const AuthSession.account('account-uid', email: 'user@example.com'),
+    );
+    final users = _FakeLanskeUserRepository();
+    var participationLoads = 0;
+
+    await _pumpMyPage(
+      tester,
+      auth: auth,
+      users: users,
+      participationHistoryLoader: (_) async {
+        participationLoads++;
+        return const ParticipationHistoryResult.linked([]);
+      },
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('参加イベント一覧'),
+      150,
+    );
+    await tester.pumpAndSettle();
+    expect(participationLoads, 1);
+    expect(users.calls, 1);
+
+    await tester.tap(find.byKey(const ValueKey('my-page-refresh-button')));
+    await tester.pumpAndSettle();
+
+    expect(participationLoads, 2);
+    expect(users.calls, 2);
+  });
+
   testWidgets('shows loading while account information is pending',
       (tester) async {
     final auth = _FakeAuthRepository(
@@ -144,6 +179,7 @@ Future<void> _pumpMyPage(
   WidgetTester tester, {
   required _FakeAuthRepository auth,
   required _FakeLanskeUserRepository users,
+  MyPageParticipationHistoryLoader? participationHistoryLoader,
 }) async {
   final accountService = AccountService(
     authRepository: auth,
@@ -160,8 +196,8 @@ Future<void> _pumpMyPage(
         home: MyPage(
           accountService: accountService,
           ownedEventsLoader: (_) async => const [],
-          participationHistoryLoader: (_) async =>
-              const ParticipationHistoryResult.unlinked(),
+          participationHistoryLoader: participationHistoryLoader ??
+              (_) async => const ParticipationHistoryResult.unlinked(),
           profileLinkLoader: (_) async => const TennisBearProfileLinkSnapshot(
             activeMapping: null,
             activeRequest: null,
