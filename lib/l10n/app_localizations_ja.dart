@@ -1415,9 +1415,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get myPageParticipationClose => '閉じる';
 
   @override
-  String get myPageParticipationRefresh => '参加イベント一覧を更新';
-
-  @override
   String get myPageParticipationLoading => '参加イベントを読み込んでいます…';
 
   @override
@@ -1440,13 +1437,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get myPageParticipationEligible => '統計対象';
 
   @override
-  String get myPageParticipationDisplayNameLabel => '表示名：';
-
-  @override
-  String get myPageParticipationLevelLabel => 'レベル：';
-
-  @override
   String myPageParticipationParticipantCount(int count) {
     return '$count人';
   }
+
+  @override
+  String get myPageRefresh => 'マイページを更新';
 }

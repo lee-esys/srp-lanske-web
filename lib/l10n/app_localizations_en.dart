@@ -1477,9 +1477,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myPageParticipationClose => 'Close';
 
   @override
-  String get myPageParticipationRefresh => 'Refresh participation history';
-
-  @override
   String get myPageParticipationLoading => 'Loading participated events…';
 
   @override
@@ -1503,13 +1500,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myPageParticipationEligible => 'Included in statistics';
 
   @override
-  String get myPageParticipationDisplayNameLabel => 'Name: ';
-
-  @override
-  String get myPageParticipationLevelLabel => 'Level: ';
-
-  @override
   String myPageParticipationParticipantCount(int count) {
     return '$count players';
   }
+
+  @override
+  String get myPageRefresh => 'Refresh My Page';
 }

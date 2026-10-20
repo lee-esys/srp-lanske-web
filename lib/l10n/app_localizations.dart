@@ -2580,12 +2580,6 @@ abstract class AppLocalizations {
   /// **'閉じる'**
   String get myPageParticipationClose;
 
-  /// No description provided for @myPageParticipationRefresh.
-  ///
-  /// In ja, this message translates to:
-  /// **'参加イベント一覧を更新'**
-  String get myPageParticipationRefresh;
-
   /// No description provided for @myPageParticipationLoading.
   ///
   /// In ja, this message translates to:
@@ -2628,23 +2622,17 @@ abstract class AppLocalizations {
   /// **'統計対象'**
   String get myPageParticipationEligible;
 
-  /// No description provided for @myPageParticipationDisplayNameLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'表示名：'**
-  String get myPageParticipationDisplayNameLabel;
-
-  /// No description provided for @myPageParticipationLevelLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'レベル：'**
-  String get myPageParticipationLevelLabel;
-
   /// Number of active players.
   ///
   /// In ja, this message translates to:
   /// **'{count}人'**
   String myPageParticipationParticipantCount(int count);
+
+  /// No description provided for @myPageRefresh.
+  ///
+  /// In ja, this message translates to:
+  /// **'マイページを更新'**
+  String get myPageRefresh;
 }
 
 class _AppLocalizationsDelegate
