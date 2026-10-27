@@ -655,7 +655,7 @@ test('existing event read, team schedule, and core read behavior remains unchang
 
   await assertSucceeds(unauthenticated.doc('events/event-1').get());
 
-  await assertSucceeds(
+  await assertFails(
     unauthenticated.doc('team_schedules/team-1').set({ title: 'team' }),
   );
   await assertSucceeds(unauthenticated.doc('team_schedules/team-1').get());
