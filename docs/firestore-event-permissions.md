@@ -117,7 +117,30 @@ or match-result fields to change after creation. Identity fields such as schedul
 type, generated schedule ID, round number, court number, match number, and
 creation timestamp cannot be changed by normal updates.
 
-Team schedule Rules are unchanged by this event permission work.
+## Team schedule public collaboration (ver0.2.0 hardening)
+
+Team schedules are intentionally creatable and editable without a signed-in
+account, so a shared URL continues to work for team and boccia use cases.
+However, public access is bounded by Firestore Rules:
+
+- A direct document `get` is public, but root collection `list` is denied.
+- Creation requires an eight-character uppercase alphanumeric share ID,
+  the current schema and mandatory team fields, a matching document ID,
+  a team snapshot identity, and valid provenance.
+- After creation, only `display`, `scores`, `updated_at`, and bounded
+  provenance metadata may be changed. Team setup, schedule snapshot,
+  document identity, and creation metadata cannot be replaced.
+- Team progress and match documents require an existing parent team schedule,
+  validated team identities and revision updates. Deletes remain denied.
+
+This is *not* owner-based authorization. Anyone able to address an existing
+team schedule by ID can still alter permitted display, scores, or match state.
+Moreover, schema-validated unauthenticated creation remains possible;
+rate limiting, App Check, and an eventual ownership/edit-token model are
+separate hardening work. Provenance is diagnostic metadata, not a trusted
+client identity.
+
+Team security regression tests run as part of `npm run test:firestore-rules`.
 
 ## Provenance
 
