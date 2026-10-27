@@ -532,3 +532,127 @@ test('shared progress and match writes preserve identity fields', async () => {
   setUpdatedProvenance(forgedIdentity, 'match-forged');
   await assertFails(matchRef.set(forgedIdentity));
 });
+
+function teamData(shareId = 'TEAM0001') {
+  return {
+    schema_version: 1,
+    share_id: shareId,
+    status: 'active',
+    schedule_type: 'team',
+    created_at: '2026-10-27T00:00:00.000Z',
+    updated_at: '2026-10-27T00:00:00.000Z',
+    setup: {
+      concurrent_match_count: 1,
+      participant_count: 4,
+      preferred_team_size: 2,
+      teams_per_match: 2,
+      round_count: 1,
+    },
+    display: {
+      event_title: 'Team event',
+      team_names: { '1': 'Team A', '2': 'Team B' },
+      member_names: { '1': 'Player A' },
+      memo: '',
+    },
+    snapshot: {
+      schedule_type: 'team',
+      generated_schedule_id: 'generated-team-1',
+      rounds: [],
+    },
+    scores: {},
+    provenance: createdProvenance(),
+  };
+}
+
+function teamProgressData(generatedScheduleId = 'generated-team-1') {
+  const data = progressData(generatedScheduleId);
+  data.schedule_type = 'team';
+  return data;
+}
+
+function teamMatchData(generatedScheduleId = 'generated-team-1') {
+  const data = matchData(generatedScheduleId);
+  data.schedule_type = 'team';
+  return data;
+}
+
+test('team share creation is schema checked and listing is denied', async () => {
+  const shared = testEnv.unauthenticatedContext().firestore();
+  await assertSucceeds(shared.doc('team_schedules/TEAM0001').set(teamData()));
+  await assertSucceeds(shared.doc('team_schedules/TEAM0001').get());
+  await assertFails(shared.collection('team_schedules').get());
+  await assertFails(shared.doc('team_schedules/BAD').set(teamData('BAD')));
+  await assertFails(shared.doc('team_schedules/TEAM0002').set({ title: 'forged' }));
+  const invalid = teamData('TEAM0003');
+  invalid.snapshot = { schedule_type: 'doubles' };
+  await assertFails(shared.doc('team_schedules/TEAM0003').set(invalid));
+});
+
+test('team shared edits keep schedule structure immutable', async () => {
+  const shared = testEnv.unauthenticatedContext().firestore();
+  const ref = shared.doc('team_schedules/TEAM0001');
+  await assertSucceeds(ref.set(teamData()));
+  const updated = (await ref.get()).data();
+  updated.display.event_title = 'Updated event';
+  updated.scores = { r1: { winner: 1 } };
+  updated.updated_at = '2026-10-27T00:10:00.000Z';
+  updated.provenance.lastWrittenFrom = writeOrigin('team-update');
+  await assertSucceeds(ref.set(updated));
+
+  const tampered = (await ref.get()).data();
+  tampered.setup.participant_count = 500;
+  tampered.provenance.lastWrittenFrom = writeOrigin('tamper');
+  await assertFails(ref.set(tampered));
+
+  const forged = (await ref.get()).data();
+  forged.snapshot.rounds = [{ malicious: true }];
+  forged.provenance.lastWrittenFrom = writeOrigin('tamper-snapshot');
+  await assertFails(ref.set(forged));
+
+  await assertFails(shared.doc('team_schedules/TEAM0001').delete());
+});
+
+test('team progress requires parent and validates identities and revisions', async () => {
+  const shared = testEnv.unauthenticatedContext().firestore();
+  const missing = shared.doc(
+    'team_schedules/TEAM9999/schedule_progress/generated-team-1',
+  );
+  await assertFails(missing.set(teamProgressData()));
+
+  await assertSucceeds(shared.doc('team_schedules/TEAM0001').set(teamData()));
+  const progressRef = shared.doc(
+    'team_schedules/TEAM0001/schedule_progress/generated-team-1',
+  );
+  await assertSucceeds(progressRef.set(teamProgressData()));
+  const wrong = teamProgressData('wrong');
+  await assertFails(shared.doc(
+    'team_schedules/TEAM0001/schedule_progress/generated-team-2',
+  ).set(wrong));
+  const progress = (await progressRef.get()).data();
+  progress.completed_match_count = 1;
+  progress.revision = 2;
+  progress.provenance.lastWrittenFrom = writeOrigin('progress-update');
+  await assertSucceeds(progressRef.set(progress));
+
+  const tampered = (await progressRef.get()).data();
+  tampered.total_match_count = 100;
+  tampered.revision = 3;
+  tampered.provenance.lastWrittenFrom = writeOrigin('tamper');
+  await assertFails(progressRef.set(tampered));
+
+  const matchRef = shared.doc(
+    'team_schedules/TEAM0001/schedule_progress/generated-team-1/matches/r1_c1',
+  );
+  await assertSucceeds(matchRef.set(teamMatchData()));
+  const match = (await matchRef.get()).data();
+  match.status = 'completed';
+  match.revision = 2;
+  match.provenance.lastWrittenFrom = writeOrigin('match-update');
+  await assertSucceeds(matchRef.set(match));
+
+  const forgedMatch = (await matchRef.get()).data();
+  forgedMatch.round_no = 9;
+  forgedMatch.revision = 3;
+  forgedMatch.provenance.lastWrittenFrom = writeOrigin('tamper');
+  await assertFails(matchRef.set(forgedMatch));
+});
