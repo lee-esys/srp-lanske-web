@@ -1226,17 +1226,177 @@ service cloud.firestore {
       }
     }
 
-    // Public share documents used by team schedules, including boccia data.
+    // Team schedules permit public collaboration, but never arbitrary writes.
+    function isValidTeamShareId(shareId) {
+      return shareId.matches('^[0-9A-Z]{8}
+
+    // Existing core-generated data is readable from the client,
+    // but client writes are not allowed.
+    match /{collectionId}/{documentId} {
+      allow read: if isReadOnlyCoreCollection(collectionId);
+      allow create, update, delete: if false;
+    }
+
+    // Deny any collection or document path that is not explicitly handled above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+);
+    }
+
+    function isValidTeamSetup(setup) {
+      return setup is map
+        && setup.keys().hasAll([
+          'concurrent_match_count', 'participant_count',
+          'preferred_team_size', 'teams_per_match', 'round_count'
+        ])
+        && setup.keys().hasOnly([
+          'concurrent_match_count', 'participant_count',
+          'preferred_team_size', 'teams_per_match', 'round_count'
+        ])
+        && setup.concurrent_match_count is int
+        && setup.concurrent_match_count > 0
+        && setup.participant_count is int
+        && setup.participant_count > 0
+        && setup.preferred_team_size is int
+        && setup.preferred_team_size > 0
+        && setup.teams_per_match is int
+        && setup.teams_per_match > 0
+        && setup.round_count is int
+        && setup.round_count > 0;
+    }
+
+    function isValidTeamDisplay(display) {
+      return display is map
+        && display.keys().hasAll([
+          'event_title', 'team_names', 'member_names', 'memo'
+        ])
+        && display.keys().hasOnly([
+          'event_title', 'team_names', 'member_names', 'memo'
+        ])
+        && display.event_title is string
+        && display.team_names is map
+        && display.member_names is map
+        && display.memo is string;
+    }
+
+    function isValidTeamCreate(shareId) {
+      let data = request.resource.data;
+      return isValidTeamShareId(shareId)
+        && data.keys().hasAll([
+          'schema_version', 'share_id', 'status', 'schedule_type',
+          'created_at', 'updated_at', 'setup', 'display', 'snapshot',
+          'scores', 'provenance'
+        ])
+        && data.keys().hasOnly([
+          'schema_version', 'share_id', 'status', 'schedule_type',
+          'created_at', 'updated_at', 'setup', 'display', 'snapshot',
+          'scores', 'provenance'
+        ])
+        && data.schema_version == 1
+        && data.share_id == shareId
+        && data.status == 'active'
+        && data.schedule_type == 'team'
+        && data.created_at is string
+        && data.updated_at is string
+        && isValidTeamSetup(data.setup)
+        && isValidTeamDisplay(data.display)
+        && data.snapshot is map
+        && data.snapshot.get('schedule_type', null) == 'team'
+        && data.snapshot.get('generated_schedule_id', null) is string
+        && data.snapshot.get('generated_schedule_id', '') != ''
+        && data.scores is map
+        && isValidCreatedProvenance(data);
+    }
+
+    function isValidTeamUpdate() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return changed.hasOnly(['display', 'scores', 'updated_at', 'provenance'])
+        && isValidTeamDisplay(request.resource.data.display)
+        && request.resource.data.scores is map
+        && request.resource.data.updated_at is string
+        && isValidUpdatedProvenance();
+    }
+
+    function isValidTeamProgressCreate(generatedScheduleId) {
+      let data = request.resource.data;
+      return data.keys().hasAll([
+          'schema_version', 'schedule_type', 'generated_schedule_id',
+          'total_match_count', 'completed_match_count',
+          'in_progress_match_count', 'created_at', 'updated_at',
+          'revision', 'provenance'
+        ])
+        && data.keys().hasOnly([
+          'schema_version', 'schedule_type', 'generated_schedule_id',
+          'total_match_count', 'completed_match_count',
+          'in_progress_match_count', 'created_at', 'updated_at',
+          'revision', 'provenance'
+        ])
+        && data.schema_version == 1
+        && data.schedule_type == 'team'
+        && data.generated_schedule_id == generatedScheduleId
+        && hasValidProgressCounts(data)
+        && data.created_at is string
+        && data.updated_at is string
+        && data.revision == 1
+        && isValidCreatedProvenance(data);
+    }
+
+    function isValidTeamMatchCreate(generatedScheduleId) {
+      let data = request.resource.data;
+      return data.keys().hasAll([
+          'schema_version', 'schedule_type', 'generated_schedule_id',
+          'round_no', 'court_no', 'match_no', 'status', 'result',
+          'note', 'started_at', 'finished_at', 'created_at',
+          'updated_at', 'revision', 'provenance'
+        ])
+        && data.keys().hasOnly([
+          'schema_version', 'schedule_type', 'generated_schedule_id',
+          'round_no', 'court_no', 'match_no', 'status', 'result',
+          'note', 'started_at', 'finished_at', 'created_at',
+          'updated_at', 'revision', 'provenance'
+        ])
+        && data.schema_version == 1
+        && data.schedule_type == 'team'
+        && data.generated_schedule_id == generatedScheduleId
+        && data.round_no is int
+        && data.round_no > 0
+        && data.court_no is int
+        && data.court_no > 0
+        && (data.get('match_no', null) == null
+          || (data.match_no is int && data.match_no > 0))
+        && hasValidMatchState(data)
+        && data.created_at is string
+        && data.updated_at is string
+        && data.revision == 1
+        && isValidCreatedProvenance(data);
+    }
+
     match /team_schedules/{shareId} {
-      allow read, create, update: if true;
+      allow get: if true;
+      allow list: if false;
+      allow create: if isValidTeamCreate(shareId);
+      allow update: if isValidTeamUpdate();
       allow delete: if false;
 
       match /schedule_progress/{generatedScheduleId} {
-        allow read, create, update: if true;
+        allow get, list: if exists(/databases/$(database)/documents/team_schedules/$(shareId));
+        allow create: if exists(/databases/$(database)/documents/team_schedules/$(shareId))
+          && isValidTeamProgressCreate(generatedScheduleId);
+        allow update: if exists(/databases/$(database)/documents/team_schedules/$(shareId))
+          && resource.data.schedule_type == 'team'
+          && isValidProgressUpdate();
         allow delete: if false;
 
         match /matches/{matchKey} {
-          allow read, create, update: if true;
+          allow get, list: if exists(/databases/$(database)/documents/team_schedules/$(shareId));
+          allow create: if exists(/databases/$(database)/documents/team_schedules/$(shareId))
+            && isValidTeamMatchCreate(generatedScheduleId);
+          allow update: if exists(/databases/$(database)/documents/team_schedules/$(shareId))
+            && resource.data.schedule_type == 'team'
+            && isValidMatchUpdate();
           allow delete: if false;
         }
       }
