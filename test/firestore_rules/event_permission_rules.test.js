@@ -624,7 +624,7 @@ test('team progress requires parent and validates identities and revisions', asy
     'team_schedules/TEAM0001/schedule_progress/generated-team-1',
   );
   await assertSucceeds(progressRef.set(teamProgressData()));
-  const wrong = teamProgressData('wrong');
+  const wrong = teamProgressData('generated-team-1');
   await assertFails(shared.doc(
     'team_schedules/TEAM0001/schedule_progress/generated-team-2',
   ).set(wrong));
